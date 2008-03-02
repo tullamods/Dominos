@@ -1,0 +1,14 @@
+## Interface: 20300
+
+## Title: Lib: DataBroker-1.0
+## Notes: A central registry for addons looking for something to display their data.
+## Version: 1.0
+## Author: Elkano
+## X-Category: Library
+
+## LoadOnDemand: 1
+
+LibStub/LibStub.lua
+CallbackHandler-1.0/CallbackHandler-1.0.lua
+
+lib.xml
