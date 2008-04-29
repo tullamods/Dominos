@@ -1,4 +1,4 @@
-## Interface: 20300
+## Interface: 20400
 
 ## Title: Lib: DataBroker-1.0
 ## Notes: A central registry for addons looking for something to display their data.
@@ -8,7 +8,7 @@
 
 ## LoadOnDemand: 1
 
-LibStub/LibStub.lua
-CallbackHandler-1.0/CallbackHandler-1.0.lua
+LibStub\LibStub.lua
+CallbackHandler-1.0\CallbackHandler-1.0.lua
 
-lib.xml
+LibDataBroker-1.0\lib.xml
