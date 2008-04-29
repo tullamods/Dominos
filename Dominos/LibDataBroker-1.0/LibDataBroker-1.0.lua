@@ -34,6 +34,7 @@ domt = {
 	__metatable =		"access denied",
 	__newindex =		function(self, key, value)
 							if not attributestorage[self] then attributestorage[self] = {} end
+							if attributestorage[self][key] == value then return end
 							attributestorage[self][key] = value
 							local name = namestorage[self]
 							if name then
