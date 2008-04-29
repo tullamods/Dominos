@@ -39,6 +39,12 @@ dataobject["test"] = 456
 assert(callback_result[1] == "LibDataBroker_AttributeChanged_testdo" and callback_result[2] == "testdo" and callback_result[3] == "test" and callback_result[4] == 456)
 assert(dataobject["test"] == 456)
 
+-- set attribute of registered dataobject to its current value doesn't fire callback
+callback_result = nil
+dataobject["test"] = 456
+assert(callback_result == nil)
+assert(dataobject["test"] == 456)
+
 -- functions as attributes
 callback_result = nil
 local testfunc_result = nil
