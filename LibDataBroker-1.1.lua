@@ -2,8 +2,9 @@
 assert(LibStub, "LibDataBroker-1.1 requires LibStub")
 assert(LibStub:GetLibrary("CallbackHandler-1.0", true), "LibDataBroker-1.1 requires CallbackHandler-1.0")
 
-local lib = LibStub:NewLibrary("LibDataBroker-1.1", 1)
+local lib, oldminor = LibStub:NewLibrary("LibDataBroker-1.1", 2)
 if not lib then return end
+oldminor = oldminor or 0
 
 
 lib.callbacks = lib.callbacks or LibStub:GetLibrary("CallbackHandler-1.0"):New(lib)
@@ -28,23 +29,26 @@ local domt = {
 	end,
 }
 
-function lib:NewDataObject(name)
+function lib:NewDataObject(name, dataobj)
 	if proxystorage[name] then return end
 
-	local dataobj = setmetatable({}, domt)
+	assert(type(dataobj) == "table" or type(dataobj) == "nil", "Invalid dataobj, must be nil or a table")
+	dataobj = setmetatable(dataobj or {}, self.domt)
 	proxystorage[name], namestorage[dataobj] = dataobj, name
 	lib.callbacks:Fire("LibDataBroker_DataObjectCreated", name, dataobj)
 	return dataobj
 end
 
-function lib:DataObjectIterator()
-	return pairs(proxystorage)
-end
+if oldminor < 1
+	function lib:DataObjectIterator()
+		return pairs(proxystorage)
+	end
 
-function lib:GetDataObjectByName(dataobjectname)
-	return proxystorage[dataobjectname]
-end
+	function lib:GetDataObjectByName(dataobjectname)
+		return proxystorage[dataobjectname]
+	end
 
-function lib:GetNameByDataObject(dataobject)
-	return namestorage[dataobject]
+	function lib:GetNameByDataObject(dataobject)
+		return namestorage[dataobject]
+	end
 end
