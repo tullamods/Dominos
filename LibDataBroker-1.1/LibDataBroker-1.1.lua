@@ -4,14 +4,8 @@ if not lib then return end
 
 
 lib.callbacks = lib.callbacks or LibStub:GetLibrary("CallbackHandler-1.0"):New(lib)
-
-lib.attributestorage = lib.attributestorage or {}
-lib.namestorage = lib.namestorage or {}
-lib.proxystorage = lib.proxystorage or {}
-
-local attributestorage = lib.attributestorage
-local namestorage = lib.namestorage
-local proxystorage = lib.proxystorage
+lib.attributestorage, lib.namestorage, lib.proxystorage = lib.attributestorage or {}, lib.namestorage or {}, lib.proxystorage or {}
+local attributestorage, namestorage, proxystorage = lib.attributestorage, lib.namestorage, lib.proxystorage
 
 local domt = {
 	__metatable = "access denied",
@@ -33,9 +27,7 @@ function lib:NewDataObject(name)
 	if proxystorage[name] then return end
 
 	local dataobj = setmetatable({}, domt)
-
-	proxystorage[name] = dataobj
-	namestorage[dataobj] = name
+	proxystorage[name], namestorage[dataobj] = dataobj, name
 	lib.callbacks:Fire("LibDataBroker_DataObjectCreated", name, dataobj)
 	return dataobj
 end
