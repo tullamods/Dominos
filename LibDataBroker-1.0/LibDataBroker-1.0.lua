@@ -19,31 +19,31 @@ local setmetatable = _G.setmetatable
 
 local CallbackHandler = LibStub:GetLibrary("CallbackHandler-1.0")
 
-lib.callbacks			= lib.callbacks			or CallbackHandler:New(lib)
+lib.callbacks = lib.callbacks or CallbackHandler:New(lib)
 
-lib.attributestorage	= lib.attributestorage	or {}
-lib.namestorage			= lib.namestorage		or {}
-lib.proxystorage		= lib.proxystorage		or {}
+lib.attributestorage = lib.attributestorage or {}
+lib.namestorage = lib.namestorage or {}
+lib.proxystorage = lib.proxystorage or {}
 
-local attributestorage	= lib.attributestorage
-local namestorage		= lib.namestorage
-local proxystorage		= lib.proxystorage
+local attributestorage = lib.attributestorage
+local namestorage = lib.namestorage
+local proxystorage = lib.proxystorage
 
 local domt
 domt = {
-	__metatable =		"access denied",
-	__newindex =		function(self, key, value)
-							if not attributestorage[self] then attributestorage[self] = {} end
-							if attributestorage[self][key] == value then return end
-							attributestorage[self][key] = value
-							local name = namestorage[self]
-							if name then
-								lib.callbacks:Fire("LibDataBroker_AttributeChanged_"..name, name, key, value)
-							end
-						end,
-	__index =			function(self, key)
-							return attributestorage[self] and attributestorage[self][key] or nil
-						end,
+	__metatable = "access denied",
+	__newindex = function(self, key, value)
+		if not attributestorage[self] then attributestorage[self] = {} end
+		if attributestorage[self][key] == value then return end
+		attributestorage[self][key] = value
+		local name = namestorage[self]
+		if name then
+			lib.callbacks:Fire("LibDataBroker_AttributeChanged_"..name, name, key, value)
+		end
+	end,
+	__index = function(self, key)
+		return attributestorage[self] and attributestorage[self][key] or nil
+	end,
 }
 
 function lib:NewDataObject()
