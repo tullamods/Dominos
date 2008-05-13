@@ -22,6 +22,7 @@ local domt = {
 		local name = namestorage[self]
 		if not name then return end
 		lib.callbacks:Fire("LibDataBroker_AttributeChanged_"..name, name, key, value)
+		lib.callbacks:Fire("LibDataBroker_AttributeChanged_"..name.."_"..key, name, key, value)
 	end,
 	__index = function(self, key)
 		return attributestorage[self] and attributestorage[self][key]
