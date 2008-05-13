@@ -1,15 +1,5 @@
---[[
-Name: LibDataBroker-1.0
-Revision: $Revision$
-Author: Elkano (elkano@gmx.de)
-Website: http://
-Documentation: http://www.wowace.com/wiki/LibDataBroker-1.0
-SVN: http://svn.wowace.com/wowace/trunk/LibDataBroker-1.0/
-Description: A central registry for addons looking for something to display their data.
-Dependencies: LibStub, CallbackHandler-1.0
-]]
 
-local MAJOR, MINOR = "LibDataBroker-1.0", "$Revision$"
+local MAJOR, MINOR = "LibDataBroker-1.1", "$Revision$"
 local lib = LibStub:NewLibrary(MAJOR, MINOR)
 
 if not lib then return end
