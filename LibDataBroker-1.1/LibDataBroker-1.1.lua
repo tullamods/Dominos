@@ -29,18 +29,15 @@ local domt = {
 	end,
 }
 
-function lib:NewDataObject()
-	return setmetatable({}, domt)
-end
+function lib:NewDataObject(name)
+	if proxystorage[name] then return end
 
-function lib:RegisterDataObject(dataobjectname, dataobject)
-	if not proxystorage[dataobjectname] then
-		proxystorage[dataobjectname] = dataobject
-		namestorage[dataobject] = dataobjectname
-		lib.callbacks:Fire("LibDataBroker_DataobjectRegistered", dataobjectname, dataobject)
-		return true
-	end
-	return false
+	local dataobj = setmetatable({}, domt)
+
+	proxystorage[name] = dataobj
+	namestorage[dataobj] = name
+	lib.callbacks:Fire("LibDataBroker_DataObjectCreated", name, dataobj)
+	return dataobj
 end
 
 function lib:DataObjectIterator()
