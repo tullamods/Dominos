@@ -9,9 +9,9 @@ oldminor = oldminor or 0
 
 lib.callbacks = lib.callbacks or LibStub:GetLibrary("CallbackHandler-1.0"):New(lib)
 lib.attributestorage, lib.namestorage, lib.proxystorage = lib.attributestorage or {}, lib.namestorage or {}, lib.proxystorage or {}
-local attributestorage, namestorage, proxystorage = lib.attributestorage, lib.namestorage, lib.proxystorage
+local attributestorage, namestorage, callbacks = lib.attributestorage, lib.namestorage, lib.callbacks
 
-local domt = {
+lib.domt = lib.domt or {
 	__metatable = "access denied",
 	__newindex = function(self, key, value)
 		if not attributestorage[self] then attributestorage[self] = {} end
@@ -19,10 +19,10 @@ local domt = {
 		attributestorage[self][key] = value
 		local name = namestorage[self]
 		if not name then return end
-		lib.callbacks:Fire("LibDataBroker_AttributeChanged", name, key, value)
-		lib.callbacks:Fire("LibDataBroker_AttributeChanged_"..name, name, key, value)
-		lib.callbacks:Fire("LibDataBroker_AttributeChanged_"..name.."_"..key, name, key, value)
-		lib.callbacks:Fire("LibDataBroker_AttributeChanged__"..key, name, key, value)
+		callbacks:Fire("LibDataBroker_AttributeChanged", name, key, value)
+		callbacks:Fire("LibDataBroker_AttributeChanged_"..name, name, key, value)
+		callbacks:Fire("LibDataBroker_AttributeChanged_"..name.."_"..key, name, key, value)
+		callbacks:Fire("LibDataBroker_AttributeChanged__"..key, name, key, value)
 	end,
 	__index = function(self, key)
 		return attributestorage[self] and attributestorage[self][key]
@@ -30,25 +30,25 @@ local domt = {
 }
 
 function lib:NewDataObject(name, dataobj)
-	if proxystorage[name] then return end
+	if self.proxystorage[name] then return end
 
 	assert(type(dataobj) == "table" or type(dataobj) == "nil", "Invalid dataobj, must be nil or a table")
 	dataobj = setmetatable(dataobj or {}, self.domt)
-	proxystorage[name], namestorage[dataobj] = dataobj, name
-	lib.callbacks:Fire("LibDataBroker_DataObjectCreated", name, dataobj)
+	self.proxystorage[name], self.namestorage[dataobj] = dataobj, name
+	self.callbacks:Fire("LibDataBroker_DataObjectCreated", name, dataobj)
 	return dataobj
 end
 
 if oldminor < 1
 	function lib:DataObjectIterator()
-		return pairs(proxystorage)
+		return pairs(self.proxystorage)
 	end
 
 	function lib:GetDataObjectByName(dataobjectname)
-		return proxystorage[dataobjectname]
+		return self.proxystorage[dataobjectname]
 	end
 
 	function lib:GetNameByDataObject(dataobject)
-		return namestorage[dataobject]
+		return self.namestorage[dataobject]
 	end
 end
