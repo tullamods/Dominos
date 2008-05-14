@@ -39,7 +39,7 @@ function lib:NewDataObject(name, dataobj)
 	return dataobj
 end
 
-if oldminor < 1
+if oldminor < 1 then
 	function lib:DataObjectIterator()
 		return pairs(self.proxystorage)
 	end
