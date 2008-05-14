@@ -32,7 +32,14 @@ lib.domt = lib.domt or {
 function lib:NewDataObject(name, dataobj)
 	if self.proxystorage[name] then return end
 
-	assert(type(dataobj) == "table" or type(dataobj) == "nil", "Invalid dataobj, must be nil or a table")
+	if dataobj then
+		assert(type(dataobj) == "table", "Invalid dataobj, must be nil or a table")
+		self.attributestorage[dataobj] = {}
+		for i,v in pairs(dataobj) do
+			self.attributestorage[dataobj][i] = v
+			dataobj[i] = nil
+		end
+	end
 	dataobj = setmetatable(dataobj or {}, self.domt)
 	self.proxystorage[name], self.namestorage[dataobj] = dataobj, name
 	self.callbacks:Fire("LibDataBroker_DataObjectCreated", name, dataobj)
