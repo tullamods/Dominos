@@ -1,7 +1,7 @@
 
 h2. Using LibDataBroker-1.1
 
-_ Coming soon to a README near you! _
+<em> Coming soon to a README near you! </em>
 
 h2. Data Specifications
 
@@ -28,7 +28,7 @@ h3. Quicklauncher
 
 A quicklauncher is a LDB object that does not provide any data, but instead provides an OnClick handler to allow fast access to config panels, toggle settings, or perform other actions.
 
-* Quicklaunchers should never expect a secure frame to be used, therefore actions like spellcasting are not possible. *
+<em> Quicklaunchers should never expect a secure frame to be used, therefore actions like spellcasting are not possible. </em>
 
 h4. Fields
 
