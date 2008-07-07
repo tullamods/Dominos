@@ -1,0 +1,39 @@
+
+h2. Using LibDataBroker-1.1
+
+_ Coming soon to a README near you! _
+
+h2. Data Specifications
+
+Provided below are two suggested data specs.
+These specs are very open to modification and enhancement by display addons, but plugins providing data should not expect that anything except the required fields are supported in the display.
+
+h3. Data Display
+
+Data display addons provide a LDB "feed" for an always-up addon to display.
+These addons can be thought of like RSS feeds, where the display addon is similar to an RSS reader.
+Display addons could include FuBar, Titan Panel, StatBlocks, LegoBlocks, or any other design out there.
+
+h4. Fields
+
+* "text" (Required) - the text to be shown
+* "label" - A title for your feed, often shown to the left of the text, user might choose to hide this.
+* "icon" - Full path to a texture, often shown to the left of the label or text.
+* "OnClick" - An OnClick script handler to be directly attached to the display frame.  Receives the usual args an OnClick receives (self, button).
+* "OnEnter" - An OnEnter script handler to be directly attached to the display frame.  Usually used to display a tooltip.  This handler should check the position of the frame it is passed and anchor the tolltip to that frame accordingly.
+* "OnLeave" - An OnLeave script handler to be directly attached to the display frame.  Usually used to hide the toolip.
+* "tooltip" - A frame to be displayed when the display frame is entered.  The display addon is responsible for anchoring, showing and hiding this frame as needed.  The tooltip frame's OnShow can be used to refresh the frame.  Note that this frame doesn't have to be a GameTooltip.
+
+h3. Quicklauncher
+
+A quicklauncher is a LDB object that does not provide any data, but instead provides an OnClick handler to allow fast access to config panels, toggle settings, or perform other actions.
+
+* Quicklaunchers should never expect a secure frame to be used, therefore actions like spellcasting are not possible. *
+
+h4. Fields
+
+* "launcher" (Required) - Set to true, indicates that this data object is a launcher and does not provide any data to be rendered in an always-up frame.
+* "icon" (Required) - Full path to a texture for display.
+* "OnClick" (Required) - An OnClick script handler to be directly attached to the display frame.  Receives the usual args an OnClick receives (self, button).
+* "tocname" - The name of the addon providing the launcher, if it's name does not match the dataobject's name.  Used by displays to get TOC metadata about the addon.
+* "label" - A label to use for the launcher, overriding the dataobject name.
