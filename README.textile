@@ -3,12 +3,12 @@ h2. Using LibDataBroker-1.1
 
 h3. Embedding the library
 
-LDB is designed to be embedded into the addons that use it.
+LibDataBroker is designed to be embedded into the addons that use it.
 The user should never have to worry about what version of the library they have, or even really be aware of the library's existence.
 
 Embedding the library is a fairly simple task.  Simply include LibDataBroker-1.1.lua in your addon's files and add it into your TOC to be loaded.
 Make sure that you include "LibStub":http://www.wowwiki.com/LibStub and "CallbackHandler-1.0":http://www.wowace.com/wiki/CallbackHandler-1.0 as well, and that they load before LDB.
-If you use Ace3 in your addon, you probably already have LibStub and CallbackHandler, just make sure they're loaded before LibDataBroker.
+If you use Ace3 in your addon, you probably already have LibStub and CallbackHandler, just make sure they're loaded before LDB.
 
 h3. Providing a dataobject
 
@@ -38,11 +38,11 @@ f:SetScript("OnUpdate", function(self, elap)
 
 	elapsed = 0
 	local fps = GetFramerate()
-	dataobj.text = string_format("%.1f|r FPS", fps)
+	dataobj.text = string_format("%.1f FPS", fps)
 end)
 
 function dataobj.OnEnter(self)
- 	GameTooltip:SetOwner(self, "ANCHOR_NONE")
+	GameTooltip:SetOwner(self, "ANCHOR_NONE")
 	GameTooltip:SetPoint("TOPLEFT", self, "BOTTOMLEFT")
 	GameTooltip:ClearLines()
 	GameTooltip:AddLine("myFPS")
