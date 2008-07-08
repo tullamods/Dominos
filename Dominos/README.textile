@@ -1,7 +1,62 @@
 
 h2. Using LibDataBroker-1.1
 
-<em> Coming soon to a README near you! </em>
+h3. Embedding the library
+
+LDB is designed to be embedded into the addons that use it.
+The user should never have to worry about what version of the library they have, or even really be aware of the library's existence.
+
+Embedding the library is a fairly simple task.  Simply include LibDataBroker-1.1.lua in your addon's files and add it into your TOC to be loaded.
+Make sure that you include "LibStub":http://www.wowwiki.com/LibStub and "CallbackHandler-1.0":http://www.wowace.com/wiki/CallbackHandler-1.0 as well, and that they load before LDB.
+If you use Ace3 in your addon, you probably already have LibStub and CallbackHandler, just make sure they're loaded before LibDataBroker.
+
+h3. Providing a dataobject
+
+Before anyone can do anything, we need some data to display.
+For our first example, we'll provide a static dataobject that is simply declared on load and never changed after that.
+This implements the "Quicklauncher" spec below to create a button to open our config panel.
+
+<pre>
+LibStub:GetLibrary("LibDataBroker-1.1"):NewDataObject("MyAddonName", {
+	launcher = true,
+	icon = "Interface\\Icons\\Spell_Nature_StormReach",
+	OnClick = function(clickedframe, button) InterfaceOptionsFrame_OpenToFrame(myconfigframe) end,
+})
+</pre>
+
+Pretty simple eh?  Now why don't we make a dataobject that implements the "data display" spec.
+This data can be used by a display addon to create an always-up frame, like a FuBar plugin would.
+
+<pre>
+local UPDATEPERIOD, elapsed = 0.5, 0
+local dataobj = LibStub:GetLibrary("LibDataBroker-1.1"):NewDataObject("myFPS", {text = "75.0 FPS"})
+local f = CreateFrame("frame")
+
+f:SetScript("OnUpdate", function(self, elap)
+	elapsed = elapsed + elap
+	if elapsed < UPDATEPERIOD then return end
+
+	elapsed = 0
+	local fps = GetFramerate()
+	dataobj.text = string_format("%.1f|r FPS", fps)
+end)
+
+function dataobj.OnEnter(self)
+ 	GameTooltip:SetOwner(self, "ANCHOR_NONE")
+	GameTooltip:SetPoint("TOPLEFT", self, "BOTTOMLEFT")
+	GameTooltip:ClearLines()
+	GameTooltip:AddLine("myFPS")
+	GameTooltip:Show()
+end
+
+function dataobj.OnLeave()
+	GameTooltip:Hide()
+end
+</pre>
+
+Here our dataobject gets updated every half-second with the current FPS.
+We also provide OnEnter and OnLeave script handlers.
+If the display addon chooses to attach these to the frame it uses for our data, the user will get a tooltip when they hover over that frame.
 
 h2. Data Specifications
 
