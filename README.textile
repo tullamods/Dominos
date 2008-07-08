@@ -97,16 +97,30 @@ h4. Fields
 
 h2. Addons using LDB
 
+<div style="float:left; margin-right:2em;">
+
 h3. Data Display addons
 
 * Fortress (Unreleased)
 * StatBlockCore (Unreleased)
 * tekBlocks (Unreleased)
 
+</div>
+
+<div style="float:left; margin-right:2em;">
+
 h3. Quicklaunch addons
 
 * "Quickie":http://github.com/tekkub/quickie (Proof of concept)
 
+</div>
+
+<div style="float:left; margin-right:2em;">
+
 h3. Misc
 
 * FuBar2LDB (Unreleased)
+
+</div>
+
+<br style="clear:both" />
