@@ -75,6 +75,8 @@ h4. Fields
 * "label" - A title for your feed, often shown to the left of the text, user might choose to hide this.
 * "icon" - Full path to a texture, often shown to the left of the label or text.
 * "OnClick" - An OnClick script handler to be directly attached to the display frame.  Receives the usual args an OnClick receives (self, button).
+* "tooltiptext" - A string for the display addon to pass directly to GameTooltip:SetText() when a tooltip is needed.
+* "OnTooltipShow" - A function to call when the display wants to show a tooltip.  The display wil manage positioning, clearing and showing the tooltip, all this handler needs to do is populate the tooltip using :AddLine or similar.  The display should pass the tooltip to this callback, in case it isn't using GameTooltip.
 * "OnEnter" - An OnEnter script handler to be directly attached to the display frame.  Usually used to display a tooltip.  This handler should check the position of the frame it is passed and anchor the tolltip to that frame accordingly.
 * "OnLeave" - An OnLeave script handler to be directly attached to the display frame.  Usually used to hide the toolip.
 * "tooltip" - A frame to be displayed when the display frame is entered.  The display addon is responsible for anchoring, showing and hiding this frame as needed.  The tooltip frame's OnShow can be used to refresh the frame.  Note that this frame doesn't have to be a GameTooltip.
