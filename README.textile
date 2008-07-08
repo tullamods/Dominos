@@ -102,7 +102,7 @@ h2. Addons using LDB
 h3. Data Display addons
 
 * "Fortress":http://www.wowace.com/forums/index.php?topic=14158.0 (Unreleased)
-* StatBlockCore (Unreleased)
+* "StatBlockCore":http://www.wowace.com/forums/index.php?topic=14160.0 (Unreleased)
 * tekBlocks (Unreleased)
 
 </div>
