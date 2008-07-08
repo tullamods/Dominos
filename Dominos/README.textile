@@ -71,15 +71,15 @@ Display addons could include FuBar, Titan Panel, StatBlocks, LegoBlocks, or any 
 
 h4. Fields
 
-* "text" (Required) - the text to be shown
-* "label" - A title for your feed, often shown to the left of the text, user might choose to hide this.
-* "icon" - Full path to a texture, often shown to the left of the label or text.
-* "OnClick" - An OnClick script handler to be directly attached to the display frame.  Receives the usual args an OnClick receives (self, button).
-* "tooltiptext" - A string for the display addon to pass directly to GameTooltip:SetText() when a tooltip is needed.
-* "OnTooltipShow" - A function to call when the display wants to show a tooltip.  The display will manage positioning, clearing and showing the tooltip, all this handler needs to do is populate the tooltip using :AddLine or similar.  The display should pass the tooltip to this callback, in case it isn't using GameTooltip.
-* "OnEnter" - An OnEnter script handler to be directly attached to the display frame.  Usually used to display a tooltip.  This handler should check the position of the frame it is passed and anchor the tolltip to that frame accordingly.
-* "OnLeave" - An OnLeave script handler to be directly attached to the display frame.  Usually used to hide the toolip.
-* "tooltip" - A frame to be displayed when the display frame is entered.  The display addon is responsible for anchoring, showing and hiding this frame as needed.  The tooltip frame's OnShow can be used to refresh the frame.  Note that this frame doesn't have to be a GameTooltip.
+|_. text _Required_ | The text to be shown. |
+|_. label | A title for your feed, often shown to the left of the text, user might choose to hide this. |
+|_. icon | Full path to a texture, often shown to the left of the label or text. |
+|_. OnClick | An OnClick script handler to be directly attached to the display frame.  Receives the usual args an OnClick receives (self, button). |
+|_. tooltiptext | A string for the display addon to pass directly to GameTooltip:SetText() when a tooltip is needed. |
+|_. OnTooltipShow | A function to call when the display wants to show a tooltip.  The display will manage positioning, clearing and showing the tooltip, all this handler needs to do is populate the tooltip using :AddLine or similar.  The display should pass the tooltip to this callback, in case it isn't using GameTooltip. |
+|_. OnEnter | An OnEnter script handler to be directly attached to the display frame.  Usually used to display a tooltip.  This handler should check the position of the frame it is passed and anchor the tolltip to that frame accordingly. |
+|_. OnLeave | An OnLeave script handler to be directly attached to the display frame.  Usually used to hide the toolip. |
+|_. tooltip | A frame to be displayed when the display frame is entered.  The display addon is responsible for anchoring, showing and hiding this frame as needed.  The tooltip frame's OnShow can be used to refresh the frame.  Note that this frame doesn't have to be a GameTooltip. |
 
 h3. Quicklauncher
 
@@ -89,11 +89,11 @@ A quicklauncher is a LDB object that does not provide any data, but instead prov
 
 h4. Fields
 
-* "launcher" (Required) - Set to true, indicates that this data object is a launcher and does not provide any data to be rendered in an always-up frame.
-* "icon" (Required) - Full path to a texture for display.
-* "OnClick" (Required) - An OnClick script handler to be directly attached to the display frame.  Receives the usual args an OnClick receives (self, button).
-* "tocname" - The name of the addon providing the launcher, if it's name does not match the dataobject's name.  Used by displays to get TOC metadata about the addon.
-* "label" - A label to use for the launcher, overriding the dataobject name.
+|_. launcher _Required_ | Set to true, indicates that this data object is a launcher and does not provide any data to be rendered in an always-up frame. |
+|_. icon _Required_ | Full path to a texture for display. |
+|_. OnClick _Required_ | An OnClick script handler to be directly attached to the display frame.  Receives the usual args an OnClick receives (self, button). |
+|_. tocname | The name of the addon providing the launcher, if it's name does not match the dataobject's name.  Used by displays to get TOC metadata about the addon. |
+|_. label | A label to use for the launcher, overriding the dataobject name. |
 
 h2. Addons using LDB
 
