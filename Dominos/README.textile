@@ -94,3 +94,19 @@ h4. Fields
 * "OnClick" (Required) - An OnClick script handler to be directly attached to the display frame.  Receives the usual args an OnClick receives (self, button).
 * "tocname" - The name of the addon providing the launcher, if it's name does not match the dataobject's name.  Used by displays to get TOC metadata about the addon.
 * "label" - A label to use for the launcher, overriding the dataobject name.
+
+h2. Addons using LDB
+
+h3. Data Display addons
+
+* Fortress (Unreleased)
+* StatBlockCore (Unreleased)
+* tekBlocks (Unreleased)
+
+h3. Quicklaunch addons
+
+* "Quickie":http://github.com/tekkub/quickie (Proof of concept)
+
+h3. Misc
+
+* FuBar2LDB (Unreleased)
