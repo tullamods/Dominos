@@ -58,6 +58,60 @@ Here our dataobject gets updated every half-second with the current FPS.
 We also provide OnEnter and OnLeave script handlers.
 If the display addon chooses to attach these to the frame it uses for our data, the user will get a tooltip when they hover over that frame.
 
+h3. Using a dataobject
+
+So, we have a source of data now, how do we pull it into an addon and know when to update things?  Easy!
+LDB uses Ace3's "CallbackHandler":http://www.wowace.com/wiki/CallbackHandler-1.0 to trigger callbacks in nearly the exact same way as "AceEvent3":http://www.wowace.com/wiki/AceEvent-3.0 does.
+
+h4. Registering a callback
+
+To receive updates from the library, we must register a callback function.  There are three ways you can call <code>RegisterCallback</code>
+
+<pre>
+local ldb = LibStub:GetLibrary("LibDataBroker-1.1")
+myTable.RegisterLDBCallback = ldb.RegisterCallback
+
+myTable:RegisterLDBCallback("eventName"[, method[, arg]])
+ldb.RegisterCallback(myTable, "eventName"[, method[, arg]])
+ldb.RegisterCallback("myAddonId", "eventName"[, method[, arg]])
+</pre>
+
+|_. Arg |_. Type |_. Description |
+|_. "eventName" | string | The name of the event you want to listen to. |
+|_. method | string or function | Which method to call. If string, self["method"] will be called. If left out (nil), self["eventName"] will be called. |
+|_. arg | optional | If present (even nil), this value will be passed to the receiving function. |
+
+h4. Callback events
+
+LDB provides 5 basic callbacks, one that is fired for for new dataobject registrations, and 4 that are fired any time a dataobject attribute is changed.
+
+|_. Event name |_. Args passed |_. Description |
+|_. LibDataBroker_DataObjectCreated | name, dataobj | Fires when a new dataobject is created.  Passes the DO's name and object. |
+|_. LibDataBroker_AttributeChanged | name, attr, value, dataobj | Fires for ALL attribute changes across ALL dataobjects.  Passes the DO name, name of the attribute changed, new value of the attribute, and the dataobject. |
+|_. LibDataBroker_AttributeChanged_&lt;name> | name, attr, value, dataobj | Fires for ALL attribute changes on the named dataobject.  Passes the same args as <code>LibDataBroker_AttributeChanged</code> |
+|_. LibDataBroker_AttributeChanged_&lt;name>_&lt;attr> | name, attr, value, dataobj | Fires for changes to the named attribute on the named dataobject.  Passes the same args as <code>LibDataBroker_AttributeChanged</code> |
+|_. LibDataBroker_AttributeChanged__&lt;attr> | name, attr, value, dataobj | Fires for changes to the named attribute across ALL dataobjects.  Passes the same args as <code>LibDataBroker_AttributeChanged</code> |
+
+h4. Example
+
+This code will register the "all changes" callback and print to the chat frame any time an attribute is changed on any dataobject.
+
+<pre>
+local function mycallback(event, name, key, value, dataobj)
+	ChatFrame1:AddMessage("LDB: "..name.. ".".. key.. " was changed to ".. tostring(value))
+end
+LibStub:GetLibrary("LibDataBroker-1.1").RegisterCallback("MyAnonCallback", "LibDataBroker_AttributeChanged", mycallback)
+</pre>
+
+h3. Other API
+
+LDB also provides a few basic functions for accessing dataobjects.
+
+|_. Function |_. Description |
+|_. ldb:GetDataObjectByName(dataobjectname) | Retrieve a dataobject |
+|_. ldb:GetNameByDataObject(dataobject) | Lookup a dataobject's name |
+|_. ldb.DataObjectIterator() | Iter over all registered dataobjects.  Works like <code>pairs</code><br/><pre>for name,dataobj in ldb.DataObjectIterator() do ...</pre> |
+
 h2. Data Specifications
 
 Provided below are two suggested data specs.
@@ -101,8 +155,8 @@ h2. Addons using LDB
 
 h3. Data Display addons
 
-* "Fortress":http://www.wowace.com/forums/index.php?topic=14158.0 (Unreleased)
-* "StatBlockCore":http://www.wowace.com/forums/index.php?topic=14160.0 (Unreleased)
+* Fortress (Unreleased)
+* StatBlockCore (Unreleased)
 * tekBlocks (Unreleased)
 
 </div>
