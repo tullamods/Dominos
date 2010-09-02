@@ -1,0 +1,10 @@
+## Interface: 30300
+## Title: Dominos XP
+## Title-zhCN: |cFF0099FF[Dominos]|r 经验条
+## Notes: A movable experience/reputation bar
+## Author: Tuller
+## Dependencies: Dominos
+## OptionalDeps: LibSharedMedia-3.0
+embeds.xml
+localization.xml
+xp.lua
