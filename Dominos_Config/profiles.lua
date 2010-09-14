@@ -118,29 +118,30 @@ local function Panel_CreatePopupDialog(panel)
 		button2 = CANCEL,
 		hasEditBox = 1,
 		maxLetters = 24,
-		OnAccept = function()
-			local text = _G[this:GetParent():GetName()..'EditBox']:GetText()
+		OnAccept = function(self)
+			local text = _G[self:GetName()..'EditBox']:GetText()
 			if text ~= '' then
 				Dominos:SaveProfile(text)
 				panel:UpdateList()
 				panel:Highlight(text)
 			end
 		end,
-		EditBoxOnEnterPressed = function()
-			local text = _G[this:GetParent():GetName()..'EditBox']:GetText()
+		EditBoxOnEnterPressed = function(self)
+			local text = self:GetText()
 			if text ~= '' then
 				Dominos:SaveProfile(text)
 				panel:UpdateList()
 				panel:Highlight(text)
 			end
+			self:GetParent():Hide()
 		end,
-		OnShow = function()
-			_G[this:GetName()..'EditBox']:SetFocus()
-			_G[this:GetName()..'EditBox']:SetText(UnitName('player'))
-			_G[this:GetName()..'EditBox']:HighlightText()
+		OnShow = function(self)
+			_G[self:GetName()..'EditBox']:SetFocus()
+			_G[self:GetName()..'EditBox']:SetText(UnitName('player'))
+			_G[self:GetName()..'EditBox']:HighlightText()
 		end,
-		OnHide = function()
-			_G[this:GetName()..'EditBox']:SetText('')
+		OnHide = function(self)
+			_G[self:GetName()..'EditBox']:SetText('')
 		end,
 		timeout = 0, exclusive = 1, hideOnEscape = 1
 	}
