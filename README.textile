@@ -1,7 +1,3 @@
-h1. Have a question? Check the "Dominos wiki":http://code.google.com/p/tullamods/wiki/Dominos first!
-
-h2. Dominos source is now hosted on "GitHub":http://github.com/Tuller/Dominos/tree/cata
-
 h3. Dominos is an action bar addon intended to do the following:
 
 * Reuse as much standard blizzard action button code as possible.
