@@ -44,4 +44,5 @@ h3. You can use the following to add extra functionality:
 * "Inline Aura":http://wow.curse.com/downloads/wow-addons/details/inline-aura.aspx - Adds buff and debuff highlighting to action buttons
 
 h3. "You can find help in the wiki":http://code.google.com/p/tullamods/wiki/Dominos
+
 h3. "..And source code on GitHub":http://github.com/Tuller/Dominos
