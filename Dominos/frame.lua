@@ -202,7 +202,9 @@ function Frame:SetPadding(w, h)
 end
 
 function Frame:GetPadding()
-	return self.sets.padW or 0, self.sets.padH or self.sets.padW or 0
+	local w = self.sets.padW or 0
+	local h = self.sets.padH or w
+	return w, h
 end
 
 --the wackiness here is for backward compaitbility reasons, since I did not implement true defaults
