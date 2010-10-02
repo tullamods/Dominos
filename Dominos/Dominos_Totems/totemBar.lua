@@ -155,7 +155,7 @@ function TotemBar:LoadButtons()
 
 	--add totem actions
 	if self:ShowingTotems() then
-		for _, totemID in ipairs(TOTEM_PRIORITIES) do
+		for _, totemID in ipairs(SHAMAN_TOTEM_PRIORITIES) do
 			tinsert(buttons, self:GetTotemButton(totemID))
 		end
 	end
