@@ -83,11 +83,15 @@ local function Create(id)
 		b.buttonType = 'ACTIONBUTTON'
 		return b
 	elseif id <= 24 then
+		return CreateFrame('CheckButton', 'DominosActionButton' .. (id-24), nil, 'ActionBarButtonTemplate')		
+--[[
+	elseif id <= 24 then
 		local b = _G['BonusActionButton' .. (id - 12)]
 		b:UnregisterEvent('UPDATE_BONUS_ACTIONBAR')
 		b.isBonus = nil
 		b.buttonType = nil --this is done because blizzard displays action bar 1 bindings on the bonus bar, which is incorrect in the case of Dominos
 		return b
+--]]
 	elseif id <= 36 then
 		return _G['MultiBarRightButton' .. (id-24)]
 	elseif id <= 48 then
@@ -97,7 +101,7 @@ local function Create(id)
 	elseif id <= 72 then
 		return _G['MultiBarBottomLeftButton' .. (id-60)]
 	end
-	return CreateFrame('CheckButton', 'DominosActionButton' .. (id-72), nil, 'ActionBarButtonTemplate')
+	return CreateFrame('CheckButton', 'DominosActionButton' .. (id-60), nil, 'ActionBarButtonTemplate')
 end
 
 function ActionButton:Create(id)
