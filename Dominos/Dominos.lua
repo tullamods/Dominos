@@ -927,6 +927,8 @@ end
 --linked opacity
 function Dominos:SetLinkedOpacity(enable)
 	self.db.profile.linkedOpacity = enable or false
+	self.Frame:ForAll('UpdateWatched')
+	self.Frame:ForAll('UpdateAlpha')
 end
 
 function Dominos:IsLinkedOpacityEnabled()

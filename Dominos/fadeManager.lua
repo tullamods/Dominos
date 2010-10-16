@@ -21,9 +21,9 @@ local function timer_Create()
 	local a = updater:CreateAnimation('Animation'); a:SetOrder(1)
 	timer.updater = updater
 
-	timer.Start = function(self, duration)
+	timer.Start = function(self)
 		self:Stop()
-		a:SetDuration(duration)
+		a:SetDuration(self.duration)
 		updater:Play()
 	end
 
@@ -33,74 +33,46 @@ local function timer_Create()
 		end
 	end
 
+	timer.IsPlaying = function(self)
+		return updater:IsPlaying()
+	end
+
 	return timer
 end
 
-local function fader_Create(parent)
-	local fadeGroup = parent:CreateAnimationGroup()
-	fadeGroup:SetLooping('NONE')
-	fadeGroup:SetScript('OnFinished', function(self) parent:SetAlpha(self.targetAlpha) end)
+--[[ Code to watch frames as they're moused over ]]--
 
-	local fade = fadeGroup:CreateAnimation('Alpha')
-	fade:SetSmoothing('NONE')
-	fade:SetOrder(1)
+local MouseOverWatcher = timer_Create()
+local watched = {}
 
-	return function(targetAlpha, duration)
-		if not fadeGroup:IsPlaying() then
-			fadeGroup:Stop()
-			fadeGroup.targetAlpha = targetAlpha
-			fade:SetChange(targetAlpha - parent:GetAlpha())
-			fade:SetDuration(duration)
-			fadeGroup:Play()
+MouseOverWatcher.duration = 0.15
+
+function MouseOverWatcher:OnFinished()
+	for f in pairs(watched) do
+		if f:IsFocus() then
+			f.header:SetAttribute('state-mousealpha', 1)
+		else
+			f.header:SetAttribute('state-mousealpha', nil)
 		end
+	end
+
+	if next(watched) then
+		self:Start()
 	end
 end
 
+function MouseOverWatcher:Add(f)
+	watched[f] = true
+	f.header:SetAttribute('state-mousealpha', f:IsFocus() and 1 or nil)
 
---[[ Watch Frames For Fade Changing ]]--
-
-local FadeWatcher = timer_Create()
-do
-	local watchedFrames = {}
-	local DELAY, FADE_TIME = 0.12, 0.1
-
-	local Fade = setmetatable({}, {__index = function(t, k)
-		local fade = fader_Create(k)
-		t[k] = fade
-		return fade
-	end})
-
-	function FadeWatcher:OnFinished()
-		for f in pairs(watchedFrames) do
-			local expectedAlpha, currentAlpha = f:GetExpectedAlpha(), f:GetAlpha()
-			if abs(expectedAlpha - currentAlpha) > 0.01 then
-				Fade[f](expectedAlpha, 0.1)
-			end
-		end
-
-		if next(watchedFrames) then
-			self:Start(DELAY)
-		end
-	end
-
-	function FadeWatcher:Add(f)
-		watchedFrames[f] = true
-		self:Start(DELAY)
-	end
-
-	function FadeWatcher:Remove(f)
-		watchedFrames[f] = nil
+	if not self:IsPlaying() then
+		self:Start()
 	end
 end
 
---[[ Registers Frames for Fading ]]--
+function MouseOverWatcher:Remove(f)
+	watched[f] = nil
+	f.header:SetAttribute('state-mousealpha', nil)
+end
 
-Dominos.FadeManager = {
-	Add = function(self, f)
-		FadeWatcher:Add(f)
-	end,
-
-	Remove = function(self, f)
-		FadeWatcher:Remove(f)
-	end
-}
+Dominos.MouseOverWatcher = MouseOverWatcher

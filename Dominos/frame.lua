@@ -61,18 +61,21 @@ function Frame:Create(id)
 	f.header:SetAttribute('_onstate-display', [[
 		local newstate = newstate or 'show'
 		if newstate == 'hide' then
-			self:SetAttribute('frame-alpha', nil)
+			self:SetAttribute('state-alpha', nil)
 			self:Hide()
 		else
 			local stateAlpha = tonumber(newstate)
 			if stateAlpha then
-				self:SetAttribute('frame-alpha', stateAlpha/100)
+				self:SetAttribute('state-alpha', stateAlpha/100)
 			else
-				self:SetAttribute('frame-alpha', nil)
+				self:SetAttribute('state-alpha', nil)
 			end
 			self:Show()
 		end
 	]])
+	f.header:SetAttribute('_onstate-alpha', [[ self:CallMethod('StartFade') ]])
+	f.header:SetAttribute('_onstate-fadeAlpha', [[ self:CallMethod('StartFade') ]])
+	f.header.StartFade = function() f:StartFade() end
 	f.header:SetAllPoints(f)
 
 	f.drag = Dominos.DragFrame:New(f)
@@ -132,7 +135,7 @@ function Frame:LoadSettings(defaults)
 
 	self:UpdateShowStates()
 	self:UpdateAlpha()
-	self:UpdateFader()
+	self:UpdateWatched()
 end
 
 
@@ -337,8 +340,7 @@ function Frame:SetFadeMultiplier(alpha)
 	else
 		self.sets.fadeAlpha = alpha
 	end
-	self:UpdateAlpha()
-	self:UpdateFader()
+	self:UpdateWatched()
 end
 
 function Frame:GetFadeMultiplier()
@@ -350,6 +352,9 @@ end
 --fadedPercentage is what modifier we use on normal opacity
 function Frame:UpdateAlpha()
 	self:SetAlpha(self:GetExpectedAlpha())
+	if Dominos:IsLinkedOpacityEnabled() then
+		self:ForDocked('UpdateAlpha')
+	end
 end
 
 function Frame:GetExpectedAlpha()
@@ -360,17 +365,17 @@ function Frame:GetExpectedAlpha()
 		end
 	end
 
-	local stateAlpha = self.header:GetAttribute('frame-alpha')
+	local mouseAlpha = self.header:GetAttribute('state-mousealpha')
+	if mouseAlpha then
+		return mouseAlpha
+	end
+
+	local stateAlpha = self.header:GetAttribute('state-alpha')
 	if stateAlpha then
 		return stateAlpha
 	end
 
-	local alpha = self:GetFrameAlpha()
-	local fadeMultiplier = self:GetFadeMultiplier()
-	if fadeMultiplier >= 1 or self:IsFocus() then
-		return alpha
-	end
-	return alpha * fadeMultiplier
+	return self:GetFrameAlpha() * self:GetFadeMultiplier()
 end
 
 local function isChildFocus(...)
@@ -390,20 +395,11 @@ local function isChildFocus(...)
 end
 
 --returns all frames docked to the given frame
-if Frame.IsMouseOver then
-	function Frame:IsFocus()
-		if self:IsMouseOver(1, -1, -1, 1) then
-			return (GetMouseFocus() == _G['WorldFrame']) or isChildFocus(self:GetChildren())
-		end
-		return Dominos:IsLinkedOpacityEnabled() and self:IsDockedFocus()
+function Frame:IsFocus()
+	if self:IsMouseOver(1, -1, -1, 1) then
+		return (GetMouseFocus() == _G['WorldFrame']) or isChildFocus(self:GetChildren())
 	end
-else
-	function Frame:IsFocus()
-		if MouseIsOver(self, 1, -1, -1, 1) then
-			return (GetMouseFocus() == _G['WorldFrame']) or isChildFocus(self:GetChildren())
-		end
-		return Dominos:IsLinkedOpacityEnabled() and self:IsDockedFocus()
-	end
+	return Dominos:IsLinkedOpacityEnabled() and self:IsDockedFocus()
 end
 
 function Frame:IsDockedFocus()
@@ -418,19 +414,49 @@ function Frame:IsDockedFocus()
 	return false
 end
 
+do
+	local function fader_Create(parent)
+		local fadeGroup = parent:CreateAnimationGroup()
+		fadeGroup:SetLooping('NONE')
+		fadeGroup:SetScript('OnFinished', function(self) parent:SetAlpha(self.targetAlpha) end)
+
+		local fade = fadeGroup:CreateAnimation('Alpha'); fade:SetOrder(1)
+
+		return function(targetAlpha, duration)
+			if fadeGroup:IsPlaying() then
+				fadeGroup:Pause()
+			end
+			fadeGroup.targetAlpha = targetAlpha
+			fade:SetChange(targetAlpha - parent:GetAlpha())
+			fade:SetDuration(duration)
+			fadeGroup:Play()
+		end
+	end
+
+	function Frame:StartFade()
+		local newAlpha = self:GetExpectedAlpha()
+		self.fade = self.fade or fader_Create(self)
+		self.fade(newAlpha, 0.1)
+
+		if Dominos:IsLinkedOpacityEnabled() then
+			self:ForDocked('StartFade')
+		end
+	end
+end
+
 --[[ Visibility ]]--
 
 function Frame:ShowFrame()
 	self.sets.hidden = nil
 	self:Show()
-	self:UpdateFader()
+	self:UpdateWatched()
 	self.drag:UpdateColor()
 end
 
 function Frame:HideFrame()
 	self.sets.hidden = true
 	self:Hide()
-	self:UpdateFader()
+	self:UpdateWatched()
 	self.drag:UpdateColor()
 end
 
@@ -566,7 +592,8 @@ function Frame:ClearAnchor()
 	end
 
 	self.sets.anchor = nil
-	self:UpdateFader()
+	self:UpdateWatched()
+	self:UpdateAlpha()
 end
 
 function Frame:SetAnchor(anchor, point)
@@ -588,7 +615,8 @@ function Frame:SetAnchor(anchor, point)
 	end
 
 	self.sets.anchor = anchor.id .. point
-	self:UpdateFader()
+	self:UpdateWatched()
+	self:UpdateAlpha()
 end
 
 function Frame:Stick()
@@ -732,15 +760,17 @@ function Frame:GetTooltipText()
 	return self.tooltipText
 end
 
+--[[ Mouseover Watching ]]--
 
---[[ Utility ]]--
-
---run the fade onupdate checker if only if there are mouseover fs to check
-function Frame:UpdateFader()
-	if self.sets.hidden then
-		FadeManager:Remove(self)
+function Frame:UpdateWatched()
+	if not self:FrameIsShown() then
+		Dominos.MouseOverWatcher:Remove(self)
+	elseif Dominos:IsLinkedOpacityEnabled() and self:GetAnchor() then
+		Dominos.MouseOverWatcher:Remove(self)
+	elseif self:GetFadeMultiplier() == 1 then
+		Dominos.MouseOverWatcher:Remove(self)
 	else
-		FadeManager:Add(self)
+		Dominos.MouseOverWatcher:Add(self)
 	end
 end
 
@@ -760,6 +790,14 @@ function Frame:ForAll(method, ...)
 		local action = f[method]
 		if action then
 			action(f, ...)
+		end
+	end
+end
+
+function Frame:ForDocked(method, ...)
+	if self.docked then
+		for _, f in pairs(self.docked) do
+			f[method](f, ...)
 		end
 	end
 end
