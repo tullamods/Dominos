@@ -45,7 +45,7 @@ function Frame:Create(id)
 		end
 	]])
 	f.header:SetAttribute('_onstate-alpha', [[ self:CallMethod('Fade') ]])
-	f.header:SetAttribute('_onstate-mouseover', [[ self:CallMethod('Fade') ]])
+--	f.header:SetAttribute('_onstate-mouseover', [[ self:CallMethod('Fade') ]])
 	f.header.Fade = function() f:Fade() end
 	f.header:SetAllPoints(f)
 
@@ -331,7 +331,7 @@ function Frame:GetExpectedAlpha()
 	end
 
 	--if the frame is moused over, then return the frame's normal opacity
-	if self.header:GetAttribute('state-mouseover') then
+	if self.focused then
 		return self:GetFrameAlpha()
 	end
 
@@ -382,36 +382,10 @@ end
 
 --[[ Fading ]]--
 
-local function fader_Create(parent)
-	local fadeGroup = parent:CreateAnimationGroup()
-	fadeGroup:SetLooping('NONE')
-	fadeGroup:SetScript('OnFinished', function(self) parent:SetAlpha(self.alpha) end)
-
-	local fade = fadeGroup:CreateAnimation('Alpha'); fade:SetOrder(1)
-
-	return function(alpha, duration)
-		if fadeGroup:IsPlaying() then 
-			fadeGroup:Pause() 
-		end
-
-		fadeGroup.alpha = alpha
-		fade:SetChange(alpha - parent:GetAlpha())
-		fade:SetDuration(duration)
-		fadeGroup:Play()
-	end
-end
-
 --fades the frame from the current opacity setting
 --to the expected settin
 function Frame:Fade()
-	local alpha = self:GetExpectedAlpha()
-	local fade = self.fade
-	if not fade then
-		fade = fader_Create(self)
-		self.fade = fade
-	end
-	fade(alpha, 0.1)
-
+	Dominos.Fader:Fade(self, 0.1, self:GetAlpha(), self:GetExpectedAlpha())
 	if Dominos:IsLinkedOpacityEnabled() then
 		self:ForDocked('Fade')
 	end
@@ -473,6 +447,7 @@ function Frame:UpdateShowStates()
 		self.header:SetAttribute('state-display', SecureCmdOptionParse(showstates))
 	else
 		UnregisterStateDriver(self.header, 'display')
+		self.header:SetAttribute('state-alpha', nil)
 		self.header:Show()
 	end
 end
