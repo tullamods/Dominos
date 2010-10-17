@@ -61,71 +61,30 @@ function MouseOverWatcher:OnFinished()
 			end
 		end
 	end
-	
-	if next(watched) then 
-		self:Start() 
+
+	if next(watched) then
+		self:Start()
 	end
 end
 
 function MouseOverWatcher:Add(f)
+	if watched[f] then return end
+
 	watched[f] = true
 	f.focused = f:IsFocus() and true or nil
-	f:Fade()
-	
+	f:UpdateAlpha()
+
 	if not self:IsPlaying() then
 		self:Start()
 	end
 end
 
 function MouseOverWatcher:Remove(f)
+	if not watched[f] then return end
+
 	watched[f] = nil
 	f.focused = nil
-	f:Fade()
+	f:UpdateAlpha()
 end
 
 Dominos.MouseOverWatcher = MouseOverWatcher
-
---[[ auto fading ]]--
-
---[[ Handle Fading ]]--
-
-local Fader = CreateFrame('Frame'); Fader:Hide()
-local fadingFrames = {}
-
-Fader:SetScript('OnUpdate', function(self, elapsed)
-	if not next(fadingFrames) then
-		self:Hide()
-	end
-
-	for frame, fadeInfo in pairs(fadingFrames) do
-		fadeInfo.fadeTimer = (fadeInfo.fadeTimer or 0) + elapsed
-
-		if fadeInfo.fadeTimer < fadeInfo.timeToFade then
-			local pct = fadeInfo.fadeTimer / fadeInfo.timeToFade
-			local delta = fadeInfo.endAlpha - fadeInfo.startAlpha
-
-			frame:SetAlpha(fadeInfo.startAlpha + pct*delta)
-		else
-			frame:SetAlpha(fadeInfo.endAlpha)
-			fadingFrames[frame] = nil
-		end
-	end
-end)
-
-function Fader:Fade(frame, timeToFade, startAlpha, endAlpha)
-	frame:SetAlpha(startAlpha)
-
-	if not fadingFrames[frame] then
-		local fadeInfo = frame.fadeInfo or {}
-		fadeInfo.timeToFade = timeToFade
-		fadeInfo.startAlpha = startAlpha
-		fadeInfo.endAlpha = endAlpha
-		fadeInfo.fadeTimer = 0
-		frame.fadeInfo = fadeInfo
-		
-		fadingFrames[frame] = fadeInfo
-		self:Show()
-	end
-end
-
-Dominos.Fader = Fader

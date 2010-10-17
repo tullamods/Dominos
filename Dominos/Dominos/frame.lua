@@ -32,21 +32,22 @@ function Frame:Create(id)
 	f.header:SetAttribute('_onstate-display', [[
 		local newstate = newstate or 'show'
 		if newstate == 'hide' then
-			self:SetAttribute('state-alpha', nil)
+			if self:GetAttribute('state-alpha') then
+				self:SetAttribute('state-alpha', nil)
+			end
 			self:Hide()
 		else
 			local stateAlpha = tonumber(newstate)
-			if stateAlpha then
-				self:SetAttribute('state-alpha', stateAlpha/100)
-			else
-				self:SetAttribute('state-alpha', nil)
+			if self:GetAttribute('state-alpha') ~= stateAlpha then
+				self:SetAttribute('state-alpha', tonumber(newstate))
 			end
 			self:Show()
 		end
 	]])
 	f.header:SetAttribute('_onstate-alpha', [[ self:CallMethod('Fade') ]])
---	f.header:SetAttribute('_onstate-mouseover', [[ self:CallMethod('Fade') ]])
-	f.header.Fade = function() f:Fade() end
+	f.header.Fade = function()
+		f:Fade()
+	end
 	f.header:SetAllPoints(f)
 
 	f.drag = Dominos.DragFrame:New(f)
@@ -105,8 +106,6 @@ function Frame:LoadSettings(defaults)
 	end
 
 	self:UpdateShowStates()
-	self:UpdateWatched()
-	self:UpdateAlpha()
 end
 
 --[[ Layout ]]--
@@ -246,10 +245,11 @@ function Frame:Layout()
 	self:SetSize(max(width, 8), max(height, 8))
 end
 
+
 --[[ Scaling ]]--
 
 function Frame:GetScaledCoords(scale)
-	local ratio = self:GetScale() / scale
+	local ratio = self:GetFrameScale() / scale
 	return (self:GetLeft() or 0) * ratio, (self:GetTop() or 0) * ratio
 end
 
@@ -275,13 +275,14 @@ function Frame:SetFrameScale(scale, scaleAnchored)
 end
 
 function Frame:Rescale()
-	self:SetScale(self:GetScale())
-	self.drag:SetScale(self:GetScale())
+	self:SetScale(self:GetFrameScale())
+	self.drag:SetScale(self:GetFrameScale())
 end
 
-function Frame:GetScale()
+function Frame:GetFrameScale()
 	return self.sets.scale or 1
 end
+
 
 --[[ Opacity ]]--
 
@@ -298,7 +299,7 @@ function Frame:GetFrameAlpha()
 	return self.sets.alpha or 1
 end
 
---faded opacity (mouse not over the f)
+--faded opacity (mouse not over the frame)
 function Frame:SetFadeMultiplier(alpha)
 	local alpha = alpha or 1
 	if alpha == 1 then
@@ -307,25 +308,27 @@ function Frame:SetFadeMultiplier(alpha)
 		self.sets.fadeAlpha = alpha
 	end
 	self:UpdateWatched()
+	self:UpdateAlpha()
 end
 
 function Frame:GetFadeMultiplier()
 	return self.sets.fadeAlpha or 1
 end
 
-
 function Frame:UpdateAlpha()
 	self:SetAlpha(self:GetExpectedAlpha())
+	if Dominos:IsLinkedOpacityEnabled() then
+		self:ForDocked('UpdateAlpha')
+	end
 end
 
---returns the opacity value we expect the frame to be at
---at this current time
+--returns the opacity value we expect the frame to be at in its current state
 function Frame:GetExpectedAlpha()
 	--if this is a docked frame and linked opacity is enabled
 	--then return the expected opacity of the parent frame
 	if Dominos:IsLinkedOpacityEnabled() then
 		local anchor = (self:GetAnchor())
-		if anchor then
+		if anchor and anchor:FrameIsShown() then
 			return anchor:GetExpectedAlpha()
 		end
 	end
@@ -338,11 +341,14 @@ function Frame:GetExpectedAlpha()
 	--if there's a statealpha value for the frame, then use it
 	local stateAlpha = self.header:GetAttribute('state-alpha')
 	if stateAlpha then
-		return stateAlpha
+		return stateAlpha / 100
 	end
 
 	return self:GetFrameAlpha() * self:GetFadeMultiplier()
 end
+
+
+--[[ Mouseover Checking ]]--
 
 local function isChildFocus(...)
 	local focus = GetMouseFocus()
@@ -380,12 +386,49 @@ function Frame:IsDockedFocus()
 	return false
 end
 
+
 --[[ Fading ]]--
 
+local function fader_Create(parent)
+	local fadeGroup = parent:CreateAnimationGroup()
+	fadeGroup:SetLooping('NONE')
+	fadeGroup:SetScript('OnFinished', function(self) parent:SetAlpha(self.targetAlpha) end)
+
+	local fade = fadeGroup:CreateAnimation('Alpha')
+	fade:SetSmoothing('NONE')
+	fade:SetOrder(1)
+
+	return function(targetAlpha, duration)
+		if fadeGroup:IsPlaying() then
+			fadeGroup:Pause()
+			parent:SetAlpha(parent:GetAlpha() + (fade:GetChange() * fade:GetProgress()))
+		end
+		fadeGroup.targetAlpha = targetAlpha
+		fade:SetChange(targetAlpha - parent:GetAlpha())
+		fade:SetDuration(duration)
+		fadeGroup:Play()
+	end
+end
+
+local Fade = setmetatable({}, {__index = function(t, parent)
+	local fade = fader_Create(parent)
+	t[parent] = fade
+	return fade
+end})
+
+
 --fades the frame from the current opacity setting
---to the expected settin
+--to the expected setting
 function Frame:Fade()
-	Dominos.Fader:Fade(self, 0.1, self:GetAlpha(), self:GetExpectedAlpha())
+	if floor(abs(self:GetExpectedAlpha()*100 - self:GetAlpha()*100)) == 0 then
+		return
+	end
+
+	if not self:FrameIsShown() then
+		return
+	end
+
+	Fade[self](self:GetExpectedAlpha(), 0.1)
 	if Dominos:IsLinkedOpacityEnabled() then
 		self:ForDocked('Fade')
 	end
@@ -396,15 +439,25 @@ end
 function Frame:ShowFrame()
 	self.sets.hidden = nil
 	self:Show()
-	self:UpdateWatched()
 	self.drag:UpdateColor()
+	self:UpdateWatched()
+	self:UpdateAlpha()
+
+	if Dominos:IsLinkedOpacityEnabled() then
+		self:ForDocked('ShowFrame')
+	end
 end
 
 function Frame:HideFrame()
 	self.sets.hidden = true
 	self:Hide()
-	self:UpdateWatched()
 	self.drag:UpdateColor()
+	self:UpdateWatched()
+	self:UpdateAlpha()
+
+	if Dominos:IsLinkedOpacityEnabled() then
+		self:ForDocked('HideFrame')
+	end
 end
 
 function Frame:ToggleFrame()
@@ -444,11 +497,11 @@ function Frame:UpdateShowStates()
 	local showstates = self:GetShowStates()
 	if showstates then
 		RegisterStateDriver(self.header, 'display', showstates)
-		self.header:SetAttribute('state-display', SecureCmdOptionParse(showstates))
 	else
 		UnregisterStateDriver(self.header, 'display')
-		self.header:SetAttribute('state-alpha', nil)
-		self.header:Show()
+		if self.header:GetAttribute('state-display') then
+			self.header:SetAttribute('state-display', nil)
+		end
 	end
 end
 
@@ -522,48 +575,6 @@ function Frame:StickToEdge()
 	end
 end
 
-function Frame:ClearAnchor()
-	local anchor, point = self:GetAnchor()
-	if anchor and anchor.docked then
-		for i,f in pairs(anchor.docked) do
-			if f == self then
-				tremove(anchor.docked, i)
-				break
-			end
-		end
-		if not next(anchor.docked) then
-			anchor.docked = nil
-		end
-	end
-
-	self.sets.anchor = nil
-	self:UpdateWatched()
-	self:UpdateAlpha()
-end
-
-function Frame:SetAnchor(anchor, point)
-	self:ClearAnchor()
-
-	if anchor.docked then
-		local found = false
-		for i,f in pairs(anchor.docked) do
-			if f == self then
-				found = i
-				break
-			end
-		end
-		if not found then
-			tinsert(anchor.docked, self)
-		end
-	else
-		anchor.docked = {self}
-	end
-
-	self.sets.anchor = anchor.id .. point
-	self:UpdateWatched()
-	self:UpdateAlpha()
-end
-
 function Frame:Stick()
 	self:ClearAnchor()
 
@@ -601,6 +612,48 @@ function Frame:Reanchor()
 		self:SetAnchor(f, point)
 	end
 	self.drag:UpdateColor()
+end
+
+function Frame:SetAnchor(anchor, point)
+	self:ClearAnchor()
+
+	if anchor.docked then
+		local found = false
+		for i,f in pairs(anchor.docked) do
+			if f == self then
+				found = i
+				break
+			end
+		end
+		if not found then
+			tinsert(anchor.docked, self)
+		end
+	else
+		anchor.docked = {self}
+	end
+
+	self.sets.anchor = anchor.id .. point
+	self:UpdateWatched()
+	self:UpdateAlpha()
+end
+
+function Frame:ClearAnchor()
+	local anchor, point = self:GetAnchor()
+	if anchor and anchor.docked then
+		for i,f in pairs(anchor.docked) do
+			if f == self then
+				tremove(anchor.docked, i)
+				break
+			end
+		end
+		if not next(anchor.docked) then
+			anchor.docked = nil
+		end
+	end
+
+	self.sets.anchor = nil
+	self:UpdateWatched()
+	self:UpdateAlpha()
 end
 
 function Frame:GetAnchor()
@@ -706,14 +759,10 @@ end
 --[[ Mouseover Watching ]]--
 
 function Frame:UpdateWatched()
-	if not self:FrameIsShown() then
-		Dominos.MouseOverWatcher:Remove(self)
-	elseif Dominos:IsLinkedOpacityEnabled() and self:GetAnchor() then
-		Dominos.MouseOverWatcher:Remove(self)
-	elseif self:GetFadeMultiplier() == 1 then
-		Dominos.MouseOverWatcher:Remove(self)
-	else
+	if self:FrameIsShown() and self:GetFadeMultiplier() < 1 and not(Dominos:IsLinkedOpacityEnabled() and self:GetAnchor()) then
 		Dominos.MouseOverWatcher:Add(self)
+	else
+		Dominos.MouseOverWatcher:Remove(self)
 	end
 end
 
@@ -739,13 +788,16 @@ end
 function Frame:ForDocked(method, ...)
 	if self.docked then
 		for _, f in pairs(self.docked) do
-			f[method](f, ...)
+			local action = f[method]
+			if action then
+				action(f, ...)
+			end
 		end
 	end
 end
 
---takes a fID, and performs the specified action on that f
---this adds two special IDs, 'all' for all fs and number-number for a range of IDs
+--takes a frameId, and performs the specified action on that frame
+--this adds two special IDs, 'all' for all frames and '<number>-<number>' for a range of IDs
 function Frame:ForFrame(id, method, ...)
 	if id == 'all' then
 		self:ForAll(method, ...)

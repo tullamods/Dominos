@@ -49,7 +49,7 @@ end
 function Drag:OnEnter()
 	GameTooltip:SetOwner(self, 'ANCHOR_BOTTOMLEFT')
 	GameTooltip:SetText(format('Bar: %s', self:GetText():gsub('^%l', string.upper)), 1, 1, 1)
-	
+
 	local tooltipText = self.owner:GetTooltipText()
 	if tooltipText then
 		GameTooltip:AddLine(tooltipText .. '\n', nil, nil, nil, nil, 1)
@@ -66,6 +66,16 @@ function Drag:OnEnter()
 	end
 
 	GameTooltip:AddLine(format(L.SetAlpha, ceil(self.owner:GetFrameAlpha()*100)))
+
+	if self.owner.docked then
+		for i, k in pairs(self.owner.docked) do
+			GameTooltip:AddLine(k.id, 1, 1, 1)
+		end
+	end
+	if self.owner:GetAnchor() then
+		GameTooltip:AddLine('Anchored to: ' .. self.owner:GetAnchor().id, 0, 0, 1)
+	end
+		
 	GameTooltip:Show()
 end
 
