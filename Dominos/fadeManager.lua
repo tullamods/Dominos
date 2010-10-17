@@ -49,27 +49,29 @@ MouseOverWatcher.duration = 0.15
 
 function MouseOverWatcher:OnFinished()
 	for f in pairs(watched) do
-		local isFocus = f:IsFocus()
-		if f.header:GetAttribute('state-mouseover') then
-			if not isFocus then
-				f.header:SetAttribute('state-mouseover', isFocus)
+		if f:IsFocus() then
+			if not f.focused then
+				f.focused = true
+				f:Fade()
 			end
 		else
-			if isFocus then
-				f.header:SetAttribute('state-mouseover', isFocus)
+			if f.focused then
+				f.focused = nil
+				f:Fade()
 			end
 		end
 	end
-
-	if next(watched) then
-		self:Start()
+	
+	if next(watched) then 
+		self:Start() 
 	end
 end
 
 function MouseOverWatcher:Add(f)
 	watched[f] = true
-	f.header:SetAttribute('state-mouseover', f:IsFocus() and true or nil)
-
+	f.focused = f:IsFocus() and true or nil
+	f:Fade()
+	
 	if not self:IsPlaying() then
 		self:Start()
 	end
@@ -77,7 +79,53 @@ end
 
 function MouseOverWatcher:Remove(f)
 	watched[f] = nil
-	f.header:SetAttribute('state-mouseover', nil)
+	f.focused = nil
+	f:Fade()
 end
 
 Dominos.MouseOverWatcher = MouseOverWatcher
+
+--[[ auto fading ]]--
+
+--[[ Handle Fading ]]--
+
+local Fader = CreateFrame('Frame'); Fader:Hide()
+local fadingFrames = {}
+
+Fader:SetScript('OnUpdate', function(self, elapsed)
+	if not next(fadingFrames) then
+		self:Hide()
+	end
+
+	for frame, fadeInfo in pairs(fadingFrames) do
+		fadeInfo.fadeTimer = (fadeInfo.fadeTimer or 0) + elapsed
+
+		if fadeInfo.fadeTimer < fadeInfo.timeToFade then
+			local pct = fadeInfo.fadeTimer / fadeInfo.timeToFade
+			local delta = fadeInfo.endAlpha - fadeInfo.startAlpha
+
+			frame:SetAlpha(fadeInfo.startAlpha + pct*delta)
+		else
+			frame:SetAlpha(fadeInfo.endAlpha)
+			fadingFrames[frame] = nil
+		end
+	end
+end)
+
+function Fader:Fade(frame, timeToFade, startAlpha, endAlpha)
+	frame:SetAlpha(startAlpha)
+
+	if not fadingFrames[frame] then
+		local fadeInfo = frame.fadeInfo or {}
+		fadeInfo.timeToFade = timeToFade
+		fadeInfo.startAlpha = startAlpha
+		fadeInfo.endAlpha = endAlpha
+		fadeInfo.fadeTimer = 0
+		frame.fadeInfo = fadeInfo
+		
+		fadingFrames[frame] = fadeInfo
+		self:Show()
+	end
+end
+
+Dominos.Fader = Fader
