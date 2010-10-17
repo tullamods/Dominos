@@ -3,35 +3,6 @@
 		A dominos frame, a generic container object
 --]]
 
---[[
-	Copyright (c) 2008-2009 Jason Greer
-	All rights reserved.
-
-	Redistribution and use in source and binary forms, with or without
-	modification, are permitted provided that the following conditions are met:
-
-		* Redistributions of source code must retain the above copyright notice,
-		  this list of conditions and the following disclaimer.
-		* Redistributions in binary form must reproduce the above copyright
-		  notice, this list of conditions and the following disclaimer in the
-		  documentation and/or other materials provided with the distribution.
-		* Neither the name of the author nor the names of its contributors may
-		  be used to endorse or promote products derived from this software
-		  without specific prior written permission.
-
-	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-	AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-	IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-	ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
-	LIABLE FORANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
-	CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
-	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
-	CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-	POSSIBILITY OF SUCH DAMAGE.
---]]
-
 local Frame = Dominos:CreateClass('Frame')
 Dominos.Frame = Frame
 
@@ -73,9 +44,9 @@ function Frame:Create(id)
 			self:Show()
 		end
 	]])
-	f.header:SetAttribute('_onstate-alpha', [[ self:CallMethod('StartFade') ]])
-	f.header:SetAttribute('_onstate-fadeAlpha', [[ self:CallMethod('StartFade') ]])
-	f.header.StartFade = function() f:StartFade() end
+	f.header:SetAttribute('_onstate-alpha', [[ self:CallMethod('Fade') ]])
+	f.header:SetAttribute('_onstate-mouseover', [[ self:CallMethod('Fade') ]])
+	f.header.Fade = function() f:Fade() end
 	f.header:SetAllPoints(f)
 
 	f.drag = Dominos.DragFrame:New(f)
@@ -96,7 +67,7 @@ function Frame:Free()
 	active[self.id] = nil
 
 	UnregisterStateDriver(self.header, 'display', 'show')
-	FadeManager:Remove(self)
+	Dominos.MouseOverWatcher:Remove(self)
 
 	for i in pairs(self.buttons) do
 		self:RemoveButton(i)
@@ -134,10 +105,9 @@ function Frame:LoadSettings(defaults)
 	end
 
 	self:UpdateShowStates()
-	self:UpdateAlpha()
 	self:UpdateWatched()
+	self:UpdateAlpha()
 end
-
 
 --[[ Layout ]]--
 
@@ -273,10 +243,8 @@ function Frame:Layout()
 		height = 30
 	end
 
-	self:SetWidth(max(width, 8))
-	self:SetHeight(max(height, 8))
+	self:SetSize(max(width, 8), max(height, 8))
 end
-
 
 --[[ Scaling ]]--
 
@@ -315,9 +283,7 @@ function Frame:GetScale()
 	return self.sets.scale or 1
 end
 
-
 --[[ Opacity ]]--
-
 
 function Frame:SetFrameAlpha(alpha)
 	if alpha == 1 then
@@ -347,17 +313,16 @@ function Frame:GetFadeMultiplier()
 	return self.sets.fadeAlpha or 1
 end
 
---returns fadedOpacity, fadePercentage
---fadedOpacity is what opacity the f will be at when faded
---fadedPercentage is what modifier we use on normal opacity
+
 function Frame:UpdateAlpha()
 	self:SetAlpha(self:GetExpectedAlpha())
-	if Dominos:IsLinkedOpacityEnabled() then
-		self:ForDocked('UpdateAlpha')
-	end
 end
 
+--returns the opacity value we expect the frame to be at
+--at this current time
 function Frame:GetExpectedAlpha()
+	--if this is a docked frame and linked opacity is enabled
+	--then return the expected opacity of the parent frame
 	if Dominos:IsLinkedOpacityEnabled() then
 		local anchor = (self:GetAnchor())
 		if anchor then
@@ -365,11 +330,12 @@ function Frame:GetExpectedAlpha()
 		end
 	end
 
-	local mouseAlpha = self.header:GetAttribute('state-mousealpha')
-	if mouseAlpha then
-		return mouseAlpha
+	--if the frame is moused over, then return the frame's normal opacity
+	if self.header:GetAttribute('state-mouseover') then
+		return self:GetFrameAlpha()
 	end
 
+	--if there's a statealpha value for the frame, then use it
 	local stateAlpha = self.header:GetAttribute('state-alpha')
 	if stateAlpha then
 		return stateAlpha
@@ -414,33 +380,40 @@ function Frame:IsDockedFocus()
 	return false
 end
 
-do
-	local function fader_Create(parent)
-		local fadeGroup = parent:CreateAnimationGroup()
-		fadeGroup:SetLooping('NONE')
-		fadeGroup:SetScript('OnFinished', function(self) parent:SetAlpha(self.targetAlpha) end)
+--[[ Fading ]]--
 
-		local fade = fadeGroup:CreateAnimation('Alpha'); fade:SetOrder(1)
+local function fader_Create(parent)
+	local fadeGroup = parent:CreateAnimationGroup()
+	fadeGroup:SetLooping('NONE')
+	fadeGroup:SetScript('OnFinished', function(self) parent:SetAlpha(self.alpha) end)
 
-		return function(targetAlpha, duration)
-			if fadeGroup:IsPlaying() then
-				fadeGroup:Pause()
-			end
-			fadeGroup.targetAlpha = targetAlpha
-			fade:SetChange(targetAlpha - parent:GetAlpha())
-			fade:SetDuration(duration)
-			fadeGroup:Play()
+	local fade = fadeGroup:CreateAnimation('Alpha'); fade:SetOrder(1)
+
+	return function(alpha, duration)
+		if fadeGroup:IsPlaying() then 
+			fadeGroup:Pause() 
 		end
+
+		fadeGroup.alpha = alpha
+		fade:SetChange(alpha - parent:GetAlpha())
+		fade:SetDuration(duration)
+		fadeGroup:Play()
 	end
+end
 
-	function Frame:StartFade()
-		local newAlpha = self:GetExpectedAlpha()
-		self.fade = self.fade or fader_Create(self)
-		self.fade(newAlpha, 0.1)
+--fades the frame from the current opacity setting
+--to the expected settin
+function Frame:Fade()
+	local alpha = self:GetExpectedAlpha()
+	local fade = self.fade
+	if not fade then
+		fade = fader_Create(self)
+		self.fade = fade
+	end
+	fade(alpha, 0.1)
 
-		if Dominos:IsLinkedOpacityEnabled() then
-			self:ForDocked('StartFade')
-		end
+	if Dominos:IsLinkedOpacityEnabled() then
+		self:ForDocked('Fade')
 	end
 end
 
@@ -471,7 +444,6 @@ end
 function Frame:FrameIsShown()
 	return not self.sets.hidden
 end
-
 
 --[[ Show states ]]--
 
@@ -505,7 +477,6 @@ function Frame:UpdateShowStates()
 	end
 end
 
-
 --[[ Lock/Unlock ]]--
 
 function Frame:Lock()
@@ -515,7 +486,6 @@ end
 function Frame:Unlock()
 	self.drag:Show()
 end
-
 
 --[[ Sticky Bars ]]--
 
@@ -666,7 +636,6 @@ function Frame:GetAnchor()
 	end
 end
 
-
 --[[ Positioning ]]--
 
 function Frame:GetRelPosition()
@@ -724,7 +693,6 @@ function Frame:SetFramePoint(...)
 	self:SavePosition()
 end
 
-
 --[[ Menus ]]--
 
 function Frame:CreateMenu()
@@ -773,7 +741,6 @@ function Frame:UpdateWatched()
 		Dominos.MouseOverWatcher:Add(self)
 	end
 end
-
 
 --[[ Metafunctions ]]--
 
