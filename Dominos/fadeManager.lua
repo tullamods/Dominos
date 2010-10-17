@@ -49,10 +49,15 @@ MouseOverWatcher.duration = 0.15
 
 function MouseOverWatcher:OnFinished()
 	for f in pairs(watched) do
-		if f:IsFocus() then
-			f.header:SetAttribute('state-mousealpha', 1)
+		local isFocus = f:IsFocus()
+		if f.header:GetAttribute('state-mouseover') then
+			if not isFocus then
+				f.header:SetAttribute('state-mouseover', isFocus)
+			end
 		else
-			f.header:SetAttribute('state-mousealpha', nil)
+			if isFocus then
+				f.header:SetAttribute('state-mouseover', isFocus)
+			end
 		end
 	end
 
@@ -63,7 +68,7 @@ end
 
 function MouseOverWatcher:Add(f)
 	watched[f] = true
-	f.header:SetAttribute('state-mousealpha', f:IsFocus() and 1 or nil)
+	f.header:SetAttribute('state-mouseover', f:IsFocus() and true or nil)
 
 	if not self:IsPlaying() then
 		self:Start()
@@ -72,7 +77,7 @@ end
 
 function MouseOverWatcher:Remove(f)
 	watched[f] = nil
-	f.header:SetAttribute('state-mousealpha', nil)
+	f.header:SetAttribute('state-mouseover', nil)
 end
 
 Dominos.MouseOverWatcher = MouseOverWatcher
