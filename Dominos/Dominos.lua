@@ -152,7 +152,7 @@ function Dominos:UpdateSettings(major, minor, bugfix)
 			end
 		end
 	end
-	
+
 	--handle totem bar update for upgrading from versions older than 1.15
 	if major == '1' and minor <= '14' then
 		for profile,sets in pairs(self.db.sv.profiles) do
@@ -209,6 +209,8 @@ function Dominos:Load()
 
 	--anchor everything
 	self.Frame:ForAll('Reanchor')
+--	self.Frame:ForAll('UpdateAlpha')
+--	self.Frame:ForAll('UpdateWatched')
 
 	--minimap button
 	self:UpdateMinimapButton()
@@ -237,7 +239,7 @@ function Dominos:HideBlizzard()
 	MultiActionBar_Update = noop
 	MultiActionBar_UpdateGrid = noop
 	ShowBonusActionBar = noop
-	
+
 	--hack, to make sure the seat indicator is placed in the right spot
 	if not _G['VehicleSeatIndicator']:IsUserPlaced() then
 		_G['VehicleSeatIndicator']:SetPoint("TOPRIGHT", MinimapCluster, "BOTTOMRIGHT", 0, -13)
@@ -278,7 +280,7 @@ function Dominos:HideBlizzard()
 
 	PossessBarFrame:UnregisterAllEvents()
 	PossessBarFrame:Hide()
-	
+
 	hooksecurefunc('TalentFrame_LoadUI', function()
 		PlayerTalentFrame:UnregisterEvent('ACTIVE_TALENT_GROUP_CHANGED')
 	end)
