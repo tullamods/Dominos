@@ -366,10 +366,29 @@ local function isChildFocus(...)
 	return false
 end
 
+local function isDescendant(frame, ...)
+	for i = 1, select('#', ...) do
+		local f = select(i, ...)
+		if frame == f then
+			return true
+		end
+	end
+	for i = 1, select('#', ...) do
+		local f = select(i, ...)
+		if isDescendant(frame, f:GetChildren()) then
+			return true
+		end
+	end
+	return false
+end
+
 --returns all frames docked to the given frame
 function Frame:IsFocus()
 	if self:IsMouseOver(1, -1, -1, 1) then
-		return (GetMouseFocus() == _G['WorldFrame']) or isChildFocus(self:GetChildren())
+		return (GetMouseFocus() == WorldFrame) or isChildFocus(self:GetChildren())
+	end
+	if SpellFlyout and SpellFlyout:IsMouseOver(1, -1, -1, 1) and isDescendant(SpellFlyout:GetParent(), self) then
+		return true
 	end
 	return Dominos:IsLinkedOpacityEnabled() and self:IsDockedFocus()
 end
