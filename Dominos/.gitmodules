@@ -1,0 +1,3 @@
+[submodule "Dominos/libs/FlyPaper"]
+	path = Dominos/libs/FlyPaper
+	url = git://github.com/Tuller/FlyPaper.git
