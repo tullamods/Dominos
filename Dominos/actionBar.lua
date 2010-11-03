@@ -351,7 +351,7 @@ end
 --note to self:
 --if you leave a ; on the end of a statebutton string, it causes evaluation issues, especially if you're doing right click selfcast on the base state
 function ActionBar:UpdateStateDriver()
-	UnregisterStateDriver(self.header, 'page', 0)
+--	UnregisterStateDriver(self.header, 'page', 0)
 
 	local header = ''
 	for state,condition in ipairs(self.conditions) do
@@ -498,6 +498,7 @@ do
 	local function ConditionSlider_OnShow(self)
 		self:SetMinMaxValues(-1, Dominos:NumBars() - 1)
 		self:SetValue(self:GetParent().owner:GetPage(self.condition) or -1)
+		self:UpdateText(self:GetValue())
 	end
 
 	local function ConditionSlider_UpdateValue(self, value)
