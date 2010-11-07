@@ -54,7 +54,7 @@ local function Create(id)
 		b.buttonType = 'ACTIONBUTTON'
 		return b
 	elseif id <= 24 then
-		return CreateFrame('CheckButton', 'DominosActionButton' .. (id-24), nil, 'ActionBarButtonTemplate')
+		return CreateFrame('CheckButton', 'DominosActionButton' .. (id-12), nil, 'ActionBarButtonTemplate')
 	elseif id <= 36 then
 		return _G['MultiBarRightButton' .. (id-24)]
 	elseif id <= 48 then
