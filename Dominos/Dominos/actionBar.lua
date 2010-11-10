@@ -215,8 +215,8 @@ ActionBar.mainbarOffsets = {
 		elseif i == 'PRIEST' then
 			pages['[bonusbar:1]'] = 6
 		elseif i == 'ROGUE' then
-			pages['[bonusbar:1]'] = 6
-			pages['[form:3]'] = 6 --shadowdance
+			pages['[bonusbar:1]'] = 6 --stealth
+			pages['[bonusbar:2]'] = 6 --shadowdance
 --[[
 		elseif i == 'WARLOCK' then
 			pages['[form:2]'] = 6 --demon form, need to watch this to make sure blizzard doesn't change the page
@@ -245,8 +245,8 @@ ActionBar.conditions = {
 	'[bar:5]',
 	'[bar:6]',
 	'[bonusbar:1,stealth]', --prowl
-	'[form:2]',
-	'[form:3]',
+	'[bonusbar:1,form:3]', --vanish
+	'[form:2]', --metamorphosis
 	'[bonusbar:1]',
 	'[bonusbar:2]',
 	'[bonusbar:3]',
@@ -359,7 +359,7 @@ function ActionBar:UpdateStateDriver()
 		if condition == POSSESSED_CONDITIONAL then
 			if self:IsPossessBar() then
 				header = header .. condition .. 'possess;'
-			end	
+			end
 		elseif self:GetPage(condition) then
 			header = header .. condition .. 'S' .. state .. ';'
 		end
@@ -550,11 +550,11 @@ do
 			_G[self:GetParent():GetName() .. L.Columns]:OnShow()
 		end
 	end
-	
+
 	local function AddAdvancedLayout(self)
 		self:AddAdvancedPanel()
 	end
-	
+
 	--GetSpellInfo(spellID) is awesome for localization
 	local function AddClass(self)
 		local lClass, class = UnitClass('player')
@@ -573,8 +573,9 @@ do
 			elseif class == 'PRIEST' then
 				ConditionSlider_New(p, '[bonusbar:1]', GetSpellInfo(15473))
 			elseif class == 'ROGUE' then
+				ConditionSlider_New(p, '[bonusbar:1,form:3]', GetSpellInfo(1856))
+				ConditionSlider_New(p, '[bonusbar:2]', GetSpellInfo(51713))
 				ConditionSlider_New(p, '[bonusbar:1]', GetSpellInfo(1784))
-				ConditionSlider_New(p, '[form:3]', GetSpellInfo(51713))
 			elseif class == 'WARLOCK' then
 				ConditionSlider_New(p, '[form:2]', GetSpellInfo(47241))
 			end
