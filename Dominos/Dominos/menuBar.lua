@@ -19,28 +19,6 @@ do
 	loadButtons(_G['MainMenuBarArtFrame']:GetChildren())
 end
 
-do
-	TalentMicroButton:SetScript('OnEvent', function(self, event)
-		if ( event == 'PLAYER_LEVEL_UP'  or event == 'PLAYER_LOGIN') then
-			if ( not (PlayerTalentFrame and PlayerTalentFrame:IsShown()) and GetNextTalentLevel() == UnitLevel('player')) then
-				SetButtonPulse(self, 60, 1);
-			end
-		elseif ( event == 'PLAYER_TALENT_UPDATE') then
-			UpdateMicroButtons();
-		elseif ( event == 'UPDATE_BINDINGS' ) then
-			self.tooltipText =  MicroButtonTooltipText(TALENTS_BUTTON, 'TOGGLETALENTS');
-		end
-	end)
-	TalentMicroButton:UnregisterAllEvents()
-	TalentMicroButton:RegisterEvent('PLAYER_LEVEL_UP')
-	TalentMicroButton:RegisterEvent('PLAYER_LOGIN')
-	TalentMicroButton:RegisterEvent('UPDATE_BINDINGS')
-
-	--simialr thing, but the achievement button
-	AchievementMicroButton:UnregisterAllEvents()
-end
-
-
 --[[ Menu Bar ]]--
 
 local MenuBar = Dominos:CreateClass('Frame', Dominos.Frame)
