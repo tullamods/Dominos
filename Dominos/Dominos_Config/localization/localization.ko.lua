@@ -49,3 +49,17 @@ L.OneBag = '원백'
 L.ShowKeyring = '열쇠고리 표시'
 L.StickyBars = '바 고정'
 L.ShowMinimapButton = '미니맵 버튼 표시'
+L.Advanced = '상세 옵션'
+L.LeftToRight = '왼쪽에서 오른쪽으로 레이아웃 버튼'
+L.TopToBottom = '위에서 아래로 레이아웃 버튼'
+L.LinkedOpacity = '도킹된 바 투명도 상속'
+
+L.ALT_KEY_TEXT = 'ALT'
+L.AltShift = 'ALT-' .. SHIFT_KEY_TEXT
+L.CtrlShift = CTRL_KEY_TEXT .. '-' .. SHIFT_KEY_TEXT
+L.CtrlAlt = CTRL_KEY_TEXT .. '-ALT'
+L.CtrlAltShift = CTRL_KEY_TEXT .. '-ALT-' .. SHIFT_KEY_TEXT
+
+--totems
+L.ShowTotems = '토템 표시'
+L.ShowTotemRecall = '토템의 부름 표시'
