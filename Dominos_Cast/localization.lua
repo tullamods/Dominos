@@ -14,6 +14,8 @@ elseif locale == 'ruRU' then
 	Dominos_SHOW_TIME = 'Показать время'
 elseif locale == 'deDE' then
 	Dominos_SHOW_TIME = 'Zeige Zeit'
+elseif locale == 'koKR' then
+	Dominos_SHOW_TIME = '시간 표시'
 else
 	Dominos_SHOW_TIME = 'Show Time'
 end
