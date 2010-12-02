@@ -297,9 +297,24 @@ function Dominos:HideBlizzard()
 	PossessBarFrame:UnregisterAllEvents()
 	PossessBarFrame:Hide()
 
-	hooksecurefunc('TalentFrame_LoadUI', function()
+	if PlayerTalentFrame then
 		PlayerTalentFrame:UnregisterEvent('ACTIVE_TALENT_GROUP_CHANGED')
-	end)
+	else
+		hooksecurefunc('TalentFrame_LoadUI', function()
+			PlayerTalentFrame:UnregisterEvent('ACTIVE_TALENT_GROUP_CHANGED')
+		end)
+	end
+	
+	--unregister evil binding events
+	
+	for i = 1, 6 do
+		_G['VehicleMenuBarActionButton' .. i]:UnregisterAllEvents()
+	end
+	
+	for i = 1, 12 do
+		_G['BonusActionButton' .. i]:UnregisterAllEvents()
+		_G['MultiCastActionButton' .. i]:UnregisterEvent('UPDATE_BINDINGS')
+	end
 end
 
 
