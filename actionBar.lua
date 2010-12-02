@@ -4,7 +4,6 @@
 --]]
 
 --libs and omgspeed
-local _G = getfenv(0)
 local ceil = math.ceil
 local min = math.min
 local format = string.format
@@ -35,6 +34,7 @@ function ActionButton:New(id)
 		b:UpdateGrid()
 		b:UpdateHotkey(b.buttonType)
 		b:UpdateMacro()
+		b:UnregisterEvent('UPDATE_BINDINGS')
 
 		--hack #1billion, get rid of range indicator text
 		local hotkey = _G[b:GetName() .. 'HotKey']
@@ -122,7 +122,7 @@ function ActionButton:LoadEvents()
 	self:RegisterEvent('ACTIONBAR_HIDEGRID')
 	self:RegisterEvent('ACTIONBAR_PAGE_CHANGED')
 	self:RegisterEvent('ACTIONBAR_SLOT_CHANGED')
-	self:RegisterEvent('UPDATE_BINDINGS')
+--	self:RegisterEvent('UPDATE_BINDINGS')
 end
 
 --keybound support
@@ -469,10 +469,18 @@ end
 --keybound support
 function ActionBar:KEYBOUND_ENABLED()
 	self:ShowGrid()
+	
+	for _,b in pairs(self.buttons) do
+		b:RegisterEvent('UPDATE_BINDINGS')
+	end
 end
 
 function ActionBar:KEYBOUND_DISABLED()
 	self:HideGrid()
+	
+	for _,b in pairs(self.buttons) do
+		b:UnregisterEvent('UPDATE_BINDINGS')
+	end
 end
 
 

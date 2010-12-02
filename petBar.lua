@@ -26,6 +26,7 @@ function PetButton:Create(id)
 	local b = self:Bind(_G['PetActionButton' .. id])
 	b.buttonType = 'BONUSACTIONBUTTON'
 	b:SetScript('OnEnter', self.OnEnter)
+	b:UnregisterEvent('UPDATE_BINDINGS')
 	b:Skin()
 
 	return b
@@ -124,6 +125,7 @@ function PetBar:KEYBOUND_ENABLED()
 	self.header:SetAttribute('state-visibility', 'display')
 
 	for _,button in pairs(self.buttons) do
+		button:RegisterEvent('UPDATE_BINDINGS')
 		button:Show()
 	end
 end
@@ -133,6 +135,7 @@ function PetBar:KEYBOUND_DISABLED()
 
 	local petBarShown = PetHasActionBar()
 	for _,button in pairs(self.buttons) do
+		button:UnregisterEvent('UPDATE_BINDINGS')
 		if petBarShown and GetPetActionInfo(button:GetID()) then
 			button:Show()
 		else
