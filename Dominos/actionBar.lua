@@ -466,23 +466,11 @@ function ActionBar:UpdateGrid()
 	end
 end
 
---keybound support
-function ActionBar:KEYBOUND_ENABLED()
-	self:ShowGrid()
-	
+function ActionBar:UPDATE_BINDINGS()
 	for _,b in pairs(self.buttons) do
-		b:RegisterEvent('UPDATE_BINDINGS')
+		b:UpdateHotkey(b.buttonType)
 	end
 end
-
-function ActionBar:KEYBOUND_DISABLED()
-	self:HideGrid()
-	
-	for _,b in pairs(self.buttons) do
-		b:UnregisterEvent('UPDATE_BINDINGS')
-	end
-end
-
 
 --right click targeting support
 function ActionBar:UpdateRightClickUnit()

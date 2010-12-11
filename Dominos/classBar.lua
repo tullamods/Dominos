@@ -111,16 +111,13 @@ function ClassButton:UpdateEvents()
 		self:RegisterEvent('SPELL_UPDATE_COOLDOWN')
 		self:RegisterEvent('SPELL_UPDATE_USABLE')
 		self:RegisterEvent('UNIT_AURA')
-		self:RegisterEvent('UPDATE_BINDINGS')
 	else
 		self:UnregisterAllEvents()
 	end
 end
 
 function ClassButton:OnEvent(event, arg1)
-	if event == 'UPDATE_BINDINGS' then
-		self:UpdateHotkey()
-	elseif event == 'UPDATE_SHAPESHIFT_FORMS' and (self:GetID() > GetNumShapeshiftForms()) then
+	if event == 'UPDATE_SHAPESHIFT_FORMS' and (self:GetID() > GetNumShapeshiftForms()) then
 		self:Hide()
 	elseif event == 'UNIT_AURA' then
 		if arg1 == 'player' then
@@ -237,4 +234,10 @@ function ClassBar:UpdateForms()
 		b:Show()
 	end
 	self:SetNumButtons(GetNumShapeshiftForms() or 0)
+end
+
+function ClassBar:UPDATE_BINDINGS()
+	for _,b in pairs(self.buttons) do
+		b:UpdateHotkey(b.buttonType)
+	end
 end

@@ -125,7 +125,6 @@ function PetBar:KEYBOUND_ENABLED()
 	self.header:SetAttribute('state-visibility', 'display')
 
 	for _,button in pairs(self.buttons) do
-		button:RegisterEvent('UPDATE_BINDINGS')
 		button:Show()
 	end
 end
@@ -135,11 +134,16 @@ function PetBar:KEYBOUND_DISABLED()
 
 	local petBarShown = PetHasActionBar()
 	for _,button in pairs(self.buttons) do
-		button:UnregisterEvent('UPDATE_BINDINGS')
 		if petBarShown and GetPetActionInfo(button:GetID()) then
 			button:Show()
 		else
 			button:Hide()
 		end
+	end
+end
+
+function PetBar:UPDATE_BINDINGS()
+	for _,b in pairs(self.buttons) do
+		b:UpdateHotkey(b.buttonType)
 	end
 end
