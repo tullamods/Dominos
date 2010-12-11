@@ -19,3 +19,4 @@ bagBar.lua
 menuBar.lua
 vehicleBar.lua
 minimap.lua
+bindingsUpdater.lua
