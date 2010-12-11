@@ -138,36 +138,6 @@ function Dominos:GetDefaults()
 end
 
 function Dominos:UpdateSettings(major, minor, bugfix)
-	--handle new layout options for upgrading from versions older than 1.13
-	if major == '1' and minor <= '12' then
-		for profile,sets in pairs(self.db.sv.profiles) do
-			local frames = sets.frames
-			if frames then
-				for frameID, frameSets in pairs(frames) do
-					frameSets.isLeftToRight = nil
-					frameSets.isRightToLeft = nil
-					frameSets.isTopToBottom = nil
-					frameSets.isBottomToTop = nil
-				end
-			end
-		end
-	end
-
-	--handle totem bar update for upgrading from versions older than 1.15
-	if major == '1' and minor <= '14' then
-		for profile,sets in pairs(self.db.sv.profiles) do
-			local frames = sets.frames
-			if frames then
-				for frameID, frameSets in pairs(frames) do
-					if tostring(frameID):match('^totem(%d+)') then
-						frameSets.showRecall = true
-						frameSets.showTotems = true
-					end
-				end
-			end
-		end
-	end
-
 	--handle shadow dance fix
 	if major == '1' and minor <= '20' then
 		for profile,sets in pairs(self.db.sv.profiles) do
@@ -176,8 +146,11 @@ function Dominos:UpdateSettings(major, minor, bugfix)
 				for frameID, frameSets in pairs(frames) do
 					local rogueStates = frameSets.pages and frameSets.pages['ROGUE']
 					if rogueStates then
-						rogueStates['[bonusbar:2]'] = rogueStates['[form:3]'] 
-						rogueStates['[form:3]'] = nil
+						local shadowDance = rogueStates['[form:3]'] 
+						if shadowDance then
+							rogueStates['[bonusbar:2]'] = rogueStates['[form:3]'] 
+							rogueStates['[form:3]'] = nil
+						end
 					end
 				end
 			end
