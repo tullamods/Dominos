@@ -148,7 +148,7 @@ function Dominos:UpdateSettings(major, minor, bugfix)
 					if rogueStates then
 						local shadowDance = rogueStates['[form:3]'] 
 						if shadowDance then
-							rogueStates['[bonusbar:2]'] = rogueStates['[form:3]'] 
+							rogueStates['[bonusbar:2]'] = shadowDance
 							rogueStates['[form:3]'] = nil
 						end
 					end
