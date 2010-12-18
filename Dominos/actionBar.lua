@@ -472,6 +472,18 @@ function ActionBar:UPDATE_BINDINGS()
 	end
 end
 
+---keybound support
+function ActionBar:KEYBOUND_ENABLED() 	
+	self:ShowGrid()
+	for _, b in pairs(self.buttons) do
+		b:RegisterEvent('UPDATE_BINDINGS')
+	end
+end
+
+function ActionBar:KEYBOUND_DISABLED()
+	self:HideGrid()
+end
+
 --right click targeting support
 function ActionBar:UpdateRightClickUnit()
 	self.header:SetAttribute('*unit2', Dominos:GetRightClickUnit())
