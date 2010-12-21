@@ -156,6 +156,24 @@ function Dominos:UpdateSettings(major, minor, bugfix)
 			end
 		end
 	end
+	
+	if major == '1' and minor <= '21' then
+		for profile,sets in pairs(self.db.sv.profiles) do
+			local frames = sets.frames
+			if frames then
+				for frameID, frameSets in pairs(frames) do
+					local druidStates = frameSets.pages and frameSets.pages['DRUID']
+					if druidStates then
+						local treeOfLife = druidStates['[bonusbar:2]'] 
+						if treeOfLife then
+							druidStates['[form:5]'] = treeOfLife
+							druidStates['[bonusbar:2]'] = nil
+						end
+					end
+				end
+			end
+		end
+	end
 end
 
 function Dominos:UpdateVersion()
