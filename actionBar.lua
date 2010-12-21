@@ -204,10 +204,11 @@ ActionBar.mainbarOffsets = {
 
 		if i == 'DRUID' then
 --			pages['[bonusbar:1,stealth]'] = 5
-			pages['[bonusbar:1]'] = 6
-			pages['[bonusbar:2]'] = 7
-			pages['[bonusbar:3]'] = 8
-			pages['[bonusbar:4]'] = 9
+			pages['[bonusbar:1]'] = 6 --cat
+--			pages['[bonusbar:2]'] = 7
+			pages['[bonusbar:3]'] = 8 --bear
+			pages['[bonusbar:4]'] = 9 --moonkin
+			pages['[form:5]'] = 7	   --tree of life
 		elseif i == 'WARRIOR' then
 			pages['[bonusbar:1]'] = 6
 			pages['[bonusbar:2]'] = 7
@@ -247,6 +248,7 @@ ActionBar.conditions = {
 	'[bonusbar:1,stealth]', --prowl
 	'[bonusbar:1,form:3]', --vanish
 	'[form:2]', --metamorphosis
+	'[form:5]', --tree of life
 	'[bonusbar:1]',
 	'[bonusbar:2]',
 	'[bonusbar:3]',
@@ -575,7 +577,8 @@ do
 			elseif class == 'DRUID' then
 				ConditionSlider_New(p, '[bonusbar:4]', GetSpellInfo(24858))
 				ConditionSlider_New(p, '[bonusbar:3]', GetSpellInfo(5487))
-				ConditionSlider_New(p, '[bonusbar:2]', GetSpellInfo(33891))
+				--ConditionSlider_New(p, '[bonusbar:2]', GetSpellInfo(33891))
+				ConditionSlider_New(p, '[form:5]', GetSpellInfo(33891))
 				ConditionSlider_New(p, '[bonusbar:1,stealth]', GetSpellInfo(5215))
 				ConditionSlider_New(p, '[bonusbar:1]', GetSpellInfo(768))
 			elseif class == 'PRIEST' then
