@@ -248,7 +248,7 @@ ActionBar.conditions = {
 	'[bonusbar:1,stealth]', --prowl
 	'[bonusbar:1,form:3]', --vanish
 	'[form:2]', --metamorphosis
-	'[form:5]', --tree of life
+	'[form:5,nobonusbar:4]', --tree of life
 	'[bonusbar:1]',
 	'[bonusbar:2]',
 	'[bonusbar:3]',
@@ -575,10 +575,10 @@ do
 				ConditionSlider_New(p, '[bonusbar:2]', GetSpellInfo(71))
 				ConditionSlider_New(p, '[bonusbar:1]', GetSpellInfo(2457))
 			elseif class == 'DRUID' then
-				ConditionSlider_New(p, '[bonusbar:4]', GetSpellInfo(24858))
+				ConditionSlider_New(p, '[bonusbar:4]', GetSpellInfo(24858)) --moonkin
 				ConditionSlider_New(p, '[bonusbar:3]', GetSpellInfo(5487))
 				--ConditionSlider_New(p, '[bonusbar:2]', GetSpellInfo(33891))
-				ConditionSlider_New(p, '[form:5]', GetSpellInfo(33891))
+				ConditionSlider_New(p, '[form:5,nobonusbar:4]', GetSpellInfo(33891)) --tree of life
 				ConditionSlider_New(p, '[bonusbar:1,stealth]', GetSpellInfo(5215))
 				ConditionSlider_New(p, '[bonusbar:1]', GetSpellInfo(768))
 			elseif class == 'PRIEST' then
