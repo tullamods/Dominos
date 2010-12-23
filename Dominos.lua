@@ -139,14 +139,14 @@ end
 
 function Dominos:UpdateSettings(major, minor, bugfix)
 	--handle shadow dance fix
-	if major == '1' and minor <= '20' then
+	if major == '1' and minor < '20' then
 		for profile,sets in pairs(self.db.sv.profiles) do
 			local frames = sets.frames
 			if frames then
 				for frameID, frameSets in pairs(frames) do
 					local rogueStates = frameSets.pages and frameSets.pages['ROGUE']
 					if rogueStates then
-						local shadowDance = rogueStates['[form:3]'] 
+						local shadowDance = rogueStates['[form:3]']
 						if shadowDance then
 							rogueStates['[bonusbar:2]'] = shadowDance
 							rogueStates['[form:3]'] = nil
@@ -156,18 +156,19 @@ function Dominos:UpdateSettings(major, minor, bugfix)
 			end
 		end
 	end
-	
-	if major == '1' and minor <= '21' then
+
+	if major == '1' and minor < '22' then
 		for profile,sets in pairs(self.db.sv.profiles) do
 			local frames = sets.frames
 			if frames then
 				for frameID, frameSets in pairs(frames) do
 					local druidStates = frameSets.pages and frameSets.pages['DRUID']
 					if druidStates then
-						local treeOfLife = druidStates['[bonusbar:2]'] 
+						local treeOfLife = druidStates['[bonusbar:2]']  or druidStates['form:5']
 						if treeOfLife then
-							druidStates['[form:5]'] = treeOfLife
+							druidStates['[form:5,nobonusbar:4]'] = treeOfLife
 							druidStates['[bonusbar:2]'] = nil
+							druidStates['[form:5]'] = nil
 						end
 					end
 				end
@@ -295,13 +296,13 @@ function Dominos:HideBlizzard()
 			PlayerTalentFrame:UnregisterEvent('ACTIVE_TALENT_GROUP_CHANGED')
 		end)
 	end
-	
+
 	--unregister evil binding events
-	
+
 	for i = 1, 6 do
 		_G['VehicleMenuBarActionButton' .. i]:UnregisterAllEvents()
 	end
-	
+
 	for i = 1, 12 do
 		_G['BonusActionButton' .. i]:UnregisterAllEvents()
 		_G['MultiCastActionButton' .. i]:UnregisterEvent('UPDATE_BINDINGS')
