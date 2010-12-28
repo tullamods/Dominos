@@ -36,7 +36,7 @@ function ClassButton:Create(id)
 	b.icon:SetAllPoints(b)
 
 	b:SetNormalTexture('Interface\\Buttons\\UI-Quickslot2')
-	
+
 	local nt = b:GetNormalTexture()
 	nt:ClearAllPoints()
 	nt:SetPoint('CENTER', 0, -1)
@@ -83,7 +83,7 @@ end
 function ClassButton:Restore(id)
 	local unused = self.unused
 	if unused then
-		b = unused[id]
+		local b = unused[id]
 		if b then
 			unused[id] = nil
 			b:Show()
