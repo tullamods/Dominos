@@ -175,6 +175,24 @@ function Dominos:UpdateSettings(major, minor, bugfix)
 			end
 		end
 	end
+	
+	if major == '1' and minor < '23' then
+		for profile,sets in pairs(self.db.sv.profiles) do
+			local frames = sets.frames
+			if frames then
+				local frameSets = frames[1]
+				if frameSets then
+					local rogueStates = frameSets.pages and frameSets.pages['ROGUE']
+					if rogueStates then
+						local shadowDance = rogueStates['[bonusbar:2]']
+						if not shadowDance then
+							rogueStates['[bonusbar:2]'] = 6
+						end
+					end
+				end
+			end
+		end
+	end
 end
 
 function Dominos:UpdateVersion()
