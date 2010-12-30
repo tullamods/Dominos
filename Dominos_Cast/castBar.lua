@@ -168,18 +168,16 @@ function CastingBar:AdjustWidth()
 	local timeWidth = (self.time:IsShown() and (self.time:GetStringWidth() + 4) * 2) or 0
 	local width = textWidth + timeWidth
 
-	local diff = width - self.normalWidth
-	if diff > 0 then
-		diff = width - self:GetWidth()
-	else
-		diff = self.normalWidth - self:GetWidth()
+	if width < self.normalWidth then
+		width = self.normalWidth
 	end
-
-	if diff ~= 0 then
-		local newWidth = self:GetWidth() + diff
-		self:SetWidth(newWidth)
-		self.borderTexture:SetWidth(newWidth * BORDER_SCALE)
-		self.flashTexture:SetWidth(newWidth * BORDER_SCALE)
+	 	
+	local diff = math.abs(width - self:GetWidth())	-- calculate an absolute difference between needed size and last size
+	
+	if diff > TEXT_PADDING then			-- is the difference big enough to redraw the bar ?
+		self:SetWidth(width)
+		self.borderTexture:SetWidth(width * BORDER_SCALE)
+		self.flashTexture:SetWidth(width * BORDER_SCALE)
 
 		self:GetParent():Layout()
 	end
