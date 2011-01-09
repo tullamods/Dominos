@@ -2,7 +2,7 @@
 ## Title: Dominos
 ## Notes: A main actionbar replacement
 ## Author: Tuller
-## Version: 1.23.3
+## Version: 1.23.4
 ## SavedVariables: DominosDB, DominosVersion
 ## OptionalDeps: Ace3, LibKeyBound-1.0, ButtonFacade, FlyPaper
 embeds.xml
