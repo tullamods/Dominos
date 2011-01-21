@@ -320,7 +320,7 @@ function Dominos:HideBlizzard()
 		talentFrame:UnregisterEvent('ACTIVE_TALENT_GROUP_CHANGED')
 	else
 		hooksecurefunc('TalentFrame_LoadUI', function()
-			_G['PlayerTalentFrame ']:UnregisterEvent('ACTIVE_TALENT_GROUP_CHANGED')
+			_G['PlayerTalentFrame']:UnregisterEvent('ACTIVE_TALENT_GROUP_CHANGED')
 		end)
 	end
 
