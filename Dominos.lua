@@ -175,7 +175,7 @@ function Dominos:UpdateSettings(major, minor, bugfix)
 			end
 		end
 	end
-	
+
 	if major == '1' and minor < '23' then
 		for profile,sets in pairs(self.db.sv.profiles) do
 			local frames = sets.frames
@@ -261,62 +261,75 @@ end
 --[[ Blizzard Stuff Hiding ]]--
 
 function Dominos:HideBlizzard()
-	local noop = Multibar_EmptyFunc
-	MultiActionBar_Update = noop
-	MultiActionBar_UpdateGrid = noop
-	ShowBonusActionBar = noop
+	local uiHider = CreateFrame("Frame"); uiHider:Hide()
+	self.uiHider = uiHider
+
+	local newForAll = function(f)
+		return function(...)
+			for i = 1, select('#', ...) do
+				f(select(i, ...))
+			end
+		end
+	end
+
+	local disableFrames = newForAll(function(name)
+		local f = _G[name]
+		f:UnregisterAllEvents()
+		f:SetParent(uiHider)
+		f:Hide()
+	end)
+
+	local nilFramePositions = newForAll(function(i)
+		UIPARENT_MANAGED_FRAME_POSITIONS[i] = nil
+	end)
+
+	disableFrames(
+		'MainMenuBar',
+		'MultiBarBottomLeft',
+		'MultiBarBottomRight',
+		'MultiBarLeft',
+		'MultiBarRight',
+--		'PetActionBarFrame', --we don't actually want to disable this, since I reuse the buttons
+		'ShapeshiftBarFrame',
+		'BonusActionBarFrame',
+		'PossessBarFrame',
+		'MainMenuExpBar',
+		'MainMenuBarArtFrame'
+	)
+
+	nilFramePositions(
+		'MultiBarRight',
+		'MultiBarLeft',
+		'MultiBarBottomLeft',
+		'MultiBarBottomRight',
+		'MainMenuBar',
+		'ShapeshiftBarFrame',
+		'PossessBarFrame',
+		'MultiCastActionBarFrame',
+		'PETACTIONBAR_YPOS',
+		'MULTICASTACTIONBAR_YPOS'
+	)
+
+	--register necessary main menu events
+	MainMenuBarArtFrame:RegisterEvent('BAG_UPDATE')  --needed to display the keyring
+	MainMenuBarArtFrame:RegisterEvent('CURRENCY_DISPLAY_UPDATE') --needed to display stuff on the backpack button
+
+	--hide some weird effects of loading the talent frame
+	local talentFrame = _G['PlayerTalentFrame']
+	if talentFrame then
+		talentFrame:UnregisterEvent('ACTIVE_TALENT_GROUP_CHANGED')
+	else
+		hooksecurefunc('TalentFrame_LoadUI', function()
+			_G['PlayerTalentFrame ']:UnregisterEvent('ACTIVE_TALENT_GROUP_CHANGED')
+		end)
+	end
 
 	--hack, to make sure the seat indicator is placed in the right spot
 	if not _G['VehicleSeatIndicator']:IsUserPlaced() then
 		_G['VehicleSeatIndicator']:SetPoint("TOPRIGHT", MinimapCluster, "BOTTOMRIGHT", 0, -13)
 	end
 
-	UIPARENT_MANAGED_FRAME_POSITIONS['MultiBarRight'] = nil
-	UIPARENT_MANAGED_FRAME_POSITIONS['MultiBarLeft'] = nil
-	UIPARENT_MANAGED_FRAME_POSITIONS['MultiBarBottomLeft'] = nil
-	UIPARENT_MANAGED_FRAME_POSITIONS['MultiBarBottomRight'] = nil
-	UIPARENT_MANAGED_FRAME_POSITIONS['MainMenuBar'] = nil
-	UIPARENT_MANAGED_FRAME_POSITIONS['ShapeshiftBarFrame'] = nil
-	UIPARENT_MANAGED_FRAME_POSITIONS['PossessBarFrame'] = nil
-	UIPARENT_MANAGED_FRAME_POSITIONS['PETACTIONBAR_YPOS'] = nil
-
-	MainMenuBar:UnregisterAllEvents()
-	MainMenuBar:Hide()
-
-	MainMenuBarArtFrame:UnregisterEvent('PLAYER_ENTERING_WORLD')
---	MainMenuBarArtFrame:UnregisterEvent('BAG_UPDATE') --needed to display stuff on the backpack button
-	MainMenuBarArtFrame:UnregisterEvent('ACTIONBAR_PAGE_CHANGED')
---	MainMenuBarArtFrame:UnregisterEvent('KNOWN_CURRENCY_TYPES_UPDATE') --needed to display the token tab
---	MainMenuBarArtFrame:UnregisterEvent('CURRENCY_DISPLAY_UPDATE')
-	MainMenuBarArtFrame:UnregisterEvent('ADDON_LOADED')
-	MainMenuBarArtFrame:UnregisterEvent('UNIT_ENTERING_VEHICLE')
-	MainMenuBarArtFrame:UnregisterEvent('UNIT_ENTERED_VEHICLE')
-	MainMenuBarArtFrame:UnregisterEvent('UNIT_EXITING_VEHICLE')
-	MainMenuBarArtFrame:UnregisterEvent('UNIT_EXITED_VEHICLE')
-	MainMenuBarArtFrame:Hide()
-
-	MainMenuExpBar:UnregisterAllEvents()
-	MainMenuExpBar:Hide()
-
-	ShapeshiftBarFrame:UnregisterAllEvents()
-	ShapeshiftBarFrame:Hide()
-
-	BonusActionBarFrame:UnregisterAllEvents()
-	BonusActionBarFrame:Hide()
-
-	PossessBarFrame:UnregisterAllEvents()
-	PossessBarFrame:Hide()
-
-	if PlayerTalentFrame then
-		PlayerTalentFrame:UnregisterEvent('ACTIVE_TALENT_GROUP_CHANGED')
-	else
-		hooksecurefunc('TalentFrame_LoadUI', function()
-			PlayerTalentFrame:UnregisterEvent('ACTIVE_TALENT_GROUP_CHANGED')
-		end)
-	end
-
 	--unregister evil binding events
-
 	for i = 1, 6 do
 		_G['VehicleMenuBarActionButton' .. i]:UnregisterAllEvents()
 	end
@@ -325,8 +338,10 @@ function Dominos:HideBlizzard()
 		_G['BonusActionButton' .. i]:UnregisterAllEvents()
 		_G['MultiCastActionButton' .. i]:UnregisterEvent('UPDATE_BINDINGS')
 	end
-end
 
+	--prevent multi actionbar grids from randomly showing
+	MultiActionBar_UpdateGrid = Multibar_EmptyFunc
+end
 
 --[[ Button Facade Events ]]--
 
