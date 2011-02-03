@@ -44,7 +44,7 @@ L.DeleteDesc = 'Borra <profile>'
 L.ResetDesc = 'Volver a la parámetros por defecto'
 L.ListDesc = 'Listar todos los perfiles'
 L.AvailableProfiles = 'Perfiles disponibles'
-L.PrintVersionDesc = 'Imprimir la versión actual'
+L.PrintVersionDesc = 'Mostrar la versión actual'
 
 --dragFrame tooltips
 L.ShowConfig = '<Click Derecho> para configurar'
