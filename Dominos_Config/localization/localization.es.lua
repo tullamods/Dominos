@@ -54,4 +54,3 @@ L.ShowMinimapButton = 'Mostrar el botón del minimapa'
 L.Advanced = 'Avanzado'
 L.LeftToRight = 'Mostrar los botones de izquierda a derecha'
 L.TopToBottom = 'Mostrar los botones de arriba a abajo'
-
