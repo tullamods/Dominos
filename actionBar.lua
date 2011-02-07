@@ -154,6 +154,11 @@ function ActionButton:UpdateMacro()
 	end
 end
 
+function ActionButton:SetFlyoutDirection(direction)
+	self:SetAttribute('flyoutDirection', direction)
+	ActionButton_UpdateFlyout(self)
+end
+
 --utility function, resyncs the button's current action, modified by state
 function ActionButton:LoadAction()
 	local state = self:GetParent():GetAttribute('state-page')
@@ -274,11 +279,15 @@ function ActionBar:New(id)
 	f:Layout()
 	f:UpdateGrid()
 	f:UpdateRightClickUnit()
-	f:SetScript('OnSizeChanged', function(self) self:UpdateFlyoutDirection() end)
+	f:SetScript('OnSizeChanged', self.OnSizeChanged)
 
 	active[id] = f
 
 	return f
+end
+
+function ActionBar:OnSizeChanged()
+	self:UpdateFlyoutDirection()
 end
 
 --TODO: change the position code to be based more on the number of action bars
@@ -314,7 +323,7 @@ function ActionBar:LoadButtons()
 		local b = ActionButton:New(self.baseID + i)
 		if b then
 			b:SetParent(self.header)
-			b:SetAttribute('flyoutDirection', self:GetFlyoutDirection())
+			b:SetFlyoutDirection(self:GetFlyoutDirection())
 			self.buttons[i] = b
 		else
 			break
@@ -328,7 +337,7 @@ function ActionBar:AddButton(i)
 	if b then
 		self.buttons[i] = b
 		b:SetParent(self.header)
-		b:SetAttribute('flyoutDirection', self:GetFlyoutDirection())
+		b:SetFlyoutDirection(self:GetFlyoutDirection())
 		b:LoadAction()
 		self:UpdateAction(i)
 		self:UpdateGrid()
@@ -526,7 +535,7 @@ function ActionBar:UpdateFlyoutDirection()
 
 	--dear blizzard, I'd like to be able to use the useparent-* attribute stuff for this
 	for _,b in pairs(self.buttons) do
-		b:SetAttribute('flyoutDirection', direction)
+		b:SetFlyoutDirection(direction)
 	end
 end
 
