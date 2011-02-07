@@ -274,6 +274,7 @@ function ActionBar:New(id)
 	f:Layout()
 	f:UpdateGrid()
 	f:UpdateRightClickUnit()
+	f:SetScript('OnSizeChanged', function(self) self:UpdateFlyoutDirection() end)
 
 	active[id] = f
 
@@ -313,6 +314,7 @@ function ActionBar:LoadButtons()
 		local b = ActionButton:New(self.baseID + i)
 		if b then
 			b:SetParent(self.header)
+			b:SetAttribute('flyoutDirection', self:GetFlyoutDirection())
 			self.buttons[i] = b
 		else
 			break
@@ -326,6 +328,7 @@ function ActionBar:AddButton(i)
 	if b then
 		self.buttons[i] = b
 		b:SetParent(self.header)
+		b:SetAttribute('flyoutDirection', self:GetFlyoutDirection())
 		b:LoadAction()
 		self:UpdateAction(i)
 		self:UpdateGrid()
@@ -496,6 +499,40 @@ function ActionBar:ForAll(method, ...)
 	for _,f in pairs(active) do
 		f[method](f, ...)
 	end
+end
+
+--[[ flyout direction updating ]]--
+
+function ActionBar:GetFlyoutDirection()
+	local w, h = self:GetSize()
+	local isVertical = w < h
+	local anchor = self:GetPoint()
+	
+	if isVertical then
+		if anchor and anchor:match('LEFT') then
+			return 'RIGHT'
+		end
+		return 'LEFT'
+	end
+	
+	if anchor and anchor:match('TOP') then
+		return 'DOWN'
+	end
+	return 'UP'		
+end
+
+function ActionBar:UpdateFlyoutDirection()
+	local direction = self:GetFlyoutDirection()
+
+	--dear blizzard, I'd like to be able to use the useparent-* attribute stuff for this
+	for _,b in pairs(self.buttons) do
+		b:SetAttribute('flyoutDirection', direction)
+	end
+end
+
+function ActionBar:SavePosition()
+	Dominos.Frame.SavePosition(self)
+	self:UpdateFlyoutDirection()
 end
 
 
