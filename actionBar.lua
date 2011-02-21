@@ -287,7 +287,9 @@ function ActionBar:New(id)
 end
 
 function ActionBar:OnSizeChanged()
-	self:UpdateFlyoutDirection()
+	if not InCombatLockdown() then
+		self:UpdateFlyoutDirection()
+	end
 end
 
 --TODO: change the position code to be based more on the number of action bars
