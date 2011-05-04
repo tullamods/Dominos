@@ -181,9 +181,6 @@ end
 local ActionBar = Dominos:CreateClass('Frame', Dominos.Frame)
 Dominos.ActionBar = ActionBar
 
-local POSSESSED_CONDITIONAL = '[bonusbar:5]'
-
-
 --[[ Constructor Code ]]--
 
 --metatable magic.  Basically this says, 'create a new table for this index'
@@ -200,67 +197,32 @@ ActionBar.defaultOffsets = {
 ActionBar.mainbarOffsets = {
 	__index = function(t, i)
 		local pages = {
-			['[bar:2]'] = 1,
-			['[bar:3]'] = 2,
-			['[bar:4]'] = 3,
-			['[bar:5]'] = 4,
-			['[bar:6]'] = 5,
+			page2 = 1,
+			page3 = 2,
+			page4 = 3,
+			page5 = 4,
+			page6 = 5,
 		}
 
 		if i == 'DRUID' then
---			pages['[bonusbar:1,stealth]'] = 5
-			pages['[bonusbar:1]'] = 6 --cat
---			pages['[bonusbar:2]'] = 7
-			pages['[bonusbar:3]'] = 8 --bear
-			pages['[bonusbar:4]'] = 9 --moonkin
-			pages['[form:5]'] = 7	   --tree of life
+			pages.cat = 6
+			pages.bar = 8
+			pages.moonkin = 9
+			pages.tree = 7
 		elseif i == 'WARRIOR' then
-			pages['[bonusbar:1]'] = 6
-			pages['[bonusbar:2]'] = 7
-			pages['[bonusbar:3]'] = 8
+			pages.battle = 6
+			pages.defensive = 7
+			pages.berserker = 8
 		elseif i == 'PRIEST' then
-			pages['[bonusbar:1]'] = 6
+			pages.shadow = 6
 		elseif i == 'ROGUE' then
-			pages['[bonusbar:1]'] = 6 --stealth
-			pages['[bonusbar:2]'] = 6 --shadowdance
---[[
-		elseif i == 'WARLOCK' then
-			pages['[form:2]'] = 6 --demon form, need to watch this to make sure blizzard doesn't change the page
---]]
+			pages.stealth = 6
+			pages.shadowdance = 6
 		end
 
 		t[i] = pages
 		return pages
 	end
-}
-
---this is the set of conditions used for paging, in order of evaluation
-ActionBar.conditions = {
-	'[mod:SELFCAST]',
-	'[mod:alt,mod:ctrl,mod:shift]',
-	'[mod:alt,mod:ctrl]',
-	'[mod:alt,mod:shift]',
-	'[mod:ctrl,mod:shift]',
-	'[mod:alt]',
-	'[mod:ctrl]',
-	'[mod:shift]',
-	POSSESSED_CONDITIONAL,
-	'[bar:2]',
-	'[bar:3]',
-	'[bar:4]',
-	'[bar:5]',
-	'[bar:6]',
-	'[bonusbar:1,stealth]', --prowl
-	'[bonusbar:1,form:3]', --vanish
-	'[form:2]', --metamorphosis
-	'[form:5,nobonusbar:4]', --tree of life
-	'[bonusbar:1]',
-	'[bonusbar:2]',
-	'[bonusbar:3]',
-	'[bonusbar:4]',
-	'[help]',
-	'[harm]',
-	'[noexists]'
 }
 
 ActionBar.class = select(2, UnitClass('player'))
@@ -355,13 +317,13 @@ end
 
 --[[ Paging Code ]]--
 
-function ActionBar:SetPage(condition, page)
-	self.pages[condition] = page
+function ActionBar:SetPage(stateId, page)
+	self.pages[stateId] = page
 	self:UpdateStateDriver()
 end
 
-function ActionBar:GetPage(condition)
-	return self.pages[condition]
+function ActionBar:GetPage(stateId)
+	return self.pages[stateId]
 end
 
 --note to self:
@@ -370,14 +332,24 @@ function ActionBar:UpdateStateDriver()
 --	UnregisterStateDriver(self.header, 'page', 0)
 
 	local header = ''
-	for state,condition in ipairs(self.conditions) do
-		--possess bar: special case
-		if condition == POSSESSED_CONDITIONAL then
-			if self:IsPossessBar() then
-				header = header .. condition .. 'possess;'
+	for i, state in Dominos.BarStates:getAll() do
+		local stateId = state.id
+		local condition
+		if type(state.value) == 'function' then
+			condition = state.value()
+		else
+			condition = state.value
+		end
+		
+		if condition then
+			--possess bar: special case
+			if stateId == 'possess' then
+				if self:IsPossessBar() then
+					header = header .. condition .. 'possess;'
+				end
+			elseif self:GetPage(condition) then
+				header = header .. condition .. 'S' .. i .. ';'
 			end
-		elseif self:GetPage(condition) then
-			header = header .. condition .. 'S' .. state .. ';'
 		end
 	end
 
@@ -397,12 +369,12 @@ end
 function ActionBar:UpdateAction(i)
 	local b = self.buttons[i]
 	local maxSize = self:MaxLength()
+	
+	for i, state in Dominos.BarStates:getAll() do	
+		local page = self:GetPage(state.id)
+		local actionId = page and ToValidID(b:GetAttribute('action--base') + (self.id + page - 1)*maxSize) or nil
 
-	for state,condition in ipairs(self.conditions) do
-		local page = self:GetPage(condition)
-		local id = page and ToValidID(b:GetAttribute('action--base') + (self.id + page - 1)*maxSize) or nil
-
-		b:SetAttribute('action--S' .. state, id)
+		b:SetAttribute('action--S' .. i, actionId)
 	end
 
 	if self:IsPossessBar() and i <= NUM_POSSESS_BAR_BUTTONS then
@@ -416,13 +388,12 @@ end
 function ActionBar:UpdateActions()
 	local maxSize = self:MaxLength()
 
-	for state,condition in ipairs(self.conditions) do
-		local page = self:GetPage(condition)
-		for i,b in pairs(self.buttons) do
-			local page = self:GetPage(condition)
-			local id = page and ToValidID(i + (self.id + page - 1)*maxSize) or nil
-
-			b:SetAttribute('action--S' .. state, id)
+	for i, state in Dominos.BarStates:getAll() do
+		local page = self:GetPage(state.id)
+		
+		for _, b in pairs(self.buttons) do
+			local actionId = page and ToValidID(b:GetAttribute('action--base') + (self.id + page - 1)*maxSize) or nil
+			b:SetAttribute('action--S' .. i, actionId)
 		end
 	end
 
@@ -614,57 +585,29 @@ do
 	end
 
 	--GetSpellInfo(spellID) is awesome for localization
-	local function AddClass(self)
-		local lClass, class = UnitClass('player')
-		if class == 'WARRIOR' or class == 'DRUID' or class == 'PRIEST' or class == 'ROGUE' or class == 'WARLOCK' then
-			local p = self:NewPanel(lClass)
-			if class == 'WARRIOR' then
-				ConditionSlider_New(p, '[bonusbar:3]', GetSpellInfo(2458))
-				ConditionSlider_New(p, '[bonusbar:2]', GetSpellInfo(71))
-				ConditionSlider_New(p, '[bonusbar:1]', GetSpellInfo(2457))
-			elseif class == 'DRUID' then
-				ConditionSlider_New(p, '[bonusbar:4]', GetSpellInfo(24858)) --moonkin
-				ConditionSlider_New(p, '[bonusbar:3]', GetSpellInfo(5487))
-				--ConditionSlider_New(p, '[bonusbar:2]', GetSpellInfo(33891))
-				ConditionSlider_New(p, '[form:5,nobonusbar:4]', GetSpellInfo(33891)) --tree of life
-				ConditionSlider_New(p, '[bonusbar:1,stealth]', GetSpellInfo(5215))
-				ConditionSlider_New(p, '[bonusbar:1]', GetSpellInfo(768))
-			elseif class == 'PRIEST' then
-				ConditionSlider_New(p, '[bonusbar:1]', GetSpellInfo(15473))
-			elseif class == 'ROGUE' then
-				ConditionSlider_New(p, '[bonusbar:1,form:3]', GetSpellInfo(1856))
-				ConditionSlider_New(p, '[bonusbar:2]', GetSpellInfo(51713))
-				ConditionSlider_New(p, '[bonusbar:1]', GetSpellInfo(1784))
-			elseif class == 'WARLOCK' then
-				ConditionSlider_New(p, '[form:2]', GetSpellInfo(47241))
-			end
+	local function addStatePanel(self, name, type)
+		local p = self:NewPanel(name)
+		local states = Dominos.BarStates:map(function(s) return s.type == type end)
+		for i = #states, 1, -1 do
+			local state = states[i]
+			ConditionSlider_New(p, state.id, state.text)
 		end
+	end
+	
+	local function AddClass(self)
+		addStatePanel(self, UnitClass('player'), 'class')
 	end
 
 	local function AddPaging(self)
-		local p = self:NewPanel(L.QuickPaging)
-		for i = 6, 2, -1 do
-			ConditionSlider_New(p, format('[bar:%d]', i), _G['BINDING_NAME_ACTIONPAGE' .. i])
-		end
+		addStatePanel(self, L.QuickPaging, 'page')
 	end
 
 	local function AddModifier(self)
-		local p = self:NewPanel(L.Modifiers)
-		ConditionSlider_New(p, '[mod:SELFCAST]', AUTO_SELF_CAST_KEY_TEXT)
-		ConditionSlider_New(p, '[mod:alt,mod:ctrl,mod:shift]', L.CtrlAltShift)
-		ConditionSlider_New(p, '[mod:alt,mod:shift]', L.AltShift)
-		ConditionSlider_New(p, '[mod:ctrl,mod:shift]', L.CtrlShift)
-		ConditionSlider_New(p, '[mod:alt,mod:ctrl]', L.CtrlAlt)
-		ConditionSlider_New(p, '[mod:shift]', SHIFT_KEY)
-		ConditionSlider_New(p, '[mod:alt]', ALT_KEY)
-		ConditionSlider_New(p, '[mod:ctrl]', CTRL_KEY)
+		addStatePanel(self, L.Modifiers, 'modifier')
 	end
 
 	local function AddTargeting(self)
-		local p = self:NewPanel(L.Targeting)
-		ConditionSlider_New(p, '[noexists]', NONE)
-		ConditionSlider_New(p, '[harm]', L.Harm)
-		ConditionSlider_New(p, '[help]', L.Help)
+		addStatePanel(self, L.Targeting, 'target')
 	end
 
 	local function AddShowState(self)

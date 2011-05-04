@@ -12,6 +12,7 @@ fadeManager.lua
 drag.lua
 frame.lua
 bindableButton.lua
+barStates.lua
 actionBar.lua
 petBar.lua
 classBar.lua
