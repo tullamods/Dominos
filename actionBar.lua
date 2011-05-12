@@ -347,7 +347,7 @@ function ActionBar:UpdateStateDriver()
 				if self:IsPossessBar() then
 					header = header .. condition .. 'possess;'
 				end
-			elseif self:GetPage(condition) then
+			elseif self:GetPage(stateId) then
 				header = header .. condition .. 'S' .. i .. ';'
 			end
 		end
@@ -504,11 +504,13 @@ function ActionBar:GetFlyoutDirection()
 end
 
 function ActionBar:UpdateFlyoutDirection()
-	local direction = self:GetFlyoutDirection()
+	if self.buttons then
+		local direction = self:GetFlyoutDirection()
 
-	--dear blizzard, I'd like to be able to use the useparent-* attribute stuff for this
-	for _,b in pairs(self.buttons) do
-		b:SetFlyoutDirection(direction)
+		--dear blizzard, I'd like to be able to use the useparent-* attribute stuff for this
+		for _,b in pairs(self.buttons) do
+			b:SetFlyoutDirection(direction)
+		end
 	end
 end
 
@@ -526,12 +528,12 @@ do
 	--state slider template
 	local function ConditionSlider_OnShow(self)
 		self:SetMinMaxValues(-1, Dominos:NumBars() - 1)
-		self:SetValue(self:GetParent().owner:GetPage(self.condition) or -1)
+		self:SetValue(self:GetParent().owner:GetPage(self.stateId) or -1)
 		self:UpdateText(self:GetValue())
 	end
 
 	local function ConditionSlider_UpdateValue(self, value)
-		self:GetParent().owner:SetPage(self.condition, (value > -1 and value) or nil)
+		self:GetParent().owner:SetPage(self.stateId, (value > -1 and value) or nil)
 	end
 
 	local function ConditionSlider_UpdateText(self, value)
@@ -543,19 +545,19 @@ do
 		end
 	end
 
-	local function ConditionSlider_New(panel, condition, text)
-		local s = panel:NewSlider(condition, 0, 1, 1)
+	local function ConditionSlider_New(panel, stateId, text)
+		local s = panel:NewSlider(stateId, 0, 1, 1)
 		s.OnShow = ConditionSlider_OnShow
 		s.UpdateValue = ConditionSlider_UpdateValue
 		s.UpdateText = ConditionSlider_UpdateText
-		s.condition = condition
+		s.stateId = stateId
 		s:SetWidth(s:GetWidth() + 28)
 
 		local title = _G[s:GetName() .. 'Text']
 		title:ClearAllPoints()
 		title:SetPoint('BOTTOMLEFT', s, 'TOPLEFT')
 		title:SetJustifyH('LEFT')
-		title:SetText(text or condition)
+		title:SetText(text or stateId)
 
 		local value = s.valText
 		value:ClearAllPoints()
@@ -586,11 +588,13 @@ do
 
 	--GetSpellInfo(spellID) is awesome for localization
 	local function addStatePanel(self, name, type)
-		local p = self:NewPanel(name)
 		local states = Dominos.BarStates:map(function(s) return s.type == type end)
-		for i = #states, 1, -1 do
-			local state = states[i]
-			ConditionSlider_New(p, state.id, state.text)
+		if #states > 0 then
+			local p = self:NewPanel(name)
+			for i = #states, 1, -1 do
+				local state = states[i]
+				ConditionSlider_New(p, state.id, state.text)
+			end
 		end
 	end
 	
