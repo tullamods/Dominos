@@ -138,44 +138,6 @@ function Dominos:GetDefaults()
 end
 
 function Dominos:UpdateSettings(major, minor, bugfix)
-	--handle shadow dance fix
-	if major == '1' and minor < '20' then
-		for profile,sets in pairs(self.db.sv.profiles) do
-			local frames = sets.frames
-			if frames then
-				for frameID, frameSets in pairs(frames) do
-					local rogueStates = frameSets.pages and frameSets.pages['ROGUE']
-					if rogueStates then
-						local shadowDance = rogueStates['[form:3]']
-						if shadowDance then
-							rogueStates['[bonusbar:2]'] = shadowDance
-							rogueStates['[form:3]'] = nil
-						end
-					end
-				end
-			end
-		end
-	end
-
-	if major == '1' and minor < '22' then
-		for profile,sets in pairs(self.db.sv.profiles) do
-			local frames = sets.frames
-			if frames then
-				for frameID, frameSets in pairs(frames) do
-					local druidStates = frameSets.pages and frameSets.pages['DRUID']
-					if druidStates then
-						local treeOfLife = druidStates['[bonusbar:2]']  or druidStates['form:5']
-						if treeOfLife then
-							druidStates['[form:5,nobonusbar:4]'] = treeOfLife
-							druidStates['[bonusbar:2]'] = nil
-							druidStates['[form:5]'] = nil
-						end
-					end
-				end
-			end
-		end
-	end
-
 	if major == '1' and minor < '23' then
 		for profile,sets in pairs(self.db.sv.profiles) do
 			local frames = sets.frames
@@ -187,6 +149,64 @@ function Dominos:UpdateSettings(major, minor, bugfix)
 						local shadowDance = rogueStates['[bonusbar:2]']
 						if not shadowDance then
 							rogueStates['[bonusbar:2]'] = 6
+						end
+					end
+				end
+			end
+		end
+	end
+
+	--perform state translation to handle updates from older versions
+	if major < '4' then
+		for profile,sets in pairs(self.db.sv.profiles) do
+			if sets.frames then
+				for frameId, frameSets in pairs(sets.frames) do
+					if frameSets.pages then
+						for class, oldStates in pairs(frameSets.pages) do
+							local newStates = {}
+							
+							--convert class states
+							if class == 'WARRIOR' then
+								newStates['battle'] = oldStates['[bonusbar:1]']
+								newStates['defensive'] = oldStates['[bonusbar:2]']
+								newStates['berserker'] = oldStates['[bonusbar:3]']
+							elseif class == 'DRUID' then
+								newStates['moonkin'] = oldStates['[bonusbar:4]']
+								newStates['bear'] = oldStates['[bonusbar:3]']
+								newStates['tree'] = oldStates['[form:5]']
+								newStates['prowl'] = oldStates['[bonusbar:1,stealth]']
+								newStates['cat'] = oldStates['[bonusbar:1]']
+							elseif class == 'PRIEST' then
+								newStates['shadow'] = oldStates['[bonusbar:1]']
+							elseif class == 'ROGUE' then
+								newStates['vanish'] = oldStates['[bonusbar:1,form:3]']
+								newStates['shadowdance'] = oldStates['[bonusbar:2]']
+								newStates['stealth'] = oldStates['[bonusbar:1]']
+							elseif class == 'WARLOCK' then
+								newStates['meta'] = oldStates['[form:2]']
+							end
+						
+							--modifier states
+							for i, state in Dominos.BarStates:getAll('modifier') do
+								newStates[state.id] = oldStates[state.value]
+							end
+							
+							--possess states
+							for i, state in Dominos.BarStates:getAll('possess') do
+								newStates[state.id] = oldStates[state.value]
+							end
+							
+							--page states
+							for i, state in Dominos.BarStates:getAll('page') do
+								newStates[state.id] = oldStates[state.value]
+							end
+							
+							--targeting states
+							for i, state in Dominos.BarStates:getAll('target') do
+								newStates[state.id] = oldStates[state.value]
+							end
+							
+							frameSets.pages[class] = newStates
 						end
 					end
 				end
