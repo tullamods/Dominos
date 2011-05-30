@@ -1,6 +1,6 @@
 --[[
 Name: LibKeyBound-1.0
-Revision: $Rev: 95 $
+Revision: $Rev: 98 $
 Author(s): Gello, Maul, Toadkiller, Tuller
 Website: http://www.wowace.com/wiki/LibKeyBound-1.0
 Documentation: http://www.wowace.com/wiki/LibKeyBound-1.0
@@ -10,7 +10,7 @@ Dependencies: CallbackHandler-1.0
 --]]
 
 local MAJOR = 'LibKeyBound-1.0'
-local MINOR = tonumber(("$Revision: 95 $"):match("(%d+)")) + 90000
+local MINOR = tonumber(("$Revision: 98 $"):match("(%d+)")) + 90000
 
 --[[
 	LibKeyBound-1.0
@@ -405,6 +405,7 @@ function LibKeyBound:ToShortKey(key)
 		key = key:gsub('PAGEUP', L['Page Up'])
 		key = key:gsub('SCROLLLOCK', L['Scroll Lock'])
 		key = key:gsub('SPACEBAR', L['Spacebar'])
+		key = key:gsub('SPACE', L['Spacebar'])
 		key = key:gsub('TAB', L['Tab'])
 
 		key = key:gsub('DOWNARROW', L['Down Arrow'])

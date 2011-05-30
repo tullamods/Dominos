@@ -1,31 +1,31 @@
 ﻿--[[
 	KeyBound localization file
-		Chinese Simplified by ondh - http://www.ondh.cn
+		Simplified Chinese
 --]]
 
 if (GetLocale() ~= "zhCN") then
 	return
 end
 
-local REVISION = 90000 + tonumber(("$Revision: 92 $"):match("%d+"))
+local REVISION = 90000 + tonumber(("$Revision: 97 $"):match("%d+"))
 if (LibKeyBoundLocale10 and REVISION <= LibKeyBoundLocale10.REVISION) then
 	return
 end
 
 LibKeyBoundLocale10 = {
 	REVISION = REVISION;
-	BindingMode = "Binding Mode";
+	BindingMode = "按键绑定模式";
 	Enabled = "按键绑定模式已启用";
 	Disabled = "按键绑定模式已禁用";
-	ClearTip = format("按 %s 清除所有绑定", GetBindingText("ESCAPE", "KEY_"));
-	NoKeysBoundTip = "当前没有绑定按键";
-	ClearedBindings = "从 %s 移除按键绑定";
-	BoundKey = "设置 %s 到 %s";
-	UnboundKey = "取消绑定 %s 从 %s";
-	CannotBindInCombat = "不能在战斗状态绑定按键";
-	CombatBindingsEnabled = "离开战斗状态, 按键绑定模式已启用";
-	CombatBindingsDisabled = "进入战斗状态, 按键绑定模式已禁用";
-	BindingsHelp = "将鼠标停留在按钮上, 然后按下欲指定快捷键之后就能绑定。  要清除目前绑定的按钮请按 %s.";
+	ClearTip = format("按%s清除所有按键绑定", GetBindingText("ESCAPE", "KEY_"));
+	NoKeysBoundTip = "当前没有按键绑定";
+	ClearedBindings = "从%s移除所有按键绑定";
+	BoundKey = "设置%s到%s";
+	UnboundKey = "取消按键绑定%s从%s";
+	CannotBindInCombat = "不能在战斗状态按键绑定";
+	CombatBindingsEnabled = "离开战斗状态，按键绑定模式已启用";
+	CombatBindingsDisabled = "进入战斗状态，按键绑定模式已禁用";
+	BindingsHelp = "将鼠标停留在按钮上，然后按下欲指定快捷键之后就能绑定。要清除目前绑定的按钮请按%s。";
 
 	-- This is the short display version you see on the Button
 	["Alt"] = "A",
@@ -80,9 +80,9 @@ LibKeyBoundLocale10 = {
 	["Spacebar"] = "Sp",
 	["Tab"] = "Tb",
 
-	["Down Arrow"] = "DA",
-	["Left Arrow"] = "LA",
-	["Right Arrow"] = "RA",
-	["Up Arrow"] = "UA",
+	["Down Arrow"] = "Dn",
+	["Left Arrow"] = "Lf",
+	["Right Arrow"] = "Rt",
+	["Up Arrow"] = "Up",
 }
-setmetatable(LibKeyBoundLocale10, {__index = LibKeyBoundBaseLocale10})
+	setmetatable(LibKeyBoundLocale10, {__index = LibKeyBoundBaseLocale10})
