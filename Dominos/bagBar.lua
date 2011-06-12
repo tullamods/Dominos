@@ -3,67 +3,8 @@
 		Defines the Dominos bagBar object
 --]]
 
-local NT_RATIO = 64/37
-local _G = getfenv(0)
 local LBF = LibStub('LibButtonFacade', true)
-
---load up the bag set...
 local bags = {}
-do
-	local function ResizeItemButton(b, size)
-		b:SetWidth(size)
-		b:SetHeight(size)
-		b:GetNormalTexture():SetWidth(size * NT_RATIO)
-		b:GetNormalTexture():SetHeight(size * NT_RATIO)
-
-		local count = _G[b:GetName() .. 'Count']
-		count:SetFontObject('NumberFontNormalSmall')
-		count:SetPoint('BOTTOMRIGHT', 0, 2)
-
-		_G[b:GetName() .. 'Stock']:SetFontObject('NumberFontNormalSmall')
-		_G[b:GetName() .. 'Stock']:SetVertexColor(1, 1, 0)
-	end
-
-	local function CreateKeyRing(name)
-		local b = CreateFrame('CheckButton', name, UIParent, 'ItemButtonTemplate')
-		b:RegisterForClicks('anyUp')
-		b:Hide()
-
-		b:SetScript('OnClick', function()
-			if CursorHasItem() then
-				PutKeyInKeyRing()
-			else
-				ToggleKeyRing()
-			end
-		end)
-
-		b:SetScript('OnReceiveDrag', function()
-			if CursorHasItem() then
-				PutKeyInKeyRing()
-			end
-		end)
-
-		b:SetScript('OnEnter', function(self)
-			GameTooltip:SetOwner(self, 'ANCHOR_LEFT')
-
-			local color = HIGHLIGHT_FONT_COLOR
-			GameTooltip:SetText(KEYRING, color.r, color.g, color.b)
-			GameTooltip:AddLine()
-		end)
-
-		b:SetScript('OnLeave', function()
-			GameTooltip:Hide()
-		end)
-
-		_G[b:GetName() .. 'IconTexture']:SetTexture('Interface\\ContainerFrame\\KeyRing-Bag-Icon')
-		_G[b:GetName() .. 'IconTexture']:SetTexCoord(0, 0.9, 0.1, 1)
-
-		ResizeItemButton(b, 30)
-	end
-	
-	CreateKeyRing('DominosKeyringButton')
-	ResizeItemButton(_G['MainMenuBarBackpackButton'], 30)
-end
 
 
 --[[ Bag Bar ]]--
@@ -101,15 +42,6 @@ function BagBar:SetSetOneBag(enable)
 	self:Reload()
 end
 
-function BagBar:SetShowKeyring(enable)
-	if enable then
-		self.sets.hideKeyring = nil
-	else
-		self.sets.hideKeyring = true
-	end
-	self:Reload()
-end
-
 function BagBar:Reload()
 	if not self.bags then
 		self.bags = {}
@@ -119,10 +51,6 @@ function BagBar:Reload()
 		end
 	end
 	
-	if not self.sets.hideKeyring then
-		table.insert(self.bags, _G['DominosKeyringButton'])
-	end
-
 	if not self.sets.oneBag then
 		table.insert(self.bags, _G['CharacterBag3Slot'])
 		table.insert(self.bags, _G['CharacterBag2Slot'])
@@ -180,17 +108,9 @@ function BagBar:CreateMenu()
 	oneBag:SetScript('OnShow', function() 
 		oneBag:SetChecked(self.sets.oneBag) 
 	end)
+	
 	oneBag:SetScript('OnClick', function() 
 		self:SetSetOneBag(oneBag:GetChecked())
-		_G[panel:GetName() .. L.Columns]:OnShow()
-	end)
-	
-	local showKeyring = panel:NewCheckButton(L.ShowKeyring)
-	showKeyring:SetScript('OnShow', function() 
-		showKeyring:SetChecked(not self.sets.hideKeyring) 
-	end)
-	showKeyring:SetScript('OnClick', function() 
-		self:SetShowKeyring(showKeyring:GetChecked())
 		_G[panel:GetName() .. L.Columns]:OnShow()
 	end)
 	
