@@ -1,34 +1,29 @@
-﻿--[[
-	menuBar.lua
-		A Dominos frame for micro menu buttons
---]]
-
-local menuButtons
-do
-	local loadButtons = function(...)
-		menuButtons = {}
-		
-		for i = 1, select('#', ...) do
-			local b = select(i, ...)
-			local name = b:GetName()
-			if name and name:match('(%w+)MicroButton$') then
-				table.insert(menuButtons, b)
-			end
-		end
-	end
-	loadButtons(_G['MainMenuBarArtFrame']:GetChildren())
-end
-
---[[ Menu Bar ]]--
-
 local MenuBar = Dominos:CreateClass('Frame', Dominos.Frame)
 Dominos.MenuBar  = MenuBar
 
+local WIDTH_OFFSET = 2
+local HEIGHT_OFFSET = 20
+
+local menuButtons
+local loadButtons = function(...)
+	menuButtons = {}
+	for i = 1, select('#', ...) do
+		local b = select(i, ...)
+		local name = b:GetName()
+		if name and name:match('(%w+)MicroButton$') then
+			table.insert(menuButtons, b)
+		end
+	end
+end
+
+
+--[[ Menu Bar ]]--
+
 function MenuBar:New()
 	local f = self.super.New(self, 'menu')
+	f:GenerateButtons()
 	f:LoadButtons()
 	f:Layout()
-
 	return f
 end
 
@@ -41,37 +36,32 @@ function MenuBar:GetDefaults()
 end
 
 function MenuBar:NumButtons()
-	return #menuButtons
+	return self.sets.numButtons or #menuButtons
 end
 
 function MenuBar:AddButton(i)
 	local b = menuButtons[i]
-	if b then
-		b:SetParent(self.header)
-		b:Show()
-
-		self.buttons[i] = b
-	end
+	b:SetParent(self.header)
+	b:Show()
+	self.buttons[i] = b
 end
 
 function MenuBar:RemoveButton(i)
 	local b = self.buttons[i]
-	if b then
-		b:SetParent(nil)
-		b:Hide()
-
-		self.buttons[i] = nil
-	end
+	b:SetParent(nil)
+	b:Hide()
+	self.buttons[i] = nil
 end
-
---override, because the menu bar has weird button sizes
-local WIDTH_OFFSET = 2
-local HEIGHT_OFFSET = 20
+	
+function MenuBar:GenerateButtons()
+	loadButtons(_G['MainMenuBarArtFrame']:GetChildren())
+end
 
 function MenuBar:Layout()
 	if #self.buttons > 0 then
 		local cols = min(self:NumColumns(), #self.buttons)
 		local rows = ceil(#self.buttons / cols)
+
 		local pW, pH = self:GetPadding()
 		local spacing = self:GetSpacing()
 
@@ -89,6 +79,49 @@ function MenuBar:Layout()
 		self:SetWidth(max(w*cols - spacing + pW*2 + WIDTH_OFFSET, 8))
 		self:SetHeight(max(h*ceil(#self.buttons/cols) - spacing + pH*2, 8))
 	else
-		self:SetWidth(30); self:SetHeight(30)
+		self:SetSize(30, 30)
 	end
+end
+
+
+--[[ Menu Code ]]--
+
+local function panel_AddSizeSlider(p)
+	local L = LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')
+	local size = p:NewSlider(L.Size, 1, 1, 1)
+
+	size.OnShow = function(self)
+		self:SetMinMaxValues(1, #menuButtons)
+		self:SetValue(self:GetParent().owner:NumButtons())
+	end
+
+	size.UpdateValue = function(self, value)
+		self:GetParent().owner:SetNumButtons(value)
+		_G[self:GetParent():GetName() .. L.Columns]:OnShow()
+	end
+end
+
+local function AddLayoutPanel(menu)
+	local p = menu:NewPanel(LibStub('AceLocale-3.0'):GetLocale('Dominos-Config').Layout)
+	p:NewOpacitySlider()
+	p:NewFadeSlider()
+	p:NewScaleSlider()
+	p:NewPaddingSlider()
+	p:NewSpacingSlider()
+	p:NewColumnsSlider()
+
+	panel_AddSizeSlider(p)
+end
+
+local function AddAdvancedLayout(self)
+	self:AddAdvancedPanel()
+end
+
+function MenuBar:CreateMenu()
+	local menu = Dominos:NewMenu(self.id)
+
+	AddLayoutPanel(menu)
+	menu:AddAdvancedPanel()
+
+	self.menu = menu
 end
