@@ -35,8 +35,8 @@ local L = LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')
 local _G = getfenv(0)
 
 --profile options
-local NUM_ITEMS = 12
-local width, height, offset = 340, 22, 2
+local NUM_ITEMS = 19
+local width, height, offset = 580, 22, 2
 
 
 --[[ Profile Button ]]--
