@@ -155,6 +155,7 @@ function Menu:AddAdvancedPanel()
 
 	panel:NewLeftToRightCheckbox()
 	panel:NewTopToBottomCheckbox()
+	panel:NewClickThroughCheckbox()
 	
 	panel.width = 250
 	return panel
@@ -236,7 +237,7 @@ end
 --[[ Checkbuttons ]]--
 
 --checkbutton
-function Panel:NewCheckButton(name)
+function Panel:NewCheckButton(name, getter, setter)
 	local button = CreateFrame('CheckButton', self:GetName() .. name, self, 'InterfaceOptionsCheckButtonTemplate')
 	_G[button:GetName() .. 'Text']:SetText(name)
 
@@ -246,6 +247,23 @@ function Panel:NewCheckButton(name)
 	else
 		button:SetPoint('TOPLEFT', 2, 0)
 	end
+	
+	if getter then
+		button:SetScript('OnShow', function(self) 
+			local owner = self:GetParent().owner
+			local f = owner[getter]
+			self:SetChecked(f(owner))
+		end)
+	end
+	
+	if setter then
+		button:SetScript('OnClick', function(self) 
+			local owner = self:GetParent().owner
+			local f = owner[setter]
+			f(owner, self:GetChecked())
+		end)
+	end
+	
 	self.height = self.height + 28
 	self.checkbutton = button
 
@@ -432,26 +450,14 @@ end
 --right to left & left to right checkboxes
 do
 	function Panel:NewLeftToRightCheckbox()
-		local b = self:NewCheckButton(L.LeftToRight)
-		
-		b:SetScript('OnShow', function(self)
-			self:SetChecked(self:GetParent().owner:GetLeftToRight())
-		end)
-		b:SetScript('OnClick', function(self)
-			self:GetParent().owner:SetLeftToRight(self:GetChecked())
-		end)
+		return self:NewCheckButton(L.LeftToRight, 'GetLeftToRight', 'SetLeftToRight')
 	end
 	
-	
 	function Panel:NewTopToBottomCheckbox()			
-		local b = self:NewCheckButton(L.TopToBottom)
-		
-		b:SetScript('OnShow', function(self)
-			self:SetChecked(self:GetParent().owner:GetTopToBottom())
-		end)
-		
-		b:SetScript('OnClick', function(self)
-			self:GetParent().owner:SetTopToBottom(self:GetChecked())
-		end)
+		return self:NewCheckButton(L.TopToBottom, 'GetTopToBottom', 'SetTopToBottom')
+	end
+	
+	function Panel:NewClickThroughCheckbox()			
+		return self:NewCheckButton(L.ClickThrough, 'GetClickThrough', 'SetClickThrough')
 	end
 end
