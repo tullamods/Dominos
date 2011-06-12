@@ -1,8 +1,8 @@
-## Interface: 40100
+## Interface: 40200
 ## Title: Dominos
 ## Notes: A main actionbar replacement
 ## Author: Tuller
-## Version: 4.1.apple1
+## Version: 4.2.0
 ## SavedVariables: DominosDB, DominosVersion
 ## OptionalDeps: Ace3, LibKeyBound-1.0, ButtonFacade, FlyPaper
 embeds.xml
