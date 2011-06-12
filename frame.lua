@@ -491,6 +491,35 @@ function Frame:FrameIsShown()
 	return not self.sets.hidden
 end
 
+
+--[[ Clickthrough ]]--
+
+function Frame:SetClickThrough(enable)
+	self.sets.clickThrough = enable and true or false
+	self:UpdateClickThrough()
+end
+
+function Frame:GetClickThrough()
+	return self.sets.clickThrough
+end
+
+function Frame:UpdateClickThrough()
+	local buttons = self.buttons
+	if not buttons then return end
+
+	local clickThrough = self:GetClickThrough()
+	for i, button in pairs(self.buttons) do
+		if clickThrough then
+			button:Disable()
+			button:EnableMouse(false)
+		else
+			button:Enable()
+			button:EnableMouse(true)
+		end
+	end
+end
+
+
 --[[ Show states ]]--
 
 function Frame:SetShowStates(states)

@@ -822,6 +822,16 @@ function Dominos:ToggleFrames(...)
 	end
 end
 
+--clickthrough
+function Dominos:SetClickThroughForFrames(...)
+	local numArgs = select('#', ...)
+	local enable = select(numArgs - 1, ...)
+
+	for i = 1, numArgs - 2 do
+		self.Frame:ForFrame(select(i, ...), 'SetClickThrough', tonumber(enable) == 1)
+	end
+end
+
 --empty button display
 function Dominos:ToggleGrid()
 	self:SetShowGrid(not self:ShowGrid())
