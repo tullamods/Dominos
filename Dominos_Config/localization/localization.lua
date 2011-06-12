@@ -18,8 +18,6 @@ L.Columns = 'Columns'
 L.Size = 'Size'
 L.Modifiers = 'Modifiers'
 L.QuickPaging = 'Quick Paging'
-L.Help = 'Help'
-L.Harm = 'Harm'
 L.Targeting = 'Targeting'
 L.ShowStates = 'Show States'
 L.Set = 'Set'
@@ -46,6 +44,7 @@ L.EnterConfigMode = 'Configure Bars...'
 L.ActionBarSettings = 'ActionBar %d Settings'
 L.BarSettings = '%s Bar Settings'
 L.ShowTooltips = 'Show Tooltips'
+L.ShowTooltipsCombat = 'Show Tooltips in Combat'
 L.OneBag = 'One Bag'
 L.ShowKeyring = 'Show Keyring'
 L.StickyBars = 'Sticky Bars'
@@ -56,10 +55,14 @@ L.TopToBottom = 'Layout Buttons From Top to Bottom'
 L.LinkedOpacity = 'Docked bars inherit opacity'
 
 L.ALT_KEY_TEXT = 'ALT'
-L.AltShift = 'ALT-' .. SHIFT_KEY_TEXT
-L.CtrlShift = CTRL_KEY_TEXT .. '-' .. SHIFT_KEY_TEXT
-L.CtrlAlt = CTRL_KEY_TEXT .. '-ALT'
-L.CtrlAltShift = CTRL_KEY_TEXT .. '-ALT-' .. SHIFT_KEY_TEXT
+
+L.State_HELP = 'Help'
+L.State_HARM = 'Harm'
+L.State_NOTARGET = 'No Target'
+L.State_ALTSHIFT = 'ALT-' .. SHIFT_KEY_TEXT
+L.State_CTRLSHIFT = CTRL_KEY_TEXT .. '-' .. SHIFT_KEY_TEXT
+L.State_CTRLALT = CTRL_KEY_TEXT .. '-ALT'
+L.State_CTRLALTSHIFT = CTRL_KEY_TEXT .. '-ALT-' .. SHIFT_KEY_TEXT
 
 --totems
 L.ShowTotems = 'Show Totems'

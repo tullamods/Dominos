@@ -152,6 +152,16 @@ showTooltips:SetScript('OnClick', function(self)
 end)
 showTooltips:SetPoint('TOP', showMacros, 'BOTTOM', 0, -10)
 
+--show tooltips in combat
+local showTooltipsCombat = Options:NewSmallCheckButton(L.ShowTooltipsCombat)
+showTooltipsCombat:SetScript('OnShow', function(self)
+	self:SetChecked(Dominos:ShowCombatTooltips())
+end)
+showTooltipsCombat:SetScript('OnClick', function(self)
+	Dominos:SetShowCombatTooltips(self:GetChecked())
+end)
+showTooltipsCombat:SetPoint('TOP', showTooltips, 'BOTTOM', 8, -2)
+
 
 --[[ Dropdowns ]]--
 
