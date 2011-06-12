@@ -118,6 +118,7 @@ function Dominos:GetDefaults()
 			showMacroText = true,
 			showBindingText = true,
 			showTooltips = true,
+			showTooltipsCombat = true,
 			showMinimap = true,
 
 			ab = {
@@ -925,6 +926,13 @@ function Dominos:NumBars()
 end
 
 --tooltips
+function Dominos:ShouldShowTooltips()
+	if self:ShowTooltips() then
+		return (not InCombatLockdown()) or self:ShowCombatTooltips()
+	end
+	return false;	
+end
+
 function Dominos:ShowTooltips()
 	return self.db.profile.showTooltips
 end
@@ -932,6 +940,15 @@ end
 function Dominos:SetShowTooltips(enable)
 	self.db.profile.showTooltips = enable or false
 end
+
+function Dominos:SetShowCombatTooltips(enable)
+	self.db.profile.showTooltipsCombat = enable or false
+end
+
+function Dominos:ShowCombatTooltips()
+	return self.db.profile.showTooltipsCombat
+end
+
 
 --minimap button
 function Dominos:SetShowMinimap(enable)

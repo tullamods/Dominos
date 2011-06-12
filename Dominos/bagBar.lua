@@ -4,8 +4,6 @@
 --]]
 
 local LBF = LibStub('LibButtonFacade', true)
-local bags = {}
-
 
 --[[ Bag Bar ]]--
 

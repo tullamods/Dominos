@@ -129,7 +129,7 @@ function ClassButton:OnEvent(event, arg1)
 end
 
 function ClassButton:OnEnter()
-	if Dominos:ShowTooltips() then
+	if Dominos:ShouldShowTooltips() then
 		if GetCVar('UberTooltips') == '1' then
 			GameTooltip_SetDefaultAnchor(GameTooltip, self)
 		else

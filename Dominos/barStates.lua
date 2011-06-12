@@ -62,7 +62,7 @@ local addState = function(stateType, stateId, stateValue, stateText)
 		type = stateType, 
 		id = stateId, 
 		value = stateValue, 
-		text = (stateText or stateId)
+		text = stateText
 	}
 end
 
