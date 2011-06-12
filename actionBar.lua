@@ -122,12 +122,11 @@ function ActionButton:LoadEvents()
 	self:RegisterEvent('ACTIONBAR_HIDEGRID')
 	self:RegisterEvent('ACTIONBAR_PAGE_CHANGED')
 	self:RegisterEvent('ACTIONBAR_SLOT_CHANGED')
---	self:RegisterEvent('UPDATE_BINDINGS')
 end
 
 --keybound support
 function ActionButton:OnEnter()
-	if Dominos:ShowTooltips() then
+	if Dominos:ShouldShowTooltips() then
 		ActionButton_SetTooltip(self)
 	end
 	KeyBound:Set(self)
@@ -557,7 +556,7 @@ do
 		title:ClearAllPoints()
 		title:SetPoint('BOTTOMLEFT', s, 'TOPLEFT')
 		title:SetJustifyH('LEFT')
-		title:SetText(text or stateId)
+		title:SetText(text or L['State_' .. stateId:upper()])
 
 		local value = s.valText
 		value:ClearAllPoints()
