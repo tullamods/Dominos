@@ -56,8 +56,7 @@ function CastBar:New()
 		f.cast = CastingBar:New(f)
 		f.header:SetParent(nil)
 		f.header:ClearAllPoints()
-		f:SetWidth(240) 
-		f:SetHeight(24)
+		f:SetSize(240, 24) 
 	end
 
 	f:UpdateText()
@@ -124,7 +123,6 @@ function CastingBar:New(parent)
 	f:SetPoint('CENTER')
 
 	local name = f:GetName()
-	local _G = getfenv(0)
 	f.time = _G[name .. 'Time']
 	f.text = _G[name .. 'Text']
 	f.borderTexture = _G[name .. 'Border']

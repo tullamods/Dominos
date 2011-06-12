@@ -66,9 +66,7 @@
 				</Texture>
 
 				<Texture name="$parentBorderShield" file="Interface\CastingBar\UI-CastingBar-Small-Shield" hidden="true">
-					<Size>
-						<AbsDimension x="275" y="68"/>
-					</Size>
+					<Size x="275" y="68"/>
 					<Anchors>
 						<Anchor point="CENTER"/>
 					</Anchors>
