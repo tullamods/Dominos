@@ -112,13 +112,11 @@ end
 
 --this function is used in a lot of places, but never called in Frame
 function Frame:LoadButtons()
+	if not self.AddButton then return end
+	
 	for i = 1, self:NumButtons() do
 		self:AddButton(i)
 	end
-end
-
-function Frame:AddButton(i)
-	--placeholder
 end
 
 function Frame:RemoveButton(i)
