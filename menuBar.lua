@@ -4,16 +4,16 @@ Dominos.MenuBar  = MenuBar
 local WIDTH_OFFSET = 2
 local HEIGHT_OFFSET = 20
 
-local menuButtons
-local loadButtons = function(...)
-	menuButtons = {}
+local getButtons = function(...)
+	local buttons = {}
 	for i = 1, select('#', ...) do
 		local b = select(i, ...)
 		local name = b:GetName()
 		if name and name:match('(%w+)MicroButton$') then
-			table.insert(menuButtons, b)
+			table.insert(buttons, b)
 		end
 	end
+	return buttons
 end
 
 
@@ -21,9 +21,9 @@ end
 
 function MenuBar:New()
 	local f = self.super.New(self, 'menu')
-	f:GenerateButtons()
 	f:LoadButtons()
 	f:Layout()
+
 	return f
 end
 
@@ -36,25 +36,46 @@ function MenuBar:GetDefaults()
 end
 
 function MenuBar:NumButtons()
-	return self.sets.numButtons or #menuButtons
+	return self.sets.numButtons or self:NumMenuButtons()
 end
 
 function MenuBar:AddButton(i)
-	local b = menuButtons[i]
-	b:SetParent(self.header)
-	b:Show()
-	self.buttons[i] = b
+	local b = self:GetMenuButton(i)
+	if b then
+		b:SetParent(self.header)
+		b:Show()
+
+		self.buttons[i] = b
+	end
 end
 
 function MenuBar:RemoveButton(i)
 	local b = self.buttons[i]
-	b:SetParent(nil)
-	b:Hide()
-	self.buttons[i] = nil
+	if b then
+		b:SetParent(nil)
+		b:Hide()
+
+		self.buttons[i] = nil
+	end
 end
+
+do
+	local menuButtons
 	
-function MenuBar:GenerateButtons()
-	loadButtons(_G['MainMenuBarArtFrame']:GetChildren())
+	local getMenuButtons = function() 
+		if not menuButtons then
+			menuButtons = getButtons(_G['MainMenuBarArtFrame']:GetChildren())
+		end
+		return menuButtons
+	end
+	
+	function MenuBar:GetMenuButton(index)
+		return getMenuButtons()[index]
+	end
+	
+	function MenuBar:NumMenuButtons()
+		return #getMenuButtons()
+	end
 end
 
 function MenuBar:Layout()
@@ -91,7 +112,7 @@ local function panel_AddSizeSlider(p)
 	local size = p:NewSlider(L.Size, 1, 1, 1)
 
 	size.OnShow = function(self)
-		self:SetMinMaxValues(1, #menuButtons)
+		self:SetMinMaxValues(1, self:GetParent().owner:NumMenuButtons())
 		self:SetValue(self:GetParent().owner:NumButtons())
 	end
 
