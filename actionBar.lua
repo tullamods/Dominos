@@ -317,12 +317,12 @@ end
 
 --[[ Paging Code ]]--
 
-function ActionBar:SetPage(stateId, page)
+function ActionBar:SetOffset(stateId, page)
 	self.pages[stateId] = page
 	self:UpdateStateDriver()
 end
 
-function ActionBar:GetPage(stateId)
+function ActionBar:GetOffset(stateId)
 	return self.pages[stateId]
 end
 
@@ -347,7 +347,7 @@ function ActionBar:UpdateStateDriver()
 				if self:IsPossessBar() then
 					header = header .. condition .. 'possess;'
 				end
-			elseif self:GetPage(stateId) then
+			elseif self:GetOffset(stateId) then
 				header = header .. condition .. 'S' .. i .. ';'
 			end
 		end
@@ -371,9 +371,11 @@ function ActionBar:UpdateAction(i)
 	local maxSize = self:MaxLength()
 	
 	for i, state in Dominos.BarStates:getAll() do	
-		local page = self:GetPage(state.id)
-		local actionId = page and ToValidID(b:GetAttribute('action--base') + (self.id + page - 1)*maxSize) or nil
-
+		local offset = self:GetOffset(state.id)
+		local actionId = nil
+		if offset then
+			actionId = ToValidID(b:GetAttribute('action--base') + offset * maxSize) 
+		end
 		b:SetAttribute('action--S' .. i, actionId)
 	end
 
@@ -389,11 +391,16 @@ function ActionBar:UpdateActions()
 	local maxSize = self:MaxLength()
 
 	for i, state in Dominos.BarStates:getAll() do
-		local page = self:GetPage(state.id)
-		
-		for _, b in pairs(self.buttons) do
-			local actionId = page and ToValidID(b:GetAttribute('action--base') + (self.id + page - 1)*maxSize) or nil
-			b:SetAttribute('action--S' .. i, actionId)
+		local offset = self:GetOffset(state.id)
+		if offset then
+			for _, b in pairs(self.buttons) do
+				local actionId = ToValidID(b:GetAttribute('action--base') + offset * maxSize)
+				b:SetAttribute('action--S' .. i, actionId)
+			end
+		else
+			for _, b in pairs(self.buttons) do
+				b:SetAttribute('action--S' .. i, nil)
+			end
 		end
 	end
 
@@ -528,12 +535,12 @@ do
 	--state slider template
 	local function ConditionSlider_OnShow(self)
 		self:SetMinMaxValues(-1, Dominos:NumBars() - 1)
-		self:SetValue(self:GetParent().owner:GetPage(self.stateId) or -1)
+		self:SetValue(self:GetParent().owner:GetOffset(self.stateId) or -1)
 		self:UpdateText(self:GetValue())
 	end
 
 	local function ConditionSlider_UpdateValue(self, value)
-		self:GetParent().owner:SetPage(self.stateId, (value > -1 and value) or nil)
+		self:GetParent().owner:SetOffset(self.stateId, (value > -1 and value) or nil)
 	end
 
 	local function ConditionSlider_UpdateText(self, value)
