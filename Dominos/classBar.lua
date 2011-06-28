@@ -211,6 +211,7 @@ end
 
 function ClassBar:LoadButtons()
 	self:UpdateForms()
+	self:UpdateClickThrough()
 end
 
 function ClassBar:AddButton(i)
