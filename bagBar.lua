@@ -59,6 +59,7 @@ function BagBar:Reload()
 	table.insert(self.bags, _G['MainMenuBarBackpackButton'])
 	
 	self:SetNumButtons(#self.bags)
+	self:UpdateClickThrough()
 end
 
 

@@ -117,6 +117,8 @@ function Frame:LoadButtons()
 	for i = 1, self:NumButtons() do
 		self:AddButton(i)
 	end
+	
+	self:UpdateClickThrough()
 end
 
 function Frame:RemoveButton(i)
@@ -508,10 +510,8 @@ function Frame:UpdateClickThrough()
 	local clickThrough = self:GetClickThrough()
 	for i, button in pairs(self.buttons) do
 		if clickThrough then
-			button:Disable()
 			button:EnableMouse(false)
 		else
-			button:Enable()
 			button:EnableMouse(true)
 		end
 	end

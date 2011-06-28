@@ -236,6 +236,7 @@ function ActionBar:New(id)
 
 	f:LoadStateController()
 	f:LoadButtons()
+	f:UpdateClickThrough()
 	f:UpdateStateDriver()
 	f:Layout()
 	f:UpdateGrid()
