@@ -1,5 +1,5 @@
 local MenuBar = Dominos:CreateClass('Frame', Dominos.Frame)
-Dominos.MenuBar  = MenuBar
+Dominos.MenuBar = MenuBar
 
 local WIDTH_OFFSET = 2
 local HEIGHT_OFFSET = 20
@@ -16,14 +16,16 @@ local getButtons = function(...)
 	return buttons
 end
 
-
 --[[ Menu Bar ]]--
 
 function MenuBar:New()
 	local f = self.super.New(self, 'menu')
 	f:LoadButtons()
+	if not f.sets.disabled then
+		f.sets.disabled = {}
+	end
+	--f:Layout()
 	f:Layout()
-
 	return f
 end
 
@@ -35,7 +37,11 @@ function MenuBar:GetDefaults()
 	}
 end
 
-function MenuBar:NumButtons()
+function MenuBar:NumButtons(f)
+	local self = self
+	if f then
+		self  = f
+	end
 	return self.sets.numButtons or self:NumMenuButtons()
 end
 
@@ -79,6 +85,19 @@ do
 end
 
 function MenuBar:Layout()
+
+	self.buttons = {}
+	for i = 1, self:NumMenuButtons() do
+		if not self.sets.disabled[self:GetMenuButton(i):GetName()] and (i <= self:NumButtons(self) ) then
+			self:GetMenuButton(i):Show()
+			tinsert(self.buttons, self:GetMenuButton(i))
+		else
+			self:GetMenuButton(i):Hide()
+		end
+	end
+
+
+
 	if #self.buttons > 0 then
 		local cols = min(self:NumColumns(), #self.buttons)
 		local rows = ceil(#self.buttons / cols)
@@ -86,13 +105,36 @@ function MenuBar:Layout()
 		local pW, pH = self:GetPadding()
 		local spacing = self:GetSpacing()
 
+		local isLeftToRight = self:GetLeftToRight()
+		local isTopToBottom = self:GetTopToBottom()
+
 		local b = self.buttons[1]
+		
+		local L, R, T, B = b:GetHitRectInsets() --By default T = 18. all others are zero
+		if T > 0 then
+			HEIGHT_OFFSET = T + 2
+		else
+			HEIGHT_OFFSET = 0
+		end
+
 		local w = b:GetWidth() + spacing - WIDTH_OFFSET
 		local h = b:GetHeight() + spacing - HEIGHT_OFFSET
 
 		for i,b in pairs(self.buttons) do
-			local col = (i-1) % cols
-			local row = ceil(i / cols) - 1
+			local col
+			local row
+			if isLeftToRight then
+				col = (i-1) % cols
+			else
+				col = (cols-1) - (i-1) % cols
+			end
+
+			if isTopToBottom then
+				row = ceil(i / cols) - 1
+			else
+				row = rows - ceil(i / cols)
+			end
+			
 			b:ClearAllPoints()
 			b:SetPoint('TOPLEFT', w*col + pW, -(h*row + pH) + HEIGHT_OFFSET)
 		end
@@ -103,7 +145,6 @@ function MenuBar:Layout()
 		self:SetSize(30, 30)
 	end
 end
-
 
 --[[ Menu Code ]]--
 
@@ -118,7 +159,7 @@ local function panel_AddSizeSlider(p)
 
 	size.UpdateValue = function(self, value)
 		self:GetParent().owner:SetNumButtons(value)
-		_G[self:GetParent():GetName() .. L.Columns]:OnShow()
+		p.Cols:OnShow()
 	end
 end
 
@@ -129,20 +170,37 @@ local function AddLayoutPanel(menu)
 	p:NewScaleSlider()
 	p:NewPaddingSlider()
 	p:NewSpacingSlider()
-	p:NewColumnsSlider()
+	p.Cols = p:NewColumnsSlider()
 
 	panel_AddSizeSlider(p)
 end
 
-local function AddAdvancedLayout(self)
-	self:AddAdvancedPanel()
+local function NewCheckButton(title, p)
+	local tog = p:NewCheckButton(title)
+	tog:SetScript('OnClick', function(self)
+		self:GetParent().owner.sets.disabled[title] = self:GetChecked() or nil
+		self:GetParent().owner:Layout()
+	end)
+	tog:SetScript('OnShow', function(self)
+		self:SetChecked(self:GetParent().owner.sets.disabled[title])
+	end)
+	return tog
+
+
+end
+
+local function AddDisableButtonPanel(menu)
+	local p = menu:NewPanel("Disable Buttons")
+	for i = 1, MenuBar:NumMenuButtons() do
+		NewCheckButton(MenuBar:GetMenuButton(i):GetName(), p)
+	end
 end
 
 function MenuBar:CreateMenu()
 	local menu = Dominos:NewMenu(self.id)
 
 	AddLayoutPanel(menu)
+	AddDisableButtonPanel(menu)
 	menu:AddAdvancedPanel()
-
 	self.menu = menu
 end
