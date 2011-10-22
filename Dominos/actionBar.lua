@@ -205,7 +205,7 @@ ActionBar.mainbarOffsets = {
 
 		if i == 'DRUID' then
 			pages.cat = 6
-			pages.bar = 8
+			pages.bear = 8
 			pages.moonkin = 9
 			pages.tree = 7
 		elseif i == 'WARRIOR' then
