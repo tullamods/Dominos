@@ -1,8 +1,27 @@
+--[[
+	MenuBar, by Goranaws
+--]]
+
 local MenuBar = Dominos:CreateClass('Frame', Dominos.Frame)
 Dominos.MenuBar = MenuBar
 
 local WIDTH_OFFSET = 2
 local HEIGHT_OFFSET = 20
+
+local MENU_BUTTON_NAMES = {
+	[CharacterMicroButton] = CHARACTER_BUTTON,
+	[SpellbookMicroButton] = SPELLBOOK_ABILITIES_BUTTON,
+	[TalentMicroButton] = TALENTS_BUTTON,
+	[AchievementMicroButton] = ACHIEVEMENT_BUTTON,
+	[QuestLogMicroButton] = QUESTLOG_BUTTON,
+	[GuildMicroButton] = LOOKINGFORGUILD,
+	[PVPMicroButton] = PLAYER_V_PLAYER,
+	[LFDMicroButton] = DUNGEONS_BUTTON,
+	[EJMicroButton] = ENCOUNTER_JOURNAL,
+	[RaidMicroButton] = RAID,
+	[MainMenuMicroButton] = MAINMENU_BUTTON,
+	[HelpMicroButton] = HELP_BUTTON
+}
 
 local getButtons = function(...)
 	local buttons = {}
@@ -85,8 +104,8 @@ do
 end
 
 function MenuBar:Layout()
-
 	self.buttons = {}
+	
 	for i = 1, self:NumMenuButtons() do
 		if not self.sets.disabled[self:GetMenuButton(i):GetName()] and (i <= self:NumButtons(self) ) then
 			self:GetMenuButton(i):Show()
@@ -95,8 +114,6 @@ function MenuBar:Layout()
 			self:GetMenuButton(i):Hide()
 		end
 	end
-
-
 
 	if #self.buttons > 0 then
 		local cols = min(self:NumColumns(), #self.buttons)
@@ -120,7 +137,7 @@ function MenuBar:Layout()
 		local w = b:GetWidth() + spacing - WIDTH_OFFSET
 		local h = b:GetHeight() + spacing - HEIGHT_OFFSET
 
-		for i,b in pairs(self.buttons) do
+		for i, b in pairs(self.buttons) do
 			local col
 			local row
 			if isLeftToRight then
@@ -175,24 +192,26 @@ local function AddLayoutPanel(menu)
 	panel_AddSizeSlider(p)
 end
 
-local function NewCheckButton(title, p)
-	local tog = p:NewCheckButton(title)
+local function NewCheckButton(name, button, p)
+	local tog = p:NewCheckButton(name)
+	
 	tog:SetScript('OnClick', function(self)
-		self:GetParent().owner.sets.disabled[title] = self:GetChecked() or nil
+		self:GetParent().owner.sets.disabled[button:GetName()] = self:GetChecked() or nil
 		self:GetParent().owner:Layout()
 	end)
+	
 	tog:SetScript('OnShow', function(self)
-		self:SetChecked(self:GetParent().owner.sets.disabled[title])
+		self:SetChecked(self:GetParent().owner.sets.disabled[button:GetName()])
 	end)
+	
 	return tog
-
-
 end
 
 local function AddDisableButtonPanel(menu)
-	local p = menu:NewPanel("Disable Buttons")
+	local p = menu:NewPanel(LibStub('AceLocale-3.0'):GetLocale('Dominos-Config').DisableMenuButtons)
 	for i = 1, MenuBar:NumMenuButtons() do
-		NewCheckButton(MenuBar:GetMenuButton(i):GetName(), p)
+		local button = MenuBar:GetMenuButton(i)
+		NewCheckButton(MENU_BUTTON_NAMES[button] or  button:GetName(), button, p)
 	end
 end
 
