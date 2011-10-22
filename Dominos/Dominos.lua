@@ -183,6 +183,24 @@ function Dominos:UpdateSettings(major, minor, bugfix)
 			end
 		end
 	end
+	
+	--fix missing druid bear form paging
+	for profile, sets in pairs(self.db.sv.profiles) do
+		if sets.frames then
+			for frameId, frameSets in pairs(sets.frames) do
+				if frameSets.pages then
+					for class, states in pairs(frameSets.pages) do
+						--convert class states
+						if class == 'DRUID' then
+							if not states['bear'] then
+								states['bear'] = 8
+							end
+						end
+					end
+				end
+			end
+		end
+	end
 end
 
 function Dominos:UpdateVersion()
