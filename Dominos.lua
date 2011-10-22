@@ -126,24 +126,6 @@ function Dominos:GetDefaults()
 end
 
 function Dominos:UpdateSettings(major, minor, bugfix)
-	if major == '1' and minor < '23' then
-		for profile,sets in pairs(self.db.sv.profiles) do
-			local frames = sets.frames
-			if frames then
-				local frameSets = frames[1]
-				if frameSets then
-					local rogueStates = frameSets.pages and frameSets.pages['ROGUE']
-					if rogueStates then
-						local shadowDance = rogueStates['[bonusbar:2]']
-						if not shadowDance then
-							rogueStates['[bonusbar:2]'] = 6
-						end
-					end
-				end
-			end
-		end
-	end
-
 	--perform state translation to handle updates from older versions
 	if major < '4' then
 		for profile,sets in pairs(self.db.sv.profiles) do
@@ -219,6 +201,7 @@ function Dominos:Load()
 	for i = 1, self:NumBars() do
 		self.ActionBar:New(i)
 	end
+	
 	if HasClassBar() then
 		self.ClassBar:New()
 	end
@@ -234,8 +217,6 @@ function Dominos:Load()
 
 	--anchor everything
 	self.Frame:ForAll('Reanchor')
---	self.Frame:ForAll('UpdateAlpha')
---	self.Frame:ForAll('UpdateWatched')
 
 	--minimap button
 	self:UpdateMinimapButton()
