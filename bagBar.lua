@@ -20,10 +20,8 @@ end
 
 function BagBar:SkinButton(b)
 	if b.skinned then return end
-
-	if LBF then
-		LBF:Group('Dominos', 'Bag Bar'):AddButton(b, {Icon = _G[b:GetName() .. 'IconTexture']})
-	end
+	
+	Dominos:Masque('Bag Bar', b, {Icon = _G[b:GetName() .. 'IconTexture']})
 	
 	b.skinned = true
 end

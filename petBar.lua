@@ -35,10 +35,7 @@ end
 --if we have button facade support, then skin the button that way
 --otherwise, apply the dominos style to the button to make it pretty
 function PetButton:Skin()
-	local LBF = LibStub('LibButtonFacade', true)
-	if LBF then
-		LBF:Group('Dominos', 'Pet Bar'):AddButton(self)
-	else
+	if not Dominos:Masque('Pet Bar', self) then
 		_G[self:GetName() .. 'Icon']:SetTexCoord(0.06, 0.94, 0.06, 0.94)
 		self:GetNormalTexture():SetVertexColor(1, 1, 1, 0.5)
 	end
