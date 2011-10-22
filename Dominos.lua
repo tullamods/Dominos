@@ -44,12 +44,6 @@ function Dominos:OnInitialize()
 	local kb = LibStub('LibKeyBound-1.0')
 	kb.RegisterCallback(self, 'LIBKEYBOUND_ENABLED')
 	kb.RegisterCallback(self, 'LIBKEYBOUND_DISABLED')
-
-	--button facade support
-	local LBF = LibStub('LibButtonFacade', true)
-	if LBF then
-		LBF:RegisterSkinCallback('Dominos', self.OnSkin, self)
-	end
 end
 
 function Dominos:OnEnable()
@@ -346,28 +340,6 @@ function Dominos:HideBlizzard()
 
 	--prevent multi actionbar grids from randomly showing
 	MultiActionBar_UpdateGrid = Multibar_EmptyFunc
-end
-
---[[ Button Facade Events ]]--
-
-function Dominos:OnSkin(skin, glossAlpha, gloss, group, _, colors)
-	local styleDB
-	if group == 'Action Bar' then
-		styleDB = self.db.profile.ab.style
-	elseif group == 'Pet Bar' then
-		styleDB = self.db.profile.petStyle
-	elseif group == 'Class Bar' then
-		styleDB = self.db.profile.classStyle
-	elseif group == 'Bag Bar' then
-		styleDB = self.db.profile.bagStyle
-	end
-
-	if styleDB then
-		styleDB[1] = skin
-		styleDB[2] = glossAlpha
-		styleDB[3] = gloss
-		styleDB[4] = colors
-	end
 end
 
 
