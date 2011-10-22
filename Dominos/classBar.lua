@@ -69,10 +69,8 @@ function ClassButton:Create(id)
 	b:UpdateSpell()
 	b:UpdateEvents()
 	b:UpdateHotkey()
-
-	if LBF then
-		LBF:Group('Dominos', 'Class Bar'):AddButton(b)
-	else
+	
+	if not Dominos:Masque('Class Bar', b) then
 		b.icon:SetTexCoord(0.06, 0.94, 0.06, 0.94)
 		b:GetNormalTexture():SetVertexColor(1, 1, 1, 0.5)
 	end

@@ -10,7 +10,6 @@ local format = string.format
 local MAX_BUTTONS = 120
 local NUM_POSSESS_BAR_BUTTONS = 12
 local KeyBound = LibStub('LibKeyBound-1.0')
-local LBF = LibStub('LibButtonFacade', true)
 
 
 --[[ Action Button ]]--
@@ -166,9 +165,7 @@ function ActionButton:LoadAction()
 end
 
 function ActionButton:Skin()
-	if LBF then
-		LBF:Group('Dominos', 'Action Bar'):AddButton(self)
-	else
+	if not Dominos:Masque('Action Bar', self) then
 		_G[self:GetName() .. 'Icon']:SetTexCoord(0.06, 0.94, 0.06, 0.94)
 		self:GetNormalTexture():SetVertexColor(1, 1, 1, 0.5)
 	end

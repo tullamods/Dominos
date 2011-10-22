@@ -124,14 +124,7 @@ function Dominos:GetDefaults()
 			ab = {
 				count = 10,
 				showgrid = true,
-				style = {'Entropy: Copper', 0.5, true},
 			},
-
-			petStyle  = {'Entropy: Silver', 0.5, nil},
-
-			classStyle = {'Entropy: Silver', 0.5, nil},
-
-			bagStyle = {'Entropy: Bronze', 0.5, nil},
 
 			frames = {}
 		}
@@ -239,15 +232,6 @@ function Dominos:Load()
 	self.BagBar:New()
 	self.MenuBar:New()
 	self.VehicleBar:New()
-
-	--button facade support
-	local bf = LibStub('LibButtonFacade', true)
-	if bf then
-		bf:Group('Dominos', 'Action Bar'):Skin(unpack(self.db.profile.ab.style))
-		bf:Group('Dominos', 'Pet Bar'):Skin(unpack(self.db.profile.petStyle))
-		bf:Group('Dominos', 'Class Bar'):Skin(unpack(self.db.profile.classStyle))
-		bf:Group('Dominos', 'Bag Bar'):Skin(unpack(self.db.profile.bagStyle))
-	end
 
 	--load in extra functionality
 	for _,module in self:IterateModules() do
@@ -1009,6 +993,24 @@ end
 
 function Dominos:IsLinkedOpacityEnabled()
 	return self.db.profile.linkedOpacity
+end
+
+--[[ Masque Support ]]--
+
+function Dominos:Masque(group, button, buttonData)
+	local Masque = LibStub('Masque', true)
+	if Masque then
+		Masque:Group('Dominos', group):AddButton(button, buttonData)
+		return true
+	end
+end
+
+function Dominos:RemoveMasque(group, button)
+	local Masque = LibStub('Masque', true)
+	if Masque then
+		Masque:Group('Dominos', group):RemoveButton(button)
+		return true
+	end
 end
 
 
