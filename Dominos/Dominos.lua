@@ -192,8 +192,12 @@ function Dominos:UpdateSettings(major, minor, bugfix)
 					for class, states in pairs(frameSets.pages) do
 						--convert class states
 						if class == 'DRUID' then
-							if not states['bear'] then
+							if tonumber(frameId) == 1 and not states['bear'] then
 								states['bear'] = 8
+							else
+								if tonumber(frameId) ~= 1 and states['bear'] == 8 then
+									states['bear'] = nil
+								end
 							end
 						end
 					end
