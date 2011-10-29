@@ -1,5 +1,5 @@
-local ExtraActionBar = _G['ExtraActionBarFrame']
-if not ExtraActionBar then return end
+local ExtraActionBarFrame = _G['ExtraActionBarFrame']
+if not ExtraActionBarFrame then return end
 
 local ExtraBar = Dominos:CreateClass('Frame', Dominos.Frame)
 Dominos.ExtraBar  = ExtraBar
@@ -25,12 +25,16 @@ function ExtraBar:GetDefaults()
 end
 
 function ExtraBar:Layout()
-	ExtraActionBar:SetParent(self.header)
-	ExtraActionBar:ClearAllPoints()
-	ExtraActionBar:SetPoint('CENTER')
+	self:SetSize(64, 64)
+
+	-- ExtraActionBarFrame:SetScript('OnLoad', nil)
+	-- ExtraActionBarFrame:Show()
+	ExtraActionButton1:SetAttribute('showgrid', 1)
 	
-	self:SetSize(ExtraActionBar:GetSize())
+	ExtraActionBarFrame:SetParent(self.header)
+	ExtraActionBarFrame:ClearAllPoints()
+	ExtraActionBarFrame:SetPoint('CENTER')
 	
 	self.drag:SetFrameStrata('HIGH')
-	self.drag:SetFrameLevel(ExtraActionBar:GetFrameLevel() + 5)
+	self.drag:SetFrameLevel(ExtraActionBarFrame:GetFrameLevel() + 5)
 end
