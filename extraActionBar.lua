@@ -10,9 +10,19 @@ function ExtraBar:New()
 	end
 
 	local f = self.super.New(self, 'extra')
-	f:SetFrameStrata('HIGH')
+	f:LoadButtons()
 	f:Layout()
+	f:SetScript('OnEvent', f.OnEvent)
+	f:RegisterEvent('UPDATE_EXTRA_ACTIONBAR')
+	f:UpdateButtonsShown()
+		
 	return f
+end
+
+function ExtraBar:OnEvent(self, event, ...)
+	if event == 'UPDATE_EXTRA_ACTIONBAR' then
+		self:UpdateButtonsShown()
+	end
 end
 
 function ExtraBar:GetDefaults()
@@ -20,21 +30,42 @@ function ExtraBar:GetDefaults()
 		point = 'CENTER',
 		x = -244,
 		y = 0,
-		numButtons = 1,
 	}
 end
 
-function ExtraBar:Layout()
-	self:SetSize(64, 64)
+function ExtraBar:NumButtons(f)
+	return 1
+end
 
-	-- ExtraActionBarFrame:SetScript('OnLoad', nil)
-	-- ExtraActionBarFrame:Show()
-	ExtraActionButton1:SetAttribute('showgrid', 1)
-	
-	ExtraActionBarFrame:SetParent(self.header)
-	ExtraActionBarFrame:ClearAllPoints()
-	ExtraActionBarFrame:SetPoint('CENTER')
-	
-	self.drag:SetFrameStrata('HIGH')
-	self.drag:SetFrameLevel(ExtraActionBarFrame:GetFrameLevel() + 5)
+function ExtraBar:AddButton(i)
+	local b = self:GetExtraButton(i)
+	if b then
+		b:SetAttribute('showgrid', 1)
+		b:SetParent(self.header)
+		b:Show()
+
+		self.buttons[i] = b
+	end
+end
+
+function ExtraBar:RemoveButton(i)
+	local b = self.buttons[i]
+	if b then
+		b:SetParent(nil)
+		b:Hide()
+
+		self.buttons[i] = nil
+	end
+end
+
+function ExtraBar:GetExtraButton(index)
+	return _G['ExtraActionButton' .. index]
+end
+
+function ExtraBar:UpdateButtonsShown()
+	if HasExtraActionBar() then
+		self.header:Show()
+	else
+		self.header:Hide()
+	end
 end
