@@ -54,6 +54,7 @@ L.LeftToRight = 'Layout Buttons From Left to Right'
 L.TopToBottom = 'Layout Buttons From Top to Bottom'
 L.LinkedOpacity = 'Docked bars inherit opacity'
 L.ClickThrough = 'Enable Click Through'
+L.DisableMenuButtons = 'Disable Buttons'
 
 L.ALT_KEY_TEXT = 'ALT'
 
