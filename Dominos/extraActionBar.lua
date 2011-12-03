@@ -5,24 +5,19 @@ local ExtraBar = Dominos:CreateClass('Frame', Dominos.Frame)
 Dominos.ExtraBar  = ExtraBar
 
 function ExtraBar:New()
-	if UIPARENT_MANAGED_FRAME_POSITIONS['ExtraActionBarFrame'] then
-		UIPARENT_MANAGED_FRAME_POSITIONS['ExtraActionBarFrame'] = nil
-	end
-
 	local f = self.super.New(self, 'extra')
+	
+	local proxyShower = CreateFrame('Frame', nil, ExtraActionBarFrame, ' SecureHandlerShowHideTemplate')
+	proxyShower:SetFrameRef('extraBar', f.header)
+	proxyShower:SetAttribute('_onshow', [[ self:GetFrameRef('extraBar'):Show() ]])
+	proxyShower:SetAttribute('_onhide', [[ self:GetFrameRef('extraBar'):Hide() ]])
+	ExtraActionBarFrame:SetParent(UIParent)
+	
 	f:LoadButtons()
 	f:Layout()
-	f:SetScript('OnEvent', f.OnEvent)
-	f:RegisterEvent('UPDATE_EXTRA_ACTIONBAR')
 	f:UpdateButtonsShown()
-		
+	
 	return f
-end
-
-function ExtraBar:OnEvent(self, event, ...)
-	if event == 'UPDATE_EXTRA_ACTIONBAR' then
-		self:UpdateButtonsShown()
-	end
 end
 
 function ExtraBar:GetDefaults()

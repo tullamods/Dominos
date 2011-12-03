@@ -286,8 +286,11 @@ function Dominos:HideBlizzard()
 		f:Hide()
 	end)
 
-	local nilFramePositions = newForAll(function(i)
-		UIPARENT_MANAGED_FRAME_POSITIONS[i] = nil
+	local nilFramePositions = newForAll(function(name)
+		local f = _G[name]
+		if f then
+			f.ignoreFramePositionManager = true
+		end
 	end)
 
 	disableFrames(
@@ -313,8 +316,7 @@ function Dominos:HideBlizzard()
 		'ShapeshiftBarFrame',
 		'PossessBarFrame',
 		'MultiCastActionBarFrame',
-		'PETACTIONBAR_YPOS',
-		'MULTICASTACTIONBAR_YPOS'
+		'ExtraActionBarFrame'
 	)
 
 	--register necessary main menu events
