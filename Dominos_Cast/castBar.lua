@@ -1,40 +1,8 @@
---[[
-	castBar.lua
-		A dominos based casting bar
---]]
-
---[[
-	Copyright (c) 2008-2009 Jason Greer
-	All rights reserved.
-
-	Redistribution and use in source and binary forms, with or without 
-	modification, are permitted provided that the following conditions are met:
-
-		* Redistributions of source code must retain the above copyright notice, 
-		  this list of conditions and the following disclaimer.
-		* Redistributions in binary form must reproduce the above copyright
-		  notice, this list of conditions and the following disclaimer in the 
-		  documentation and/or other materials provided with the distribution.
-		* Neither the name of the author nor the names of its contributors may 
-		  be used to endorse or promote products derived from this software 
-		  without specific prior written permission.
-
-	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
-	AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
-	IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
-	ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE 
-	LIABLE FORANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
-	CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
-	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
-	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
-	CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
-	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
-	POSSIBILITY OF SUCH DAMAGE.
---]]
-
 local DCB = Dominos:NewModule('CastingBar')
-local CastBar, CastingBar
+local CastBar = Dominos:CreateClass('Frame', Dominos.Frame)
+local L = LibStub('AceLocale-3.0'):GetLocale('Dominos-CastingBar')
 
+-- Module Code
 function DCB:Load()
 	self.frame = CastBar:New()
 end
@@ -43,25 +11,22 @@ function DCB:Unload()
 	self.frame:Free()
 end
 
-
---[[ Dominos Frame Object ]]--
-
-CastBar = Dominos:CreateClass('Frame', Dominos.Frame)
-
+-- Core Code
 function CastBar:New()
 	local f = self.super.New(self, 'cast')
-	f:SetFrameStrata('HIGH')
-
-	if not f.cast then
-		f.cast = CastingBar:New(f)
+	if not self.cast then
 		f.header:SetParent(nil)
 		f.header:ClearAllPoints()
-		f:SetSize(240, 24) 
+		f:SetWidth(240) 
+		f:SetHeight(24)
 	end
-
-	f:UpdateText()
+	
+	f:CheckDefaults()
+	f:Time()
 	f:Layout()
-
+	f:AdjustCastingBar()
+	f:UpdateText()
+	f:UpdateTexture()
 	return f
 end
 
@@ -70,8 +35,195 @@ function CastBar:GetDefaults()
 		point = 'CENTER',
 		x = 0,
 		y = 30,
+		height = 8,
+		width = 28,
+		padding = 0,
 		showText = true,
+		SetBlizzBorder = 1,
+		texture = DEFAULT_STATUSBAR_TEXTURE,
 	}
+end
+
+function CastBar:CheckDefaults()
+	self.sets.texture = self.sets.texture or DEFAULT_STATUSBAR_TEXTURE
+	self.sets.width = self.sets.width or 28
+	self.sets.height = self.sets.height or 8
+	self.sets.padding = self.sets.padding or 0
+end
+
+function CastBar:Layout()
+	
+	local height = ((self.sets.height*10) * (100/256))
+	local width = ((self.sets.width * 10) * (206/256))
+
+	self:SetSize(((width + (self.sets.padding )*2) - 14) , ((height + (self.sets.padding)*2) - 8) )
+
+	if self.sets.border then
+		self.widthAdjust, self.heightAdjust  = self.sets.width * 10,  self.sets.height *4
+		self.time:SetJustifyH("LEFT")
+	elseif self.sets.SetBlizzBorder then
+		self.widthAdjust, self.heightAdjust  = self.sets.width * 10, self.sets.height * 10
+		self.time:SetJustifyH("LEFT")
+	else
+		self.widthAdjust, self.heightAdjust  = self.sets.width * 9.85, self.sets.height * 9
+		self.time:SetJustifyH("RIGHT")
+	end
+
+	
+	CastingBarFrameBorderShield:SetSize(self.widthAdjust, self.heightAdjust)
+	CastingBarFrame:SetSize( (self.sets.width * 10) * (47/64), (self.sets.height * 10) * (11/64))
+
+	self:Configuration()
+end
+
+function CastBar:AdjustCastingBar()
+	CastingBarFrameBorder:ClearAllPoints()
+	CastingBarFrameBorder:SetAllPoints(CastingBarFrameBorderShield)
+	
+	CastingBarFrameFlash:ClearAllPoints()
+	CastingBarFrameFlash:SetAllPoints(CastingBarFrameBorderShield)
+	
+	CastingBarFrameText:ClearAllPoints()
+	CastingBarFrameText:SetAllPoints(CastingBarFrameBorderShield)
+	
+	CastingBarFrameBorderShield:ClearAllPoints()
+	CastingBarFrameBorderShield:SetPoint("CENTER", self)
+
+
+	CastingBarFrame:ClearAllPoints()
+  	CastingBarFrame:SetParent(self)
+	CastingBarFrame:SetPoint("CENTER", CastingBarFrameBorderShield)
+end
+
+function CastBar:Time()
+	if not self.time then
+		local time = CastingBarFrame:CreateFontString(nil, "OVERLAY", "TextStatusBarText")
+		time:SetTextColor(1.0,1.0,1.0)
+		time:SetPoint("RIGHT", CastingBarFrame, 0, 0)
+		time:SetSize(30, 30)
+		time:SetJustifyH("LEFT")
+		self.time = time
+	end
+
+
+
+--[[ this script forces the cast bar to stay where we want it, And controls the time text.]]--
+	self:SetScript("OnUpdate", function( self, elapsed)
+		CastingBarFrame:ClearAllPoints()
+  		CastingBarFrame:SetParent(self)
+		CastingBarFrame:SetPoint("CENTER", CastingBarFrameBorderShield)
+		if self.sets.showText then
+			self.stop = select(6, UnitCastingInfo("player")) or select(6, UnitChannelInfo("player"))
+			if self.stop then
+				self.time:SetFormattedText("%.1f", (self.stop / 1000) - GetTime())
+			else
+				self.time:SetText("")
+			end
+		else
+			self.time:SetText("")
+		end
+		if Dominos.locked == false then
+			self.border:Show()
+		else
+			self.border:Hide()
+		end
+	end)
+end
+
+local function CreateWidthSlider(p)
+	local s = p:NewSlider(L.Width, 10, 100, 1)
+	s.OnShow = function(self)
+		self:SetValue(ceil(self:GetParent().owner.sets.width))
+	end
+	s.UpdateValue = function(self, value)
+		local f = self:GetParent().owner
+		f.sets.width = value
+		f:Layout()
+	end
+end
+
+local function CreateHeightSlider(p)
+	local s = p:NewSlider(L.Height, 5, 45, 1, OnShow)
+	s.OnShow = function(self)
+		self:SetValue(self:GetParent().owner.sets.height)
+	end
+	s.UpdateValue = function(self, value)
+		local f = self:GetParent().owner
+		f.sets.height = value
+		f:Layout()
+	end
+end
+
+local function CreatePaddingSlider(p)
+	local s = p:NewSlider(L.Padding, -3, 32, 1, OnShow)
+	s.OnShow = function(self)
+		self:SetValue(self:GetParent().owner.sets.padding)
+	end
+	s.UpdateValue = function(self, value)
+		local f = self:GetParent().owner
+		f.sets.padding = value
+		f:Layout()
+	end
+end
+
+function CastBar:Configuration()
+	if not self.border then
+		--This texture allows the user to modify 
+		--the cast bar and see what it will look 
+		--like without having to cast a spell
+		local border = self:CreateTexture(nil, 'BACKGROUND')
+		border:SetAllPoints(CastingBarFrameBorder)
+		border:SetTexture(CastingBarFrameBorder:GetTexture())
+		border:SetBlendMode("BLEND")
+		border:Hide()
+		self.border = border
+	end
+
+
+
+
+	local FACTION = UnitFactionGroup("player")
+	local texture
+	local flash
+	
+	if self.sets.border then
+		texture = "Interface\\UnitPowerBarAlt\\".. FACTION .."_Horizontal_Frame"
+		flash = texture
+	
+	elseif self.sets.SetBlizzBorder then
+		texture = "Interface\\CastingBar\\UI-CastingBar-Border"
+		flash = "Interface\\CastingBar\\UI-CastingBar-Flash"
+	else
+		texture = "Interface\\CastingBar\\UI-CastingBar-Border-Small"
+		flash = "Interface\\CastingBar\\UI-CastingBar-Flash-Small"
+
+	end
+
+	CastingBarFrameBorder:SetTexture(texture)
+	CastingBarFrameFlash:SetTexture(flash)
+	self.border:SetTexture(CastingBarFrameBorder:GetTexture())
+
+	if self.sets.border then
+		CastingBarFrameFlash:SetVertexColor(0, 0, 1)
+		CastingBarFrameFlash:SetDesaturated(1)
+		CastingBarFrameFlash:SetBlendMode("BLEND")
+	else
+		CastingBarFrameFlash:SetVertexColor(1, 1, 1)
+		CastingBarFrameFlash:SetDesaturated(nil)
+		CastingBarFrameFlash:SetBlendMode("ADD")
+	end
+end
+
+function CastBar:ToggleSetBlizzBorder(enable)
+	self.sets.SetBlizzBorder = enable or nil
+	self.sets.border = nil
+	self:Layout()
+end
+
+function CastBar:ToggleBorder(enable)
+	self.sets.border = enable or nil
+	self.sets.SetBlizzBorder = nil
+	self:Layout()
 end
 
 function CastBar:ToggleText(enable)
@@ -81,118 +233,158 @@ end
 
 function CastBar:UpdateText()
 	if self.sets.showText then
-		self.cast.time:Show()
+		self.time:Show()
 	else
-		self.cast.time:Hide()
+		self.time:Hide()
 	end
-	self.cast:AdjustWidth()
+end
+--[[ Menu Code ]]--
+
+local function AddLayoutPanel(menu)
+	local p = menu:NewPanel(LibStub('AceLocale-3.0'):GetLocale('Dominos-Config').Layout)
+	p:NewOpacitySlider()
+	p:NewFadeSlider()
+	CreateWidthSlider(p)
+	CreateHeightSlider(p)
+	p:NewScaleSlider()
+	CreatePaddingSlider(p)
+
+	
+	local time = p:NewCheckButton(L.ShowTime)
+	time:SetScript('OnClick', function(self) self:GetParent().owner:ToggleText(self:GetChecked()) end)
+	time:SetScript('OnShow', function(self) self:SetChecked(self:GetParent().owner.sets.showText) end)
+
+	local faction = p:NewCheckButton("Faction Border") --Needs Translation
+	local thin = p:NewCheckButton("Blizzard Border") --Needs Translation
+
+	faction:SetScript('OnClick', function(self)
+		thin:SetChecked(nil)
+		self:GetParent().owner:ToggleBorder(self:GetChecked())
+	end)
+	faction:SetScript('OnShow', function(self) self:SetChecked(self:GetParent().owner.sets.border) end)
+
+	thin:SetScript('OnClick', function(self)
+		faction:SetChecked(nil)
+ 		self:GetParent().owner:ToggleSetBlizzBorder(self:GetChecked())
+ 	end)
+	thin:SetScript('OnShow', function(self) self:SetChecked(self:GetParent().owner.sets.SetBlizzBorder)  end)
+end
+
+local function AddAdvancedLayout(self)
+	self:AddAdvancedPanel()
+end
+
+--[[
+	Texture Picker 
+	Derived from the code in Dominos XP, and modified
+	slightly to work under any Dominos based addon.
+--]]
+
+function CastBar:UpdateTexture()
+	local LSM = LibStub('LibSharedMedia-3.0', true)
+
+	local texture = (LSM and LSM:Fetch('statusbar', self.sets.texture)) or DEFAULT_STATUSBAR_TEXTURE
+	CastingBarFrame:SetStatusBarTexture(texture)
+	
+	if CastingBarFrame:GetStatusBarTexture().SetHorizTile then
+		CastingBarFrame:GetStatusBarTexture():SetHorizTile(false)
+	end
+
+end
+
+function CastBar:SetTexture(texture)
+	self.sets.texture = texture
+	self:UpdateTexture()
+end
+
+--yeah I know I'm bad in that I didn't capitialize some constants
+local NUM_ITEMS = 9
+local width, height, offset = 140, 20, 2
+
+local function TextureButton_OnClick(self)
+	self:GetParent().owner:SetTexture(self:GetText())
+	self:GetParent():UpdateList()
+end
+
+local function TextureButton_OnMouseWheel(self, direction)
+	local scrollBar = _G[self:GetParent().scroll:GetName() .. 'ScrollBar']
+	scrollBar:SetValue(scrollBar:GetValue() - direction * (scrollBar:GetHeight()/2))
+	parent:UpdateList()
+end
+
+local function TextureButton_Create(name, parent)
+	local button = CreateFrame('Button', name, parent)
+	button:SetWidth(width)
+	button:SetHeight(height)
+
+	button.bg = button:CreateTexture()
+	button.bg:SetAllPoints(button)
+
+	local r, g, b = max(random(), 0.2), max(random(), 0.2), max(random(), 0.2)
+	button.bg:SetVertexColor(r, g, b)
+	button:EnableMouseWheel(true)
+	button:SetScript('OnClick', TextureButton_OnClick)
+	button:SetScript('OnMouseWheel', TextureButton_OnMouseWheel)
+	button:SetNormalFontObject('GameFontNormalLeft')
+	button:SetHighlightFontObject('GameFontHighlightLeft')
+	return button
+end
+
+local function Panel_UpdateList(self)
+	local SML = LibStub('LibSharedMedia-3.0')
+	local textures = LibStub('LibSharedMedia-3.0'):List('statusbar')
+	local currentTexture = self.owner.sets.texture
+
+	local scroll = self.scroll
+	FauxScrollFrame_Update(scroll, #textures, #self.buttons, height + offset)
+
+	for i,button in pairs(self.buttons) do
+		local index = i + scroll.offset
+
+		if index <= #textures then
+			button:SetText(textures[index])
+			button.bg:SetTexture(SML:Fetch('statusbar', textures[index]))
+			button:Show()
+		else
+			button:Hide()
+		end
+	end
+end
+
+local function AddTexturePanel(menu)
+	local p = menu:NewPanel(L.Texture)
+	p.UpdateList = Panel_UpdateList
+	p:SetScript('OnShow', function() p:UpdateList() end)
+	p.textures = LibStub('LibSharedMedia-3.0'):List('statusbar')
+
+	local name = p:GetName()
+	local scroll = CreateFrame('ScrollFrame', name .. 'ScrollFrame', p, 'FauxScrollFrameTemplate')
+	scroll:SetScript('OnVerticalScroll', function(self, arg1) FauxScrollFrame_OnVerticalScroll(self, arg1, height + offset, function() p:UpdateList() end) end)
+	scroll:SetScript('OnShow', function() p.buttons[1]:SetWidth(width) end)
+	scroll:SetScript('OnHide', function() p.buttons[1]:SetWidth(width + 20) end)
+	scroll:SetPoint('TOPLEFT', 8, 0)
+	scroll:SetPoint('BOTTOMRIGHT', -24, 2)
+	p.scroll = scroll
+
+	--add list buttons
+	p.buttons = {}
+	for i = 1, NUM_ITEMS do
+		local b = TextureButton_Create(name .. i, p)
+		if i == 1 then
+			b:SetPoint('TOPLEFT', 4, 0)
+		else
+			b:SetPoint('TOPLEFT', name .. i-1, 'BOTTOMLEFT', 0, -offset)
+			b:SetPoint('TOPRIGHT', name .. i-1, 'BOTTOMRIGHT', 0, -offset)
+		end
+		p.buttons[i] = b
+	end
+
+	p.height = 200
 end
 
 function CastBar:CreateMenu()
 	local menu = Dominos:NewMenu(self.id)
-	local panel = menu:NewPanel(LibStub('AceLocale-3.0'):GetLocale('Dominos-Config').Layout)
-
-	local time = panel:NewCheckButton(Dominos_SHOW_TIME)
-	time:SetScript('OnClick', function(b) self:ToggleText(b:GetChecked()) end)
-	time:SetScript('OnShow', function(b) b:SetChecked(self.sets.showText) end)
-
-	panel:NewOpacitySlider()
-	panel:NewFadeSlider()
-	panel:NewScaleSlider()
-	panel:NewPaddingSlider()
-
+	AddLayoutPanel(menu)
+	AddTexturePanel(menu)
 	self.menu = menu
 end
-
-function CastBar:Layout()
-	self:SetWidth(max(self.cast:GetWidth() + 4 + self:GetPadding()*2, 8))
-	self:SetHeight(max(24 + self:GetPadding()*2, 8))
-end
-
-
---[[ CastingBar Object ]]--
-
-CastingBar = Dominos:CreateClass('StatusBar')
-
---omg speed
-local BORDER_SCALE = 197/150 --its magic!
-local TEXT_PADDING = 18
-
-function CastingBar:New(parent)
-	local f = self:Bind(CreateFrame('StatusBar', 'DominosCastingBar', parent, 'DominosCastingBarTemplate'))
-	f:SetPoint('CENTER')
-
-	local name = f:GetName()
-	f.time = _G[name .. 'Time']
-	f.text = _G[name .. 'Text']
-	f.borderTexture = _G[name .. 'Border']
-	f.flashTexture = _G[name .. 'Flash']
-
-	f.normalWidth = f:GetWidth()
-	f:SetScript('OnUpdate', f.OnUpdate)
-	f:SetScript('OnEvent', f.OnEvent)
-
-	return f
-end
-
-function CastingBar:OnEvent(event, ...)
-	CastingBarFrame_OnEvent(self, event, ...)
-
-	local unit, spell = ...
-	if unit == self.unit then
-		if event == 'UNIT_SPELLCAST_FAILED' or event == 'UNIT_SPELLCAST_INTERRUPTED' then
-			self.failed = true
-		elseif event == 'UNIT_SPELLCAST_START' or event == 'UNIT_SPELLCAST_CHANNEL_START' then
-			self.failed = nil
-		end
-		self:UpdateColor(spell)
-	end
-end
-
-function CastingBar:OnUpdate(elapsed)
-	CastingBarFrame_OnUpdate(self, elapsed)
-
-	if self.casting then
-		self.time:SetFormattedText('%.1f', self.maxValue - self.value)
-		self:AdjustWidth()
-	elseif self.channeling then
-		self.time:SetFormattedText('%.1f', self.value)
-		self:AdjustWidth()
-	end
-end
-
-function CastingBar:AdjustWidth()
-	local textWidth = self.text:GetStringWidth() + TEXT_PADDING
-	local timeWidth = (self.time:IsShown() and (self.time:GetStringWidth() + 4) * 2) or 0
-	local width = textWidth + timeWidth
-
-	if width < self.normalWidth then
-		width = self.normalWidth
-	end
-	 	
-	local diff = math.abs(width - self:GetWidth())	-- calculate an absolute difference between needed size and last size
-	
-	if diff > TEXT_PADDING then			-- is the difference big enough to redraw the bar ?
-		self:SetWidth(width)
-		self.borderTexture:SetWidth(width * BORDER_SCALE)
-		self.flashTexture:SetWidth(width * BORDER_SCALE)
-
-		self:GetParent():Layout()
-	end
-end
-
-function CastingBar:UpdateColor(spell)
-	if self.failed then
-		self:SetStatusBarColor(0.86, 0.08, 0.24)
-	elseif spell and IsHelpfulSpell(spell) then
-		self:SetStatusBarColor(0.31, 0.78, 0.47)
-	elseif spell and IsHarmfulSpell(spell) then
-		self:SetStatusBarColor(0.63, 0.36, 0.94)
-	else
-		self:SetStatusBarColor(1, 0.7, 0)
-	end
-end
-
---hide the old casting bar
-CastingBarFrame:UnregisterAllEvents()
-CastingBarFrame:Hide()

@@ -4,5 +4,6 @@
 ## Notes: A movable casting bar, with timer
 ## Author: Tuller
 ## Dependencies: Dominos
-localization.lua
-castBar.xml
+embeds.xml
+localization.xml
+castBar.lua
