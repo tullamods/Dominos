@@ -278,6 +278,7 @@ end
 	Texture Picker 
 	Derived from the code in Dominos XP, and modified
 	slightly to work under any Dominos based addon.
+	Aslo corrected the uncapitalized constants.
 --]]
 
 function CastBar:UpdateTexture()
@@ -289,7 +290,6 @@ function CastBar:UpdateTexture()
 	if CastingBarFrame:GetStatusBarTexture().SetHorizTile then
 		CastingBarFrame:GetStatusBarTexture():SetHorizTile(false)
 	end
-
 end
 
 function CastBar:SetTexture(texture)
@@ -297,9 +297,7 @@ function CastBar:SetTexture(texture)
 	self:UpdateTexture()
 end
 
---yeah I know I'm bad in that I didn't capitialize some constants
-local NUM_ITEMS = 9
-local width, height, offset = 140, 20, 2
+local NUM_ITEMS, WIDTH, HEIGHT, OFFSET = 8, 155, 20, 0
 
 local function TextureButton_OnClick(self)
 	self:GetParent().owner:SetTexture(self:GetText())
@@ -314,8 +312,8 @@ end
 
 local function TextureButton_Create(name, parent)
 	local button = CreateFrame('Button', name, parent)
-	button:SetWidth(width)
-	button:SetHeight(height)
+	button:SetWidth(WIDTH)
+	button:SetHeight(HEIGHT)
 
 	button.bg = button:CreateTexture()
 	button.bg:SetAllPoints(button)
@@ -332,11 +330,11 @@ end
 
 local function Panel_UpdateList(self)
 	local SML = LibStub('LibSharedMedia-3.0')
-	local textures = LibStub('LibSharedMedia-3.0'):List('statusbar')
+	local textures = SML:List('statusbar')
 	local currentTexture = self.owner.sets.texture
 
 	local scroll = self.scroll
-	FauxScrollFrame_Update(scroll, #textures, #self.buttons, height + offset)
+	FauxScrollFrame_Update(scroll, #textures, #self.buttons, HEIGHT + OFFSET)
 
 	for i,button in pairs(self.buttons) do
 		local index = i + scroll.offset
@@ -359,9 +357,9 @@ local function AddTexturePanel(menu)
 
 	local name = p:GetName()
 	local scroll = CreateFrame('ScrollFrame', name .. 'ScrollFrame', p, 'FauxScrollFrameTemplate')
-	scroll:SetScript('OnVerticalScroll', function(self, arg1) FauxScrollFrame_OnVerticalScroll(self, arg1, height + offset, function() p:UpdateList() end) end)
-	scroll:SetScript('OnShow', function() p.buttons[1]:SetWidth(width) end)
-	scroll:SetScript('OnHide', function() p.buttons[1]:SetWidth(width + 20) end)
+	scroll:SetScript('OnVerticalScroll', function(self, arg1) FauxScrollFrame_OnVerticalScroll(self, arg1, HEIGHT + OFFSET, function() p:UpdateList() end) end)
+	scroll:SetScript('OnShow', function() p.buttons[1]:SetWidth(WIDTH) end)
+	scroll:SetScript('OnHide', function() p.buttons[1]:SetWidth(WIDTH + 20) end)
 	scroll:SetPoint('TOPLEFT', 8, 0)
 	scroll:SetPoint('BOTTOMRIGHT', -24, 2)
 	p.scroll = scroll
@@ -373,14 +371,15 @@ local function AddTexturePanel(menu)
 		if i == 1 then
 			b:SetPoint('TOPLEFT', 4, 0)
 		else
-			b:SetPoint('TOPLEFT', name .. i-1, 'BOTTOMLEFT', 0, -offset)
-			b:SetPoint('TOPRIGHT', name .. i-1, 'BOTTOMRIGHT', 0, -offset)
+			b:SetPoint('TOPLEFT', name .. i-1, 'BOTTOMLEFT', 0, -OFFSET)
+			b:SetPoint('TOPRIGHT', name .. i-1, 'BOTTOMRIGHT', 0, -OFFSET)
 		end
 		p.buttons[i] = b
 	end
 
-	p.height = 200
+	p.height = 5 + (NUM_ITEMS * HEIGHT)
 end
+
 
 function CastBar:CreateMenu()
 	local menu = Dominos:NewMenu(self.id)
