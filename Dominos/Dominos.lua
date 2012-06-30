@@ -3,6 +3,8 @@
 		Driver for Dominos Frames
 --]]
 
+local function err(msg,...) _G.geterrorhandler()(msg:format(tostringall(...)) .. " - " .. _G.time()) end
+
 Dominos = LibStub('AceAddon-3.0'):NewAddon('Dominos', 'AceEvent-3.0', 'AceConsole-3.0')
 local L = LibStub('AceLocale-3.0'):GetLocale('Dominos')
 local CURRENT_VERSION = GetAddOnMetadata('Dominos', 'Version')
@@ -134,7 +136,7 @@ function Dominos:UpdateSettings(major, minor, bugfix)
 					if frameSets.pages then
 						for class, oldStates in pairs(frameSets.pages) do
 							local newStates = {}
-							
+
 							--convert class states
 							if class == 'WARRIOR' then
 								newStates['battle'] = oldStates['[bonusbar:1]']
@@ -155,27 +157,27 @@ function Dominos:UpdateSettings(major, minor, bugfix)
 							elseif class == 'WARLOCK' then
 								newStates['meta'] = oldStates['[form:2]']
 							end
-						
+
 							--modifier states
 							for i, state in Dominos.BarStates:getAll('modifier') do
 								newStates[state.id] = oldStates[state.value]
 							end
-							
+
 							--possess states
 							for i, state in Dominos.BarStates:getAll('possess') do
 								newStates[state.id] = oldStates[state.value]
 							end
-							
+
 							--page states
 							for i, state in Dominos.BarStates:getAll('page') do
 								newStates[state.id] = oldStates[state.value]
 							end
-							
+
 							--targeting states
 							for i, state in Dominos.BarStates:getAll('target') do
 								newStates[state.id] = oldStates[state.value]
 							end
-							
+
 							frameSets.pages[class] = newStates
 						end
 					end
@@ -183,7 +185,7 @@ function Dominos:UpdateSettings(major, minor, bugfix)
 			end
 		end
 	end
-	
+
 	--fix missing druid bear form paging
 	for profile, sets in pairs(self.db.sv.profiles) do
 		if sets.frames then
@@ -223,15 +225,15 @@ function Dominos:Load()
 	for i = 1, self:NumBars() do
 		self.ActionBar:New(i)
 	end
-	
+
 	if HasClassBar() then
 		self.ClassBar:New()
 	end
 	self.PetBar:New()
 	self.BagBar:New()
 	self.MenuBar:New()
-	self.VehicleBar:New()
-	
+--	self.VehicleBar:New() ** removed in MoP
+
 	if self.ExtraBar then
 		self.ExtraBar:New()
 	end
@@ -280,6 +282,10 @@ function Dominos:HideBlizzard()
 	end
 
 	local disableFrames = newForAll(function(name)
+		if not _G[name] then
+			err("name not found: %s",name)
+			return
+		end
 		local f = _G[name]
 		f:UnregisterAllEvents()
 		f:SetParent(uiHider)
@@ -300,8 +306,8 @@ function Dominos:HideBlizzard()
 		'MultiBarLeft',
 		'MultiBarRight',
 --		'PetActionBarFrame', --we don't actually want to disable this, since I reuse the buttons
-		'ShapeshiftBarFrame',
-		'BonusActionBarFrame',
+--		'ShapeshiftBarFrame', ** Removed in MoP
+--		'BonusActionBarFrame', ** Removed in MoP
 		'PossessBarFrame',
 		'MainMenuExpBar',
 		'MainMenuBarArtFrame'
@@ -313,7 +319,7 @@ function Dominos:HideBlizzard()
 		'MultiBarBottomLeft',
 		'MultiBarBottomRight',
 		'MainMenuBar',
-		'ShapeshiftBarFrame',
+--		'ShapeshiftBarFrame',
 		'PossessBarFrame',
 		'MultiCastActionBarFrame',
 		'ExtraActionBarFrame'
@@ -339,13 +345,29 @@ function Dominos:HideBlizzard()
 	end
 
 	--unregister evil binding events
+	--[[ ** Removed in MoP
 	for i = 1, 6 do
-		_G['VehicleMenuBarActionButton' .. i]:UnregisterAllEvents()
+		if _G['VehicleMenuBarActionButton' .. i] then
+			_G['VehicleMenuBarActionButton' .. i]:UnregisterAllEvents()
+		else
+			err("Not found: %s",'VehicleMenuBarActionButton' .. i)
+		end
 	end
+	]]--
 
 	for i = 1, 12 do
-		_G['BonusActionButton' .. i]:UnregisterAllEvents()
-		_G['MultiCastActionButton' .. i]:UnregisterEvent('UPDATE_BINDINGS')
+		--[[ ** removed in MoP
+		if _G['BonusActionButton' .. i] then
+			_G['BonusActionButton' .. i]:UnregisterAllEvents()
+		else
+			err("Not found: %s",'BonusActionButton' .. i)
+		end
+		]]--
+		if _G['MultiCastActionButton' .. i] then
+			_G['MultiCastActionButton' .. i]:UnregisterEvent('UPDATE_BINDINGS')
+		else
+			err("Not found: %s",'MultiCastActionButton' .. i)
+		end
 	end
 
 	--prevent multi actionbar grids from randomly showing
@@ -906,7 +928,7 @@ function Dominos:ShouldShowTooltips()
 	if self:ShowTooltips() then
 		return (not InCombatLockdown()) or self:ShowCombatTooltips()
 	end
-	return false;	
+	return false;
 end
 
 function Dominos:ShowTooltips()
