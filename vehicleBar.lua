@@ -55,25 +55,26 @@ function VehicleBar:SkinButtons()
 end
 
 function VehicleBar:ApplySkin(frameName)
-	local skin = self:GetSkinData(frameName)
-	local frame = _G['VehicleMenuBar' .. frameName]
-	frame:SetWidth(30)
-	frame:SetHeight(30)
+	print('VehicleMenuBar' .. frameName .. 'no longer exists!')
+	-- local skin = self:GetSkinData(frameName)
+	-- local frame = _G['VehicleMenuBar' .. frameName]
+	-- frame:SetWidth(30)
+	-- frame:SetHeight(30)
 
-	if skin.normalTexture then
-		frame:GetNormalTexture():SetTexture(skin.normalTexture);
-		frame:GetNormalTexture():SetTexCoord(unpack(skin.normalTexCoord));
-	end
+	-- if skin.normalTexture then
+		-- frame:GetNormalTexture():SetTexture(skin.normalTexture);
+		-- frame:GetNormalTexture():SetTexCoord(unpack(skin.normalTexCoord));
+	-- end
 
-	if skin.pushedTexture then
-		frame:GetPushedTexture():SetTexture(skin.pushedTexture);
-		frame:GetPushedTexture():SetTexCoord(unpack(skin.pushedTexCoord));
-	end
+	-- if skin.pushedTexture then
+		-- frame:GetPushedTexture():SetTexture(skin.pushedTexture);
+		-- frame:GetPushedTexture():SetTexCoord(unpack(skin.pushedTexCoord));
+	-- end
 
-	if skin.texture then
-		frame:SetTexture(skin.texture);
-		frame:SetTexCoord(unpack(skin.texCoord))
-	end
+	-- if skin.texture then
+		-- frame:SetTexture(skin.texture);
+		-- frame:SetTexCoord(unpack(skin.texCoord))
+	-- end
 end
 
 function VehicleBar:GetSkinData(frameName)
