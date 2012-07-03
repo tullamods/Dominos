@@ -18,7 +18,7 @@ local MENU_BUTTON_NAMES = {
 	[PVPMicroButton] = PLAYER_V_PLAYER,
 	[LFDMicroButton] = DUNGEONS_BUTTON,
 	[EJMicroButton] = ENCOUNTER_JOURNAL,
-	[RaidMicroButton] = RAID,
+	-- [RaidMicroButton] = RAID,
 	[MainMenuMicroButton] = MAINMENU_BUTTON,
 	[HelpMicroButton] = HELP_BUTTON
 }

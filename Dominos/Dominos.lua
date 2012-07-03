@@ -281,9 +281,13 @@ function Dominos:HideBlizzard()
 
 	local disableFrames = newForAll(function(name)
 		local f = _G[name]
-		f:UnregisterAllEvents()
-		f:SetParent(uiHider)
-		f:Hide()
+		if not f then
+			print(string.format('Uknown frame name "%s"', name))
+		else		
+			f:UnregisterAllEvents()
+			f:SetParent(uiHider)
+			f:Hide()
+		end
 	end)
 
 	local nilFramePositions = newForAll(function(name)
@@ -339,14 +343,14 @@ function Dominos:HideBlizzard()
 	end
 
 	--unregister evil binding events
-	for i = 1, 6 do
-		_G['VehicleMenuBarActionButton' .. i]:UnregisterAllEvents()
-	end
+	-- for i = 1, 6 do
+		-- _G['VehicleMenuBarActionButton' .. i]:UnregisterAllEvents()
+	-- end
 
-	for i = 1, 12 do
-		_G['BonusActionButton' .. i]:UnregisterAllEvents()
-		_G['MultiCastActionButton' .. i]:UnregisterEvent('UPDATE_BINDINGS')
-	end
+	-- for i = 1, 12 do
+		-- _G['BonusActionButton' .. i]:UnregisterAllEvents()
+		-- _G['MultiCastActionButton' .. i]:UnregisterEvent('UPDATE_BINDINGS')
+	-- end
 
 	--prevent multi actionbar grids from randomly showing
 	MultiActionBar_UpdateGrid = Multibar_EmptyFunc
