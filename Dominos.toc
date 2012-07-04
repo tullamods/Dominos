@@ -19,7 +19,7 @@ petBar.lua
 classBar.lua
 bagBar.lua
 menuBar.lua
-vehicleBar.lua
+##vehicleBar.lua
 minimap.lua
 bindingsUpdater.lua
 extraActionBar.lua
