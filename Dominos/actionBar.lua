@@ -218,7 +218,7 @@ function ActionBar:UpdateAction(i)
 	end
 
 	if self:IsPossessBar() and i <= NUM_POSSESS_BAR_BUTTONS then
-		b:SetAttribute('action--possess', MAX_BUTTONS + i)
+		b:SetAttribute('action--possess', (12 * (GetVehicleBarIndex() - 1)) + i)
 	else
 		b:SetAttribute('action--possess', nil)
 	end
@@ -244,7 +244,7 @@ function ActionBar:UpdateActions()
 
 	if self:IsPossessBar() then
 		for i = 1, min(#self.buttons, NUM_POSSESS_BAR_BUTTONS) do
-			self.buttons[i]:SetAttribute('action--possess', MAX_BUTTONS + i)
+			self.buttons[i]:SetAttribute('action--possess', (12 * (GetVehicleBarIndex() - 1)) + i)
 		end
 		for i = NUM_POSSESS_BAR_BUTTONS + 1, #self.buttons do
 			self.buttons[i]:SetAttribute('action--possess', nil)

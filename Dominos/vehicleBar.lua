@@ -9,7 +9,7 @@ local VehicleBar = Dominos:CreateClass('Frame', Dominos.Frame)
 Dominos.VehicleBar  = VehicleBar
 
 local L = LibStub('AceLocale-3.0'):GetLocale('Dominos')
-local buttons = {VehicleMenuBarLeaveButton, VehicleMenuBarPitchUpButton, VehicleMenuBarPitchDownButton}
+local buttons = {OverrideActionBarLeaveFrameLeaveButton, OverrideActionBarPitchFramePitchUpButton, OverrideActionBarPitchFramePitchDownButton}
 
 function VehicleBar:New()
 	local f = self.super.New(self, 'vehicle', L.TipVehicleBar)
@@ -17,68 +17,65 @@ function VehicleBar:New()
 	f:LoadButtons()
 	f:Layout()
 	f:SetScript('OnEvent', f.OnEvent)
+	f:RegisterEvent('UPDATE_VEHICLE_ACTIONBAR')
 	f:RegisterEvent('UNIT_ENTERED_VEHICLE')
-	f:RegisterEvent('UNIT_ENTERING_VEHICLE')
 
 	return f
 end
 
 
-function VehicleBar:OnEvent(event, arg1)
-	if event == 'UNIT_ENTERED_VEHICLE' then
-		if arg1 == 'player' then
-			self:UpdateButtonVisibility()
-		end
+function VehicleBar:OnEvent(event, ...)
+	if event == 'UPDATE_VEHICLE_ACTIONBAR' or event == 'UNIT_ENTERED_VEHICLE' then
+		self:UpdateButtonVisibility()
 	end
 end
 
 function VehicleBar:UpdateButtonVisibility()
 	if IsVehicleAimAngleAdjustable() then
-		_G['VehicleMenuBarPitchUpButton']:Show()
-		_G['VehicleMenuBarPitchDownButton']:Show()
+		_G['OverrideActionBarPitchFramePitchUpButton']:Show()
+		_G['OverrideActionBarPitchFramePitchDownButton']:Show()
 	else
-		_G['VehicleMenuBarPitchUpButton']:Hide()
-		_G['VehicleMenuBarPitchDownButton']:Hide()
+		_G['OverrideActionBarPitchFramePitchUpButton']:Hide()
+		_G['OverrideActionBarPitchFramePitchDownButton']:Hide()
 	end
 
 	if CanExitVehicle() then
-		_G['VehicleMenuBarLeaveButton']:Show()
+		_G['OverrideActionBarLeaveFrameLeaveButton']:Show()
 	else
-		_G['VehicleMenuBarLeaveButton']:Hide()
+		_G['OverrideActionBarLeaveFrameLeaveButton']:Hide()
 	end
 end
 
 function VehicleBar:SkinButtons()
-	self:ApplySkin('PitchUpButton')
-	self:ApplySkin('PitchDownButton')
-	self:ApplySkin('LeaveButton')
+	self:ApplySkin('PitchFramePitchUpButton')
+	self:ApplySkin('PitchFramePitchDownButton')
+	self:ApplySkin('LeaveFrameLeaveButton')
 end
 
 function VehicleBar:ApplySkin(frameName)
-	print('VehicleMenuBar' .. frameName .. 'no longer exists!')
-	-- local skin = self:GetSkinData(frameName)
-	-- local frame = _G['VehicleMenuBar' .. frameName]
-	-- frame:SetWidth(30)
-	-- frame:SetHeight(30)
+	local skin = self:GetSkinData(frameName)
+	local frame = _G['OverrideActionBar' .. frameName]
+	frame:SetWidth(30)
+	frame:SetHeight(30)
 
-	-- if skin.normalTexture then
-		-- frame:GetNormalTexture():SetTexture(skin.normalTexture);
-		-- frame:GetNormalTexture():SetTexCoord(unpack(skin.normalTexCoord));
-	-- end
+	if skin.normalTexture then
+		frame:GetNormalTexture():SetTexture(skin.normalTexture);
+		frame:GetNormalTexture():SetTexCoord(unpack(skin.normalTexCoord));
+	end
 
-	-- if skin.pushedTexture then
-		-- frame:GetPushedTexture():SetTexture(skin.pushedTexture);
-		-- frame:GetPushedTexture():SetTexCoord(unpack(skin.pushedTexCoord));
-	-- end
+	if skin.pushedTexture then
+		frame:GetPushedTexture():SetTexture(skin.pushedTexture);
+		frame:GetPushedTexture():SetTexCoord(unpack(skin.pushedTexCoord));
+	end
 
-	-- if skin.texture then
-		-- frame:SetTexture(skin.texture);
-		-- frame:SetTexCoord(unpack(skin.texCoord))
-	-- end
+	if skin.texture then
+		frame:SetTexture(skin.texture);
+		frame:SetTexCoord(unpack(skin.texCoord))
+	end
 end
 
 function VehicleBar:GetSkinData(frameName)
-	if frameName == 'PitchUpButton' then
+	if frameName == 'PitchFramePitchUpButton' then
 		return {	--Pitch up button
 			height = 36,
 			width = 38,
@@ -91,7 +88,7 @@ function VehicleBar:GetSkinData(frameName)
 			pushedTexCoord = { 0.21875, 0.765625, 0.234375, 0.78125 },
 			pitchHidden = 1,
 		}
-	elseif frameName == 'PitchDownButton' then
+	elseif frameName == 'PitchFramePitchDownButton' then
 		return {	--Pitch up button
 			height = 36,
 			width = 38,
@@ -104,7 +101,7 @@ function VehicleBar:GetSkinData(frameName)
 			pushedTexCoord = { 0.21875, 0.765625, 0.234375, 0.78125 },
 			pitchHidden = 1,
 		}
-	elseif frameName == 'LeaveButton' then
+	elseif frameName == 'LeaveFrameLeaveButton' then
 		return {	--Leave button
 			height = 47,
 			width = 50,
@@ -123,9 +120,12 @@ function VehicleBar:GetDefaults()
 	return {
 		point = 'CENTER',
 		x = -244,
-		y = 0,
-		numButtons = #buttons
+		y = 0
 	}
+end
+
+function VehicleBar:NumButtons()
+	return #buttons
 end
 
 function VehicleBar:AddButton(i)
@@ -145,5 +145,5 @@ function VehicleBar:RemoveButton(i)
 end
 
 function VehicleBar:GetShowStates()
-	return '[target=vehicle,exists]show;hide'
+	return '[vehicleui]show;hide'
 end
