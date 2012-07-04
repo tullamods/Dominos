@@ -59,7 +59,7 @@ function Dominos:LoadDataBrokerPlugin()
 	LibStub:GetLibrary('LibDataBroker-1.1'):NewDataObject('Dominos', {
 		type = 'launcher',
 
-		icon = 'Interface\\Addons\\Dominos\\Dominos',
+		icon = [[Interface\Addons\Dominos\Dominos]],
 
 		OnClick = function(_, button)
 			if button == 'LeftButton' then
@@ -227,14 +227,12 @@ function Dominos:Load()
 	if HasClassBar() then
 		self.ClassBar:New()
 	end
+	
 	self.PetBar:New()
 	self.BagBar:New()
 	self.MenuBar:New()
 	self.VehicleBar:New()
-	
-	if self.ExtraBar then
-		self.ExtraBar:New()
-	end
+	self.ExtraBar:New()
 
 	--load in extra functionality
 	for _,module in self:IterateModules() do
@@ -268,92 +266,99 @@ end
 --[[ Blizzard Stuff Hiding ]]--
 
 function Dominos:HideBlizzard()
-	local uiHider = CreateFrame("Frame"); uiHider:Hide()
-	self.uiHider = uiHider
+	_G['ActionBarController']:UnregisterAllEvents()
+	_G['MainMenuExpBar']:UnregisterAllEvents()
+	_G['OverrideActionBar']:UnregisterAllEvents()
+	
+	_G['MainMenuBarArtFrame']:UnregisterAllEvents()
+	_G['MainMenuBarArtFrame']:RegisterEvent('CURRENCY_DISPLAY_UPDATE')
+	_G['MainMenuBarArtFrame']:RegisterEvent('UNIT_LEVEL')
+	
+	_G['MainMenuBar']:Hide()
+	
+	-- local uiHider = CreateFrame("Frame"); uiHider:Hide()
+	-- self.uiHider = uiHider
 
-	local newForAll = function(f)
-		return function(...)
-			for i = 1, select('#', ...) do
-				f(select(i, ...))
-			end
-		end
-	end
-
-	local disableFrames = newForAll(function(name)
-		local f = _G[name]
-		if not f then
-			print(string.format('Uknown frame name "%s"', name))
-		else		
-			f:UnregisterAllEvents()
-			f:SetParent(uiHider)
-			f:Hide()
-		end
-	end)
-
-	local nilFramePositions = newForAll(function(name)
-		local f = _G[name]
-		if f then
-			f.ignoreFramePositionManager = true
-		end
-	end)
-
-	disableFrames(
-		'MainMenuBar',
-		'MultiBarBottomLeft',
-		'MultiBarBottomRight',
-		'MultiBarLeft',
-		'MultiBarRight',
---		'PetActionBarFrame', --we don't actually want to disable this, since I reuse the buttons
-		'ShapeshiftBarFrame',
-		'BonusActionBarFrame',
-		'PossessBarFrame',
-		'MainMenuExpBar',
-		'MainMenuBarArtFrame'
-	)
-
-	nilFramePositions(
-		'MultiBarRight',
-		'MultiBarLeft',
-		'MultiBarBottomLeft',
-		'MultiBarBottomRight',
-		'MainMenuBar',
-		'ShapeshiftBarFrame',
-		'PossessBarFrame',
-		'MultiCastActionBarFrame',
-		'ExtraActionBarFrame'
-	)
-
-	--register necessary main menu events
-	MainMenuBarArtFrame:RegisterEvent('BAG_UPDATE')  --needed to display the keyring
-	MainMenuBarArtFrame:RegisterEvent('CURRENCY_DISPLAY_UPDATE') --needed to display stuff on the backpack button
-
-	--hide some weird effects of loading the talent frame
-	local talentFrame = _G['PlayerTalentFrame']
-	if talentFrame then
-		talentFrame:UnregisterEvent('ACTIVE_TALENT_GROUP_CHANGED')
-	else
-		hooksecurefunc('TalentFrame_LoadUI', function()
-			_G['PlayerTalentFrame']:UnregisterEvent('ACTIVE_TALENT_GROUP_CHANGED')
-		end)
-	end
-
-	--hack, to make sure the seat indicator is placed in the right spot
-	if not _G['VehicleSeatIndicator']:IsUserPlaced() then
-		_G['VehicleSeatIndicator']:SetPoint("TOPRIGHT", MinimapCluster, "BOTTOMRIGHT", 0, -13)
-	end
-
-	--unregister evil binding events
-	-- for i = 1, 6 do
-		-- _G['VehicleMenuBarActionButton' .. i]:UnregisterAllEvents()
+	-- local newForAll = function(f)
+		-- return function(...)
+			-- for i = 1, select('#', ...) do
+				-- f(select(i, ...))
+			-- end
+		-- end
 	-- end
 
-	-- for i = 1, 12 do
-		-- _G['BonusActionButton' .. i]:UnregisterAllEvents()
-		-- _G['MultiCastActionButton' .. i]:UnregisterEvent('UPDATE_BINDINGS')
+	-- local disableFrames = newForAll(function(name)
+		-- local f = _G[name]
+		
+		-- if not f then
+			-- print(string.format('Uknown frame name "%s"', name))
+		-- else		
+			-- f:UnregisterAllEvents()
+			-- f:SetParent(uiHider)
+			-- f:Hide()
+		-- end
+	-- end)
+
+	-- local nilFramePositions = newForAll(function(name)
+		-- local f = _G[name]
+		
+		-- if not f then
+			-- print(string.format('Uknown frame name "%s"', name))
+		-- else
+			-- f.ignoreFramePositionManager = true
+		-- end
+	-- end)
+
+	-- disableFrames(
+		-- 'MultiBarRight',
+		-- 'MultiBarLeft',
+		-- 'MultiBarBottomLeft',
+		-- 'MultiBarBottomRight',
+		-- 'MainMenuBar',
+		-- 'MainMenuExpBar',
+		-- 'MainMenuBarArtFrame'
+	-- )
+
+	-- nilFramePositions(
+		-- 'MultiBarRight',
+		-- 'MultiBarLeft',
+		-- 'MultiBarBottomLeft',
+		-- 'MultiBarBottomRight',
+		-- 'MainMenuBar',
+		-- 'ExtraActionBarFrame'
+	-- )
+
+	-- --register necessary main menu events
+	-- MainMenuBarArtFrame:RegisterEvent('BAG_UPDATE')  --needed to display the keyring
+	-- MainMenuBarArtFrame:RegisterEvent('CURRENCY_DISPLAY_UPDATE') --needed to display stuff on the backpack button
+
+	-- --hide some weird effects of loading the talent frame
+	-- -- local talentFrame = _G['PlayerTalentFrame']
+	-- -- if talentFrame then
+		-- -- talentFrame:UnregisterEvent('ACTIVE_TALENT_GROUP_CHANGED')
+	-- -- else
+		-- -- hooksecurefunc('TalentFrame_LoadUI', function()
+			-- -- _G['PlayerTalentFrame']:UnregisterEvent('ACTIVE_TALENT_GROUP_CHANGED')
+		-- -- end)
+	-- -- end
+
+	-- --hack, to make sure the seat indicator is placed in the right spot
+	-- if not _G['VehicleSeatIndicator']:IsUserPlaced() then
+		-- _G['VehicleSeatIndicator']:SetPoint("TOPRIGHT", MinimapCluster, "BOTTOMRIGHT", 0, -13)
 	-- end
 
-	--prevent multi actionbar grids from randomly showing
-	MultiActionBar_UpdateGrid = Multibar_EmptyFunc
+	-- --unregister evil binding events
+	-- -- for i = 1, 6 do
+		-- -- _G['VehicleMenuBarActionButton' .. i]:UnregisterAllEvents()
+	-- -- end
+
+	-- -- for i = 1, 12 do
+		-- -- _G['BonusActionButton' .. i]:UnregisterAllEvents()
+		-- -- _G['MultiCastActionButton' .. i]:UnregisterEvent('UPDATE_BINDINGS')
+	-- -- end
+
+	-- --prevent multi actionbar grids from randomly showing
+	-- MultiActionBar_UpdateGrid = Multibar_EmptyFunc
 end
 
 
@@ -432,9 +437,9 @@ function Dominos:ListProfiles()
 	local current = self.db:GetCurrentProfile()
 	for _,k in ipairs(self.db:GetProfiles()) do
 		if k == current then
-			DEFAULT_CHAT_FRAME:AddMessage(' - ' .. k, 1, 1, 0)
+			print(' - ' .. k, 1, 1, 0)
 		else
-			DEFAULT_CHAT_FRAME:AddMessage(' - ' .. k)
+			print(' - ' .. k)
 		end
 	end
 end
