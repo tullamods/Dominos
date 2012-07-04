@@ -18,7 +18,8 @@ local MENU_BUTTON_NAMES = {
 	[PVPMicroButton] = PLAYER_V_PLAYER,
 	[LFDMicroButton] = DUNGEONS_BUTTON,
 	[EJMicroButton] = ENCOUNTER_JOURNAL,
-	-- [RaidMicroButton] = RAID,
+--	[RaidMicroButton] = RAID,
+	[CompanionsMicroButton] = MOUNTS_AND_PETS,
 	[MainMenuMicroButton] = MAINMENU_BUTTON,
 	[HelpMicroButton] = HELP_BUTTON
 }
@@ -86,18 +87,18 @@ end
 
 do
 	local menuButtons
-	
-	local getMenuButtons = function() 
+
+	local getMenuButtons = function()
 		if not menuButtons then
 			menuButtons = getButtons(_G['MainMenuBarArtFrame']:GetChildren())
 		end
 		return menuButtons
 	end
-	
+
 	function MenuBar:GetMenuButton(index)
 		return getMenuButtons()[index]
 	end
-	
+
 	function MenuBar:NumMenuButtons()
 		return #getMenuButtons()
 	end
@@ -105,7 +106,7 @@ end
 
 function MenuBar:Layout()
 	self.buttons = {}
-	
+
 	for i = 1, self:NumMenuButtons() do
 		if not self.sets.disabled[self:GetMenuButton(i):GetName()] and (i <= self:NumButtons(self) ) then
 			self:GetMenuButton(i):Show()
@@ -126,7 +127,7 @@ function MenuBar:Layout()
 		local isTopToBottom = self:GetTopToBottom()
 
 		local b = self.buttons[1]
-		
+
 		local L, R, T, B = b:GetHitRectInsets() --By default T = 18. all others are zero
 		if T > 0 then
 			HEIGHT_OFFSET = T + 2
@@ -151,7 +152,7 @@ function MenuBar:Layout()
 			else
 				row = rows - ceil(i / cols)
 			end
-			
+
 			b:ClearAllPoints()
 			b:SetPoint('TOPLEFT', w*col + pW, -(h*row + pH) + HEIGHT_OFFSET)
 		end
@@ -194,16 +195,16 @@ end
 
 local function NewCheckButton(name, button, p)
 	local tog = p:NewCheckButton(name)
-	
+
 	tog:SetScript('OnClick', function(self)
 		self:GetParent().owner.sets.disabled[button:GetName()] = self:GetChecked() or nil
 		self:GetParent().owner:Layout()
 	end)
-	
+
 	tog:SetScript('OnShow', function(self)
 		self:SetChecked(self:GetParent().owner.sets.disabled[button:GetName()])
 	end)
-	
+
 	return tog
 end
 
