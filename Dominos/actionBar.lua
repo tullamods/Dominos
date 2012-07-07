@@ -440,9 +440,20 @@ do
 		local states = Dominos.BarStates:map(function(s) return s.type == type end)
 		if #states > 0 then
 			local p = self:NewPanel(name)
+			
+			--HACK: Make the state panel wider for monks
+			--		since their stances have long names
+			local isMonk = select(2, UnitClass('player')) == 'MONK'
 			for i = #states, 1, -1 do
 				local state = states[i]
-				ConditionSlider_New(p, state.id, state.text)
+				local slider = ConditionSlider_New(p, state.id, state.text)
+				if isMonk then
+					slider:SetWidth(slider:GetWidth() + 48)
+				end
+			end
+			
+			if isMonk then
+				p.width = 228
 			end
 		end
 	end
