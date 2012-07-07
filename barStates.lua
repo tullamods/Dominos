@@ -111,6 +111,10 @@ do
 		addState('class', 'stealth', '[bonusbar:1]', GetSpellInfo(1784))
 	elseif class == 'WARLOCK' then
 		addState('class', 'meta', '[form:2]', GetSpellInfo(47241))
+	elseif class == 'MONK' then
+		addState('class', 'tiger', '[bonusbar:1]', GetSpellInfo(103985))
+		addState('class', 'ox', '[bonusbar:2]', GetSpellInfo(115069))
+		addState('class', 'serpent', '[bonusbar:3]', GetSpellInfo(115070))		
 	end
 end
 
