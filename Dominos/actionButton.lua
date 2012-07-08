@@ -101,13 +101,6 @@ function ActionButton:Free()
 
 	self.active[id] = nil
 	
-	-- for i, frame in pairs(ActionBarButtonEventsFrame.frames) do
-		-- if frame == self then
-			-- table.remove(ActionBarButtonEventsFrame.frames, i)
-			-- break
-		-- end
-	-- end
-
 	ActionBarActionEventsFrame_UnregisterFrame(self)
 	
 	self:SetParent(HiddenActionButtonFrame)
@@ -166,6 +159,7 @@ end
 function ActionButton:LoadAction()
 	local state = self:GetParent():GetAttribute('state-page')
 	local id = state and self:GetAttribute('action--' .. state) or self:GetAttribute('action--base')
+	
 	self:SetAttribute('action', id)
 end
 
