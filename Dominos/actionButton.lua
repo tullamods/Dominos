@@ -20,7 +20,10 @@ function ActionButton:New(id)
 		b:SetAttribute('action--base', id)
 		b:SetAttribute('_childupdate-action', [[
 			local id = message and self:GetAttribute('action--' .. message) or self:GetAttribute('action--base')
-			self:SetAttribute('action', id)
+			if id ~= self:GetAttribute('action') then
+				self:SetAttribute('action', id)
+				self:CallMethod('UpdateState')
+			end
 		]])
 
 		b:UpdateGrid()
@@ -153,6 +156,10 @@ end
 function ActionButton:SetFlyoutDirection(direction)
 	self:SetAttribute('flyoutDirection', direction)
 	ActionButton_UpdateFlyout(self)
+end
+
+function ActionButton:UpdateState()
+	ActionButton_UpdateState(self)
 end
 
 --utility function, resyncs the button's current action, modified by state
