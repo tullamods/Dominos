@@ -267,6 +267,8 @@ end
 
 function Dominos:HideBlizzard()
 	_G['ActionBarController']:UnregisterAllEvents()
+	_G['ActionBarController']:RegisterEvent('UPDATE_EXTRA_ACTIONBAR')
+	
 	_G['MainMenuExpBar']:UnregisterAllEvents()
 	_G['OverrideActionBar']:UnregisterAllEvents()
 	
