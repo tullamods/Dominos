@@ -18,35 +18,170 @@ local MENU_BUTTON_NAMES = {
 	[PVPMicroButton] = PLAYER_V_PLAYER,
 	[LFDMicroButton] = DUNGEONS_BUTTON,
 	[EJMicroButton] = ENCOUNTER_JOURNAL,
---	[RaidMicroButton] = RAID,
 	[CompanionsMicroButton] = MOUNTS_AND_PETS,
 	[MainMenuMicroButton] = MAINMENU_BUTTON,
 	[HelpMicroButton] = HELP_BUTTON
 }
 
-local getButtons = function(...)
-	local buttons = {}
-	for i = 1, select('#', ...) do
-		local b = select(i, ...)
-		local name = b:GetName()
-		if name and name:match('(%w+)MicroButton$') then
-			table.insert(buttons, b)
-		end
-	end
-	return buttons
-end
+-- local oMoveMicroButtons = _G['MoveMicroButtons']
+-- MoveMicroButtons = function(...)
+	-- print(
+	-- oMoveMicroButtons(...)
+-- end
 
 --[[ Menu Bar ]]--
 
 function MenuBar:New()
-	local f = self.super.New(self, 'menu')
-	f:LoadButtons()
-	if not f.sets.disabled then
-		f.sets.disabled = {}
-	end
-	--f:Layout()
-	f:Layout()
+	local f = MenuBar.super.New(self, 'menu')
+
+	f:Layout(true)
+	
 	return f
+end
+
+function MenuBar:Create(frameId)
+	local bar = MenuBar.super.Create(self, frameId)
+	
+	local header = bar.header
+	
+	RegisterStateDriver(header, 'perspective', '[petbattle]petbattle;normal')
+
+	--[[ init any bar global variables ]]--
+	
+	header:Execute([[
+		SPACING_OFFSET = -2
+		PADW_OFFSET = 0
+		PADH_OFFSET = 0
+		HEIGHT_OFFSET = 22
+		WIDTH_OFFSET = 0
+	]])
+	
+	--[[ 
+		after a layout value is altered, set a dirty bit indicating that we need to adjust the bar's layout 
+	--]]
+	
+	header:SetAttribute('_onstate-perspective', [[
+		local newstate = newstate or 'normal'
+		
+		self:RunAttribute('layout-' .. newstate)
+	]])
+	
+	header:SetAttribute('layout-normal', [[ 
+		if myButtons then
+			for i, button in pairs(myButtons) do
+				button:SetParent(self)
+			end
+			
+			needsLayout = true
+			self:RunAttribute('layout')
+		end
+	]])
+	
+	header:SetAttribute('layout-petbattle', [[ 
+		if not(myButtons) then return end
+		
+		local numButtons = #myButtons
+		local cols = ceil(numButtons / 2)
+		
+		local b = myButtons[1]
+		local w = b:GetWidth() - (WIDTH_OFFSET)
+		local h = b:GetHeight() - (HEIGHT_OFFSET + 2)
+		
+		for i, b in pairs(myButtons) do
+			local col = (i-1) % cols
+			local row = ceil(i / cols) - 1
+		
+			local b = myButtons[i]
+			b:ClearAllPoints()
+			b:SetPoint('TOPLEFT', '$parent', 'TOPLEFT', -16 + w*col + WIDTH_OFFSET, 6 -(h*row) + HEIGHT_OFFSET)
+			b:Show()
+		end
+	]])
+	
+	header:SetAttribute('_onstate-numButtons', [[ needsLayout = true ]])
+
+	header:SetAttribute('_onstate-columns', [[ needsLayout = true ]])
+	
+	header:SetAttribute('_onstate-spacing', [[ needsLayout = true ]])
+	
+	header:SetAttribute('_onstate-padW', [[ needsLayout = true ]])
+	
+	header:SetAttribute('_onstate-padH', [[ needsLayout = true ]])
+	
+	--add button method
+	header:SetAttribute('addButton', [[
+		local button = self:GetFrameRef('addButton')		
+		if button then
+			myButtons = myButtons or table.new()
+			table.insert(myButtons, button)
+			button:SetParent(self:GetFrameRef('buttonFrame') or self)
+		end
+		self:SetAttribute('maxLength', #myButtons)
+	]])
+	
+	header:SetAttribute('layout', [[
+		if not(myButtons and needsLayout) then return end
+
+		local numButtons = self:GetAttribute('state-numButtons') or #myButtons
+		local cols = min(self:GetAttribute('state-columns') or numButtons, numButtons)
+		
+		local rows = ceil(numButtons / cols)
+		local spacing = self:GetAttribute('state-spacing') + SPACING_OFFSET
+		local pW = self:GetAttribute('state-padW') + PADW_OFFSET
+		local pH = self:GetAttribute('state-padH') + PADH_OFFSET
+
+		local b = myButtons[1]
+		local w = b:GetWidth() + spacing - WIDTH_OFFSET
+		local h = b:GetHeight() + spacing - HEIGHT_OFFSET
+		
+		for i = numButtons + 1, #myButtons do
+			myButtons[i]:Hide()
+		end
+		
+		self:GetParent():SetWidth(max(w*cols - spacing + pW*2 + WIDTH_OFFSET, 8))
+		self:GetParent():SetHeight(max(h*ceil(numButtons/cols) - spacing + pH*2, 8))
+
+		if numButtons > 0 then
+			for i = 1, numButtons do
+				local col = (i-1) % cols
+				local row = ceil(i / cols) - 1
+			
+				local b = myButtons[i]
+				b:ClearAllPoints()
+				b:SetPoint('TOPLEFT', self, 'TOPLEFT', w*col + pW + WIDTH_OFFSET, -(h*row + pH) + HEIGHT_OFFSET)
+				b:Show()
+			end
+		end
+		
+		needsLayout = nil
+	]])
+	
+	local loadButtons = function(bar, ...)
+		for i = 1, select('#', ...) do
+			local button = select(i, ...)
+			local buttonName = button:GetName()
+			if buttonName and buttonName:match('(%w+)MicroButton$') then
+				bar:AddButton(button)
+			end
+		end
+	end
+	loadButtons(bar, _G['MainMenuBarArtFrame']:GetChildren())
+
+	return bar
+end
+
+function MenuBar:LoadSettings(...)	
+	MenuBar.super.LoadSettings(self, ...)
+	
+	local header = self.header
+
+	header:SetAttribute('state-numButtons', self:NumButtons())
+	header:SetAttribute('state-columns', self:NumColumns())
+	header:SetAttribute('state-spacing', self:GetSpacing())
+	
+	local pw, ph = self:GetPadding()
+	header:SetAttribute('state-padW', pw)
+	header:SetAttribute('state-padH', ph)
 end
 
 function MenuBar:GetDefaults()
@@ -57,128 +192,86 @@ function MenuBar:GetDefaults()
 	}
 end
 
-function MenuBar:NumButtons(f)
-	local self = self
-	if f then
-		self  = f
-	end
-	return self.sets.numButtons or self:NumMenuButtons()
+function MenuBar:MaxLength()
+	return self.header:GetAttribute('maxLength')
 end
 
-function MenuBar:AddButton(i)
-	local b = self:GetMenuButton(i)
-	if b then
-		b:SetParent(self.header)
-		b:Show()
-
-		self.buttons[i] = b
-	end
+function MenuBar:AddButton(button)
+	self.header:SetFrameRef('addButton', button)
+	self.header:Execute([[ self:RunAttribute('addButton') ]])
 end
 
-function MenuBar:RemoveButton(i)
-	local b = self.buttons[i]
-	if b then
-		b:SetParent(nil)
-		b:Hide()
-
-		self.buttons[i] = nil
-	end
+function MenuBar:SetNumButtons(numButtons)
+	self.sets.numButtons = numButtons or false
+	
+	self.header:SetAttribute('state-numButtons', numButtons or false) --here, false implies (use whatever the maximum value would be)
+	self:Layout()
 end
 
-do
-	local menuButtons
-
-	local getMenuButtons = function()
-		if not menuButtons then
-			menuButtons = getButtons(_G['MainMenuBarArtFrame']:GetChildren())
-		end
-		return menuButtons
-	end
-
-	function MenuBar:GetMenuButton(index)
-		return getMenuButtons()[index]
-	end
-
-	function MenuBar:NumMenuButtons()
-		return #getMenuButtons()
-	end
+function MenuBar:NumButtons()
+	return self.sets.numButtons or self:MaxLength()
 end
 
-function MenuBar:Layout()
-	self.buttons = {}
+function MenuBar:SetColumns(columns)
+	self.sets.columns = columns ~= self:NumButtons() and columns or false
+	
+	self.header:SetAttribute('state-columns', self.sets.columns) --here, false implies (use whatever the maximum value would be)
+	self:Layout()
+end
 
-	for i = 1, self:NumMenuButtons() do
-		if not self.sets.disabled[self:GetMenuButton(i):GetName()] and (i <= self:NumButtons(self) ) then
-			self:GetMenuButton(i):Show()
-			tinsert(self.buttons, self:GetMenuButton(i))
-		else
-			self:GetMenuButton(i):Hide()
-		end
+function MenuBar:SetSpacing(spacing)
+	self.sets.spacing = spacing or 0
+	
+	self.header:SetAttribute('state-spacing', self.sets.spacing)
+	self:Layout()
+end
+
+function MenuBar:SetPadding(padW, padH)
+	local padW = padW or 0
+	local padH = padH or padW
+	
+	self.sets.padW = padW
+	self.sets.padH = padH
+
+	self.header:SetAttribute('state-padW', self.sets.padW)
+	self.header:SetAttribute('state-padH', self.sets.padH)
+	self:Layout()
+end
+
+function MenuBar:Layout(force)
+	if force then
+		self.header:Execute([[ needsLayout = true ]])
 	end
-
-	if #self.buttons > 0 then
-		local cols = min(self:NumColumns(), #self.buttons)
-		local rows = ceil(#self.buttons / cols)
-
-		local pW, pH = self:GetPadding()
-		local spacing = self:GetSpacing()
-
-		local isLeftToRight = self:GetLeftToRight()
-		local isTopToBottom = self:GetTopToBottom()
-
-		local b = self.buttons[1]
-
-		local L, R, T, B = b:GetHitRectInsets() --By default T = 18. all others are zero
-		if T > 0 then
-			HEIGHT_OFFSET = T + 2
-		else
-			HEIGHT_OFFSET = 0
-		end
-
-		local w = b:GetWidth() + spacing - WIDTH_OFFSET
-		local h = b:GetHeight() + spacing - HEIGHT_OFFSET
-
-		for i, b in pairs(self.buttons) do
-			local col
-			local row
-			if isLeftToRight then
-				col = (i-1) % cols
-			else
-				col = (cols-1) - (i-1) % cols
-			end
-
-			if isTopToBottom then
-				row = ceil(i / cols) - 1
-			else
-				row = rows - ceil(i / cols)
-			end
-
-			b:ClearAllPoints()
-			b:SetPoint('TOPLEFT', w*col + pW, -(h*row + pH) + HEIGHT_OFFSET)
-		end
-
-		self:SetWidth(max(w*cols - spacing + pW*2 + WIDTH_OFFSET, 8))
-		self:SetHeight(max(h*ceil(#self.buttons/cols) - spacing + pH*2, 8))
-	else
-		self:SetSize(30, 30)
-	end
+	
+	self.header:Execute([[ 
+		self:RunAttribute('layout') 
+	]])
 end
 
 --[[ Menu Code ]]--
 
-local function panel_AddSizeSlider(p)
-	local L = LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')
-	local size = p:NewSlider(L.Size, 1, 1, 1)
+local function SizeSlider_OnShow(self)
+	local owner = self:GetParent().owner
+	local minValue = 1
+	local maxValue = owner:MaxLength()
+	local currentValue = owner:NumButtons()
+	
+	self:SetMinMaxValues(minValue, maxValue)
+	self:SetValue(currentValue)
+end
 
-	size.OnShow = function(self)
-		self:SetMinMaxValues(1, self:GetParent().owner:NumMenuButtons())
-		self:SetValue(self:GetParent().owner:NumButtons())
-	end
-
-	size.UpdateValue = function(self, value)
-		self:GetParent().owner:SetNumButtons(value)
-		p.Cols:OnShow()
-	end
+local function SizeSlider_UpdateValue(self, value)
+	local owner = self:GetParent().owner
+	
+	owner:SetNumButtons(value)
+	
+	self:GetParent().Cols:OnShow()
+end
+	
+local function panel_AddSizeSlider(panel)
+	local name = LibStub('AceLocale-3.0'):GetLocale('Dominos-Config').Size
+	
+	return panel:NewSlider(name, 1, 1, 1, SizeSlider_OnShow, SizeSlider_UpdateValue)
 end
 
 local function AddLayoutPanel(menu)
@@ -220,7 +313,7 @@ function MenuBar:CreateMenu()
 	local menu = Dominos:NewMenu(self.id)
 
 	AddLayoutPanel(menu)
-	AddDisableButtonPanel(menu)
+	-- AddDisableButtonPanel(menu)
 	menu:AddAdvancedPanel()
 	self.menu = menu
 end
