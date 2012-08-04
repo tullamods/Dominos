@@ -3,6 +3,23 @@
 		A dominos frame, a generic container object
 --]]
 
+local AddonName, Addon = ...
+
+local FrameParent = CreateFrame('Frame', AddonName .. 'Frame', UIParent, 'SecureHandlerStateTemplate'); FrameParent:SetAllPoints(UIParent);
+
+FrameParent:SetAttribute('_onstate-display', [[
+	local newstate = newstate or 'show'
+	if newstate == 'show' then
+		self:Show()
+	else
+		self:Hide()
+	end	
+]])
+Dominos.FrameParent = FrameParent
+
+RegisterStateDriver(FrameParent, 'display', '[petbattle]hide;show')
+
+
 local Frame = Dominos:CreateClass('Frame')
 Dominos.Frame = Frame
 
@@ -23,7 +40,7 @@ function Frame:New(id, tooltipText)
 end
 
 function Frame:Create(id)
-	local f = self:Bind(CreateFrame('Frame', nil, UIParent))
+	local f = self:Bind(CreateFrame('Frame', string.format('DominosFrame%s', id), FrameParent))
 	f:SetClampedToScreen(true)
 	f:SetMovable(true)
 	f.id = id
