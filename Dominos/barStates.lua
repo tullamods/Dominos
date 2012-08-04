@@ -76,8 +76,8 @@ addState('modifier', 'alt', '[mod:alt]', ALT_KEY)
 addState('modifier', 'ctrl', '[mod:ctrl]', CTRL_KEY)
 addState('modifier', 'shift', '[mod:shift]', SHIFT_KEY)
 
---possession/vehicle
-addState('possess', 'possess', '[vehicleui]')
+--possession
+addState('possess', 'possess', '[possessbar]')
 
 --paging
 for i = 2, 6 do

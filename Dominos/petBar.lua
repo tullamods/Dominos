@@ -86,7 +86,7 @@ function PetBar:New()
 end
 
 function PetBar:GetShowStates()
-	return '[target=pet,exists,novehicleui]show;hide'
+	return '[@pet,exists,nopossessbar]show;hide'
 end
 
 function PetBar:GetDefaults()
