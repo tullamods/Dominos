@@ -32,20 +32,21 @@ local MENU_BUTTON_NAMES = {
 --[[ Menu Bar ]]--
 
 function MenuBar:New()
-	local f = MenuBar.super.New(self, 'menu')
+	local bar = MenuBar.super.New(self, 'menu')
 
-	f:Layout(true)
-	
-	return f
+	bar:Layout(true)
+	RegisterStateDriver(bar.header, 'perspective', '[vehicleui]override;[overridebar]override;[petbattle]petbattle;normal')
+
+	return bar
 end
 
 function MenuBar:Create(frameId)
 	local bar = MenuBar.super.Create(self, frameId)
 	
 	local header = bar.header
-	
-	RegisterStateDriver(header, 'perspective', '[petbattle]petbattle;normal')
+	local overrideActionBar = _G['OverrideActionBar']
 
+	
 	--[[ init any bar global variables ]]--
 	
 	header:Execute([[
@@ -55,6 +56,8 @@ function MenuBar:Create(frameId)
 		HEIGHT_OFFSET = 22
 		WIDTH_OFFSET = 0
 	]])
+	
+	header:SetFrameRef('OverrideActionBar', overrideActionBar)
 	
 	--[[ 
 		after a layout value is altered, set a dirty bit indicating that we need to adjust the bar's layout 
@@ -67,14 +70,14 @@ function MenuBar:Create(frameId)
 	]])
 	
 	header:SetAttribute('layout-normal', [[ 
-		if myButtons then
-			for i, button in pairs(myButtons) do
-				button:SetParent(self)
-			end
-			
-			needsLayout = true
-			self:RunAttribute('layout')
+		if not myButtons then return end
+		
+		for i, button in pairs(myButtons) do
+			button:SetParent(self)
 		end
+		
+		needsLayout = true
+		self:RunAttribute('layout')
 	]])
 	
 	header:SetAttribute('layout-petbattle', [[ 
@@ -98,6 +101,31 @@ function MenuBar:Create(frameId)
 		end
 	]])
 	
+	header:SetAttribute('layout-override', [[
+		if not(myButtons) then return end
+		
+		local numButtons = #myButtons
+		local cols = ceil(numButtons / 2)
+		local spacing = -2
+
+		local b = myButtons[1]
+		local w = b:GetWidth() + spacing - WIDTH_OFFSET
+		local h = b:GetHeight() + spacing - HEIGHT_OFFSET
+		local offsetX = 72
+		local offsetY = -56
+		
+		for i, b in pairs(myButtons) do
+			local col = (i-1) % cols
+			local row = ceil(i / cols) - 1
+		
+			local b = myButtons[i]
+			b:ClearAllPoints()
+			b:SetParent(self:GetFrameRef('OverrideActionBar'))
+			b:SetPoint('TOPLEFT', '$parent', 'TOP', offsetX + (w*col) + WIDTH_OFFSET, offsetY + (h*row) + HEIGHT_OFFSET)
+			b:Show()
+		end
+	]])
+	
 	header:SetAttribute('_onstate-numButtons', [[ needsLayout = true ]])
 
 	header:SetAttribute('_onstate-columns', [[ needsLayout = true ]])
@@ -111,11 +139,13 @@ function MenuBar:Create(frameId)
 	--add button method
 	header:SetAttribute('addButton', [[
 		local button = self:GetFrameRef('addButton')		
+		
 		if button then
 			myButtons = myButtons or table.new()
 			table.insert(myButtons, button)
 			button:SetParent(self:GetFrameRef('buttonFrame') or self)
 		end
+		
 		self:SetAttribute('maxLength', #myButtons)
 	]])
 	
@@ -166,6 +196,19 @@ function MenuBar:Create(frameId)
 		end
 	end
 	loadButtons(bar, _G['MainMenuBarArtFrame']:GetChildren())
+	loadButtons(bar, overrideActionBar:GetChildren())
+	
+	local wrapper = CreateFrame('Frame', nil, overrideActionBar, 'SecureHandlerShowHideTemplate')
+	wrapper:SetAllPoints(wrapper:GetParent())
+	header:SetFrameRef('OverrideActionBar', wrapper)
+	wrapper:SetFrameRef('header', header)
+	
+	--pants hack:
+	--force the state handler for the header to update on the next frame by setting it to an arbitrary invalid state
+	--to ensure that we update micro button positions AFTER MoveMicroButtons is called
+	--would be much easier if we could simply secure wrap the OnShow handler of the OverrideActionBar
+	--however, we can't since its not a true protected frame
+	wrapper:SetAttribute('_onshow', [[ self:GetFrameRef('header'):SetAttribute('state-perspective', 'pants') ]])
 
 	return bar
 end

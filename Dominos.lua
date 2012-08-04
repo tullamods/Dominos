@@ -231,7 +231,6 @@ function Dominos:Load()
 	self.PetBar:New()
 	self.BagBar:New()
 	self.MenuBar:New()
-	self.VehicleBar:New()
 	self.ExtraBar:New()
 
 	--load in extra functionality
@@ -253,7 +252,6 @@ function Dominos:Unload()
 	self.Frame:ForFrame('class', 'Free')
 	self.Frame:ForFrame('menu', 'Free')
 	self.Frame:ForFrame('bags', 'Free')
-	self.Frame:ForFrame('vehicle', 'Free')
 	self.Frame:ForFrame('extra', 'Free')
 
 	--unload any module stuff
@@ -266,11 +264,13 @@ end
 --[[ Blizzard Stuff Hiding ]]--
 
 function Dominos:HideBlizzard()
-	_G['ActionBarController']:UnregisterAllEvents()
-	_G['ActionBarController']:RegisterEvent('UPDATE_EXTRA_ACTIONBAR')
+	local noop = _G['Multibar_EmptyFunc'] or function() end
+	-- _G['ActionBarController']:UnregisterAllEvents()
+	-- _G['ActionBarController']:RegisterEvent('UPDATE_EXTRA_ACTIONBAR')
+	-- _G['ActionBarController']:RegisterEvent('UPDATE_VEHICLE_ACTIONBAR')
+	-- _G['ActionBarController']:RegisterEvent('UPDATE_OVERRIDE_ACTIONBAR')
 	
 	_G['MainMenuExpBar']:UnregisterAllEvents()
-	_G['OverrideActionBar']:UnregisterAllEvents()
 	
 	_G['MainMenuBarArtFrame']:UnregisterAllEvents()
 	_G['MainMenuBarArtFrame']:RegisterEvent('CURRENCY_DISPLAY_UPDATE')
@@ -278,89 +278,8 @@ function Dominos:HideBlizzard()
 	
 	_G['MainMenuBar']:Hide()
 	
-	-- local uiHider = CreateFrame("Frame"); uiHider:Hide()
-	-- self.uiHider = uiHider
-
-	-- local newForAll = function(f)
-		-- return function(...)
-			-- for i = 1, select('#', ...) do
-				-- f(select(i, ...))
-			-- end
-		-- end
-	-- end
-
-	-- local disableFrames = newForAll(function(name)
-		-- local f = _G[name]
-		
-		-- if not f then
-			-- print(string.format('Uknown frame name "%s"', name))
-		-- else		
-			-- f:UnregisterAllEvents()
-			-- f:SetParent(uiHider)
-			-- f:Hide()
-		-- end
-	-- end)
-
-	-- local nilFramePositions = newForAll(function(name)
-		-- local f = _G[name]
-		
-		-- if not f then
-			-- print(string.format('Uknown frame name "%s"', name))
-		-- else
-			-- f.ignoreFramePositionManager = true
-		-- end
-	-- end)
-
-	-- disableFrames(
-		-- 'MultiBarRight',
-		-- 'MultiBarLeft',
-		-- 'MultiBarBottomLeft',
-		-- 'MultiBarBottomRight',
-		-- 'MainMenuBar',
-		-- 'MainMenuExpBar',
-		-- 'MainMenuBarArtFrame'
-	-- )
-
-	-- nilFramePositions(
-		-- 'MultiBarRight',
-		-- 'MultiBarLeft',
-		-- 'MultiBarBottomLeft',
-		-- 'MultiBarBottomRight',
-		-- 'MainMenuBar',
-		-- 'ExtraActionBarFrame'
-	-- )
-
-	-- --register necessary main menu events
-	-- MainMenuBarArtFrame:RegisterEvent('BAG_UPDATE')  --needed to display the keyring
-	-- MainMenuBarArtFrame:RegisterEvent('CURRENCY_DISPLAY_UPDATE') --needed to display stuff on the backpack button
-
-	-- --hide some weird effects of loading the talent frame
-	-- -- local talentFrame = _G['PlayerTalentFrame']
-	-- -- if talentFrame then
-		-- -- talentFrame:UnregisterEvent('ACTIVE_TALENT_GROUP_CHANGED')
-	-- -- else
-		-- -- hooksecurefunc('TalentFrame_LoadUI', function()
-			-- -- _G['PlayerTalentFrame']:UnregisterEvent('ACTIVE_TALENT_GROUP_CHANGED')
-		-- -- end)
-	-- -- end
-
-	-- --hack, to make sure the seat indicator is placed in the right spot
-	-- if not _G['VehicleSeatIndicator']:IsUserPlaced() then
-		-- _G['VehicleSeatIndicator']:SetPoint("TOPRIGHT", MinimapCluster, "BOTTOMRIGHT", 0, -13)
-	-- end
-
-	-- --unregister evil binding events
-	-- -- for i = 1, 6 do
-		-- -- _G['VehicleMenuBarActionButton' .. i]:UnregisterAllEvents()
-	-- -- end
-
-	-- -- for i = 1, 12 do
-		-- -- _G['BonusActionButton' .. i]:UnregisterAllEvents()
-		-- -- _G['MultiCastActionButton' .. i]:UnregisterEvent('UPDATE_BINDINGS')
-	-- -- end
-
-	-- --prevent multi actionbar grids from randomly showing
-	-- MultiActionBar_UpdateGrid = Multibar_EmptyFunc
+	_G['ValidateActionBarTransition'] = noop
+	_G['MultiActionBar_UpdateGrid'] = noop
 end
 
 

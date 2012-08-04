@@ -7,17 +7,28 @@ local AddonName, Addon = ...
 
 local FrameParent = CreateFrame('Frame', AddonName .. 'Frame', UIParent, 'SecureHandlerStateTemplate'); FrameParent:SetAllPoints(UIParent);
 
-FrameParent:SetAttribute('_onstate-display', [[
-	local newstate = newstate or 'show'
-	if newstate == 'show' then
+FrameParent:SetAttribute('_onstate-perspective', [[
+	local newstate = newstate or 'normal'
+	
+	if newstate == 'normal' then
 		self:Show()
 	else
 		self:Hide()
-	end	
+	end
+		
+	local overrideActionBar = self:GetFrameRef('OverrideActionBar')
+	if newstate == 'vehicle' or newstate == 'override' then
+		overrideActionBar:Show()
+	else
+		overrideActionBar:Hide()
+	end
 ]])
+
+FrameParent:SetFrameRef('OverrideActionBar', _G['OverrideActionBar'])
+RegisterStateDriver(FrameParent, 'perspective', '[vehicleui]vehicle;[overridebar]override;[petbattle]petbattle;normal')
+
 Dominos.FrameParent = FrameParent
 
-RegisterStateDriver(FrameParent, 'display', '[petbattle]hide;show')
 
 
 local Frame = Dominos:CreateClass('Frame')

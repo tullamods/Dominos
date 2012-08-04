@@ -7,14 +7,6 @@ Dominos.ExtraBar  = ExtraBar
 function ExtraBar:New()
 	local f = self.super.New(self, 'extra')
 	
-	local proxyShower = CreateFrame('Frame', nil, ExtraActionBarFrame, ' SecureHandlerShowHideTemplate')
-	proxyShower:SetFrameRef('extraBar', f.header)
-	proxyShower:SetAttribute('_onshow', [[ self:GetFrameRef('extraBar'):Show() ]])
-	proxyShower:SetAttribute('_onhide', [[ self:GetFrameRef('extraBar'):Hide() ]])
-	ExtraActionBarFrame:ClearAllPoints()
-	ExtraActionBarFrame:SetParent(UIParent)
-	ExtraActionBarFrame:EnableMouse(false)
-	
 	f:LoadButtons()
 	f:Layout()
 	f:UpdateButtonsShown()
@@ -28,6 +20,10 @@ function ExtraBar:GetDefaults()
 		x = -244,
 		y = 0,
 	}
+end
+
+function ExtraBar:GetShowStates()
+	return '[extrabar]show;hide'
 end
 
 function ExtraBar:NumButtons(f)
