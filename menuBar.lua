@@ -111,8 +111,23 @@ function MenuBar:Create(frameId)
 		local b = myButtons[1]
 		local w = b:GetWidth() + spacing - WIDTH_OFFSET
 		local h = b:GetHeight() + spacing - HEIGHT_OFFSET
-		local offsetX = 72
-		local offsetY = -56
+		local offsetX = -318
+		local offsetY = -6
+		local pitchShown = self:GetFrameRef('OverrideActionBarPitchFrame'):IsShown()
+		local leaveShown = self:GetFrameRef('OverrideActionBarLeaveFrame'):IsShown()
+		
+		if pitchShown then
+			offsetX = offsetX + 3
+		end
+		
+		if leaveShown then
+			offsetX = offsetX - 78
+		end
+		
+		if pitchShown and leaveShown then
+			offsetX = offsetX - 2
+		end
+			
 		
 		for i, b in pairs(myButtons) do
 			local col = (i-1) % cols
@@ -121,7 +136,7 @@ function MenuBar:Create(frameId)
 			local b = myButtons[i]
 			b:ClearAllPoints()
 			b:SetParent(self:GetFrameRef('OverrideActionBar'))
-			b:SetPoint('TOPLEFT', '$parent', 'TOP', offsetX + (w*col) + WIDTH_OFFSET, offsetY + (h*row) + HEIGHT_OFFSET)
+			b:SetPoint('TOPLEFT', '$parent', 'RIGHT', offsetX + (w*col) + WIDTH_OFFSET, offsetY + (h*row) + HEIGHT_OFFSET)
 			b:Show()
 		end
 	]])
@@ -200,7 +215,6 @@ function MenuBar:Create(frameId)
 	
 	local wrapper = CreateFrame('Frame', nil, overrideActionBar, 'SecureHandlerShowHideTemplate')
 	wrapper:SetAllPoints(wrapper:GetParent())
-	header:SetFrameRef('OverrideActionBar', wrapper)
 	wrapper:SetFrameRef('header', header)
 	
 	--pants hack:
@@ -210,6 +224,11 @@ function MenuBar:Create(frameId)
 	--however, we can't since its not a true protected frame
 	wrapper:SetAttribute('_onshow', [[ self:GetFrameRef('header'):SetAttribute('state-perspective', 'pants') ]])
 
+
+	header:SetFrameRef('OverrideActionBar', wrapper)
+	header:SetFrameRef('OverrideActionBarLeaveFrame', CreateFrame('Frame', nil, overrideActionBar.leaveFrame, 'SecureHandlerBaseTemplate'))
+	header:SetFrameRef('OverrideActionBarPitchFrame', CreateFrame('Frame', nil, overrideActionBar.pitchFrame, 'SecureHandlerBaseTemplate'))
+	
 	return bar
 end
 
