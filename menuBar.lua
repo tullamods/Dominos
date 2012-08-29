@@ -280,8 +280,14 @@ function MenuBar:LoadSettings(...)
 	header:SetAttribute('state-padW', pw)
 	header:SetAttribute('state-padH', ph)
 	
-	for i, button in ipairs(self.buttons) do
-		self:DisableMenuButton(button, self:IsMenuButtonDisabled(button))
+	local disabledButtons = self.sets.disabled
+	if disabledButtons then
+		for buttonName, disabled in pairs(disabledButtons) do
+			local button = _G[buttonName]
+			if button then
+				self:DisableMenuButton(button, disabled)
+			end
+		end
 	end
 end
 
@@ -298,12 +304,6 @@ function MenuBar:MaxLength()
 end
 
 function MenuBar:AddButton(button)
-	if not self.buttons then
-		self.buttons = {button}
-	else
-		table.insert(self.buttons, button)
-	end
-	
 	self.header:SetFrameRef('addButton', button)
 	self.header:Execute([[ self:RunAttribute('addButton') ]])
 end
