@@ -88,9 +88,9 @@ end
 do
 	local class = select(2, UnitClass('player'))
 	if class == 'WARRIOR' then		
-		addState('class', 'battle', '[bonusbar:1]', GetSpellInfo(2457))
-		addState('class', 'defensive', '[bonusbar:2]', GetSpellInfo(71))
-		addState('class', 'berserker', '[bonusbar:3]', GetSpellInfo(2458))
+		addState('class', 'battle', '[form:1]', GetSpellInfo(2457))
+		addState('class', 'defensive', '[form:2]', GetSpellInfo(71))
+		addState('class', 'berserker', '[form:3]', GetSpellInfo(2458))
 	elseif class == 'DRUID' then
 		addState('class', 'moonkin', '[bonusbar:4]', GetSpellInfo(24858))
 		addState('class', 'bear', '[bonusbar:3]', GetSpellInfo(5487))
@@ -107,7 +107,7 @@ do
 		addState('class', 'shadow', '[bonusbar:1]', GetSpellInfo(15473))
 	elseif class == 'ROGUE' then
 		addState('class', 'vanish', '[bonusbar:1,form:3]', GetSpellInfo(1856))
-		addState('class', 'shadowdance', '[bonusbar:2]', GetSpellInfo(51713))
+		-- addState('class', 'shadowdance', '[bonusbar:2]', GetSpellInfo(51713))
 		addState('class', 'stealth', '[bonusbar:1]', GetSpellInfo(1784))
 	elseif class == 'WARLOCK' then
 		addState('class', 'meta', '[form:2]', GetSpellInfo(47241))
