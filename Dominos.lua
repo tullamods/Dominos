@@ -232,6 +232,7 @@ function Dominos:Load()
 	self.BagBar:New()
 	self.MenuBar:New()
 	self.ExtraBar:New()
+	self.VehicleBar:New()
 
 	--load in extra functionality
 	for _,module in self:IterateModules() do
@@ -253,6 +254,7 @@ function Dominos:Unload()
 	self.Frame:ForFrame('menu', 'Free')
 	self.Frame:ForFrame('bags', 'Free')
 	self.Frame:ForFrame('extra', 'Free')
+	self.Frame:ForFrame('vehicle', 'Free')
 
 	--unload any module stuff
 	for _,module in self:IterateModules() do
