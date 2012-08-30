@@ -38,7 +38,6 @@ function MenuBar:Create(frameId)
 	local bar = MenuBar.super.Create(self, frameId)
 	
 	local header = bar.header
-	local overrideActionBar = _G['OverrideActionBar']
 
 	
 	--[[ init any bar global variables ]]--
@@ -55,8 +54,6 @@ function MenuBar:Create(frameId)
 		activeButtons = table.new()
 	]])
 	
-	header:SetFrameRef('OverrideActionBar', overrideActionBar)
-	
 	--[[ 
 		after a layout value is altered, set a dirty bit indicating that we need to adjust the bar's layout 
 	--]]
@@ -67,70 +64,8 @@ function MenuBar:Create(frameId)
 		self:RunAttribute('layout-' .. newstate)
 	]])
 	
-	header:SetAttribute('layout-normal', [[ 
-		for i, button in pairs(myButtons) do
-			button:SetParent(self)
-		end
-		
-		needsLayout = true
-		self:RunAttribute('layout')
-	]])
-	
-	header:SetAttribute('layout-petbattle', [[ 
-		local numButtons = #myButtons
-		local cols = ceil(numButtons / 2)
-		
-		local b = myButtons[1]
-		local w = b:GetWidth() - (WIDTH_OFFSET)
-		local h = b:GetHeight() - (HEIGHT_OFFSET + 2)
-		
-		for i, b in pairs(myButtons) do
-			local col = (i-1) % cols
-			local row = ceil(i / cols) - 1
-		
-			local b = myButtons[i]
-			b:ClearAllPoints()
-			b:SetPoint('TOPLEFT', '$parent', 'TOPLEFT', -16 + w*col + WIDTH_OFFSET, 6 -(h*row) + HEIGHT_OFFSET)
-			b:Show()
-		end
-	]])
-	
-	header:SetAttribute('layout-override', [[
-		local numButtons = #myButtons
-		local cols = ceil(numButtons / 2)
-		local spacing = -2
-
-		local b = myButtons[1]
-		local w = b:GetWidth() + spacing - WIDTH_OFFSET
-		local h = b:GetHeight() + spacing - HEIGHT_OFFSET
-		local offsetX = -318
-		local offsetY = -6
-		local pitchShown = self:GetFrameRef('OverrideActionBarPitchFrame'):IsShown()
-		local leaveShown = self:GetFrameRef('OverrideActionBarLeaveFrame'):IsShown()
-		
-		if pitchShown then
-			offsetX = offsetX + 3
-		end
-		
-		if leaveShown then
-			offsetX = offsetX - 78
-		end
-		
-		if pitchShown and leaveShown then
-			offsetX = offsetX - 2
-		end
-			
-		
-		for i, b in pairs(myButtons) do
-			local col = (i-1) % cols
-			local row = ceil(i / cols) - 1
-		
-			local b = myButtons[i]
-			b:ClearAllPoints()
-			b:SetParent(self:GetFrameRef('OverrideActionBar'))
-			b:SetPoint('TOPLEFT', '$parent', 'RIGHT', offsetX + (w*col) + WIDTH_OFFSET, offsetY + (h*row) + HEIGHT_OFFSET)
-			b:Show()
-		end
+	header:SetAttribute('_onstate-forcelayout', [[
+		self:RunAttribute('layout-' .. self:GetAttribute('state-perspective') or 'normal')
 	]])
 	
 	header:SetAttribute('_onstate-columns', [[ needsLayout = true ]])
@@ -177,6 +112,72 @@ function MenuBar:Create(frameId)
 		end
 		
 		self:SetAttribute('maxLength', #activeButtons)
+	]])
+	
+	header:SetAttribute('layout-normal', [[ 
+		for i, button in pairs(myButtons) do
+			button:SetParent(self)
+		end
+		
+		needsLayout = true
+		self:RunAttribute('layout')
+	]])
+	
+	header:SetAttribute('layout-petbattle', [[ 
+		local numButtons = #myButtons
+		local cols = ceil(numButtons / 2)
+		
+		local b = myButtons[1]
+		local w = b:GetWidth() - (WIDTH_OFFSET)
+		local h = b:GetHeight() - (HEIGHT_OFFSET + 2)
+		
+		for i, b in pairs(myButtons) do
+			local col = (i-1) % cols
+			local row = ceil(i / cols) - 1
+		
+			local b = myButtons[i]
+			b:ClearAllPoints()
+			b:SetPoint('TOPLEFT', '$parent', 'TOPLEFT', -16 + w*col + WIDTH_OFFSET, 6 -(h*row) + HEIGHT_OFFSET)
+			b:Show()
+		end
+	]])
+	
+	header:SetAttribute('layout-override', [[
+		local numButtons = #myButtons
+		local cols = ceil(numButtons / 2)
+		local spacing = -2
+
+		local b = myButtons[1]
+		local w = b:GetWidth() + spacing - WIDTH_OFFSET
+		local h = b:GetHeight() + spacing - HEIGHT_OFFSET
+		local offsetX = -318
+		local offsetY = -6
+
+		local pitchShown = self:GetFrameRef('OverrideActionBarPitchFrame'):IsShown()
+		local leaveShown = self:GetFrameRef('OverrideActionBarLeaveFrame'):IsShown()
+		
+		if pitchShown then
+			offsetX = offsetX + 3
+		end
+		
+		if leaveShown then
+			offsetX = offsetX - 78
+		end
+		
+		if pitchShown and leaveShown then
+			offsetX = offsetX - 2
+		end
+			
+		for i, b in pairs(myButtons) do
+			local col = (i-1) % cols
+			local row = ceil(i / cols) - 1
+		
+			local b = myButtons[i]
+			b:ClearAllPoints()
+			b:SetParent(self:GetFrameRef('OverrideActionBar'))
+			b:SetPoint('TOPLEFT', '$parent', 'RIGHT', offsetX + (w*col) + WIDTH_OFFSET, offsetY + (h*row) + HEIGHT_OFFSET)
+			b:Show()
+		end
 	]])
 	
 	header:SetAttribute('layout', [[
@@ -240,30 +241,38 @@ function MenuBar:Create(frameId)
 			local button = select(i, ...)
 			local buttonName = button:GetName()
 			if buttonName and buttonName:match('(%w+)MicroButton$') then
-				bar:AddButton(button)
+				bar:AddButton(bar:MakeSecure(button))
 			end
 		end
 	end
 	loadButtons(bar, _G['MainMenuBarArtFrame']:GetChildren())
-	loadButtons(bar, overrideActionBar:GetChildren())
+	loadButtons(bar, _G['OverrideActionBar']:GetChildren())
 	
-	local wrapper = CreateFrame('Frame', nil, overrideActionBar, 'SecureHandlerShowHideTemplate')
+	local wrapper = CreateFrame('Frame', nil, _G['OverrideActionBar'], 'SecureHandlerShowHideTemplate')
 	wrapper:SetAllPoints(wrapper:GetParent())
-	wrapper:SetFrameRef('header', header)
+	wrapper:SetFrameRef('DominosMenuBarHeader', header)
 	
 	--pants hack:
 	--force the state handler for the header to update on the next frame by setting it to an arbitrary invalid state
 	--to ensure that we update micro button positions AFTER MoveMicroButtons is called
 	--would be much easier if we could simply secure wrap the OnShow handler of the OverrideActionBar
 	--however, we can't since its not a true protected frame
-	wrapper:SetAttribute('_onshow', [[ self:GetFrameRef('header'):SetAttribute('state-perspective', 'pants') ]])
+	wrapper:SetAttribute('_onshow', [[ self:GetFrameRef('DominosMenuBarHeader'):SetAttribute('state-forcelayout', true) ]])
 
 
 	header:SetFrameRef('OverrideActionBar', wrapper)
-	header:SetFrameRef('OverrideActionBarLeaveFrame', CreateFrame('Frame', nil, overrideActionBar.leaveFrame, 'SecureHandlerBaseTemplate'))
-	header:SetFrameRef('OverrideActionBarPitchFrame', CreateFrame('Frame', nil, overrideActionBar.pitchFrame, 'SecureHandlerBaseTemplate'))
+	header:SetFrameRef('OverrideActionBarLeaveFrame', CreateFrame('Frame', nil, _G['OverrideActionBar'].leaveFrame, 'SecureHandlerBaseTemplate'))
+	header:SetFrameRef('OverrideActionBarPitchFrame', CreateFrame('Frame', nil, _G['OverrideActionBar'].pitchFrame, 'SecureHandlerBaseTemplate'))
 	
 	return bar
+end
+
+
+--wrap a frame in a secure one for placement/etc
+--necesary to reference frames from secure code
+function MenuBar:MakeSecure(frame)
+	CreateFrame('Frame', nil, frame, 'SecureFrameTemplate')
+	return frame;
 end
 
 function MenuBar:LoadSettings(...)	
