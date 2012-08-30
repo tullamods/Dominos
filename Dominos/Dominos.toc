@@ -2,7 +2,7 @@
 ## Title: Dominos
 ## Notes: A main actionbar replacement
 ## Author: Tuller
-## Version: 5.0.7
+## Version: 5.0.8
 ## SavedVariables: DominosDB, DominosVersion
 ## OptionalDeps: Ace3, LibKeyBound-1.0, Masque, FlyPaper
 embeds.xml
@@ -21,4 +21,5 @@ bagBar.lua
 menuBar.lua
 minimap.lua
 extraActionBar.lua
+vehicleBar.lua
 bindingsUpdater.lua

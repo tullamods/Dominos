@@ -30,6 +30,7 @@ function MenuBar:New()
 
 	bar:Layout(true)
 	RegisterStateDriver(bar.header, 'perspective', '[vehicleui]override;[overridebar]override;[petbattle]petbattle;normal')
+	bar:UpdateClickThrough()
 
 	return bar
 end
@@ -361,6 +362,23 @@ function MenuBar:SetPadding(padW, padH)
 	self.header:SetAttribute('state-padW', self.sets.padW)
 	self.header:SetAttribute('state-padH', self.sets.padH)
 	self:Layout()
+end
+
+function MenuBar:UpdateClickThrough()
+	local clickThrough = self:GetClickThrough()
+	if clickThrough then
+		self.header:Execute([[
+			for i = 1, #myButtons do
+				myButtons[i]:EnableMouse(false)
+			end
+		]])
+	else
+		self.header:Execute([[
+			for i = 1, #myButtons do
+				myButtons[i]:EnableMouse(true)
+			end
+		]])		
+	end
 end
 
 function MenuBar:DisableMenuButton(button, disabled)
