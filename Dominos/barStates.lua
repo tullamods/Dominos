@@ -106,11 +106,11 @@ do
 	elseif class == 'PRIEST' then
 		addState('class', 'shadow', '[bonusbar:1]', GetSpellInfo(15473))
 	elseif class == 'ROGUE' then
-		addState('class', 'vanish', '[bonusbar:1,form:3]', GetSpellInfo(1856))
-		-- addState('class', 'shadowdance', '[bonusbar:2]', GetSpellInfo(51713))
+		---addState('class', 'vanish', '[bonusbar:1,form:3]', GetSpellInfo(1856))
+		addState('class', 'shadowdance', '[bonusbar:2]', GetSpellInfo(51713))
 		addState('class', 'stealth', '[bonusbar:1]', GetSpellInfo(1784))
 	elseif class == 'WARLOCK' then
-		addState('class', 'meta', '[form:2]', GetSpellInfo(47241))
+		addState('class', 'meta', '[form:1]', GetSpellInfo(103958))
 	elseif class == 'MONK' then
 		addState('class', 'tiger', '[bonusbar:1]', GetSpellInfo(103985))
 		addState('class', 'ox', '[bonusbar:2]', GetSpellInfo(115069))
