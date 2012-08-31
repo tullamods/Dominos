@@ -47,15 +47,15 @@ local BarStates = {
 Dominos.BarStates = BarStates
 
 
-local getFormIndex = function(spellName)
-	for i = 1, GetNumShapeshiftForms() do
-		local _, name = GetShapeshiftFormInfo(i)
-		if name == spellName then
-			return i
-		end
-	end
-	return nil
-end
+-- local getFormIndex = function(spellName)
+	-- for i = 1, GetNumShapeshiftForms() do
+		-- local _, name = GetShapeshiftFormInfo(i)
+		-- if name == spellName then
+			-- return i
+		-- end
+	-- end
+	-- return nil
+-- end
 
 local addState = function(stateType, stateId, stateValue, stateText)
 	return BarStates:add{
@@ -94,13 +94,7 @@ do
 	elseif class == 'DRUID' then
 		addState('class', 'moonkin', '[bonusbar:4]', GetSpellInfo(24858))
 		addState('class', 'bear', '[bonusbar:3]', GetSpellInfo(5487))
-		addState('class', 'tree', function()
-			local index = getFormIndex(GetSpellInfo(33891))
-			if index then
-				return ('[form:%d]'):format(index)
-			end
-			return nil
-		end, GetSpellInfo(33891))
+		addState('class', 'tree', function() return format('[form:%d]', GetNumShapeshiftForms() + 1) end, GetSpellInfo(33891))
 		addState('class', 'prowl', '[bonusbar:1,stealth]', GetSpellInfo(5215))
 		addState('class', 'cat', '[bonusbar:1]', GetSpellInfo(768))
 	elseif class == 'PRIEST' then
