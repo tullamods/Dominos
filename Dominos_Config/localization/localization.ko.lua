@@ -1,4 +1,4 @@
-﻿--[[
+--[[
 	localization.koKR.lua
 	translated & modified by SayClub
 ]]
@@ -17,8 +17,6 @@ L.Columns = '행'
 L.Size = '열'
 L.Modifiers = '변경'
 L.QuickPaging = '빠른 페이징'
-L.Help = '강화 효과'
-L.Harm = '약화 효과'
 L.Targeting = '대상'
 L.ShowStates = '상태 표시'
 L.Set = '배치'
@@ -45,6 +43,7 @@ L.EnterConfigMode = '설정 모드 들어가기'
 L.ActionBarSettings = '행동 단축바 %d 설정'
 L.BarSettings = '%s 바 설정'
 L.ShowTooltips = '툴팁 표시'
+L.ShowTooltipsCombat = '전투시 툴팁 표시'
 L.OneBag = '원백'
 L.ShowKeyring = '열쇠고리 표시'
 L.StickyBars = '바 고정'
@@ -53,7 +52,14 @@ L.Advanced = '상세 옵션'
 L.LeftToRight = '왼쪽에서 오른쪽으로 레이아웃 버튼'
 L.TopToBottom = '위에서 아래로 레이아웃 버튼'
 L.LinkedOpacity = '도킹된 바 투명도 상속'
+L.ClickThrough = '마우스 클릭 통과 사용'
+L.DisableMenuButtons = '버튼 사용안함'
 
+L.ALT_KEY_TEXT = 'ALT'
+
+L.Help = '강화 효과'
+L.Harm = '약화 효과'
+L.State_NOTARGET = '대상 없음'
 L.ALT_KEY_TEXT = 'ALT'
 L.AltShift = 'ALT-' .. SHIFT_KEY_TEXT
 L.CtrlShift = CTRL_KEY_TEXT .. '-' .. SHIFT_KEY_TEXT
