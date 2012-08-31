@@ -46,10 +46,10 @@ ActionBar.mainbarOffsets = {
 			pages.bear = 8
 			pages.moonkin = 9
 			pages.tree = 7
-		elseif i == 'WARRIOR' then
-			pages.battle = 6
-			pages.defensive = 7
-			pages.berserker = 8
+		-- elseif i == 'WARRIOR' then
+			-- pages.battle = 6
+			-- pages.defensive = 7
+			-- pages.berserker = 8
 		elseif i == 'PRIEST' then
 			pages.shadow = 6
 		elseif i == 'ROGUE' then
@@ -443,16 +443,17 @@ do
 			
 			--HACK: Make the state panel wider for monks
 			--		since their stances have long names
-			local isMonk = select(2, UnitClass('player')) == 'MONK'
+			local playerClass = select(2, UnitClass('player'))
+			local hasLongStanceNames = playerClass == 'MONK' or playerClass == 'ROGUE' or playerClass == 'DRUID'
 			for i = #states, 1, -1 do
 				local state = states[i]
 				local slider = ConditionSlider_New(p, state.id, state.text)
-				if isMonk then
+				if hasLongStanceNames then
 					slider:SetWidth(slider:GetWidth() + 48)
 				end
 			end
 			
-			if isMonk then
+			if hasLongStanceNames then
 				p.width = 228
 			end
 		end
