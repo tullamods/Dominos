@@ -207,16 +207,16 @@ do
 		dd:SetScript('OnShow', function(self)
 			UIDropDownMenu_SetWidth(self, 110)
 			UIDropDownMenu_Initialize(self, self.Initialize)
-			UIDropDownMenu_SetSelectedValue(self, Dominos:GetPossessBar().id)
+			UIDropDownMenu_SetSelectedValue(self, Dominos:GetOverrideBar().id)
 		end)
 
 		local function Item_OnClick(self)
-			Dominos:SetPossessBar(self.value)
+			Dominos:SetOverrideBar(self.value)
 			UIDropDownMenu_SetSelectedValue(dd, self.value)
 		end
 
 		function dd:Initialize()
-			local selected = Dominos:GetPossessBar().id
+			local selected = Dominos:GetOverrideBar().id
 
 			for i = 1, Dominos:NumBars() do
 				AddItem('Action Bar ' .. i, i, Item_OnClick, i == selected)
