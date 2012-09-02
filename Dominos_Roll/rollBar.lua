@@ -40,6 +40,8 @@ local L = LibStub('AceLocale-3.0'):GetLocale('Dominos')
 local RollBar
 
 function DRB:Load()
+	UIPARENT_MANAGED_FRAME_POSITIONS['GroupLootContainer'] = nil
+	
 	self.frame = RollBar:New()
 end
 
@@ -63,22 +65,32 @@ end
 function RollBar:GetDefaults()
 	return {
 		point = 'LEFT',
-		numButtons = NUM_GROUP_LOOT_FRAMES,
 		columns = 1,
 		spacing = 2
 	}
 end
 
+function RollBar:NumButtons()
+	return 1
+end
+
 function RollBar:AddButton(i)
-	local b =  _G['GroupLootFrame' .. (5 - i)]
-	b:SetParent(self.header)
-	self.buttons[i] = b
+	if i == 1 then
+		local b =  self:GetGroupLootContainer()
+		b:SetParent(self.header)
+		self.buttons[i] = b
+	end
 end
 
-function RollBar:RemoveButton(i)
-	local b = self.buttons[i]
-	b:SetParent(nil)
-	self.buttons[i] = nil
+function RollBar:Layout()
+	local container = self:GetGroupLootContainer()
+	container:ClearAllPoints()
+	container:SetPoint('TOP', self.header)
+	
+	local pW, pH = self:GetPadding()
+	self:SetSize(container:GetWidth() + pW, (container.reservedSize * 4.5) + pH)
 end
 
-UIPARENT_MANAGED_FRAME_POSITIONS['GroupLootFrame1'] = nil
+function RollBar:GetGroupLootContainer()
+	return _G['GroupLootContainer']
+end
