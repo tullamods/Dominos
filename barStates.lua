@@ -101,7 +101,7 @@ do
 		addState('class', 'shadow', '[bonusbar:1]', GetSpellInfo(15473))
 	elseif class == 'ROGUE' then
 		---addState('class', 'vanish', '[bonusbar:1,form:3]', GetSpellInfo(1856))
-		addState('class', 'shadowdance', '[bonusbar:2]', GetSpellInfo(51713) .. '/' .. GetSpellInfo(1856))
+		addState('class', 'shadowdance', '[form:3]', GetSpellInfo(51713) .. '/' .. GetSpellInfo(1856))
 		addState('class', 'stealth', '[bonusbar:1]', GetSpellInfo(1784))
 	elseif class == 'WARLOCK' then
 		addState('class', 'meta', '[form:1]', GetSpellInfo(103958))

@@ -5,31 +5,37 @@
 
 local AddonName, Addon = ...
 
-local FrameParent = CreateFrame('Frame', AddonName .. 'Frame', UIParent, 'SecureHandlerStateTemplate'); FrameParent:SetAllPoints(UIParent);
-
-FrameParent:SetAttribute('_onstate-perspective', [[
-	local newstate = newstate or 'normal'
+local function StandardInterfaceParent_Create()
+	local frame = CreateFrame('Frame', AddonName .. 'Frame', UIParent, 'SecureHandlerStateTemplate')
+	frame:SetAllPoints(parent)
 	
-	if newstate == 'normal' then
-		self:Show()
-	else
-		self:Hide()
-	end
+	frame:SetAttribute('_onstate-perspective', [[
+		local newstate = newstate or 'normal'
 		
-	local overrideActionBar = self:GetFrameRef('OverrideActionBar')
-	if newstate == 'vehicle' or newstate == 'override' then
-		overrideActionBar:Show()
-	else
-		overrideActionBar:Hide()
-	end
-]])
+		if newstate == 'normal' then
+			self:Show()
+		else
+			self:Hide()
+		end
+			
+		local overrideActionBar = self:GetFrameRef('OverrideActionBar')
+		if newstate == 'vehicle' or newstate == 'override' then
+			overrideActionBar:Show()
+		else
+			overrideActionBar:Hide()
+		end
+	]])
 
-FrameParent:SetFrameRef('OverrideActionBar', _G['OverrideActionBar'])
-RegisterStateDriver(FrameParent, 'perspective', '[vehicleui]vehicle;[overridebar]override;[petbattle]petbattle;normal')
+	frame:SetFrameRef('OverrideActionBar', _G['OverrideActionBar'])
+	RegisterStateDriver(frame, 'perspective', '[vehicleui]vehicle;[overridebar]override;[petbattle]petbattle;normal')
 
-Dominos.FrameParent = FrameParent
+	return frame	
+end
 
-
+local FrameParents = {
+	Always = _G['UIParent'], --frames that should be shown regardless of interface mdoe
+	Standard = StandardInterfaceParent_Create() --frames that should be shown only when the standard interface is visible
+}
 
 local Frame = Dominos:CreateClass('Frame')
 Dominos.Frame = Frame
@@ -39,9 +45,10 @@ local active = {}
 local unused = {}
 
 --constructor
-function Frame:New(id, tooltipText)
+function Frame:New(id, tooltipText, alwaysVisible)
 	local id = tonumber(id) or id
-	local f = self:Restore(id) or self:Create(id)
+	
+	local f = self:Restore(id) or self:Create(id, alwaysVisible)
 	f:LoadSettings()
 	f.buttons = {}
 	f:SetTooltipText(tooltipText)
@@ -50,8 +57,15 @@ function Frame:New(id, tooltipText)
 	return f
 end
 
-function Frame:Create(id)
-	local f = self:Bind(CreateFrame('Frame', string.format('DominosFrame%s', id), FrameParent))
+function Frame:Create(id, alwaysVisible)
+	local parent
+	if alwaysVisible then
+		parent = FrameParents.Always
+	else
+		parent = FrameParents.Standard
+	end
+
+	local f = self:Bind(CreateFrame('Frame', format('DominosFrame%s', id), parent))
 	f:SetClampedToScreen(true)
 	f:SetMovable(true)
 	f.id = id
