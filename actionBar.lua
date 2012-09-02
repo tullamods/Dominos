@@ -275,7 +275,7 @@ end
 
 --returns true if the possess bar, false otherwise
 function ActionBar:IsPossessBar()
-	return self == Dominos:GetPossessBar()
+	return self == Dominos:GetOverrideBar()
 end
 
 
