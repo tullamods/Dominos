@@ -793,22 +793,22 @@ function Dominos:ShowMacroText()
 end
 
 --possess bar settings
-function Dominos:SetPossessBar(id)
-	local prevBar = self:GetPossessBar()
+function Dominos:SetOverrideBar(id)
+	local prevBar = self:GetOverrideBar()
 	self.db.profile.possessBar = id
-	local newBar = self:GetPossessBar()
+	local newBar = self:GetOverrideBar()
 
 	prevBar:UpdateStateDriver()
 	newBar:UpdateStateDriver()
 end
 
-function Dominos:GetPossessBar()
+function Dominos:GetOverrideBar()
 	return self.Frame:Get(self.db.profile.possessBar)
 end
 
 --vehicle bar settings
 function Dominos:GetVehicleBar()
-	return self:GetPossessBar()
+	return self:GetOverrideBar()
 end
 
 --action bar numbers
