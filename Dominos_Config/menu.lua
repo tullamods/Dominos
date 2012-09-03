@@ -156,8 +156,10 @@ function Menu:AddAdvancedPanel()
 	panel:NewLeftToRightCheckbox()
 	panel:NewTopToBottomCheckbox()
 	panel:NewClickThroughCheckbox()
+	panel:NewShowInOverrideUICheckbox()
+	panel:NewShowInPetBattleUICheckbox()
 	
-	panel.width = 250
+	panel.width = 256
 	return panel
 end
 
@@ -459,5 +461,13 @@ do
 	
 	function Panel:NewClickThroughCheckbox()			
 		return self:NewCheckButton(L.ClickThrough, 'GetClickThrough', 'SetClickThrough')
+	end
+	
+	function Panel:NewShowInOverrideUICheckbox()			
+		return self:NewCheckButton(L.ShowInOverrideUI, 'ShowingInOverrideUI', 'ShowInOverrideUI')
+	end
+	
+	function Panel:NewShowInPetBattleUICheckbox()			
+		return self:NewCheckButton(L.ShowInPetBattleUI, 'ShowingInPetBattleUI', 'ShowInPetBattleUI')
 	end
 end

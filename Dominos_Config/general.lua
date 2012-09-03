@@ -162,6 +162,16 @@ showTooltipsCombat:SetScript('OnClick', function(self)
 end)
 showTooltipsCombat:SetPoint('TOP', showTooltips, 'BOTTOM', 8, -2)
 
+--show override ui
+local showOverrideUI = Options:NewCheckButton(L.ShowOverrideUI)
+showOverrideUI:SetScript('OnShow', function(self)
+	self:SetChecked(Dominos:UsingOverrideUI())
+end)
+showOverrideUI:SetScript('OnClick', function(self)
+	Dominos:SetUseOverrideUI(self:GetChecked())
+end)
+showOverrideUI:SetPoint('TOP', showTooltipsCombat, 'BOTTOM', -8, -10)
+
 
 --[[ Dropdowns ]]--
 
