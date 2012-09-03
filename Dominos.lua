@@ -114,6 +114,7 @@ function Dominos:GetDefaults()
 			showTooltips = true,
 			showTooltipsCombat = true,
 			showMinimap = true,
+			useVehicleUI = true,
 
 			ab = {
 				count = 10,
@@ -205,6 +206,19 @@ function Dominos:UpdateSettings(major, minor, bugfix)
 			end
 		end
 	end
+	
+	--inject new roll bar defaults
+	if major == '5' and minor == '0' and bugfix < '14' then
+		for profile,sets in pairs(self.db.sv.profiles) do
+			if sets.frames then
+				local rollBarFrameSets = sets.frames['roll']
+				if rollBarFrameSets then
+					rollBarFrameSets.showInPetBattleUI = true
+					rollBarFrameSets.showInOverrideUI = true
+				end
+			end
+		end
+	end
 end
 
 function Dominos:UpdateVersion()
@@ -273,6 +287,7 @@ function Dominos:HideBlizzard()
 	
 	-- Hidden parent frame
 	local UIHider = CreateFrame("Frame"); UIHider:Hide()
+	self.UIHider = UIHider
 	
 	_G['MultiBarBottomLeft']:SetParent(UIHider)
 	_G['MultiBarBottomRight']:SetParent(UIHider)
@@ -311,6 +326,27 @@ function Dominos:HideBlizzard()
 	
 	_G['PetActionBarFrame']:Hide()
 	_G['PetActionBarFrame']:SetParent(UIHider)
+	
+	self:UpdateUseOverrideUI()
+end
+
+function Dominos:SetUseOverrideUI(enable)
+	self.db.profile.useOverrideUI = enable and true or false
+	self:UpdateUseOverrideUI()
+end
+
+function Dominos:UsingOverrideUI()
+	return self.db.profile.useOverrideUI 
+end
+
+function Dominos:UpdateUseOverrideUI()
+	local overrideFrame = _G['OverrideActionBar']
+	
+	if self:UsingOverrideUI() then
+		overrideFrame:SetParent(UIParent)
+	else
+		overrideFrame:SetParent(self.UIHider)
+	end
 end
 
 
