@@ -35,10 +35,10 @@ do
 		self:SetFrameRef('FrameToUnregister', frame)
 		self:Execute([[ 
 			local frameToUnregister = self:GetFrameRef('FrameToUnregister')
-			for i = 1, #myFrames do
-				local frame = myFrames[i]
+			for i, frame in pairs(myFrames) do
 				if frame == frameToUnregister then
-					table.remove(myFrames, frame)
+					table.remove(myFrames, i)
+					break
 				end
 			end
 		]])
@@ -47,16 +47,16 @@ do
 	PerspectiveController:SetAttribute('_onstate-overrideui', [[	
 		local enabled = newstate == 'enabled'
 		
-		for i = 1, #myFrames do
-			myFrames[i]:SetAttribute('state-overrideui', enabled)
+		for i, frame in pairs(myFrames) do
+			frame:SetAttribute('state-overrideui', enabled)
 		end
 	]])
 	
 	PerspectiveController:SetAttribute('_onstate-petbattleui', [[	
 		local enabled = newstate == 'enabled'
 		
-		for i = 1, #myFrames do
-			myFrames[i]:SetAttribute('state-petbattleui', enabled)
+		for i, frame in pairs(myFrames) do
+			frame:SetAttribute('state-petbattleui', enabled)
 		end
 	]])
 end

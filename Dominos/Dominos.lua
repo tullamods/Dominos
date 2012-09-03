@@ -302,12 +302,15 @@ function Dominos:HideBlizzard()
 
 	ReputationWatchBar:SetParent(UIHider)
 
-	StanceBarFrame:UnregisterAllEvents()
-	StanceBarFrame:Hide()
-	StanceBarFrame:SetParent(UIHider)
+	_G['StanceBarFrame']:UnregisterAllEvents()
+	_G['StanceBarFrame']:Hide()
+	_G['StanceBarFrame']:SetParent(UIHider)
 	
-	PossessBarFrame:Hide()
-	PossessBarFrame:SetParent(UIHider)
+	_G['PossessBarFrame']:Hide()
+	_G['PossessBarFrame']:SetParent(UIHider)
+	
+	_G['PetActionBarFrame']:Hide()
+	_G['PetActionBarFrame']:SetParent(UIHider)
 end
 
 
