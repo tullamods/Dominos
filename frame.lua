@@ -7,14 +7,19 @@ local AddonName, Addon = ...
 
 local PerspectiveController
 do
-	PerspectiveController = CreateFrame('Frame', nil, UIParent, 'SecureHandlerStateTemplate'); PerspectiveController:Hide()
+	PerspectiveController = CreateFrame('Frame', nil, UIParent, 'SecureHandlerStateTemplate')
+	PerspectiveController:Hide()
 	
 	local OverrideUIWatcher = CreateFrame('Frame', nil, _G['OverrideActionBar'], 'SecureHandlerShowHideTemplate')
 	OverrideUIWatcher:SetFrameRef('PerspectiveController', PerspectiveController)
-	OverrideUIWatcher:SetAttribute('_onshow', [[ self:GetFrameRef('PerspectiveController'):SetAttribute('state-overrideui', 'enabled') ]])
-	OverrideUIWatcher:SetAttribute('_onhide', [[ self:GetFrameRef('PerspectiveController'):SetAttribute('state-overrideui', 'disabled') ]])
-	PerspectiveController:SetAttribute('state-overrideui', OverrideUIWatcher:IsShown())
 	
+	OverrideUIWatcher:SetAttribute('_onshow', [[ 
+		self:GetFrameRef('PerspectiveController'):SetAttribute('state-isoverrideuishown', true)
+	]])
+	
+	OverrideUIWatcher:SetAttribute('_onhide', [[ 
+		self:GetFrameRef('PerspectiveController'):SetAttribute('state-isoverrideuishown', false)
+	]])
 	
 	RegisterStateDriver(PerspectiveController, 'petbattleui', '[petbattle]enabled;disabled')
 	
@@ -44,6 +49,23 @@ do
 		]])
 	end
 	
+	PerspectiveController:SetAttribute('_onstate-useoverrideui', [[
+		self:RunAttribute('updateOverrideUI')
+	]])
+	
+	PerspectiveController:SetAttribute('_onstate-isoverrideuishown', [[
+		self:RunAttribute('updateOverrideUI')
+	]])
+	
+	PerspectiveController:SetAttribute('updateOverrideUI', [[
+		local isOverrideUIVisible = self:GetAttribute('useoverrideui') and self:GetAttribute('state-isoverrideuishown')
+		if isOverrideUIVisible then
+			self:SetAttribute('state-overrideui', 'enabled')
+		else
+			self:SetAttribute('state-overrideui', 'disabled')
+		end
+	]])
+	
 	PerspectiveController:SetAttribute('_onstate-overrideui', [[	
 		local enabled = newstate == 'enabled'
 		
@@ -59,6 +81,10 @@ do
 			frame:SetAttribute('state-petbattleui', enabled)
 		end
 	]])
+	
+	PerspectiveController:SetAttribute('state-isoverrideuishown', OverrideUIWatcher:IsShown())
+	
+	Dominos.PerspectiveController = PerspectiveController
 end
 
 local Frame = Dominos:CreateClass('Frame')

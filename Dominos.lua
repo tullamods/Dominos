@@ -340,12 +340,16 @@ function Dominos:UsingOverrideUI()
 end
 
 function Dominos:UpdateUseOverrideUI()
-	local overrideFrame = _G['OverrideActionBar']
+	local usingOverrideUI = self:UsingOverrideUI()
 	
-	if self:UsingOverrideUI() then
-		overrideFrame:SetParent(UIParent)
+	self.PerspectiveController:SetAttribute('state-useoverrideui', usingOverrideUI)
+	
+	local oab = _G['OverrideActionBar']
+	oab:ClearAllPoints()
+	if usingOverrideUI then
+		oab:SetPoint('BOTTOM')
 	else
-		overrideFrame:SetParent(self.UIHider)
+		oab:SetPoint('LEFT', oab:GetParent(), 'RIGHT', 100, 0)
 	end
 end
 
