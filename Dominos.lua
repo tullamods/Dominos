@@ -267,21 +267,50 @@ end
 
 function Dominos:HideBlizzard()
 	local noop = _G['Multibar_EmptyFunc'] or function() end
-	-- _G['ActionBarController']:UnregisterAllEvents()
-	-- _G['ActionBarController']:RegisterEvent('UPDATE_EXTRA_ACTIONBAR')
-	-- _G['ActionBarController']:RegisterEvent('UPDATE_VEHICLE_ACTIONBAR')
-	-- _G['ActionBarController']:RegisterEvent('UPDATE_OVERRIDE_ACTIONBAR')
 	
-	_G['MainMenuExpBar']:UnregisterAllEvents()
-	
-	_G['MainMenuBarArtFrame']:UnregisterAllEvents()
-	_G['MainMenuBarArtFrame']:RegisterEvent('CURRENCY_DISPLAY_UPDATE')
-	_G['MainMenuBarArtFrame']:RegisterEvent('UNIT_LEVEL')
-	
-	_G['MainMenuBar']:Hide()
-	
-	_G['ValidateActionBarTransition'] = noop
 	_G['MultiActionBar_UpdateGrid'] = noop
+	
+	-- Hidden parent frame
+	local UIHider = CreateFrame("Frame"); UIHider:Hide()
+	
+	_G['MultiBarBottomLeft']:SetParent(UIHider)
+	_G['MultiBarBottomRight']:SetParent(UIHider)
+	_G['MultiBarLeft']:SetParent(UIHider)
+	_G['MultiBarRight']:SetParent(UIHider)
+	
+	UIPARENT_MANAGED_FRAME_POSITIONS["MainMenuBar"] = nil
+	UIPARENT_MANAGED_FRAME_POSITIONS["StanceBarFrame"] = nil
+	UIPARENT_MANAGED_FRAME_POSITIONS["PossessBarFrame"] = nil
+	UIPARENT_MANAGED_FRAME_POSITIONS["PETACTIONBAR_YPOS"] = nil
+
+	MainMenuBar:EnableMouse(false)
+
+	local animations = {MainMenuBar.slideOut:GetAnimations()}
+	animations[1]:SetOffset(0,0)
+
+	animations = {OverrideActionBar.slideOut:GetAnimations()}
+	animations[1]:SetOffset(0,0)
+
+	MainMenuBarArtFrame:Hide()
+	MainMenuBarArtFrame:SetParent(UIHider)
+
+	MainMenuExpBar:SetParent(UIHider)
+
+	MainMenuBarMaxLevelBar:Hide()
+	MainMenuBarMaxLevelBar:SetParent(UIHider)
+
+	ReputationWatchBar:SetParent(UIHider)
+
+	StanceBarFrame:UnregisterAllEvents()
+	StanceBarFrame:Hide()
+	StanceBarFrame:SetParent(UIHider)
+	
+	PossessBarFrame:Hide()
+	PossessBarFrame:SetParent(UIHider)
+
+	PetActionBarFrame:UnregisterAllEvents()
+	PetActionBarFrame:Hide()
+	PetActionBarFrame:SetParent(UIHider)
 end
 
 

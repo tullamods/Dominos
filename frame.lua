@@ -5,37 +5,61 @@
 
 local AddonName, Addon = ...
 
-local function StandardInterfaceParent_Create()
-	local frame = CreateFrame('Frame', AddonName .. 'Frame', UIParent, 'SecureHandlerStateTemplate')
-	frame:SetAllPoints(parent)
+local PerspectiveController
+do
+	PerspectiveController = CreateFrame('Frame', nil, UIParent, 'SecureHandlerStateTemplate'); PerspectiveController:Hide()
 	
-	frame:SetAttribute('_onstate-perspective', [[
-		local newstate = newstate or 'normal'
-		
-		if newstate == 'normal' then
-			self:Show()
-		else
-			self:Hide()
-		end
+	local OverrideUIWatcher = CreateFrame('Frame', nil, _G['OverrideActionBar'], 'SecureHandlerShowHideTemplate')
+	OverrideUIWatcher:SetFrameRef('PerspectiveController', PerspectiveController)
+	OverrideUIWatcher:SetAttribute('_onshow', [[ self:GetFrameRef('PerspectiveController'):SetAttribute('state-overrideui', 'enabled') ]])
+	OverrideUIWatcher:SetAttribute('_onhide', [[ self:GetFrameRef('PerspectiveController'):SetAttribute('state-overrideui', 'disabled') ]])
+	PerspectiveController:SetAttribute('state-overrideui', OverrideUIWatcher:IsShown())
+	
+	
+	RegisterStateDriver(PerspectiveController, 'petbattleui', '[petbattle]enabled;disabled')
+	
+	PerspectiveController:Execute([[ myFrames = table.new() ]])
+	
+	PerspectiveController.Add = function(self, frame)	
+		self:SetFrameRef('FrameToRegister', frame)
+		self:Execute([[ 
+			local frame = self:GetFrameRef('FrameToRegister')
 			
-		local overrideActionBar = self:GetFrameRef('OverrideActionBar')
-		if newstate == 'vehicle' or newstate == 'override' then
-			overrideActionBar:Show()
-		else
-			overrideActionBar:Hide()
+			table.insert(myFrames, frame)		
+		]])
+		frame:SetAttribute('state-overrideui', self:GetAttribute('state-overrideui') == 'enabled')
+		frame:SetAttribute('state-petbattleui', self:GetAttribute('state-petbattleui') == 'enabled')
+	end
+	
+	PerspectiveController.Remove = function(self, frame)	
+		self:SetFrameRef('FrameToUnregister', frame)
+		self:Execute([[ 
+			local frameToUnregister = self:GetFrameRef('FrameToUnregister')
+			for i = 1, #myFrames do
+				local frame = myFrames[i]
+				if frame == frameToUnregister then
+					table.remove(myFrames, frame)
+				end
+			end
+		]])
+	end
+	
+	PerspectiveController:SetAttribute('_onstate-overrideui', [[	
+		local enabled = newstate == 'enabled'
+		
+		for i = 1, #myFrames do
+			myFrames[i]:SetAttribute('state-overrideui', enabled)
 		end
 	]])
-
-	frame:SetFrameRef('OverrideActionBar', _G['OverrideActionBar'])
-	RegisterStateDriver(frame, 'perspective', '[vehicleui]vehicle;[overridebar]override;[petbattle]petbattle;normal')
-
-	return frame	
+	
+	PerspectiveController:SetAttribute('_onstate-petbattleui', [[	
+		local enabled = newstate == 'enabled'
+		
+		for i = 1, #myFrames do
+			myFrames[i]:SetAttribute('state-petbattleui', enabled)
+		end
+	]])
 end
-
-local FrameParents = {
-	Always = _G['UIParent'], --frames that should be shown regardless of interface mdoe
-	Standard = StandardInterfaceParent_Create() --frames that should be shown only when the standard interface is visible
-}
 
 local Frame = Dominos:CreateClass('Frame')
 Dominos.Frame = Frame
@@ -52,44 +76,73 @@ function Frame:New(id, tooltipText, alwaysVisible)
 	f:LoadSettings()
 	f.buttons = {}
 	f:SetTooltipText(tooltipText)
+	PerspectiveController:Add(f.header)
 
 	active[id] = f
 	return f
 end
 
 function Frame:Create(id, alwaysVisible)
-	local parent
-	if alwaysVisible then
-		parent = FrameParents.Always
-	else
-		parent = FrameParents.Standard
-	end
-
-	local f = self:Bind(CreateFrame('Frame', format('DominosFrame%s', id), parent))
+	local f = self:Bind(CreateFrame('Frame', format('DominosFrame%s', id), UIParent))
 	f:SetClampedToScreen(true)
 	f:SetMovable(true)
 	f.id = id
-
+	
 	f.header = CreateFrame('Frame', nil, f, 'SecureHandlerStateTemplate')
+	
+	if alwaysVisible then
+		f.header:SetAttribute('state-showinpetbattleui', true)
+		f.header:SetAttribute('state-showinoverrideui', true)
+	end
+	
+	f.header:SetAttribute('_onstate-overrideui', [[
+		self:RunAttribute('updateShown')
+	]])
+	
+	f.header:SetAttribute('_onstate-petbattleui', [[
+		self:RunAttribute('updateShown')
+	]])
+	
 	f.header:SetAttribute('_onstate-display', [[
-		local newstate = newstate or 'show'
-		if newstate == 'hide' then
+		self:RunAttribute('updateShown')
+	]])
+	
+	f.header:SetAttribute('updateShown', [[
+		local isOverrideUIShown = self:GetAttribute('state-overrideui') and true or false
+		local isPetBattleUIShown = self:GetAttribute('state-petbattleui') and true or false
+		
+		if isPetBattleUIShown and not self:GetAttribute('state-showinpetbattleui') then
+			self:Hide()
+			return
+		end
+		
+		if isOverrideUIShown and not self:GetAttribute('state-showinoverrideui') then
+			self:Hide()
+			return
+		end
+		
+		local displayState = self:GetAttribute('state-display')
+		
+		if displayState == 'hide' then
 			if self:GetAttribute('state-alpha') then
 				self:SetAttribute('state-alpha', nil)
 			end
 			self:Hide()
 		else
-			local stateAlpha = tonumber(newstate)
+			local stateAlpha = tonumber(displayState)
 			if self:GetAttribute('state-alpha') ~= stateAlpha then
 				self:SetAttribute('state-alpha', tonumber(newstate))
 			end
 			self:Show()
 		end
 	]])
-	f.header:SetAttribute('_onstate-alpha', [[ self:CallMethod('Fade') ]])
-	f.header.Fade = function()
-		f:Fade()
-	end
+	
+	f.header:SetAttribute('_onstate-alpha', [[ 
+		self:CallMethod('Fade') 
+	]])
+	
+	f.header.Fade = function() f:Fade() end
+	
 	f.header:SetAllPoints(f)
 
 	f.drag = Dominos.DragFrame:New(f)
@@ -111,6 +164,7 @@ function Frame:Free()
 
 	UnregisterStateDriver(self.header, 'display', 'show')
 	Dominos.MouseOverWatcher:Remove(self)
+	PerspectiveController:Remove(self.header)
 
 	for i in pairs(self.buttons) do
 		self:RemoveButton(i)
