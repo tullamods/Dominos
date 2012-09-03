@@ -248,14 +248,12 @@ function ActionBar:LoadStateController()
 		
 		--handle override states
 		if state == 'possess' or state == 'override' or state == 'vehicle' or state == 'sstemp' then
-			local pageController
-			if self:GetAttribute('state-overrideui') then
-				pageController = self:GetFrameRef('OverrideActionBarController')
-			else
-				pageController = self:GetFrameRef('MainActionBarController')
+			local actionPage = self:GetFrameRef('OverrideActionBarController'):GetAttribute('actionpage')
+			if actionPage == 0 then
+				actionPage = self:GetFrameRef('MainActionBarController'):GetAttribute('actionpage')
 			end
-			
-			self:SetAttribute('override-page', pageController:GetAttribute('actionpage'))
+
+			self:SetAttribute('override-page', actionPage or 0)
 			control:ChildUpdate('action', 'override')
 			return
 		end

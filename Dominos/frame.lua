@@ -93,16 +93,19 @@ function Frame:Create(id, alwaysVisible)
 
 	f.header:SetAttribute('id', id)
 	
-	if alwaysVisible then
-		f.header:SetAttribute('state-showinpetbattleui', true)
-		f.header:SetAttribute('state-showinoverrideui', true)
-	end
-	
 	f.header:SetAttribute('_onstate-overrideui', [[
 		self:RunAttribute('updateShown')
 	]])
 	
+	f.header:SetAttribute('_onstate-showinoverrideui', [[
+		self:RunAttribute('updateShown')
+	]])
+	
 	f.header:SetAttribute('_onstate-petbattleui', [[
+		self:RunAttribute('updateShown')
+	]])
+	
+	f.header:SetAttribute('_onstate-showinpetbattleui', [[
 		self:RunAttribute('updateShown')
 	]])
 	
@@ -205,6 +208,9 @@ function Frame:LoadSettings(defaults)
 	end
 
 	self:UpdateShowStates()
+	
+	self:ShowInOverrideUI(self:ShowingInOverrideUI())
+	self:ShowInPetBattleUI(self:ShowingInPetBattleUI())
 end
 
 --[[ Layout ]]--
@@ -588,6 +594,27 @@ end
 
 function Frame:FrameIsShown()
 	return not self.sets.hidden
+end
+
+
+--[[ Perspectives Visibility ]] --
+
+function Frame:ShowInOverrideUI(enable)
+	self.sets.showInOverrideUI = enable and true or false
+	self.header:SetAttribute('state-showinoverrideui', enable)
+end
+
+function Frame:ShowingInOverrideUI()
+	return self.sets.showInOverrideUI 
+end
+
+function Frame:ShowInPetBattleUI(enable)
+	self.sets.showInPetBattleUI = enable and true or false
+	self.header:SetAttribute('state-showinpetbattleui', enable)
+end
+
+function Frame:ShowingInPetBattleUI()
+	return self.sets.showInPetBattleUI
 end
 
 
