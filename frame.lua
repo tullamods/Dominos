@@ -69,10 +69,10 @@ local active = {}
 local unused = {}
 
 --constructor
-function Frame:New(id, tooltipText, alwaysVisible)
+function Frame:New(id, tooltipText)
 	local id = tonumber(id) or id
 	
-	local f = self:Restore(id) or self:Create(id, alwaysVisible)
+	local f = self:Restore(id) or self:Create(id)
 	f:LoadSettings()
 	f.buttons = {}
 	f:SetTooltipText(tooltipText)
@@ -82,7 +82,7 @@ function Frame:New(id, tooltipText, alwaysVisible)
 	return f
 end
 
-function Frame:Create(id, alwaysVisible)
+function Frame:Create(id)
 	local f = self:Bind(CreateFrame('Frame', format('DominosFrame%s', id), UIParent))
 	f:SetClampedToScreen(true)
 	f:SetMovable(true)
