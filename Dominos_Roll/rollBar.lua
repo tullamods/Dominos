@@ -55,7 +55,7 @@ end
 RollBar = Dominos:CreateClass('Frame', Dominos.Frame)
 
 function RollBar:New()
-	local f = self.super.New(self, 'roll', L.TipRollBar, true)
+	local f = self.super.New(self, 'roll', L.TipRollBar)
 	f:LoadButtons()
 	f:Layout()
 
