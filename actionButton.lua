@@ -19,7 +19,17 @@ function ActionButton:New(id)
 		b:SetAttribute('showgrid', 0)
 		b:SetAttribute('action--base', id)
 		b:SetAttribute('_childupdate-action', [[
-			local id = message and self:GetAttribute('action--' .. message) or self:GetAttribute('action--base')
+			local state = message
+			if state == 'override' then
+				local buttonIndex = self:GetAttribute('button--index')
+				local overridePage = self:GetParent():GetAttribute('override-page')
+				
+				self:SetAttribute('action', buttonIndex + (overridePage - 1) * 12)
+				self:CallMethod('UpdateState')
+				return
+			end
+
+			local id = state and self:GetAttribute('action--' .. state) or self:GetAttribute('action--base')
 			if id ~= self:GetAttribute('action') then
 				self:SetAttribute('action', id)
 				self:CallMethod('UpdateState')

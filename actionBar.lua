@@ -183,18 +183,17 @@ function ActionBar:UpdateStateDriver()
 			condition = state.value
 		end
 		
-		if condition then
-			--possess bar: special case
-			if stateId == 'possess' then
-				if self:IsPossessBar() then
-					header = header .. condition .. 'possess;'
-				end
-			elseif self:GetOffset(stateId) then
+		if state.type == 'override' then
+			if self:IsOverrideBar() then
+				header = header .. condition .. stateId .. ';'
+			end
+		else
+			if self:GetOffset(stateId) then
 				header = header .. condition .. 'S' .. i .. ';'
 			end
 		end
 	end
-
+	
 	if header ~= '' then
 		RegisterStateDriver(self.header, 'page', header .. 0)
 	end
@@ -212,6 +211,8 @@ function ActionBar:UpdateAction(i)
 	local b = self.buttons[i]
 	local maxSize = self:MaxLength()
 	
+	b:SetAttribute('button--index', i)
+	
 	for i, state in Dominos.BarStates:getAll() do	
 		local offset = self:GetOffset(state.id)
 		local actionId = nil
@@ -220,48 +221,47 @@ function ActionBar:UpdateAction(i)
 		end
 		b:SetAttribute('action--S' .. i, actionId)
 	end
-
-	if self:IsPossessBar() and i <= NUM_POSSESS_BAR_BUTTONS then
-		b:SetAttribute('action--possess', (12 * (GetVehicleBarIndex() - 1)) + i)
-	else
-		b:SetAttribute('action--possess', nil)
-	end
 end
 
 --updates the actionID of all buttons for all states
 function ActionBar:UpdateActions()
-	local maxSize = self:MaxLength()
-
-	for i, state in Dominos.BarStates:getAll() do
-		local offset = self:GetOffset(state.id)
-		if offset then
-			for _, b in pairs(self.buttons) do
-				local actionId = ToValidID(b:GetAttribute('action--base') + offset * maxSize)
-				b:SetAttribute('action--S' .. i, actionId)
-			end
-		else
-			for _, b in pairs(self.buttons) do
-				b:SetAttribute('action--S' .. i, nil)
-			end
-		end
-	end
-
-	if self:IsPossessBar() then
-		for i = 1, min(#self.buttons, NUM_POSSESS_BAR_BUTTONS) do
-			self.buttons[i]:SetAttribute('action--possess', (12 * (GetVehicleBarIndex() - 1)) + i)
-		end
-		for i = NUM_POSSESS_BAR_BUTTONS + 1, #self.buttons do
-			self.buttons[i]:SetAttribute('action--possess', nil)
-		end
-	else
-		for _,b in pairs(self.buttons) do
-			b:SetAttribute('action--possess', nil)
-		end
+	for i = 1, #self.buttons do
+		self:UpdateAction(i)
 	end
 end
 
 function ActionBar:LoadStateController()
-	self.header:SetAttribute('_onstate-page', [[ control:ChildUpdate('action', newstate) ]])
+	self.header:SetFrameRef('MainActionBarController', _G['MainMenuBarArtFrame'])
+	self.header:SetFrameRef('OverrideActionBarController', _G['OverrideActionBar'])
+	
+	self.header:SetAttribute('_onstate-overrideui', [[
+		self:RunAttribute('updateShown')
+		self:RunAttribute('updateState')
+	]])
+	
+	self.header:SetAttribute('_onstate-page', [[
+		self:RunAttribute('updateState')
+	]])
+	
+	self.header:SetAttribute('updateState', [[
+		local state = self:GetAttribute('state-page')
+		
+		--handle override states
+		if state == 'possess' or state == 'override' or state == 'vehicle' or state == 'sstemp' then
+			local pageController
+			if self:GetAttribute('state-overrideui') then
+				pageController = self:GetFrameRef('OverrideActionBarController')
+			else
+				pageController = self:GetFrameRef('MainActionBarController')
+			end
+			
+			self:SetAttribute('override-page', pageController:GetAttribute('actionpage'))
+			control:ChildUpdate('action', 'override')
+			return
+		end
+		
+		control:ChildUpdate('action', state)
+	]])
 end
 
 function ActionBar:RefreshActions()
@@ -274,7 +274,7 @@ function ActionBar:RefreshActions()
 end
 
 --returns true if the possess bar, false otherwise
-function ActionBar:IsPossessBar()
+function ActionBar:IsOverrideBar()
 	return self == Dominos:GetOverrideBar()
 end
 
