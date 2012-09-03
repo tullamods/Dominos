@@ -58,9 +58,15 @@ function MenuBar:Create(frameId)
 		after a layout value is altered, set a dirty bit indicating that we need to adjust the bar's layout 
 	--]]
 	
-	header:SetAttribute('_onstate-petbattleui', [[ self:RunAttribute('updateLayout') ]])
+	header:SetAttribute('_onstate-petbattleui', [[ 
+		self:RunAttribute('updateShown')
+		self:RunAttribute('updateLayout') 
+	]])
 	
-	header:SetAttribute('_onstate-overrideui', [[ self:RunAttribute('updateLayout') ]])
+	header:SetAttribute('_onstate-overrideui', [[ 
+		self:RunAttribute('updateShown')
+		self:RunAttribute('updateLayout') 
+	]])
 	
 	header:SetAttribute('_onstate-forcelayout', [[ self:RunAttribute('updateLayout') ]])
 	

@@ -88,7 +88,10 @@ function Frame:Create(id, alwaysVisible)
 	f:SetMovable(true)
 	f.id = id
 	
+	
 	f.header = CreateFrame('Frame', nil, f, 'SecureHandlerStateTemplate')
+
+	f.header:SetAttribute('id', id)
 	
 	if alwaysVisible then
 		f.header:SetAttribute('state-showinpetbattleui', true)

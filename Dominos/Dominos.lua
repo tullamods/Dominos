@@ -265,6 +265,7 @@ end
 
 --[[ Blizzard Stuff Hiding ]]--
 
+--shamelessly pulled from Bartender4
 function Dominos:HideBlizzard()
 	local noop = _G['Multibar_EmptyFunc'] or function() end
 	

@@ -77,7 +77,11 @@ addState('modifier', 'ctrl', '[mod:ctrl]', CTRL_KEY)
 addState('modifier', 'shift', '[mod:shift]', SHIFT_KEY)
 
 --possession
-addState('possess', 'possess', '[possessbar]')
+addState('override', 'petbattle', '[petbattle]')
+addState('override', 'possess', '[possessbar]')
+addState('override', 'override', '[overridebar]')
+addState('override', 'vehicle', '[vehicleui]')
+addState('override', 'sstemp', '[bonusbar:5]')
 
 --paging
 for i = 2, 6 do
