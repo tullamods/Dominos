@@ -55,7 +55,7 @@ end
 RollBar = Dominos:CreateClass('Frame', Dominos.Frame)
 
 function RollBar:New()
-	local f = self.super.New(self, 'roll', L.TipRollBar)
+	local f = self.super.New(self, 'roll', L.TipRollBar, true)
 	f:LoadButtons()
 	f:Layout()
 
@@ -66,7 +66,9 @@ function RollBar:GetDefaults()
 	return {
 		point = 'LEFT',
 		columns = 1,
-		spacing = 2
+		spacing = 2,
+		showInPetBattleUI = true,
+		showInOverrideUI = true,
 	}
 end
 
