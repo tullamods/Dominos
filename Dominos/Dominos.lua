@@ -308,10 +308,6 @@ function Dominos:HideBlizzard()
 	
 	PossessBarFrame:Hide()
 	PossessBarFrame:SetParent(UIHider)
-
-	PetActionBarFrame:UnregisterAllEvents()
-	PetActionBarFrame:Hide()
-	PetActionBarFrame:SetParent(UIHider)
 end
 
 
