@@ -29,7 +29,6 @@ function MenuBar:New()
 	local bar = MenuBar.super.New(self, 'menu')
 
 	bar:Layout(true)
-	RegisterStateDriver(bar.header, 'perspective', '[vehicleui]override;[overridebar]override;[petbattle]petbattle;normal')
 	bar:UpdateClickThrough()
 
 	return bar
@@ -59,15 +58,11 @@ function MenuBar:Create(frameId)
 		after a layout value is altered, set a dirty bit indicating that we need to adjust the bar's layout 
 	--]]
 	
-	header:SetAttribute('_onstate-perspective', [[
-		local newstate = newstate or 'normal'
-		
-		self:RunAttribute('layout-' .. newstate)
-	]])
+	header:SetAttribute('_onstate-petbattleui', [[ self:RunAttribute('updateLayout') ]])
 	
-	header:SetAttribute('_onstate-forcelayout', [[
-		self:RunAttribute('layout-' .. self:GetAttribute('state-perspective') or 'normal')
-	]])
+	header:SetAttribute('_onstate-overrideui', [[ self:RunAttribute('updateLayout') ]])
+	
+	header:SetAttribute('_onstate-forcelayout', [[ self:RunAttribute('updateLayout') ]])
 	
 	header:SetAttribute('_onstate-columns', [[ needsLayout = true ]])
 	
@@ -115,6 +110,20 @@ function MenuBar:Create(frameId)
 		self:SetAttribute('maxLength', #activeButtons)
 	]])
 	
+	header:SetAttribute('updateLayout', [[
+		local layoutState
+		if self:GetAttribute('state-petbattleui') then
+			layoutState = 'petbattleui'
+		elseif self:GetAttribute('state-overrideui') then
+			layoutState = 'overrideui'
+		else
+			layoutState = 'standard'
+		end
+		
+		needsLayout = true
+		self:RunAttribute('layout-' .. layoutState)
+	]])
+	
 	header:SetAttribute('layout-normal', [[ 
 		for i, button in pairs(myButtons) do
 			button:SetParent(self)
@@ -124,7 +133,7 @@ function MenuBar:Create(frameId)
 		self:RunAttribute('layout')
 	]])
 	
-	header:SetAttribute('layout-petbattle', [[ 
+	header:SetAttribute('layout-petbattleui', [[ 
 		local numButtons = #myButtons
 		local cols = ceil(numButtons / 2)
 		
@@ -143,7 +152,7 @@ function MenuBar:Create(frameId)
 		end
 	]])
 	
-	header:SetAttribute('layout-override', [[
+	header:SetAttribute('layout-overrideui', [[
 		local numButtons = #myButtons
 		local cols = ceil(numButtons / 2)
 		local spacing = -2
@@ -181,7 +190,7 @@ function MenuBar:Create(frameId)
 		end
 	]])
 	
-	header:SetAttribute('layout', [[
+	header:SetAttribute('layout-standard', [[
 		if not needsLayout then return end
 		
 		self:RunAttribute('updateActiveButtons')
@@ -228,6 +237,7 @@ function MenuBar:Create(frameId)
 			local b = activeButtons[i]
 			b:ClearAllPoints()
 			b:SetPoint('TOPLEFT', '$parent', 'TOPLEFT', w*col + pW, -(h*row + pH) + HEIGHT_OFFSET)
+			b:SetParent(self)
 			b:Show()
 		end
 
@@ -249,19 +259,19 @@ function MenuBar:Create(frameId)
 	loadButtons(bar, _G['MainMenuBarArtFrame']:GetChildren())
 	loadButtons(bar, _G['OverrideActionBar']:GetChildren())
 	
-	local wrapper = CreateFrame('Frame', nil, _G['OverrideActionBar'], 'SecureHandlerShowHideTemplate')
-	wrapper:SetAllPoints(wrapper:GetParent())
-	wrapper:SetFrameRef('DominosMenuBarHeader', header)
+
 	
-	--pants hack:
-	--force the state handler for the header to update on the next frame by setting it to an arbitrary invalid state
-	--to ensure that we update micro button positions AFTER MoveMicroButtons is called
-	--would be much easier if we could simply secure wrap the OnShow handler of the OverrideActionBar
-	--however, we can't since its not a true protected frame
-	wrapper:SetAttribute('_onshow', [[ self:GetFrameRef('DominosMenuBarHeader'):SetAttribute('state-forcelayout', true) ]])
+	-- --pants hack:
+	-- --force the state handler for the header to update on the next frame by setting it to an arbitrary invalid state
+	-- --to ensure that we update micro button positions AFTER MoveMicroButtons is called
+	-- --would be much easier if we could simply secure wrap the OnShow handler of the OverrideActionBar
+	-- --however, we can't since its not a true protected frame
+	-- wrapper:SetFrameRef('DominosMenuBarHeader', header)
+	-- wrapper:SetAttribute('_onshow', [[ self:GetFrameRef('DominosMenuBarHeader'):SetAttribute('state-forcelayout', true) ]])
 
-
-	header:SetFrameRef('OverrideActionBar', wrapper)
+	local oabWrapper = CreateFrame('Frame', nil, _G['OverrideActionBar'], 'SecureHandlerShowHideTemplate'); oabWrapper:SetAllPoints(oabWrapper:GetParent())
+	
+	header:SetFrameRef('OverrideActionBar', oabWrapper)
 	header:SetFrameRef('OverrideActionBarLeaveFrame', CreateFrame('Frame', nil, _G['OverrideActionBar'].leaveFrame, 'SecureHandlerBaseTemplate'))
 	header:SetFrameRef('OverrideActionBarPitchFrame', CreateFrame('Frame', nil, _G['OverrideActionBar'].pitchFrame, 'SecureHandlerBaseTemplate'))
 	
@@ -407,7 +417,7 @@ function MenuBar:Layout(force)
 		self.header:Execute([[ needsLayout = true ]])
 	end
 	
-	self.header:Execute([[ self:RunAttribute('layout') ]])
+	self.header:Execute([[ self:RunAttribute('updateLayout') ]])
 end
 
 --[[ Menu Code ]]--
