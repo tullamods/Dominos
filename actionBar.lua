@@ -242,18 +242,25 @@ function ActionBar:LoadStateController()
 	self.header:SetAttribute('_onstate-page', [[
 		self:RunAttribute('updateState')
 	]])
-	
+
+	--handle override states, this code is more or less the same as what bartender4 uses
+	--we have to do a bit of trickery to figure out exactly what controller has the right, action page value
+	--to do this, we assume that override actions are on pages > 10 since they all use action IDs that are greater than 120 right now
+	--so we check one controller, see if it has an action page value in the range we're expecting
+	--and use it if it is, otherwise we look at the next controller to find out	
+	--controllers are prioritized as checking the main action bar, then the override bar
+	--because it does not appear that the override bar's action page attribute gets reset
+	--until the next override vehicle is displayed
 	self.header:SetAttribute('updateState', [[
 		local state = self:GetAttribute('state-page')
 		
-		--handle override states
 		if state == 'possess' or state == 'override' or state == 'vehicle' or state == 'sstemp' then
-			local actionPage = self:GetFrameRef('OverrideActionBarController'):GetAttribute('actionpage')
-			if actionPage == 0 then
-				actionPage = self:GetFrameRef('MainActionBarController'):GetAttribute('actionpage')
+			local actionPage = self:GetFrameRef('MainActionBarController'):GetAttribute('actionpage') or 1
+			if actionPage <= 10 then
+				actionPage = self:GetFrameRef('OverrideActionBarController'):GetAttribute('actionpage') or 1
 			end
-
-			self:SetAttribute('override-page', actionPage or 0)
+			
+			self:SetAttribute('override-page', actionPage)
 			control:ChildUpdate('action', 'override')
 			return
 		end
