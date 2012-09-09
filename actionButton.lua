@@ -20,18 +20,17 @@ function ActionButton:New(id)
 		b:SetAttribute('action--base', id)
 		b:SetAttribute('_childupdate-action', [[
 			local state = message
-			if state == 'override' then
-				local buttonIndex = self:GetAttribute('button--index')
-				local overridePage = self:GetParent():GetAttribute('override-page')
-				
-				self:SetAttribute('action', buttonIndex + (overridePage - 1) * 12)
-				self:CallMethod('UpdateState')
-				return
+			local overridePage = self:GetParent():GetAttribute('state-overridepage')
+			local newActionID
+			
+			if state == 'override' and overridePage > 10 then
+				newActionID = self:GetAttribute('button--index') + (overridePage - 1) * 12
+			else
+				newActionID = state and self:GetAttribute('action--' .. state) or self:GetAttribute('action--base')
 			end
-
-			local id = state and self:GetAttribute('action--' .. state) or self:GetAttribute('action--base')
-			if id ~= self:GetAttribute('action') then
-				self:SetAttribute('action', id)
+			
+			if newActionID ~= self:GetAttribute('action') then
+				self:SetAttribute('action', newActionID)
 				self:CallMethod('UpdateState')
 			end
 		]])

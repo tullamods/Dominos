@@ -3,90 +3,6 @@
 		A dominos frame, a generic container object
 --]]
 
-local AddonName, Addon = ...
-
-local PerspectiveController
-do
-	PerspectiveController = CreateFrame('Frame', nil, UIParent, 'SecureHandlerStateTemplate')
-	PerspectiveController:Hide()
-	
-	local OverrideUIWatcher = CreateFrame('Frame', nil, _G['OverrideActionBar'], 'SecureHandlerShowHideTemplate')
-	OverrideUIWatcher:SetFrameRef('PerspectiveController', PerspectiveController)
-	
-	OverrideUIWatcher:SetAttribute('_onshow', [[ 
-		self:GetFrameRef('PerspectiveController'):SetAttribute('state-isoverrideuishown', true)
-	]])
-	
-	OverrideUIWatcher:SetAttribute('_onhide', [[ 
-		self:GetFrameRef('PerspectiveController'):SetAttribute('state-isoverrideuishown', false)
-	]])
-	
-	RegisterStateDriver(PerspectiveController, 'petbattleui', '[petbattle]enabled;disabled')
-	
-	PerspectiveController:Execute([[ myFrames = table.new() ]])
-	
-	PerspectiveController.Add = function(self, frame)	
-		self:SetFrameRef('FrameToRegister', frame)
-		self:Execute([[ 
-			local frame = self:GetFrameRef('FrameToRegister')
-			
-			table.insert(myFrames, frame)		
-		]])
-		frame:SetAttribute('state-overrideui', self:GetAttribute('state-overrideui') == 'enabled')
-		frame:SetAttribute('state-petbattleui', self:GetAttribute('state-petbattleui') == 'enabled')
-	end
-	
-	PerspectiveController.Remove = function(self, frame)	
-		self:SetFrameRef('FrameToUnregister', frame)
-		self:Execute([[ 
-			local frameToUnregister = self:GetFrameRef('FrameToUnregister')
-			for i, frame in pairs(myFrames) do
-				if frame == frameToUnregister then
-					table.remove(myFrames, i)
-					break
-				end
-			end
-		]])
-	end
-	
-	PerspectiveController:SetAttribute('_onstate-useoverrideui', [[
-		self:RunAttribute('updateOverrideUI')
-	]])
-	
-	PerspectiveController:SetAttribute('_onstate-isoverrideuishown', [[
-		self:RunAttribute('updateOverrideUI')
-	]])
-	
-	PerspectiveController:SetAttribute('updateOverrideUI', [[
-		local isOverrideUIVisible = self:GetAttribute('useoverrideui') and self:GetAttribute('state-isoverrideuishown')
-		if isOverrideUIVisible then
-			self:SetAttribute('state-overrideui', 'enabled')
-		else
-			self:SetAttribute('state-overrideui', 'disabled')
-		end
-	]])
-	
-	PerspectiveController:SetAttribute('_onstate-overrideui', [[	
-		local enabled = newstate == 'enabled'
-		
-		for i, frame in pairs(myFrames) do
-			frame:SetAttribute('state-overrideui', enabled)
-		end
-	]])
-	
-	PerspectiveController:SetAttribute('_onstate-petbattleui', [[	
-		local enabled = newstate == 'enabled'
-		
-		for i, frame in pairs(myFrames) do
-			frame:SetAttribute('state-petbattleui', enabled)
-		end
-	]])
-	
-	PerspectiveController:SetAttribute('state-isoverrideuishown', OverrideUIWatcher:IsShown())
-	
-	Dominos.PerspectiveController = PerspectiveController
-end
-
 local Frame = Dominos:CreateClass('Frame')
 Dominos.Frame = Frame
 
@@ -102,7 +18,7 @@ function Frame:New(id, tooltipText)
 	f:LoadSettings()
 	f.buttons = {}
 	f:SetTooltipText(tooltipText)
-	PerspectiveController:Add(f.header)
+	Dominos.OverrideController:Add(f.header)
 
 	active[id] = f
 	return f
@@ -154,19 +70,19 @@ function Frame:Create(id)
 		end
 		
 		local displayState = self:GetAttribute('state-display')
-		
 		if displayState == 'hide' then
 			if self:GetAttribute('state-alpha') then
 				self:SetAttribute('state-alpha', nil)
 			end
 			self:Hide()
-		else
-			local stateAlpha = tonumber(displayState)
-			if self:GetAttribute('state-alpha') ~= stateAlpha then
-				self:SetAttribute('state-alpha', tonumber(newstate))
-			end
-			self:Show()
+			return
 		end
+		
+		local stateAlpha = tonumber(displayState)
+		if self:GetAttribute('state-alpha') ~= stateAlpha then
+			self:SetAttribute('state-alpha', stateAlpha)
+		end
+		self:Show()
 	]])
 	
 	f.header:SetAttribute('_onstate-alpha', [[ 
@@ -196,7 +112,7 @@ function Frame:Free()
 
 	UnregisterStateDriver(self.header, 'display', 'show')
 	Dominos.MouseOverWatcher:Remove(self)
-	PerspectiveController:Remove(self.header)
+	Dominos.OverrideController(self.header)
 
 	for i in pairs(self.buttons) do
 		self:RemoveButton(i)
