@@ -112,7 +112,7 @@ function Frame:Free()
 
 	UnregisterStateDriver(self.header, 'display', 'show')
 	Dominos.MouseOverWatcher:Remove(self)
-	Dominos.OverrideController(self.header)
+	Dominos.OverrideController:Remove(self.header)
 
 	for i in pairs(self.buttons) do
 		self:RemoveButton(i)
