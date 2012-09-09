@@ -64,30 +64,24 @@ function OverrideController:Load()
 		Override Page State Detection
 	--]]
 	
-	RegisterStateDriver(self, 'override', '[possessbar]possess;[overridebar]override;[@vehicle,exists]vehicle;normal')
-	RegisterStateDriver(self, 'overrideform', '[form]enabled;disabled')
-	RegisterStateDriver(self, 'overridepet', '[@pet,exists]enabled;disabled')
-	-- RegisterStateDriver(self, 'overridepants', '[mod]enabled;disabled')
+	RegisterStateDriver(self, 'override', '[overridebar]override;[@vehicle,exists]vehicle;normal')
+	RegisterStateDriver(self, 'overridepossess', '[possessbar]enabled;disabled')
+	RegisterStateDriver(self, 'overridepants', '[mod]enabled;disabled')
 	
 	self:SetAttribute('_onstate-override', [[ 
 		self:RunAttribute('updateOverridePage') 
 	]])
 	
-	self:SetAttribute('_onstate-overrideform', [[ 
+	self:SetAttribute('_onstate-overridepossess', [[ 
 		self:RunAttribute('updateOverridePage') 
 	]])
 	
-	self:SetAttribute('_onstate-overridepet', [[ 
+	self:SetAttribute('_onstate-overridepants', [[ 
 		self:RunAttribute('updateOverridePage') 
 	]])
-	
-	-- self:SetAttribute('_onstate-overridepants', [[ 
-		-- self:RunAttribute('updateOverridePage') 
-	-- ]])
 	
 	self:SetAttribute('_onstate-overridepage', [[	
-		local newPage = newstate or 0
-		
+		local newPage = newstate or 0	
 		for i, frame in pairs(myFrames) do
 			frame:SetAttribute('state-overridepage', newPage)
 		end
