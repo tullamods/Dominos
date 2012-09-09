@@ -182,18 +182,12 @@ function ActionBar:UpdateStateDriver()
 		else
 			condition = state.value
 		end
-		
-		if state.type == 'override' then
-			if self:IsOverrideBar() then
-				header = header .. condition .. stateId .. ';'
-			end
-		else
-			if self:GetOffset(stateId) then
-				header = header .. condition .. 'S' .. i .. ';'
-			end
+
+		if self:GetOffset(stateId) then
+			header = header .. condition .. 'S' .. i .. ';'
 		end
 	end
-	
+
 	if header ~= '' then
 		RegisterStateDriver(self.header, 'page', header .. 0)
 	end
@@ -210,14 +204,14 @@ end
 function ActionBar:UpdateAction(i)
 	local b = self.buttons[i]
 	local maxSize = self:MaxLength()
-	
+
 	b:SetAttribute('button--index', i)
-	
-	for i, state in Dominos.BarStates:getAll() do	
+
+	for i, state in Dominos.BarStates:getAll() do
 		local offset = self:GetOffset(state.id)
 		local actionId = nil
 		if offset then
-			actionId = ToValidID(b:GetAttribute('action--base') + offset * maxSize) 
+			actionId = ToValidID(b:GetAttribute('action--base') + offset * maxSize)
 		end
 		b:SetAttribute('action--S' .. i, actionId)
 	end
@@ -231,51 +225,38 @@ function ActionBar:UpdateActions()
 end
 
 function ActionBar:LoadStateController()
-	self.header:SetFrameRef('MainActionBarController', _G['MainMenuBarArtFrame'])
-	self.header:SetFrameRef('OverrideActionBarController', _G['OverrideActionBar'])
-	
-	self.header:SetAttribute('_onstate-overrideui', [[
-		self:RunAttribute('updateShown')
+	self.header:SetAttribute('_onstate-overridebar', [[
 		self:RunAttribute('updateState')
 	]])
-	
+
+	self.header:SetAttribute('_onstate-overridepage', [[
+		self:RunAttribute('updateState')
+	]])
+
 	self.header:SetAttribute('_onstate-page', [[
 		self:RunAttribute('updateState')
 	]])
 
-	--handle override states, this code is more or less the same as what bartender4 uses
-	--we have to do a bit of trickery to figure out exactly what controller has the right, action page value
-	--to do this, we assume that override actions are on pages > 10 since they all use action IDs that are greater than 120 right now
-	--so we check one controller, see if it has an action page value in the range we're expecting
-	--and use it if it is, otherwise we look at the next controller to find out	
-	--controllers are prioritized as checking the main action bar, then the override bar
-	--because it does not appear that the override bar's action page attribute gets reset
-	--until the next override vehicle is displayed
 	self.header:SetAttribute('updateState', [[
-		local state = self:GetAttribute('state-page')
-		
-		if state == 'possess' or state == 'override' or state == 'vehicle' or state == 'sstemp' then
-			local actionPage = self:GetFrameRef('MainActionBarController'):GetAttribute('actionpage') or 1
-			if actionPage <= 10 then
-				actionPage = self:GetFrameRef('OverrideActionBarController'):GetAttribute('actionpage') or 1
-			end
-			
-			self:SetAttribute('override-page', actionPage)
-			control:ChildUpdate('action', 'override')
-			return
+		local state
+		if self:GetAttribute('state-overridepage') > 10 and self:GetAttribute('state-overridebar') then
+			state = 'override'
+		else
+			state = self:GetAttribute('state-page')
 		end
 		
 		control:ChildUpdate('action', state)
 	]])
+
+	self:UpdateOverrideBar()
 end
 
 function ActionBar:RefreshActions()
-	local state = self.header:GetAttribute('state-page')
-	if state then
-		self.header:Execute(format([[ control:ChildUpdate('action', '%s') ]], state))
-	else
-		self.header:Execute([[ control:ChildUpdate('action', nil) ]])
-	end
+	self.header:Execute([[ self:RunAttribute('updateState') ]])
+end
+
+function ActionBar:UpdateOverrideBar()
+	self.header:SetAttribute('state-overridebar', self:IsOverrideBar())
 end
 
 --returns true if the possess bar, false otherwise
@@ -314,7 +295,7 @@ function ActionBar:UPDATE_BINDINGS()
 end
 
 ---keybound support
-function ActionBar:KEYBOUND_ENABLED() 	
+function ActionBar:KEYBOUND_ENABLED()
 	self:ShowGrid()
 	for _, b in pairs(self.buttons) do
 		b:RegisterEvent('UPDATE_BINDINGS')
@@ -343,18 +324,18 @@ function ActionBar:GetFlyoutDirection()
 	local w, h = self:GetSize()
 	local isVertical = w < h
 	local anchor = self:GetPoint()
-	
+
 	if isVertical then
 		if anchor and anchor:match('LEFT') then
 			return 'RIGHT'
 		end
 		return 'LEFT'
 	end
-	
+
 	if anchor and anchor:match('TOP') then
 		return 'DOWN'
 	end
-	return 'UP'		
+	return 'UP'
 end
 
 function ActionBar:UpdateFlyoutDirection()
@@ -445,7 +426,7 @@ do
 		local states = Dominos.BarStates:map(function(s) return s.type == type end)
 		if #states > 0 then
 			local p = self:NewPanel(name)
-			
+
 			--HACK: Make the state panel wider for monks
 			--		since their stances have long names
 			local playerClass = select(2, UnitClass('player'))
@@ -457,13 +438,13 @@ do
 					slider:SetWidth(slider:GetWidth() + 48)
 				end
 			end
-			
+
 			if hasLongStanceNames then
 				p.width = 228
 			end
 		end
 	end
-	
+
 	local function AddClass(self)
 		addStatePanel(self, UnitClass('player'), 'class')
 	end

@@ -281,9 +281,9 @@ end
 
 --shamelessly pulled from Bartender4
 function Dominos:HideBlizzard()
-	local noop = _G['Multibar_EmptyFunc'] or function() end
-	
-	_G['MultiActionBar_UpdateGrid'] = noop
+	if MultiActionBar_UpdateGrid then
+		MultiActionBar_UpdateGrid = Multibar_EmptyFunc
+	end
 	
 	-- Hidden parent frame
 	local UIHider = CreateFrame("Frame"); UIHider:Hide()
@@ -342,7 +342,7 @@ end
 function Dominos:UpdateUseOverrideUI()
 	local usingOverrideUI = self:UsingOverrideUI()
 	
-	self.PerspectiveController:SetAttribute('state-useoverrideui', usingOverrideUI)
+	self.OverrideController:SetAttribute('state-useoverrideui', usingOverrideUI)
 	
 	local oab = _G['OverrideActionBar']
 	oab:ClearAllPoints()
@@ -867,17 +867,12 @@ function Dominos:SetOverrideBar(id)
 	self.db.profile.possessBar = id
 	local newBar = self:GetOverrideBar()
 
-	prevBar:UpdateStateDriver()
-	newBar:UpdateStateDriver()
+	prevBar:UpdateOverrideBar()
+	newBar:UpdateOverrideBar()
 end
 
 function Dominos:GetOverrideBar()
 	return self.Frame:Get(self.db.profile.possessBar)
-end
-
---vehicle bar settings
-function Dominos:GetVehicleBar()
-	return self:GetOverrideBar()
 end
 
 --action bar numbers

@@ -80,7 +80,7 @@ addState('modifier', 'shift', '[mod:shift]', SHIFT_KEY)
 addState('override', 'petbattle', '[petbattle]')
 addState('override', 'possess', '[possessbar]')
 addState('override', 'override', '[overridebar]')
-addState('override', 'vehicle', '[vehicleui]')
+addState('override', 'vehicle', '[@vehicle,exists]')
 addState('override', 'sstemp', '[bonusbar:5]')
 
 --paging
