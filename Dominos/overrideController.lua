@@ -87,6 +87,9 @@ function OverrideController:Load()
 		end
 	]])
 	
+	--hack: make the MainMenuBarArtFrame secure so that we can read its state in combat
+	local wrapper = CreateFrame('Frame', nil, _G['MainMenuBarArtFrame'], 'SecureFrameTemplate')
+	
 	self:SetFrameRef('MainActionBarController', _G['MainMenuBarArtFrame'])
 	self:SetFrameRef('OverrideActionBarController', _G['OverrideActionBar'])
 	
