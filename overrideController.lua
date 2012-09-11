@@ -1,6 +1,16 @@
 local OverrideController = CreateFrame('Frame', nil, UIParent, 'SecureHandlerStateTemplate'); OverrideController:Hide()
 Dominos.OverrideController = OverrideController
 
+local overrideBarStates = {
+	overridebar = '[overridebar]1;0',
+	possessbar = '[possessbar]1;0',
+	vehicleui = '[vehicleui]1;0',
+	vehicle = '[@vehicle,exists]1;0',
+	sstemp = '[bonusbar:5]1;0',
+	form = '[form]1;0',
+	modifier = '[mod]1;0'
+}
+
 function OverrideController:Load()
 	--[[ 
 		Override UI Detection
@@ -8,6 +18,7 @@ function OverrideController:Load()
 	
 	local overrideUIWatcher = CreateFrame('Frame', nil, _G['OverrideActionBar'], 'SecureHandlerShowHideTemplate')
 	overrideUIWatcher:SetFrameRef('controller', self)
+	self.overrideUIWatcher = overrideUIWatcher
 
 	overrideUIWatcher:SetAttribute('_onshow', [[ 
 		self:GetFrameRef('controller'):SetAttribute('state-isoverrideuishown', true)
@@ -16,8 +27,6 @@ function OverrideController:Load()
 	overrideUIWatcher:SetAttribute('_onhide', [[ 
 		self:GetFrameRef('controller'):SetAttribute('state-isoverrideuishown', false)
 	]])
-	
-	self:SetAttribute('state-isoverrideuishown', overrideUIWatcher:IsShown())
 	
 	self:SetAttribute('_onstate-isoverrideuishown', [[ 
 		self:RunAttribute('updateOverrideUI') 
@@ -28,34 +37,27 @@ function OverrideController:Load()
 	]])
 
 	self:SetAttribute('_onstate-overrideui', [[	
-		local enabled = newstate == 'enabled'
-		
 		for i, frame in pairs(myFrames) do
-			frame:SetAttribute('state-overrideui', enabled)
+			frame:SetAttribute('state-overrideui', newstate)
 		end
 	]])
 	
 	self:SetAttribute('updateOverrideUI', [[
-		local isOverrideUIVisible = self:GetAttribute('useoverrideui') and self:GetAttribute('state-isoverrideuishown')
-		if isOverrideUIVisible then
-			self:SetAttribute('state-overrideui', 'enabled')
-		else
-			self:SetAttribute('state-overrideui', 'disabled')
-		end
+		local isOverrideUIVisible = self:GetAttribute('state-useoverrideui') and self:GetAttribute('state-isoverrideuishown')
+		
+		self:SetAttribute('state-overrideui', isOverrideUIVisible)
 	]])
-
+	
 	
 	--[[ 
 		Pet Battle UI Detection 
 	--]]
-	
-	RegisterStateDriver(self, 'petbattleui', '[petbattle]enabled;disabled')
-		
-	self:SetAttribute('_onstate-petbattleui', [[	
-		local enabled = newstate == 'enabled'
+			
+	self:SetAttribute('_onstate-petbattleui', [[
+		local hasPetBattleUI = newstate == 1
 		
 		for i, frame in pairs(myFrames) do
-			frame:SetAttribute('state-petbattleui', enabled)
+			frame:SetAttribute('state-petbattleui', hasPetBattleUI)
 		end
 	]])
 	
@@ -64,47 +66,32 @@ function OverrideController:Load()
 		Override Page State Detection
 	--]]
 	
-	RegisterStateDriver(self, 'override', '[overridebar]override;[@vehicle,exists]vehicle;normal')
-	RegisterStateDriver(self, 'overridepossess', '[possessbar]enabled;disabled')
-	RegisterStateDriver(self, 'overridepants', '[mod]enabled;disabled')
-	
-	self:SetAttribute('_onstate-override', [[ 
-		self:RunAttribute('updateOverridePage') 
-	]])
-	
-	self:SetAttribute('_onstate-overridepossess', [[ 
-		self:RunAttribute('updateOverridePage') 
-	]])
-	
-	self:SetAttribute('_onstate-overridepants', [[ 
-		self:RunAttribute('updateOverridePage') 
-	]])
+	--hack: make the MainMenuBarArtFrame secure so that we can read its state in combat
+	self:SetFrameRef('MainActionBarController', self:MakeSecure(_G['MainMenuBarArtFrame']))
+	self:SetFrameRef('OverrideActionBarController', _G['OverrideActionBar'])
 	
 	self:SetAttribute('_onstate-overridepage', [[	
-		local newPage = newstate or 0	
+		local overridePage = newstate or 0	
+		
 		for i, frame in pairs(myFrames) do
-			frame:SetAttribute('state-overridepage', newPage)
+			frame:SetAttribute('state-overridepage', overridePage)
 		end
 	]])
 	
-	--hack: make the MainMenuBarArtFrame secure so that we can read its state in combat
-	local wrapper = CreateFrame('Frame', nil, _G['MainMenuBarArtFrame'], 'SecureFrameTemplate')
-	
-	self:SetFrameRef('MainActionBarController', _G['MainMenuBarArtFrame'])
-	self:SetFrameRef('OverrideActionBarController', _G['OverrideActionBar'])
+	for state in pairs(overrideBarStates) do
+		self:SetAttribute('_onstate-' .. state, [[ self:RunAttribute('updateOverridePage') ]])
+	end
 	
 	self:SetAttribute('updateOverridePage', [[
+		local hasOverrideBar = self:GetAttribute('state-overridebar') == 1
+		local inVehicle = (self:GetAttribute('state-vehicleui') == 1) or (self:GetAttribute('state-vehicle') == 1)
+		
 		local overridePage = self:GetFrameRef('MainActionBarController'):GetAttribute('actionpage') or 0
-
-		if overridePage <= 10 and self:GetAttribute('state-override') ~= 'normal' then
+		if overridePage <= 10 and (hasOverrideBar or inVehicle) then
 			overridePage = self:GetFrameRef('OverrideActionBarController'):GetAttribute('actionpage') or 0
 		end
 		
-		if overridePage <= 10 then
-			self:SetAttribute('state-overridepage', 0)
-		else
-			self:SetAttribute('state-overridepage', overridePage)
-		end
+		self:SetAttribute('state-overridepage', overridePage)
 	]])
 	
 	--[[
@@ -112,6 +99,14 @@ function OverrideController:Load()
 	--]]
 	
 	self:Execute([[ myFrames = table.new() ]])
+	
+	self:SetAttribute('state-isoverrideuishown', self.overrideUIWatcher:IsShown())
+	
+	RegisterStateDriver(self, 'petbattleui', '[petbattle]1;0')
+		
+	for state, values in pairs(overrideBarStates) do
+		RegisterStateDriver(self, state, values)
+	end
 end
 
 function OverrideController:Add(frame)
@@ -139,6 +134,23 @@ function OverrideController:Remove(frame)
 			end
 		end
 	]])
+end
+
+function OverrideController:DumpStates()
+	Dominos:Print('Active States:')
+	print('------------------------------')
+	for state in pairs(overrideBarStates) do
+		local stateValue = self:GetAttribute('state-' .. state) == 1
+		if stateValue then
+			print(state)
+		end
+	end
+	print('------------------------------')
+end
+
+function OverrideController:MakeSecure(frame)
+	CreateFrame('Frame', nil, frame, 'SecureFrameTemplate')
+	return frame
 end
 
 OverrideController:Load()
