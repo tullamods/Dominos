@@ -139,6 +139,8 @@ hooksecurefunc('ActionButton_UpdateHotkeys', ActionButton.UpdateHotkey)
 
 --button visibility
 function ActionButton:UpdateGrid()
+	if InCombatLockdown() then return end
+	
 	if self:GetAttribute('showgrid') > 0 then
 		ActionButton_ShowGrid(self)
 	else
@@ -156,6 +158,8 @@ function ActionButton:UpdateMacro()
 end
 
 function ActionButton:SetFlyoutDirection(direction)
+	if InCombatLockdown() then return end
+	
 	self:SetAttribute('flyoutDirection', direction)
 	ActionButton_UpdateFlyout(self)
 end

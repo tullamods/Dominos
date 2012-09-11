@@ -46,17 +46,6 @@ local BarStates = {
 }
 Dominos.BarStates = BarStates
 
-
--- local getFormIndex = function(spellName)
-	-- for i = 1, GetNumShapeshiftForms() do
-		-- local _, name = GetShapeshiftFormInfo(i)
-		-- if name == spellName then
-			-- return i
-		-- end
-	-- end
-	-- return nil
--- end
-
 local addState = function(stateType, stateId, stateValue, stateText)
 	return BarStates:add{
 		type = stateType, 
@@ -75,13 +64,6 @@ addState('modifier', 'ctrlShift', '[mod:ctrl,mod:shift]')
 addState('modifier', 'alt', '[mod:alt]', ALT_KEY)
 addState('modifier', 'ctrl', '[mod:ctrl]', CTRL_KEY)
 addState('modifier', 'shift', '[mod:shift]', SHIFT_KEY)
-
---possession
-addState('override', 'petbattle', '[petbattle]')
-addState('override', 'possess', '[possessbar]')
-addState('override', 'override', '[overridebar]')
-addState('override', 'vehicle', '[@vehicle,exists]')
-addState('override', 'sstemp', '[bonusbar:5]')
 
 --paging
 for i = 2, 6 do

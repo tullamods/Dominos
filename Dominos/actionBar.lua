@@ -171,7 +171,7 @@ end
 --note to self:
 --if you leave a ; on the end of a statebutton string, it causes evaluation issues, especially if you're doing right click selfcast on the base state
 function ActionBar:UpdateStateDriver()
---	UnregisterStateDriver(self.header, 'page', 0)
+	UnregisterStateDriver(self.header, 'page', 0)
 
 	local header = ''
 	for i, state in Dominos.BarStates:getAll() do

@@ -566,6 +566,8 @@ function Dominos:OnCmd(args)
 		self:PrintVersion()
 	elseif cmd == 'help' or cmd == '?' then
 		self:PrintHelp()
+	elseif cmd == 'statedump' then
+		self.OverrideController:DumpStates()
 	--options stuff
 	else
 		if not self:ShowOptions() then
