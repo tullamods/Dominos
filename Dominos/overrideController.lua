@@ -28,6 +28,7 @@ function OverrideController:Load()
 		self:GetFrameRef('controller'):SetAttribute('state-isoverrideuishown', false)
 	]])
 	
+	
 	self:SetAttribute('_onstate-isoverrideuishown', [[ 
 		self:RunAttribute('updateOverrideUI') 
 	]])
@@ -46,6 +47,7 @@ function OverrideController:Load()
 		local isOverrideUIVisible = self:GetAttribute('state-useoverrideui') and self:GetAttribute('state-isoverrideuishown')
 		
 		self:SetAttribute('state-overrideui', isOverrideUIVisible)
+		self:RunAttribute('updateOverridePage')
 	]])
 	
 	
@@ -69,6 +71,7 @@ function OverrideController:Load()
 	--hack: make the MainMenuBarArtFrame secure so that we can read its state in combat
 	self:SetFrameRef('MainActionBarController', self:MakeSecure(_G['MainMenuBarArtFrame']))
 	self:SetFrameRef('OverrideActionBarController', _G['OverrideActionBar'])
+
 	
 	self:SetAttribute('_onstate-overridepage', [[	
 		local overridePage = newstate or 0	
@@ -83,15 +86,14 @@ function OverrideController:Load()
 	end
 	
 	self:SetAttribute('updateOverridePage', [[
-		local hasOverrideBar = self:GetAttribute('state-overridebar') == 1
-		local inVehicle = (self:GetAttribute('state-vehicleui') == 1) or (self:GetAttribute('state-vehicle') == 1)
-		
-		local overridePage = self:GetFrameRef('MainActionBarController'):GetAttribute('actionpage') or 0
-		if overridePage <= 10 and (hasOverrideBar or inVehicle) then
-			overridePage = self:GetFrameRef('OverrideActionBarController'):GetAttribute('actionpage') or 0
+		local overridePage
+		if self:GetAttribute('state-isoverrideuishown') then
+			overridePage = self:GetFrameRef('OverrideActionBarController'):GetAttribute('actionpage')
+		else
+			overridePage = self:GetFrameRef('MainActionBarController'):GetAttribute('actionpage')
 		end
 		
-		self:SetAttribute('state-overridepage', overridePage)
+		self:SetAttribute('state-overridepage', overridePage or 0)
 	]])
 	
 	--[[
@@ -100,7 +102,7 @@ function OverrideController:Load()
 	
 	self:Execute([[ myFrames = table.new() ]])
 	
-	self:SetAttribute('state-isoverrideuishown', self.overrideUIWatcher:IsShown())
+	self:SetAttribute('state-isoverrideuishown', self.overrideUIWatcher:IsVisible())
 	
 	RegisterStateDriver(self, 'petbattleui', '[petbattle]1;0')
 		
@@ -118,8 +120,8 @@ function OverrideController:Add(frame)
 	]])
 	
 	--load states
-	frame:SetAttribute('state-overrideui', self:GetAttribute('state-overrideui') == 'enabled')
-	frame:SetAttribute('state-petbattleui', self:GetAttribute('state-petbattleui') == 'enabled')
+	frame:SetAttribute('state-overrideui', self:GetAttribute('state-overrideui'))
+	frame:SetAttribute('state-petbattleui', tonumber(self:GetAttribute('state-petbattleui')) == 1)
 	frame:SetAttribute('state-overridepage', self:GetAttribute('state-overridepage') or 0)
 end
 
@@ -146,6 +148,10 @@ function OverrideController:DumpStates()
 		end
 	end
 	print('------------------------------')
+	print('override ui shown', self:GetAttribute('state-isoverrideuishown') and true or false)
+	print('mainmenubar actionpage', _G['MainMenuBarArtFrame']:GetAttribute('actionpage'))
+	print('overridebar actionpage', _G['OverrideActionBar']:GetAttribute('actionpage'))
+	print('effective actionpage', self:GetAttribute('state-overridepage'))
 end
 
 function OverrideController:MakeSecure(frame)

@@ -281,12 +281,12 @@ end
 
 --shamelessly pulled from Bartender4
 function Dominos:HideBlizzard()
-	if MultiActionBar_UpdateGrid then
-		MultiActionBar_UpdateGrid = Multibar_EmptyFunc
-	end
+	-- if MultiActionBar_UpdateGrid then
+		-- MultiActionBar_UpdateGrid = Multibar_EmptyFunc
+	-- end
 	
 	-- Hidden parent frame
-	local UIHider = CreateFrame("Frame"); UIHider:Hide()
+	local UIHider = CreateFrame('Frame', nil, UIParent, 'SecureFrameTemplate'); UIHider:Hide()
 	self.UIHider = UIHider
 	
 	_G['MultiBarBottomLeft']:SetParent(UIHider)
