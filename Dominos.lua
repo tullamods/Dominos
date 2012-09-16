@@ -48,15 +48,12 @@ end
 
 function Dominos:OnEnable()
 	self:HideBlizzard()
+	self:CreateDataBrokerPlugin()
 	self:Load()
-
-	if LibStub:GetLibrary('LibDataBroker-1.1', true) then
-		self:LoadDataBrokerPlugin()
-	end
 end
 
-function Dominos:LoadDataBrokerPlugin()
-	LibStub:GetLibrary('LibDataBroker-1.1'):NewDataObject('Dominos', {
+function Dominos:CreateDataBrokerPlugin()
+	local dataObject = LibStub:GetLibrary('LibDataBroker-1.1'):NewDataObject('Dominos', {
 		type = 'launcher',
 
 		icon = [[Interface\Addons\Dominos\Dominos]],
@@ -98,6 +95,8 @@ function Dominos:LoadDataBrokerPlugin()
 			end
 		end,
 	})
+	
+	LibStub('LibDBIcon-1.0'):Register('Dominos', dataObject, self.db.profile.minimap)
 end
 
 --[[ Version Updating ]]--
@@ -113,8 +112,11 @@ function Dominos:GetDefaults()
 			showBindingText = true,
 			showTooltips = true,
 			showTooltipsCombat = true,
-			showMinimap = true,
 			useVehicleUI = true,
+			
+			minimap = {
+				hide = false,
+			},
 
 			ab = {
 				count = 10,
@@ -281,9 +283,9 @@ end
 
 --shamelessly pulled from Bartender4
 function Dominos:HideBlizzard()
-	-- if MultiActionBar_UpdateGrid then
-		-- MultiActionBar_UpdateGrid = Multibar_EmptyFunc
-	-- end
+	if MultiActionBar_UpdateGrid then
+		MultiActionBar_UpdateGrid = Multibar_EmptyFunc
+	end
 	
 	-- Hidden parent frame
 	local UIHider = CreateFrame('Frame', nil, UIParent, 'SecureFrameTemplate'); UIHider:Hide()
@@ -926,20 +928,19 @@ end
 
 --minimap button
 function Dominos:SetShowMinimap(enable)
-	self.db.profile.showMinimap = enable or false
+	self.db.profile.minimap.hide = not enable
 	self:UpdateMinimapButton()
 end
 
 function Dominos:ShowingMinimap()
-	return self.db.profile.showMinimap
+	return not self.db.profile.minimap.hide
 end
 
 function Dominos:UpdateMinimapButton()
 	if self:ShowingMinimap() then
-		self.Minimap:UpdatePosition()
-		self.Minimap:Show()
+		LibStub('LibDBIcon-1.0'):Show('Dominos')
 	else
-		self.Minimap:Hide()
+		LibStub('LibDBIcon-1.0'):Hide('Dominos')
 	end
 end
 
