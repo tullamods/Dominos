@@ -53,7 +53,7 @@ function MenuBar:Create(frameId)
 		self:CallMethod('Layout')
 	]])
 	
-	hooksecurefunc('UpdateMicroButtons', function() bar:Layout() end)
+	_G['MainMenuBar']:HookScript('OnShow', function() bar:Layout() end)
 	
 	header.Layout = function() bar:Layout() end
 	
@@ -205,12 +205,22 @@ function MenuBar:LayoutNormal()
 end
 
 function MenuBar:LayoutPetBattle()
-	UpdateMicroButtonsParent(_G['PetBattleFrame'].BottomFrame.MicroButtonFrame)				
+	local parentFrame = _G['PetBattleFrame'].BottomFrame.MicroButtonFrame
+	local anchorX, anchorY = -10, 27
+	
+	UpdateMicroButtonsParent(parentFrame)
+	MoveMicroButtons("BOTTOMLEFT", parentFrame, "BOTTOMLEFT", anchorX, anchorY, true)
+								
 	self:FixButtonPositions()
 end
 
 function MenuBar:LayoutOverrideUI()
-	UpdateMicroButtonsParent(_G['OverrideActionBar'])
+	local parentFrame = _G['OverrideActionBar']
+	local anchorX, anchorY = OverrideActionBar_GetMicroButtonAnchor()
+	
+	UpdateMicroButtonsParent(parentFrame)
+	MoveMicroButtons("BOTTOMLEFT", parentFrame, "BOTTOMLEFT", anchorX, anchorY, true)
+	
 	self:FixButtonPositions()
 end
 
