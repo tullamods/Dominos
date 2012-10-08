@@ -205,22 +205,12 @@ function MenuBar:LayoutNormal()
 end
 
 function MenuBar:LayoutPetBattle()
-	local parentFrame = _G['PetBattleFrame'].BottomFrame.MicroButtonFrame
-	local anchorX, anchorY = -10, 27
-	
-	UpdateMicroButtonsParent(parentFrame)
-	MoveMicroButtons("BOTTOMLEFT", parentFrame, "BOTTOMLEFT", anchorX, anchorY, true)
-								
+	UpdateMicroButtonsParent(_G['PetBattleFrame'].BottomFrame.MicroButtonFrame)				
 	self:FixButtonPositions()
 end
 
 function MenuBar:LayoutOverrideUI()
-	local parentFrame = _G['OverrideActionBar']
-	local anchorX, anchorY = OverrideActionBar_GetMicroButtonAnchor()
-	
-	UpdateMicroButtonsParent(parentFrame)
-	MoveMicroButtons("BOTTOMLEFT", parentFrame, "BOTTOMLEFT", anchorX, anchorY, true)
-	
+	UpdateMicroButtonsParent(_G['OverrideActionBar'])
 	self:FixButtonPositions()
 end
 
