@@ -91,16 +91,6 @@ function MenuBar:LoadSettings(...)
 	MenuBar.super.LoadSettings(self, ...)
 	
 	self.activeButtons = {}
-	self:UpdateDisabledButtons()
-end
-
-function MenuBar:UpdateDisabledButtons()
-	local disabledButtons = self.sets.disabled
-	if not disabledButtons then return end
-	
-	for buttonName, isDisabled in pairs(disabledButtons) do
-		self:DisableMenuButton(_G[buttonName], isDisabled)
-	end
 end
 
 function MenuBar:GetDefaults()
