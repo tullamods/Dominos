@@ -84,6 +84,7 @@ function ActionBar:New(id)
 	f:UpdateGrid()
 	f:UpdateRightClickUnit()
 	f:SetScript('OnSizeChanged', self.OnSizeChanged)
+	f:UpdateFlyoutDirection()
 
 	active[id] = f
 
