@@ -9,8 +9,7 @@ function ExtraBar:New()
 	
 	f:LoadButtons()
 	f:Layout()
-	f:UpdateButtonsShown()
-	
+
 	return f
 end
 
@@ -53,12 +52,4 @@ end
 
 function ExtraBar:GetExtraButton(index)
 	return _G['ExtraActionButton' .. index]
-end
-
-function ExtraBar:UpdateButtonsShown()
-	if HasExtraActionBar() then
-		self.header:Show()
-	else
-		self.header:Hide()
-	end
 end
