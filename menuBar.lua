@@ -40,22 +40,49 @@ function MenuBar:Create(frameId)
 	
 	bar.buttons = {}
 	bar.activeButtons = {}
-
-	local header = bar.header
 	
-	header:SetAttribute('_onstate-petbattleui', [[ 
-		self:RunAttribute('updateShown')
-		self:CallMethod('Layout')
-	]])
+	local getOrHook = function(frame, script, action)
+		if frame:GetScript(script) then
+			frame:HookScript(script, action)
+		else
+			frame:SetScript(script, action)		
+		end
+	end
 	
-	header:SetAttribute('_onstate-overrideui', [[ 
-		self:RunAttribute('updateShown')
-		self:CallMethod('Layout')
-	]])
+	local petBattleFrame = _G['PetBattleFrame'].BottomFrame.MicroButtonFrame
 	
-	_G['MainMenuBar']:HookScript('OnShow', function() bar:Layout() end)
+	getOrHook(petBattleFrame, 'OnShow', function()
+		bar.isPetBattleUIShown = true
+		bar:Layout()
+	end)
 	
-	header.Layout = function() bar:Layout() end
+	getOrHook(petBattleFrame, 'OnHide', function()
+		bar.isPetBattleUIShown = nil
+		bar:Layout()
+	end)
+	
+	
+	local overrideActionBar = _G['OverrideActionBar']
+	
+	getOrHook(overrideActionBar, 'OnShow', function()
+		bar.isOverrideUIShown = Dominos:UsingOverrideUI()
+		bar:Layout()
+	end)
+	
+	getOrHook(overrideActionBar, 'OnHide', function()
+		bar.isOverrideUIShown = nil
+		bar:Layout()
+	end)
+	
+	
+	getOrHook(_G['MainMenuBar'], 'OnShow', function() 
+		bar:Layout() 
+	end)
+	
+	-- fixed blizzard nil bug
+	if not _G['AchievementMicroButton_Update'] then
+		_G['AchievementMicroButton_Update'] = function() end
+	end
 	
 	return bar
 end
@@ -125,17 +152,13 @@ function MenuBar:IsMenuButtonDisabled(button)
 end
 
 function MenuBar:Layout()
-	if self.header:GetAttribute('state-petbattleui') then
+	if self.isPetBattleUIShown then
 		self:LayoutPetBattle()
-		return
-	end
-	
-	if self.header:GetAttribute('state-overrideui') then
+	elseif self.isOverrideUIShown then
 		self:LayoutOverrideUI()
-		return
+	else
+		self:LayoutNormal()
 	end
-
-	self:LayoutNormal()
 end
 
 function MenuBar:LayoutNormal()
@@ -194,23 +217,11 @@ function MenuBar:LayoutNormal()
 	end
 end
 
-function MenuBar:LayoutPetBattle()
-	local parentFrame = _G['PetBattleFrame'].BottomFrame.MicroButtonFrame
-	local anchorX, anchorY = -10, 27
-	
-	UpdateMicroButtonsParent(parentFrame)
-	MoveMicroButtons("BOTTOMLEFT", parentFrame, "BOTTOMLEFT", anchorX, anchorY, true)
-								
+function MenuBar:LayoutPetBattle()				
 	self:FixButtonPositions()
 end
 
 function MenuBar:LayoutOverrideUI()
-	local parentFrame = _G['OverrideActionBar']
-	local anchorX, anchorY = OverrideActionBar_GetMicroButtonAnchor()
-	
-	UpdateMicroButtonsParent(parentFrame)
-	MoveMicroButtons("BOTTOMLEFT", parentFrame, "BOTTOMLEFT", anchorX, anchorY, true)
-	
 	self:FixButtonPositions()
 end
 
