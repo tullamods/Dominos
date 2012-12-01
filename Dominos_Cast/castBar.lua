@@ -27,7 +27,33 @@ function CastBar:New()
 	f:AdjustCastingBar()
 	f:UpdateText()
 	f:UpdateTexture()
+	f:RegisterEvent("UNIT_SPELLCAST_START")
+	f:RegisterEvent("UNIT_SPELLCAST_CHANNEL_START")
+	f:RegisterEvent("PLAYER_ENTERING_WORLD")
+	f:SetScript("OnEvent", function(_, event) f.event = event end)
+	f:HookScript("OnEvent", f.ForceShow)
 	return f
+end
+
+function CastBar:ForceShow()
+	local sets = self.sets.hidden
+	local f = CastingBarFrame
+	
+	if ((sets and (sets == true)) or (not sets))
+	and((f:GetScript("OnEvent") ~= CastingBarFrame_OnEvent)
+	or (f:GetScript("OnShow") ~= CastingBarFrame_OnShow)
+	or (f:GetScript("OnUpdate") ~= CastingBarFrame_OnUpdate))
+	and(InCombatLockdown()~=true) then
+		f:SetAttribute("unit", "player")
+		f:SetScript("OnShow",  CastingBarFrame_OnShow)
+		f:SetScript("OnEvent", CastingBarFrame_OnEvent)
+		f:SetScript("OnUpdate", CastingBarFrame_OnUpdate)
+		f:Show()
+		if self.event then
+			f:GetScript("OnEvent")(f, self.event)
+			self.event = nil
+		end
+	end
 end
 
 function CastBar:GetDefaults()
@@ -178,9 +204,6 @@ function CastBar:Configuration()
 		border:Hide()
 		self.border = border
 	end
-
-
-
 
 	local FACTION = UnitFactionGroup("player")
 	local texture
@@ -379,7 +402,6 @@ local function AddTexturePanel(menu)
 
 	p.height = 5 + (NUM_ITEMS * HEIGHT)
 end
-
 
 function CastBar:CreateMenu()
 	local menu = Dominos:NewMenu(self.id)
