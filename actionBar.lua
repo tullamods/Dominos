@@ -226,10 +226,6 @@ function ActionBar:UpdateActions()
 end
 
 function ActionBar:LoadStateController()
-	self.header:SetAttribute('_onstate-overridebar', [[
-		self:RunAttribute('updateState')
-	]])
-
 	self.header:SetAttribute('_onstate-overridepage', [[
 		self:RunAttribute('updateState')
 	]])
@@ -240,7 +236,7 @@ function ActionBar:LoadStateController()
 
 	self.header:SetAttribute('updateState', [[
 		local state
-		if self:GetAttribute('state-overridepage') > 10 and self:GetAttribute('state-overridebar') then
+		if self:GetAttribute('state-overridepage') > 0 then
 			state = 'override'
 		else
 			state = self:GetAttribute('state-page')
