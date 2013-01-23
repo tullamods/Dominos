@@ -29,13 +29,25 @@ function ExtraBar:NumButtons(f)
 	return 1
 end
 
+--KeyBound Support!
+local KeyBound = LibStub('LibKeyBound-1.0')
+function ExtraBar:RetroFit_BindableButton(button)
+	for i, data in pairs(Dominos.BindableButton) do
+		if (type(data) ~= "userdata") then
+			button[i] = data
+		end
+	end
+	button:UnregisterEvent("UPDATE_EXTRA_ACTIONBAR");
+	button:HookScript("OnEnter", function(self)	KeyBound:Set(self) end)
+end
+
 function ExtraBar:AddButton(i)
 	local b = self:GetExtraButton(i)
 	if b then
 		b:SetAttribute('showgrid', 1)
 		b:SetParent(self.header)
 		b:Show()
-
+		self:RetroFit_BindableButton(b)
 		self.buttons[i] = b
 	end
 end
