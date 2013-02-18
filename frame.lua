@@ -636,12 +636,10 @@ Frame.stickyTolerance = 16
 function Frame:StickToEdge()
 	local point, x, y = self:GetRelPosition()
 	local s = self:GetScale()
-	local w = self:GetParent():GetWidth()/s
-	local h = self:GetParent():GetHeight()/s
 	local rTolerance = self.stickyTolerance/s
+	
 	local changed = false
 
-	--sticky edges
 	if abs(x) <= rTolerance then
 		x = 0
 		changed = true
@@ -652,40 +650,10 @@ function Frame:StickToEdge()
 		changed = true
 	end
 
-	-- auto centering
-	local cX, cY = self:GetCenter()
-	if y == 0 then
-		if abs(cX - w/2) <= rTolerance*2 then
-			if point == 'TOPLEFT' or point == 'TOPRIGHT' then
-				point = 'TOP'
-			else
-				point = 'BOTTOM'
-			end
-
-			x = 0
-			changed = true
-		end
-	elseif x == 0 then
-		if abs(cY - h/2) <= rTolerance*2 then
-			if point == 'TOPLEFT' or point == 'BOTTOMLEFT' then
-				point = 'LEFT'
-			else
-				point = 'RIGHT'
-			end
-
-			y = 0
-			changed = true
-		end
-	end
-
 	--save this junk if we've done something
 	if changed then
-		self.sets.point = point
-		self.sets.x = x
-		self.sets.y = y
-
-		self:ClearAllPoints()
-		self:SetPoint(point, x, y)
+		self:SetPosition(point, x, y)
+		self:SavePosition()
 	end
 end
 
@@ -718,10 +686,7 @@ function Frame:Reanchor()
 	local f, point = self:GetAnchor()
 	if not(f and FlyPaper.StickToPoint(self, f, point)) then
 		self:ClearAnchor()
-		if not self:Reposition() then
-			self:ClearAllPoints()
-			self:SetPoint('CENTER')
-		end
+		self:Reposition()
 	else
 		self:SetAnchor(f, point)
 	end
@@ -782,27 +747,44 @@ end
 
 function Frame:GetRelPosition()
 	local parent = self:GetParent()
-	local w, h = parent:GetWidth(), parent:GetHeight()
-	local x, y = self:GetCenter()
 	local s = self:GetScale()
-	w = w/s h = h/s
+	local left,top = self:GetLeft() * s, self:GetTop() * s
+	local right, bottom = self:GetRight() * s, self:GetBottom() * s
+	local pwidth, pheight = parent:GetWidth(), parent:GetHeight()
 
-	local dx, dy
-	local hHalf = (x > w/2) and 'RIGHT' or 'LEFT'
-	if hHalf == 'RIGHT' then
-		dx = self:GetRight() - w
+	local x , y, point
+	if left < (pwidth-right) and left < abs((left+right)/2 - pwidth/2) then
+		x = left
+		point = 'LEFT'
+	elseif (pwidth - right) < abs((left + right)/2 - pwidth/2) then
+		x = right - pwidth
+		point = 'RIGHT'
 	else
-		dx = self:GetLeft()
+		x = (left+right)/2 - pwidth/2
+		point = '';
 	end
-
-	local vHalf = (y > h/2) and 'TOP' or 'BOTTOM'
-	if vHalf == 'TOP' then
-		dy = self:GetTop() - h
+	
+	if bottom < (pheight - top) and bottom < abs((bottom + top)/2 - pheight/2) then
+		y = bottom
+		point = 'BOTTOM' .. point
+	elseif (pheight - top) < abs((bottom + top)/2 - pheight/2) then
+		y = top - pheight
+		point = 'TOP' .. point
 	else
-		dy = self:GetBottom()
+		y = (bottom + top)/2 - pheight/2
 	end
+	
+	if point == '' then
+		point = 'CENTER'
+	end
+	
+	return point, x/s, y/s
+end
 
-	return vHalf..hHalf, dx, dy
+function Frame:SetPosition(point, x, y)
+	self:ClearAllPoints()
+	self:SetPoint(point, x, y)
+	self:SetUserPlaced(true)
 end
 
 function Frame:SavePosition()
@@ -819,14 +801,12 @@ function Frame:Reposition()
 	self:Rescale()
 
 	local sets = self.sets
-	local point, x, y = sets.point, sets.x, sets.y
-
-	if point then
-		self:ClearAllPoints()
-		self:SetPoint(point, x, y)
-		self:SetUserPlaced(true)
-		return true
-	end
+	local point = sets.point or 'CENTER'
+	local x = sets.x or 0
+	local y = sets.y or 0
+	local scale = self:GetScale()
+	
+	self:SetPosition(point, x / scale, y / scale)
 end
 
 function Frame:SetFramePoint(...)
