@@ -251,6 +251,7 @@ end
 
 function Frame:Layout()
 	local width, height
+	
 	if #self.buttons > 0 then
 		local cols = min(self:NumColumns(), #self.buttons)
 		local rows = ceil(#self.buttons / cols)
@@ -295,25 +296,22 @@ end
 
 --[[ Scaling ]]--
 
-function Frame:GetScaledCoords(scale)
-	local ratio = self:GetFrameScale() / scale
-	return (self:GetLeft() or 0) * ratio, (self:GetTop() or 0) * ratio
-end
+function Frame:SetFrameScale(newScale, scaleAnchored)
+	local newScale = newScale or 1
+	local oldScale = self:GetFrameScale()
+	local ratio = oldScale / newScale
 
-function Frame:SetFrameScale(scale, scaleAnchored)
-	local x, y =  self:GetScaledCoords(scale)
-
-	self.sets.scale = scale
+	self.sets.scale = newScale
 	self:Rescale()
 
-	if not self.sets.anchor then
-		self:ClearAllPoints()
-		self:SetPoint('TOPLEFT', self:GetParent(), 'BOTTOMLEFT', x, y)
-		self:SavePosition()
+	if not self:GetAnchor() then
+		local point, x, y = self:GetSavedFramePosition()
+		
+		self:SetAndSaveFramePosition(point, x * ratio, y * ratio)
 	end
 
 	if scaleAnchored then
-		for _,f in self:GetAll() do
+		for _, f in self:GetAll() do
 			if f:GetAnchor() == self then
 				f:SetFrameScale(scale, true)
 			end
@@ -339,6 +337,7 @@ function Frame:SetFrameAlpha(alpha)
 	else
 		self.sets.alpha = alpha
 	end
+	
 	self:UpdateAlpha()
 end
 
@@ -349,11 +348,13 @@ end
 --faded opacity (mouse not over the frame)
 function Frame:SetFadeMultiplier(alpha)
 	local alpha = alpha or 1
+	
 	if alpha == 1 then
 		self.sets.fadeAlpha = nil
 	else
 		self.sets.fadeAlpha = alpha
 	end
+	
 	self:UpdateWatched()
 	self:UpdateAlpha()
 end
@@ -364,6 +365,7 @@ end
 
 function Frame:UpdateAlpha()
 	self:SetAlpha(self:GetExpectedAlpha())
+	
 	if Dominos:IsLinkedOpacityEnabled() then
 		self:ForDocked('UpdateAlpha')
 	end
@@ -469,6 +471,7 @@ local function fader_Create(parent)
 			fadeGroup:Pause()
 			parent:SetAlpha(parent:GetAlpha() + (fade:GetChange() * fade:GetProgress()))
 		end
+		
 		fadeGroup.targetAlpha = targetAlpha
 		fade:SetChange(targetAlpha - parent:GetAlpha())
 		fade:SetDuration(duration)
@@ -499,6 +502,7 @@ function Frame:Fade()
 		self:ForDocked('Fade')
 	end
 end
+
 
 --[[ Visibility ]]--
 
@@ -609,15 +613,18 @@ end
 
 function Frame:UpdateShowStates()
 	local showstates = self:GetShowStates()
+	
 	if showstates then
 		RegisterStateDriver(self.header, 'display', showstates)
 	else
 		UnregisterStateDriver(self.header, 'display')
+		
 		if self.header:GetAttribute('state-display') then
 			self.header:SetAttribute('state-display', nil)
 		end
 	end
 end
+
 
 --[[ Lock/Unlock ]]--
 
@@ -629,15 +636,14 @@ function Frame:Unlock()
 	self.drag:Show()
 end
 
+
 --[[ Sticky Bars ]]--
 
 Frame.stickyTolerance = 16
 
 function Frame:StickToEdge()
-	local point, x, y = self:GetRelPosition()
-	local s = self:GetScale()
-	local rTolerance = self.stickyTolerance/s
-	
+	local point, x, y = self:GetRelativeFramePosition()
+	local rTolerance = self.stickyTolerance / self:GetFrameScale()	
 	local changed = false
 
 	if abs(x) <= rTolerance then
@@ -652,12 +658,13 @@ function Frame:StickToEdge()
 
 	--save this junk if we've done something
 	if changed then
-		self:SetPosition(point, x, y)
-		self:SavePosition()
+		self:SetAndSaveFramePosition(point, x, y)
 	end
 end
 
 function Frame:Stick()
+	local rTolerance = self.stickyTolerance / self:GetFrameScale()
+	
 	self:ClearAnchor()
 
 	--only do sticky code if the alt key is not currently down
@@ -665,7 +672,7 @@ function Frame:Stick()
 		--try to stick to a bar, then try to stick to a screen edge
 		for _, f in self:GetAll() do
 			if f ~= self then
-				local point = FlyPaper.Stick(self, f, self.stickyTolerance)
+				local point = FlyPaper.Stick(self, f, rTolerance)
 				if point then
 					self:SetAnchor(f, point)
 					break
@@ -673,23 +680,25 @@ function Frame:Stick()
 			end
 		end
 
-		if not self.sets.anchor then
+		if not self:GetAnchor() then
 			self:StickToEdge()
 		end
 	end
 
-	self:SavePosition()
+	self:SaveRelativeFramePosition()
 	self.drag:UpdateColor()
 end
 
 function Frame:Reanchor()
 	local f, point = self:GetAnchor()
+	
 	if not(f and FlyPaper.StickToPoint(self, f, point)) then
 		self:ClearAnchor()
 		self:Reposition()
 	else
 		self:SetAnchor(f, point)
 	end
+	
 	self.drag:UpdateColor()
 end
 
@@ -718,6 +727,7 @@ end
 
 function Frame:ClearAnchor()
 	local anchor, point = self:GetAnchor()
+	
 	if anchor and anchor.docked then
 		for i,f in pairs(anchor.docked) do
 			if f == self then
@@ -725,6 +735,7 @@ function Frame:ClearAnchor()
 				break
 			end
 		end
+		
 		if not next(anchor.docked) then
 			anchor.docked = nil
 		end
@@ -737,23 +748,47 @@ end
 
 function Frame:GetAnchor()
 	local anchorString = self.sets.anchor
+	
 	if anchorString then
 		local pointStart = #anchorString - 1
 		return self:Get(anchorString:sub(1, pointStart - 1)), anchorString:sub(pointStart)
 	end
 end
 
+
 --[[ Positioning ]]--
 
-function Frame:GetRelPosition()
-	local parent = self:GetParent()
-	local s = self:GetScale()
-	local left,top = self:GetLeft() * s, self:GetTop() * s
-	local right, bottom = self:GetRight() * s, self:GetBottom() * s
-	local pwidth, pheight = parent:GetWidth(), parent:GetHeight()
+function Frame:SetFramePosition(...)
+	self:ClearAllPoints()
+	self:SetPoint(...)
+end
+
+function Frame:SetAndSaveFramePosition(point, x, y)
+	self:SetFramePosition(point, x, y)
+	self:SaveFramePosition(point, x, y)	
+end
+
+
+
+--[[ Relative Positioning ]]--
+
+function Frame:SaveRelativeFramePosition()
+	self:SaveFramePosition(self:GetRelativeFramePosition())
+end
+
+function Frame:GetRelativeFramePosition()
+	local scale = self:GetScale() or 1
+	local left = self:GetLeft() or 0
+	local top = self:GetTop() or 0
+	local right = self:GetRight() or 0
+	local bottom = self:GetBottom() or 0
+
+	local parent = self:GetParent() or _G['UIParent']
+	local pwidth = parent:GetWidth() / self:GetScale()
+	local pheight = parent:GetHeight() / self:GetScale()	
 
 	local x , y, point
-	if left < (pwidth-right) and left < abs((left+right)/2 - pwidth/2) then
+	if left < (pwidth - right) and left < abs((left+right)/2 - pwidth/2) then
 		x = left
 		point = 'LEFT'
 	elseif (pwidth - right) < abs((left + right)/2 - pwidth/2) then
@@ -778,42 +813,51 @@ function Frame:GetRelPosition()
 		point = 'CENTER'
 	end
 	
-	return point, x/s, y/s
+	return point, x, y
 end
 
-function Frame:SetPosition(point, x, y)
-	self:ClearAllPoints()
-	self:SetPoint(point, x, y)
+
+--[[ Position Saving ]]--
+
+local roundPoint = function(point)
+	local point = point or 0
+	
+	if point > 0 then
+		point = floor(point + 0.5)
+	else
+		point = ceil(point - 0.5)
+	end	
+	
+	return point
+end
+
+function Frame:Reposition()
+	self:Rescale()
+	self:SetFramePosition(self:GetSavedFramePosition())
+end
+
+function Frame:SaveFramePosition(point, x, y)	
+	local point = point or 'CENTER'
+	local x = roundPoint(x)
+	local y = roundPoint(y)
+	
+	local sets = self.sets
+	sets.point = point ~= 'CENTER' and point or nil
+	sets.x = x ~= 0 and x or nil
+	sets.y = y ~= 0 and y or nil
+
 	self:SetUserPlaced(true)
 end
 
-function Frame:SavePosition()
-	local point, x, y = self:GetRelPosition()
-	local sets = self.sets
-
-	sets.point = point
-	sets.x = x
-	sets.y = y
-end
-
---place the frame at it's saved position
-function Frame:Reposition()
-	self:Rescale()
-
+function Frame:GetSavedFramePosition()
 	local sets = self.sets
 	local point = sets.point or 'CENTER'
 	local x = sets.x or 0
 	local y = sets.y or 0
-	local scale = self:GetScale()
 	
-	self:SetPosition(point, x / scale, y / scale)
+	return point, x, y
 end
 
-function Frame:SetFramePoint(...)
-	self:ClearAllPoints()
-	self:SetPoint(...)
-	self:SavePosition()
-end
 
 --[[ Menus ]]--
 
@@ -825,6 +869,7 @@ end
 
 function Frame:ShowMenu()
 	local enabled = select(4, GetAddOnInfo('Dominos_Config'))
+	
 	if enabled then
 		if not self.menu then
 			self:CreateMenu()
@@ -840,6 +885,7 @@ function Frame:ShowMenu()
 	end
 end
 
+
 --[[ Tooltip Text ]]--
 
 function Frame:SetTooltipText(text)
@@ -850,6 +896,7 @@ function Frame:GetTooltipText()
 	return self.tooltipText
 end
 
+
 --[[ Mouseover Watching ]]--
 
 function Frame:UpdateWatched()
@@ -859,6 +906,7 @@ function Frame:UpdateWatched()
 		Dominos.MouseOverWatcher:Remove(self)
 	end
 end
+
 
 --[[ Metafunctions ]]--
 
