@@ -17,6 +17,7 @@ barStates.lua
 actionButton.lua
 actionBar.lua
 petBar.lua
+classButton.lua
 classBar.lua
 bagBar.lua
 menuBar.lua
