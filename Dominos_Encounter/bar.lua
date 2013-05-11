@@ -6,9 +6,18 @@ function EncounterBar:New()
 	local f = Dominos.Frame.New(self, 'encounter')
 	
 	f:AttachPlayerPowerBarAlt()
+	f:ShowInOverrideUI(true)
+	f:ShowInPetBattleUI(true)
 	f:Layout()
 
 	return f
+end
+
+function EncounterBar:OnEvent(self, event, ...)
+	local f = self[event]
+	if f then
+		f(self, event, ...)
+	end
 end
 
 function EncounterBar:GetDefaults()
