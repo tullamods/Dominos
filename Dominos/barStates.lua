@@ -97,6 +97,11 @@ do
 		addState('class', 'ox', '[bonusbar:2]', GetSpellInfo(115069))
 		addState('class', 'serpent', '[bonusbar:3]', GetSpellInfo(115070))		
 	end
+
+	local race = select(2, UnitRace('player'))
+	if race == 'NightElf' then
+		addState('class', 'shadowmeld', '[stealth]', GetSpellInfo(58984))
+	end
 end
 
 --target reaction
