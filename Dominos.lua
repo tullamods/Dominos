@@ -240,14 +240,9 @@ function Dominos:Load()
 		self.ActionBar:New(i)
 	end
 	
-	if HasClassBar() then
-		self.ClassBar:New()
-	end
-	
 	self.PetBar:New()
-	self.BagBar:New()
 	self.MenuBar:New()
-	self.ExtraBar:New()
+	self.BagBar:New()
 	self.VehicleBar:New()
 
 	--load in extra functionality
@@ -265,11 +260,10 @@ end
 --unload is called when we're switching profiles
 function Dominos:Unload()
 	self.ActionBar:ForAll('Free')
+	
 	self.Frame:ForFrame('pet', 'Free')
-	self.Frame:ForFrame('class', 'Free')
 	self.Frame:ForFrame('menu', 'Free')
 	self.Frame:ForFrame('bags', 'Free')
-	self.Frame:ForFrame('extra', 'Free')
 	self.Frame:ForFrame('vehicle', 'Free')
 
 	--unload any module stuff
@@ -291,15 +285,14 @@ function Dominos:HideBlizzard()
 	local UIHider = CreateFrame('Frame', nil, UIParent, 'SecureFrameTemplate'); UIHider:Hide()
 	self.UIHider = UIHider
 	
+	--[[ disable multibars ]]--
+
 	_G['MultiBarBottomLeft']:SetParent(UIHider)
 	_G['MultiBarBottomRight']:SetParent(UIHider)
 	_G['MultiBarLeft']:SetParent(UIHider)
 	_G['MultiBarRight']:SetParent(UIHider)
-	
-	UIPARENT_MANAGED_FRAME_POSITIONS["MainMenuBar"] = nil
-	UIPARENT_MANAGED_FRAME_POSITIONS["StanceBarFrame"] = nil
-	UIPARENT_MANAGED_FRAME_POSITIONS["PossessBarFrame"] = nil
-	UIPARENT_MANAGED_FRAME_POSITIONS["PETACTIONBAR_YPOS"] = nil
+
+	--[[ disable menu bar ]]--
 
 	MainMenuBar:EnableMouse(false)
 
@@ -319,16 +312,39 @@ function Dominos:HideBlizzard()
 
 	ReputationWatchBar:SetParent(UIHider)
 
-	_G['StanceBarFrame']:UnregisterAllEvents()
-	_G['StanceBarFrame']:Hide()
-	_G['StanceBarFrame']:SetParent(UIHider)
+
+	--[[ disable stance bar ]]--
+
+	local stanceBar = _G['StanceBarFrame']
+	stanceBar.UnregisterAllEvents()
+	stanceBar:Hide()
+
+
+	-- [[ disable possess bar ]]--
+
+	local possessBar = _G['PossessBarFrame']
+	possessBar.UnregisterAllEvents()
+	possessBar:Hide()
+
+
+	-- [[ disable pet action bar ]]--
+
+	local petActionBar = _G['PetActionBarFrame']
+	petActionBar.UnregisterAllEvents()
+	petActionBar:Hide()	
+
+
+	--[[ disable ui position manager ]]--
+
+	_G['MultiBarBottomLeft'].ignoreFramePositionManager = true
+	_G['MultiBarRight'].ignoreFramePositionManager = true
+	_G['MainMenuBar'].ignoreFramePositionManager = true
+	_G['StanceBarFrame'].ignoreFramePositionManager = true
+	_G['PossessBarFrame'].ignoreFramePositionManager = true
+	_G['MultiCastActionBarFrame'].ignoreFramePositionManager = true
 	
-	_G['PossessBarFrame']:Hide()
-	_G['PossessBarFrame']:SetParent(UIHider)
-	
-	_G['PetActionBarFrame']:Hide()
-	_G['PetActionBarFrame']:SetParent(UIHider)
-	
+
+	--[[ disable the override ui, if we need to ]]
 	self:UpdateUseOverrideUI()
 end
 
