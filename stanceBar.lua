@@ -25,8 +25,7 @@ do
 	function StanceButton:New(id)
 		local button = self:Restore(id) or self:Create(id)
 
-		-- button:Update()
-		-- button:UpdateHotkey()
+		button:UpdateHotkey()
 
 		return button
 	end
@@ -95,32 +94,6 @@ do
 	end
 
 	StanceButton.UpdateTooltip = StanceButton.OnEnter
-
-	-- function StanceButton:Update()
-	-- 	self:UpdateState()
-	-- 	self:UpdateCooldown()
-	-- end
-
-	-- function StanceButton:UpdateState()
-	-- 	local texture, name, isActive, isCastable = GetShapeshiftFormInfo(self:GetID())
-	-- 	local icon = self.icon
-
-	-- 	--update icon
-	-- 	icon:SetTexture(texture)
-
-	-- 	if isCastable then
-	-- 		icon:SetVertexColor(1, 1, 1)
-	-- 	else
-	-- 		icon:SetVertexColor(0.4, 0.4, 0.4)
-	-- 	end
-
-	-- 	--update checked
-	-- 	self:SetChecked(isActive)
-	-- end
-
-	-- function StanceButton:UpdateCooldown()
-	-- 	CooldownFrame_SetTimer(self.cooldown, GetShapeshiftFormCooldown(self:GetID()))
-	-- end
 end
 
 
