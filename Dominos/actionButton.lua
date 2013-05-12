@@ -129,6 +129,7 @@ function ActionButton:OnEnter()
 	if Dominos:ShouldShowTooltips() then
 		ActionButton_SetTooltip(self)
 		ActionBarButtonEventsFrame.tooltipOwner = self
+		ActionBarActionEventsFrame.tooltipOwner = self
 		ActionButton_UpdateFlyout(self)
 	end
 	KeyBound:Set(self)

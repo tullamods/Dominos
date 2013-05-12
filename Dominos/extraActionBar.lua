@@ -8,64 +8,72 @@ local Dominos = _G['Dominos']
 
 --[[ buttons ]]--
 
-local ExtraButton = Dominos:CreateClass('CheckButton', Dominos.BindableButton)
+local ExtraActionButton = Dominos:CreateClass('CheckButton', Dominos.BindableButton)
 
-function ExtraButton:New(id)
-	local b = self:Restore(id) or self:Create(id)
+do
+	local unused = {}
 
-	b:UpdateHotkey()
+	function ExtraActionButton:New(id)
+		local b = self:Restore(id) or self:Create(id)
 
-	return b
-end
-
-function ExtraButton:Create(id)
-	local b = self:Bind(_G['ExtraActionButton' .. id])
-
-	b.buttonType = 'EXTRAACTIONBUTTON'
-	b:SetScript('OnEnter', self.OnEnter)
-	b:UnregisterEvent('UPDATE_BINDINGS')
-	b:Skin()
-
-	return b
-end
-
---if we have button facade support, then skin the button that way
---otherwise, apply the dominos style to the button to make it pretty
-function ExtraButton:Skin()
-	if not Dominos:Masque('Extra Bar', self) then
-		_G[self:GetName() .. 'Icon']:SetTexCoord(0.06, 0.94, 0.06, 0.94)
-		self:GetNormalTexture():SetVertexColor(1, 1, 1, 0.5)
-	end
-end
-
-function ExtraButton:Restore(id)
-	local b = unused and unused[id]
-	if b then
-		unused[id] = nil
-		b:Show()
+		b:UpdateHotkey()
 
 		return b
 	end
-end
 
---saving them thar memories
-function ExtraButton:Free()
-	if not unused then unused = {} end
-	unused[self:GetID()] = self
+	function ExtraActionButton:Create(id)
+		local b = self:Bind(_G['ExtraActionButton' .. id])
 
-	self:SetParent(nil)
-	self:Hide()
-end
+		if b then
+			b.buttonType = 'EXTRAACTIONBUTTON'
 
---keybound support
-function ExtraButton:OnEnter()
-	if Dominos:ShouldShowTooltips() then
-		ActionButton_SetTooltip(self)
-		ActionBarButtonEventsFrame.tooltipOwner = self
-		ActionButton_UpdateFlyout(self)
+			b:SetScript('OnEnter', self.OnEnter)
+			b:UnregisterEvent('UPDATE_BINDINGS')
+
+			b:Skin()
+
+			return b
+		end
 	end
 
-	KeyBound:Set(self)
+	--if we have button facade support, then skin the button that way
+	--otherwise, apply the dominos style to the button to make it pretty
+	function ExtraActionButton:Skin()
+		if not Dominos:Masque('Extra Bar', self) then
+			_G[self:GetName() .. 'Icon']:SetTexCoord(0.06, 0.94, 0.06, 0.94)
+			self:GetNormalTexture():SetVertexColor(1, 1, 1, 0.5)
+		end
+	end
+
+	function ExtraActionButton:Restore(id)
+		local b = unused and unused[id]
+		if b then
+			unused[id] = nil
+			b:Show()
+
+			return b
+		end
+	end
+
+	--saving them thar memories
+	function ExtraActionButton:Free()
+		if not unused then unused = {} end
+		unused[self:GetID()] = self
+
+		self:SetParent(nil)
+		self:Hide()
+	end
+
+	--keybound support
+	function ExtraActionButton:OnEnter()
+		if Dominos:ShouldShowTooltips() then
+			ActionButton_SetTooltip(self)
+			ActionBarButtonEventsFrame.tooltipOwner = self
+			ActionBarActionEventsFrame.tooltipOwner = self
+			ActionButton_UpdateFlyout(self)
+		end
+		KeyBound:Set(self)
+	end
 end
 
 
@@ -74,7 +82,7 @@ end
 local ExtraBar = Dominos:CreateClass('Frame', Dominos.Frame)
 
 function ExtraBar:New()
-	local f = self.super.New(self, 'extra')
+	local f = Dominos.Frame.New(self, 'extra')
 	
 	f:LoadButtons()
 	f:Layout()
@@ -98,8 +106,8 @@ function ExtraBar:NumButtons(f)
 	return 1
 end
 
-function ExtraBar:AddButton(id)
-	local b = ExtraButton:New(id)
+function ExtraBar:AddButton(i)
+	local b = ExtraActionButton:New(i)
 
 	if b then
 		b:SetAttribute('showgrid', 1)
@@ -112,6 +120,7 @@ end
 
 function ExtraBar:RemoveButton(i)
 	local b = self.buttons[i]
+
 	if b then
 		b:SetParent(nil)
 		b:Hide()
