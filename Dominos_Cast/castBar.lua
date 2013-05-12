@@ -3,6 +3,10 @@ local CastBar = Dominos:CreateClass('Frame', Dominos.Frame)
 local L = LibStub('AceLocale-3.0'):GetLocale('Dominos-CastingBar')
 
 -- Module Code
+function DCB:OnInitialize()
+	_G['CastingBarFrame'].ignoreFramePositionManager = true
+end
+
 function DCB:Load()
 	self.frame = CastBar:New()
 end
