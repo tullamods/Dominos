@@ -316,22 +316,22 @@ function Dominos:HideBlizzard()
 	--[[ disable stance bar ]]--
 
 	local stanceBar = _G['StanceBarFrame']
-	stanceBar:UnregisterAllEvents()
-	stanceBar:Hide()
+	-- stanceBar:UnregisterAllEvents()
+	stanceBar:SetParent(UIHider)
 
 
 	-- [[ disable possess bar ]]--
 
 	local possessBar = _G['PossessBarFrame']
 	possessBar:UnregisterAllEvents()
-	possessBar:Hide()
+	possessBar:SetParent(UIHider)
 
 
 	-- [[ disable pet action bar ]]--
 
 	local petActionBar = _G['PetActionBarFrame']
-	petActionBar:UnregisterAllEvents()
-	petActionBar:Hide()	
+	-- petActionBar:UnregisterAllEvents()
+	petActionBar:SetParent(UIHider)
 
 
 	--[[ disable ui position manager ]]--
