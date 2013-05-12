@@ -60,3 +60,34 @@ end
 function EncounterBar:GetPlayerPowerBarAlt()
 	return _G['PlayerPowerBarAlt']
 end
+
+function EncounterBar:CreateMenu()
+	local menu = Dominos:NewMenu(self.id)
+
+	self:AddLayoutPanel(menu)
+	self:AddAdvancedPanel(menu)
+	
+	self.menu = menu
+	
+	return menu
+end
+
+function EncounterBar:AddLayoutPanel(menu)
+	local panel = menu:NewPanel(LibStub('AceLocale-3.0'):GetLocale('Dominos-Config').Layout)
+
+	panel.opacitySlider = panel:NewOpacitySlider()
+	panel.fadeSlider = panel:NewFadeSlider()
+	panel.scaleSlider = panel:NewScaleSlider()
+	panel.paddingSlider = panel:NewPaddingSlider()
+	panel.spacingSlider = panel:NewSpacingSlider()
+
+	return panel
+end
+
+function EncounterBar:AddAdvancedPanel(menu)
+	local panel = menu:NewPanel(LibStub('AceLocale-3.0'):GetLocale('Dominos-Config').Advanced)
+
+	panel:NewClickThroughCheckbox()
+	
+	return panel
+end
