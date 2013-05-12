@@ -25,8 +25,8 @@ do
 	function StanceButton:New(id)
 		local button = self:Restore(id) or self:Create(id)
 
-		button:Update()
-		button:UpdateHotkey()
+		-- button:Update()
+		-- button:UpdateHotkey()
 
 		return button
 	end
@@ -96,31 +96,31 @@ do
 
 	StanceButton.UpdateTooltip = StanceButton.OnEnter
 
-	function StanceButton:Update()
-		self:UpdateState()
-		self:UpdateCooldown()
-	end
+	-- function StanceButton:Update()
+	-- 	self:UpdateState()
+	-- 	self:UpdateCooldown()
+	-- end
 
-	function StanceButton:UpdateState()
-		local texture, name, isActive, isCastable = GetShapeshiftFormInfo(self:GetID())
-		local icon = self.icon
+	-- function StanceButton:UpdateState()
+	-- 	local texture, name, isActive, isCastable = GetShapeshiftFormInfo(self:GetID())
+	-- 	local icon = self.icon
 
-		--update icon
-		icon:SetTexture(texture)
+	-- 	--update icon
+	-- 	icon:SetTexture(texture)
 
-		if isCastable then
-			icon:SetVertexColor(1, 1, 1)
-		else
-			icon:SetVertexColor(0.4, 0.4, 0.4)
-		end
+	-- 	if isCastable then
+	-- 		icon:SetVertexColor(1, 1, 1)
+	-- 	else
+	-- 		icon:SetVertexColor(0.4, 0.4, 0.4)
+	-- 	end
 
-		--update checked
-		self:SetChecked(isActive)
-	end
+	-- 	--update checked
+	-- 	self:SetChecked(isActive)
+	-- end
 
-	function StanceButton:UpdateCooldown()
-		CooldownFrame_SetTimer(self.cooldown, GetShapeshiftFormCooldown(self:GetID()))
-	end
+	-- function StanceButton:UpdateCooldown()
+	-- 	CooldownFrame_SetTimer(self.cooldown, GetShapeshiftFormCooldown(self:GetID()))
+	-- end
 end
 
 
@@ -136,9 +136,7 @@ do
 		
 		f:RegisterEvent('UPDATE_SHAPESHIFT_FORMS')
 		f:RegisterEvent('PLAYER_REGEN_ENABLED')
-		f:RegisterEvent('UPDATE_SHAPESHIFT_COOLDOWN')
-
-		f:UpdateForms()
+		f:RegisterEvent('PLAYER_ENTERING_WORLD')
 
 		return f
 	end
@@ -168,19 +166,15 @@ do
 	end
 
 	function StanceBar:UPDATE_SHAPESHIFT_FORMS()
-		self:UpdateForms()
-	end
-
-	function StanceBar:UPDATE_SHAPESHIFT_COOLDOWN()
-		self:UpdateCooldowns()
+		self:UpdateNumForms()
 	end
 
 	function StanceBar:PLAYER_REGEN_ENABLED()
-		if self.needsUpdateNumForms then
-			self.needsUpdateNumForms = nil
+		self:UpdateNumForms()
+	end
 
-			self:UpdateNumForms()
-		end
+	function StanceBar:PLAYER_ENTERING_WORLD()
+		self:UpdateNumForms()
 	end
 
 	function StanceBar:UPDATE_BINDINGS()
@@ -214,31 +208,18 @@ do
 		b:Free()
 	end
 
-	function StanceBar:UpdateForms()
-		for i, button in pairs(self.buttons) do
-			button:Update()
-		end
-
-		self:UpdateNumForms()
-	end
-
 	function StanceBar:UpdateNumForms()
 		if InCombatLockdown() then
-			self.needsUpdateNumForms = true
 			return
 		end
 
-		local numButtons = self:NumButtons() or 0
+		local oldNumForms = self.numForms
 		local numForms = GetNumShapeshiftForms() or 0
 
-		if numButtons ~= numForms then
-			self:SetNumButtons(numForms)
-		end
-	end
+		if oldNumForms ~= numForms then
+			self.numForms = numForms
 
-	function StanceBar:UpdateCooldowns()
-		for i, button in pairs(self.buttons) do
-			button:UpdateCooldown()
+			self:SetNumButtons(numForms)
 		end
 	end
 end
