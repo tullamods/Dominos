@@ -277,10 +277,6 @@ end
 
 --shamelessly pulled from Bartender4
 function Dominos:HideBlizzard()
-	if MultiActionBar_UpdateGrid then
-		MultiActionBar_UpdateGrid = Multibar_EmptyFunc
-	end
-	
 	-- Hidden parent frame
 	local UIHider = CreateFrame('Frame', nil, UIParent, 'SecureFrameTemplate'); UIHider:Hide()
 	self.UIHider = UIHider
@@ -291,6 +287,10 @@ function Dominos:HideBlizzard()
 	_G['MultiBarBottomRight']:SetParent(UIHider)
 	_G['MultiBarLeft']:SetParent(UIHider)
 	_G['MultiBarRight']:SetParent(UIHider)
+
+	if MultiActionBar_UpdateGrid then
+		MultiActionBar_UpdateGrid = Multibar_EmptyFunc
+	end
 
 	--[[ disable menu bar ]]--
 
@@ -316,21 +316,21 @@ function Dominos:HideBlizzard()
 	--[[ disable stance bar ]]--
 
 	local stanceBar = _G['StanceBarFrame']
-	stanceBar.UnregisterAllEvents()
+	stanceBar:UnregisterAllEvents()
 	stanceBar:Hide()
 
 
 	-- [[ disable possess bar ]]--
 
 	local possessBar = _G['PossessBarFrame']
-	possessBar.UnregisterAllEvents()
+	possessBar:UnregisterAllEvents()
 	possessBar:Hide()
 
 
 	-- [[ disable pet action bar ]]--
 
 	local petActionBar = _G['PetActionBarFrame']
-	petActionBar.UnregisterAllEvents()
+	petActionBar:UnregisterAllEvents()
 	petActionBar:Hide()	
 
 
