@@ -3,11 +3,14 @@
 		A Dominos pet bar
 --]]
 
---libs and omgspeed
-local _G = getfenv(0)
-local format = string.format
 
+--[[ Globals ]]--
+
+local _G = _G
+local Dominos = _G['Dominos']
 local KeyBound = LibStub('LibKeyBound-1.0')
+
+local format = string.format
 local unused
 
 
