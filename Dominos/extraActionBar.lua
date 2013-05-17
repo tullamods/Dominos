@@ -2,8 +2,11 @@ if not _G['ExtraActionBarFrame'] then
 	return
 end
 
-local AddonName, Addon = ...
+--[[ Globals ]]--
+
+local _G = _G
 local Dominos = _G['Dominos']
+local KeyBound = LibStub('LibKeyBound-1.0')
 
 
 --[[ buttons ]]--
