@@ -13,6 +13,7 @@ overrideController.lua
 drag.lua
 frame.lua
 bindableButton.lua
+bindingsController.lua
 barStates.lua
 actionButton.lua
 actionBar.lua
@@ -22,4 +23,3 @@ bagBar.lua
 menuBar.lua
 extraActionBar.lua
 vehicleBar.lua
-bindingsUpdater.lua

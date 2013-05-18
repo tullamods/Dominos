@@ -17,11 +17,12 @@ do
 	local unused = {}
 
 	function ExtraActionButton:New(id)
-		local b = self:Restore(id) or self:Create(id)
+		local button = self:Restore(id) or self:Create(id)
 
-		b:UpdateHotkey()
+		Dominos.BindingsController:Register(button)
+		button:UpdateHotkey()
 
-		return b
+		return button
 	end
 
 	function ExtraActionButton:Create(id)
@@ -29,10 +30,7 @@ do
 
 		if b then
 			b.buttonType = 'EXTRAACTIONBUTTON'
-
 			b:SetScript('OnEnter', self.OnEnter)
-			b:UnregisterEvent('UPDATE_BINDINGS')
-
 			b:Skin()
 
 			return b
@@ -50,6 +48,7 @@ do
 
 	function ExtraActionButton:Restore(id)
 		local b = unused and unused[id]
+
 		if b then
 			unused[id] = nil
 			b:Show()
@@ -60,11 +59,12 @@ do
 
 	--saving them thar memories
 	function ExtraActionButton:Free()
-		if not unused then unused = {} end
 		unused[self:GetID()] = self
 
 		self:SetParent(nil)
 		self:Hide()
+
+		Dominos.BindingsController:Unregister(self)
 	end
 
 	--keybound support
@@ -75,6 +75,7 @@ do
 			ActionBarActionEventsFrame.tooltipOwner = self
 			ActionButton_UpdateFlyout(self)
 		end
+
 		KeyBound:Set(self)
 	end
 end
@@ -105,7 +106,7 @@ function ExtraBar:GetShowStates()
 	return '[extrabar]show;hide'
 end
 
-function ExtraBar:NumButtons(f)
+function ExtraBar:NumButtons()
 	return 1
 end
 

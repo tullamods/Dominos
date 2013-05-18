@@ -3,11 +3,16 @@
 		An abstract button class used to allow keybound to work transparently on both the stock blizzard bindings, and click bindings
 --]]
 
-local BindableButton = Dominos:CreateClass('CheckButton')
-Dominos.BindableButton = BindableButton
+--[[ Globals ]]--
 
-local KeyBound = LibStub('LibKeyBound-1.0')
 local _G = _G
+local Dominos = _G['Dominos']
+local KeyBound = LibStub('LibKeyBound-1.0')
+
+
+--[[ Class ]]--
+
+local BindableButton = Dominos:CreateClass('CheckButton'); Dominos.BindableButton = BindableButton
 
 --there's a nice assumption here: all hotkey text will use the same naming convention
 --the call here is wacky because this functionality is actually called for the blizzard buttons _before_ I'm able to bind the action button methods to them
