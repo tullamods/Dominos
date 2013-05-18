@@ -11,7 +11,7 @@ local Dominos = _G['Dominos']
 local KeyBound = LibStub('LibKeyBound-1.0')
 
 local format = string.format
-local unused
+local unused = {}
 
 
 --[[ Pet Button ]]--
@@ -20,6 +20,8 @@ local PetButton = Dominos:CreateClass('CheckButton', Dominos.BindableButton)
 
 function PetButton:New(id)
 	local b = self:Restore(id) or self:Create(id)
+
+	Dominos.BindingsController:Register(b)
 	b:UpdateHotkey()
 
 	return b
@@ -29,7 +31,6 @@ function PetButton:Create(id)
 	local b = self:Bind(_G['PetActionButton' .. id])
 	b.buttonType = 'BONUSACTIONBUTTON'
 	b:SetScript('OnEnter', self.OnEnter)
-	b:UnregisterEvent('UPDATE_BINDINGS')
 	b:Skin()
 
 	return b
@@ -56,8 +57,9 @@ end
 
 --saving them thar memories
 function PetButton:Free()
-	if not unused then unused = {} end
 	unused[self:GetID()] = self
+
+	Dominos.BindingsController:Unregister(self)
 
 	self:SetParent(nil)
 	self:Hide()
@@ -68,6 +70,7 @@ function PetButton:OnEnter()
 	if Dominos:ShowTooltips() then
 		PetActionButton_OnEnter(self)
 	end
+	
 	KeyBound:Set(self)
 end
 

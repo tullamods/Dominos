@@ -38,7 +38,6 @@ function ActionButton:New(id)
 		b:UpdateGrid()
 		b:UpdateHotkey(b.buttonType)
 		b:UpdateMacro()
-		b:UnregisterEvent('UPDATE_BINDINGS')
 
 		--hack #1billion, get rid of range indicator text
 		local hotkey = _G[b:GetName() .. 'HotKey']
@@ -47,6 +46,8 @@ function ActionButton:New(id)
 		end
 
 		self.active[id] = b
+
+		Dominos.BindingsController:Register(b)
 
 		return b
 	end
@@ -111,6 +112,7 @@ function ActionButton:Free()
 	self.active[id] = nil
 	
 	ActionBarActionEventsFrame_UnregisterFrame(self)
+	Dominos.BindingsController:Unregister(self)
 	
 	self:SetParent(HiddenActionButtonFrame)
 	self:Hide()

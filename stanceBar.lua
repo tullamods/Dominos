@@ -25,6 +25,7 @@ do
 	function StanceButton:New(id)
 		local button = self:Restore(id) or self:Create(id)
 
+		Dominos.BindingsController:Register(button)
 		button:UpdateHotkey()
 
 		return button
@@ -75,6 +76,7 @@ do
 
 		self:SetParent(nil)
 		self:Hide()
+		Dominos.BindingsController:Unregister(self)
 	end
 
 	--keybound support
@@ -111,6 +113,8 @@ do
 		f:RegisterEvent('PLAYER_REGEN_ENABLED')
 		f:RegisterEvent('PLAYER_ENTERING_WORLD')
 
+		f:UpdateNumForms()
+
 		return f
 	end
 
@@ -123,6 +127,8 @@ do
 
 	function StanceBar:Free()
 		self:UnregisterAllEvents()
+
+		self.numForms = nil
 
 		Dominos.Frame.Free(self)
 	end
@@ -149,12 +155,6 @@ do
 	function StanceBar:PLAYER_ENTERING_WORLD()
 		self:UpdateNumForms()
 	end
-
-	function StanceBar:UPDATE_BINDINGS()
-		for _, b in pairs(self.buttons) do
-			b:UpdateHotkey(b.buttonType)
-		end
-	end	
 
 
 	--[[ button stuff]]--
