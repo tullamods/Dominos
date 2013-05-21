@@ -47,7 +47,7 @@ function ActionButton:New(id)
 
 		self.active[id] = b
 
-		Dominos.BindingsController:Register(b)
+		b.bindingButton = Dominos.BindingsController:Register(b)
 
 		return b
 	end

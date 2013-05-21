@@ -3,22 +3,61 @@
 		the code for Dominos action bars and buttons
 --]]
 
---libs and omgspeed
+--[[ globals ]]--
+
+local Dominos = _G['Dominos']
+local ActionButton = Dominos.ActionButton
+
+local MAX_BUTTONS = 120
+
 local ceil = math.ceil
 local min = math.min
 local format = string.format
-local MAX_BUTTONS = 120
-local NUM_POSSESS_BAR_BUTTONS = 12
-local KeyBound = LibStub('LibKeyBound-1.0')
-local ActionButton = Dominos.ActionButton
+
+local function getOverrideActionButton(id)
+	local name = format('OverrideActionBarButton', id)
+
+	return _G[name]
+end
+
+local function getPetBattleButton(id)
+	if id == BATTLE_PET_ABILITY_SWITCH then
+		return PetBattleFrame.BottomFrame.SwitchPetButton
+	end
+
+	if id == BATTLE_PET_ABILITY_CATCH then
+		return PetBattleFrame.BottomFrame.CatchButton
+	end	
+
+	return PetBattleFrame.BottomFrame.abilityButtons[id]
+end
+
+local function getPetBattleButtonClickMacro(id)
+	if id == BATTLE_PET_ABILITY_SWITCH then
+		return "/run PetBattleFrame.BottomFrame.SwitchPetButton:Click()"
+	end
+
+	if id == BATTLE_PET_ABILITY_CATCH then
+		return "/run PetBattleFrame.BottomFrame.CatchButton:Click()"
+	end	
+
+	return format("/run PetBattleFrame.BottomFrame.abilityButtons[%d]:Click()", id)
+end
+
+local PetBattleButtonCallbacks = setmetatable({}, {__index = function(self, id)
+	local result = function() 
+		return getPetBattleButton(id) 
+	end
+
+	self[id] = result
+
+	return result
+end})
 
 
 --[[ Action Bar ]]--
 
-local ActionBar = Dominos:CreateClass('Frame', Dominos.Frame)
-Dominos.ActionBar = ActionBar
-
---[[ Constructor Code ]]--
+local ActionBar = Dominos:CreateClass('Frame', Dominos.Frame); Dominos.ActionBar = ActionBar
 
 --metatable magic.  Basically this says, 'create a new table for this index'
 --I do this so that I only create page tables for classes the user is actually playing
@@ -76,8 +115,8 @@ function ActionBar:New(id)
 	f.pages = f.sets.pages[f.class]
 	f.baseID = f:MaxLength() * (id-1)
 
-	f:LoadStateController()
 	f:LoadButtons()
+	f:LoadStateController()
 	f:UpdateClickThrough()
 	f:UpdateStateDriver()
 	f:Layout()
@@ -169,8 +208,9 @@ function ActionBar:GetOffset(stateId)
 	return self.pages[stateId]
 end
 
---note to self:
---if you leave a ; on the end of a statebutton string, it causes evaluation issues, especially if you're doing right click selfcast on the base state
+-- note to self:
+-- if you leave a ; on the end of a statebutton string, it causes evaluation issues, 
+-- especially if you're doing right click selfcast on the base state
 function ActionBar:UpdateStateDriver()
 	UnregisterStateDriver(self.header, 'page', 0)
 
@@ -211,11 +251,21 @@ function ActionBar:UpdateAction(i)
 	for i, state in Dominos.BarStates:getAll() do
 		local offset = self:GetOffset(state.id)
 		local actionId = nil
+
 		if offset then
 			actionId = ToValidID(b:GetAttribute('action--base') + offset * maxSize)
 		end
+
 		b:SetAttribute('action--S' .. i, actionId)
 	end
+
+	if self:IsOverrideBar() then
+		b.bindingButton:SetTarget('petbattleui', PetBattleButtonCallbacks[i], getPetBattleButtonClickMacro(i))
+		b.bindingButton:SetTarget('overrideui', getOverrideActionButton(i))
+	else
+		b.bindingButton:SetTarget('petbattleu', nil)
+		b.bindingButton:SetTarget('overrideui', nil)
+	end	
 end
 
 --updates the actionID of all buttons for all states
@@ -257,7 +307,9 @@ function ActionBar:RefreshActions()
 end
 
 function ActionBar:UpdateOverrideBar()
-	self.header:SetAttribute('state-overridebar', self:IsOverrideBar())
+	local isOverrideBar = self:IsOverrideBar()
+
+	self.header:SetAttribute('state-overridebar', isOverrideBar)
 end
 
 --returns true if the possess bar, false otherwise
@@ -507,4 +559,21 @@ do
 
 		ActionBar.menu = menu
 	end
+end
+
+
+--[[ Action Bar Controller ]]--
+
+local ActionBarController = Dominos:NewModule('ActionBars', 'AceEvent-3.0')
+
+function ActionBarController:Load()
+	for i = 1, Dominos:NumBars() do
+		ActionBar:New(i)
+	end
+end
+
+function ActionBarController:Unload()
+	for i = 1, Dominos:NumBars() do
+		Dominos.Frame:ForFrame(i, 'Free')
+	end	
 end
