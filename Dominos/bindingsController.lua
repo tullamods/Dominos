@@ -13,6 +13,7 @@ local _G = _G
 local AddonName, Addon = ...
 local Dominos = _G['Dominos']
 local KeyBound = LibStub('LibKeyBound-1.0')
+local UIModes = { "normal", "overrideui", "petbattleui" }
 
 
 --[[ 
@@ -24,13 +25,8 @@ local KeyBound = LibStub('LibKeyBound-1.0')
 local VirtualButton = Dominos:CreateClass('Button')
 local unusedButtons = {}
 
-function VirtualButton:GetOrCreate(target, parent)
-	local button = self:Get() or self:Create()
-
-	button:SetTarget(target)
-	button:SetParent(parent)
-
-	return button
+function VirtualButton:GetOrCreate()
+	return self:Get() or self:Create()
 end
 
 function VirtualButton:Get()
@@ -49,132 +45,224 @@ do
 	end
 
 	function VirtualButton:Create()
-		local button = self:Bind(CreateFrame('Button', getNextName(), nil, 'SecureHandlerBaseTemplate, SecureActionButtonTemplate'))
+		local button = self:Bind(CreateFrame('Button', getNextName(), nil, 'SecureHandlerStateTemplate, SecureActionButtonTemplate'))
 
 		button:Hide()
 		
 		button:RegisterForClicks('anyDown')
 
-		button:SetAttribute('type', 'click')
+		button:SetAttribute('type', 'macro')
 		
 		button:SetScript('OnMouseUp', button.OnMouseUp)
 		button:SetScript('OnMouseDown', button.OnMouseDown)
+
+		button:SetAttribute('_childupdate-uimode', [[
+			self:RunAttribute('UpdateMacro')
+		]])		
+
+		button:SetAttribute('UpdateMacro', [[
+			local parent = self:GetParent()
+			local mode = parent and parent:GetAttribute('state-uimode') or 'normal'
+			local macrotext = self:GetAttribute('macrotext--' .. mode) or self:GetAttribute('macrotext--normal')
+			
+			self:SetAttribute('macrotext', macrotext)
+		]])
 
 		return button	
 	end
 end
 
 function VirtualButton:Free()
-	self:SetTarget(nil)
 	self:SetParent(nil)
+
+	self:SetAttribute('owner', nil)
+
+	for i, uiMode in pairs(UIModes) do
+		self:SetTarget(uiMode, nil)
+	end
 
 	table.insert(unusedButtons, self)
 end
 
-function VirtualButton:SetTarget(target)
-	self.target = target
-	self:SetAttribute('clickbutton', target)
+function VirtualButton:SetOwner(owner)
+	local ownerName = owner:GetName()
+
+	self:SetAttribute('owner', ownerName)
+	self:SetTarget('normal', owner)
+end
+
+function VirtualButton:SetTarget(uiMode, target, macro)
+	if not(uiMode and type(uiMode) == "string") then
+		error(2, "Invalid ui mode")
+	end
+
+	self:SetAttribute('target--' .. uiMode, target)
+
+	if target and macro then
+		self:SetAttribute('macrotext--' .. uiMode, macro)
+	elseif target then
+		self:SetAttribute('macrotext--' .. uiMode, '/click ' .. target:GetName())
+	else
+		self:SetAttribute('macrotext--' .. uiMode, nil)
+	end
+
+	self:Execute([[ self:RunAttribute('UpdateMacro') ]])
+end
+
+function VirtualButton:GetTarget()
+	local uiMode = self:GetAttribute('state-uimode') or 'normal'
+
+	local result = self:GetAttribute('target--' .. uiMode) or self:GetAttribute('target--normal')
+
+	if type(result) == 'function' then
+		return result()
+	end
+
+	if type(result) == 'string' then
+		return _G[result]
+	end
+
+	return result
 end
 
 function VirtualButton:OnMouseUp()
-	self.target:SetButtonState('NORMAL')
+	local target = self:GetTarget()
+
+	if target then
+		target:SetButtonState('NORMAL')
+	end
 end
 
 function VirtualButton:OnMouseDown()
-	self.target:SetButtonState('PUSHED')
+	local target = self:GetTarget()
+
+	if target then
+		target:SetButtonState('PUSHED')
+	end
 end
 
 function VirtualButton:SetCastOnKeyPress(enable)
 	self:RegisterForClicks(enable and 'anyDown' or 'anyUp')
 end
 
+
 --[[ controller ]]--
 
-local BindingsController = CreateFrame('Frame', nil, _G['UIParent'], 'SecureHandlerBaseTemplate, SecureHandlerStateTemplate')
+local BindingsController = CreateFrame('Frame', nil, UIParent, 'SecureHandlerStateTemplate'); BindingsController:Hide()
 Dominos.BindingsController = BindingsController
 
-BindingsController.frames = {}
-
 function BindingsController:Load()
+	self.frames = {}
+
 	self:SetupAttributeMethods()
+	self:HookBindingMethods()
+	self:RegisterEvents()
 
-	self:SetScript('OnEvent', self.OnEvent)
-	self:RegisterEvent('UPDATE_BINDINGS')
-	self:RegisterEvent('PLAYER_LOGIN')
-	self:RegisterEvent('CVAR_UPDATE')
-
-	local OnBindingEvent = function() self:UpdateBindings() end
-
-	hooksecurefunc('SetBinding', OnBindingEvent)
-	hooksecurefunc('SetBindingClick', OnBindingEvent)
-	hooksecurefunc('SetBindingItem', OnBindingEvent)
-	hooksecurefunc('SetBindingMacro', OnBindingEvent)
-	hooksecurefunc('SetBindingSpell', OnBindingEvent)
-	hooksecurefunc('LoadBindings', OnBindingEvent)
+	Dominos.OverrideController:Add(self)
 end
 
 function BindingsController:SetupAttributeMethods()
 	self:Execute([[ 
-		Frames = table.new() 
-		Targets = table.new()
+		myFrames = table.new()
+	]])
+
+	self:SetAttribute('_onstate-uimode', [[
+		control:ChildUpdate('uimode', newstate or 'normal')	
+	]])		
+
+	self:SetAttribute('_onstate-overrideui', [[
+		self:RunAttribute('UpdateUIMode')
 	]])
 	
-	self:SetAttribute('AddFrame', [[
-		table.insert(Frames, self:GetFrameRef('frameToAdd'))
-		table.insert(Targets, self:GetFrameRef('targetToAdd'))
-	]])
+	self:SetAttribute('_onstate-petbattleui', [[
+		self:RunAttribute('UpdateUIMode')
+	]])	
 
-	self:SetAttribute('RemoveFrame', [[
-		local frameToRemove = self:GetFrameRef('frameToRemove')
+	self:SetAttribute('UpdateUIMode', [[
+		local uiMode
 
-		for frameID, frame in pairs(Frames) do
-			if frame == frameToRemove then
-				table.remove(Frames, frameID)
-				table.remove(Targets, frameID)
-				break
-			end
+		if self:GetAttribute('state-petbattleui') then
+			uiMode = 'petbattleui'
+		elseif self:GetAttribute('state-overrideui') then
+			uiMode = 'overrideui'
+		else
+			uiMode = 'normal'
 		end
 
-		self:RunAttribute('LoadBindings')
+		self:SetAttribute('state-uimode', uiMode)
 	]])
-	
+
+	--[[ usage: LoadBindings() ]]--
 	self:SetAttribute('LoadBindings', [[	
 		self:ClearBindings() 
 				
-		for frameID in ipairs(Frames) do
-			self:RunAttribute('SetFrameBindings', frameID, self:RunAttribute('GetFrameBindings', frameID))
-			self:RunAttribute('SetFrameBindings', frameID, self:RunAttribute('GetFrameClickBindings', frameID))
+		for i, frame in ipairs(myFrames) do
+			self:RunAttribute('LoadFrameBindings', i)
 		end	
 	]])
+
+	--[[ usage: LoadFrameBindings(frameID) ]]--
+	self:SetAttribute('LoadFrameBindings', [[
+		local frame = myFrames[...]
+		local frameName = frame:GetName()
+		local targetName = frame:GetAttribute('owner')
+
+		self:RunAttribute('SetBindings', frameName, self:RunAttribute('GetBindings', targetName))
+		self:RunAttribute('SetBindings', frameName, self:RunAttribute('GetClickBindings', targetName))				
+	]])
 	
-	self:SetAttribute('SetFrameBindings', [[
-		local frameID = (...)
+	--[[ usage: SetBindings(frameName, [binding1, binding2, ...]) ]]--
+	self:SetAttribute('SetBindings', [[
+		local frameName = (...)
 
 		for i = 2, select('#', ...) do
-			self:RunAttribute('SetFrameBinding', frameID, (select(i, ...)))
+			local key = (select(i, ...))
+
+			self:SetBindingClick(true, key, frameName)
 		end
 	]])
 	
-	self:SetAttribute('SetFrameBinding', [[
-		local frameID, key = ...
-		local frame = Frames[frameID]				
-			
-		self:SetBindingClick(true, key, frame:GetName())
-	]])
-	
-	self:SetAttribute('GetFrameBindings', [[
-		local frameID = ...
-		local bindingID = Targets[frameID]:GetName()
+	--[[ usage: GetBindings(frameName) ]]--
+	self:SetAttribute('GetBindings', [[
+		local frameName = (...)
 		
-		return GetBindingKey(bindingID)
+		return GetBindingKey(frameName)
 	]])		
 
-	self:SetAttribute('GetFrameClickBindings', [[
-		local frameID = ...
-		local bindingID = format('CLICK %s:LeftButton', Targets[frameID]:GetName())
+	--[[ usage: GetClickBindings(frameName) ]]--
+	self:SetAttribute('GetClickBindings', [[
+		local frameName = (...)
 
-		return GetBindingKey(bindingID)
+		return GetBindingKey(format('CLICK %s:LeftButton', frameName))
 	]])
+
+	--[[ usage: ClearOverrideBindings([key1, key2, ...]) ]]--
+	self:SetAttribute('ClearOverrideBindings', [[
+		for i = 1, select('#', ...) do
+			local key = (select(i, ...))
+
+			self:ClearBinding(key)
+		end
+	]])	
+end
+
+function BindingsController:HookBindingMethods()
+	local updateBindings = function() self:UpdateBindings() end
+
+	hooksecurefunc('SetBinding', updateBindings)
+	hooksecurefunc('SetBindingClick', updateBindings)
+	hooksecurefunc('SetBindingItem', updateBindings)
+	hooksecurefunc('SetBindingMacro', updateBindings)
+	hooksecurefunc('SetBindingSpell', updateBindings)
+	hooksecurefunc('LoadBindings', updateBindings)
+end
+
+function BindingsController:RegisterEvents()
+	self:SetScript('OnEvent', self.OnEvent)
+
+	self:RegisterEvent('UPDATE_BINDINGS')
+	self:RegisterEvent('PLAYER_LOGIN')
+	self:RegisterEvent('CVAR_UPDATE')
 end
 
 function BindingsController:OnEvent(event, ...)
@@ -204,16 +292,32 @@ function BindingsController:Register(button)
 
 	button:UnregisterEvent('UPDATE_BINDINGS')
 
-
-	local vButton = VirtualButton:GetOrCreate(button, self)
-
-	self:SetFrameRef('frameToAdd', vButton)
-	self:SetFrameRef('targetToAdd', button)
-	self:Execute([[ self:RunAttribute('AddFrame') ]])
-
+	local vButton = VirtualButton:GetOrCreate()
+	vButton:SetParent(self)
+	vButton:SetOwner(button)
 	vButton:SetCastOnKeyPress(self:CastingOnKeyPress())
 
+	self:SetFrameRef('frameToAdd', vButton)
+
+	self:Execute([[ 		
+		local frameToAdd = self:GetFrameRef('frameToAdd')
+
+		for i, frame in pairs(myFrames) do
+			if frame == frameToAdd then
+				return
+			end
+		end
+
+		table.insert(myFrames, frameToAdd)
+
+		self:RunAttribute('LoadFrameBindings', #myFrames)
+	]])
+	
+	vButton:Execute([[ self:RunAttribute('UpdateMacro') ]])
+
 	self.frames[button] = vButton
+
+	return vButton
 end
 
 function BindingsController:Unregister(button)
@@ -224,8 +328,23 @@ function BindingsController:Unregister(button)
 	local vButton = self.frames[button]
 
 	self:SetFrameRef('frameToRemove', vButton)
-	self:Execute([[ self:RunAttribute('RemoveFrame') ]])
 
+	self:Execute([[
+		local frameToRemove = self:GetFrameRef('frameToRemove')
+
+		for i, frame in ipairs(myFrames) do
+			if frame == frameToRemove then
+				local targetName = frameToRemove:GetAttribute('owner')
+
+				self:RunAttribute('ClearOverrideBindings', self:RunAttribute('GetBindings', targetName))
+				self:RunAttribute('ClearOverrideBindings', self:RunAttribute('GetClickBindings', targetName))
+
+				table.remove(myFrames, i)
+				return
+			end
+		end
+	]])
+	
 	vButton:Free()
 
 	self.frames[button] = nil

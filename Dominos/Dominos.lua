@@ -129,86 +129,6 @@ function Dominos:GetDefaults()
 end
 
 function Dominos:UpdateSettings(major, minor, bugfix)
-	--perform state translation to handle updates from older versions
-	if major < '4' then
-		for profile,sets in pairs(self.db.sv.profiles) do
-			if sets.frames then
-				for frameId, frameSets in pairs(sets.frames) do
-					if frameSets.pages then
-						for class, oldStates in pairs(frameSets.pages) do
-							local newStates = {}
-							
-							--convert class states
-							if class == 'WARRIOR' then
-								newStates['battle'] = oldStates['[bonusbar:1]']
-								newStates['defensive'] = oldStates['[bonusbar:2]']
-								newStates['berserker'] = oldStates['[bonusbar:3]']
-							elseif class == 'DRUID' then
-								newStates['moonkin'] = oldStates['[bonusbar:4]']
-								newStates['bear'] = oldStates['[bonusbar:3]']
-								newStates['tree'] = oldStates['[form:5]']
-								newStates['prowl'] = oldStates['[bonusbar:1,stealth]']
-								newStates['cat'] = oldStates['[bonusbar:1]']
-							elseif class == 'PRIEST' then
-								newStates['shadow'] = oldStates['[bonusbar:1]']
-							elseif class == 'ROGUE' then
-								newStates['vanish'] = oldStates['[bonusbar:1,form:3]']
-								newStates['shadowdance'] = oldStates['[bonusbar:2]']
-								newStates['stealth'] = oldStates['[bonusbar:1]']
-							elseif class == 'WARLOCK' then
-								newStates['meta'] = oldStates['[form:2]']
-							end
-						
-							--modifier states
-							for i, state in Dominos.BarStates:getAll('modifier') do
-								newStates[state.id] = oldStates[state.value]
-							end
-							
-							--possess states
-							for i, state in Dominos.BarStates:getAll('possess') do
-								newStates[state.id] = oldStates[state.value]
-							end
-							
-							--page states
-							for i, state in Dominos.BarStates:getAll('page') do
-								newStates[state.id] = oldStates[state.value]
-							end
-							
-							--targeting states
-							for i, state in Dominos.BarStates:getAll('target') do
-								newStates[state.id] = oldStates[state.value]
-							end
-							
-							frameSets.pages[class] = newStates
-						end
-					end
-				end
-			end
-		end
-	end
-	
-	--fix missing druid bear form paging
-	for profile, sets in pairs(self.db.sv.profiles) do
-		if sets.frames then
-			for frameId, frameSets in pairs(sets.frames) do
-				if frameSets.pages then
-					for class, states in pairs(frameSets.pages) do
-						--convert class states
-						if class == 'DRUID' then
-							if tonumber(frameId) == 1 and not states['bear'] then
-								states['bear'] = 8
-							else
-								if tonumber(frameId) ~= 1 and states['bear'] == 8 then
-									states['bear'] = nil
-								end
-							end
-						end
-					end
-				end
-			end
-		end
-	end
-	
 	--inject new roll bar defaults
 	if major == '5' and minor == '0' and bugfix < '14' then
 		for profile,sets in pairs(self.db.sv.profiles) do
@@ -230,44 +150,30 @@ end
 
 
 --Load is called  when the addon is first enabled, and also whenever a profile is loaded
-local function HasClassBar()
-	local _,class = UnitClass('player')
-	return not(class == 'MAGE' or class == 'SHAMAN')
-end
-
 function Dominos:Load()
-	for i = 1, self:NumBars() do
-		self.ActionBar:New(i)
-	end
-	
+	-- load frame modules
 	self.PetBar:New()
 	self.MenuBar:New()
 	self.BagBar:New()
 	self.VehicleBar:New()
 
-	--load in extra functionality
-	for _,module in self:IterateModules() do
+	for i, module in self:IterateModules() do
 		module:Load()
 	end
 
-	--anchor everything
 	self.Frame:ForAll('Reanchor')
-
-	--minimap button
 	self:UpdateMinimapButton()
 end
 
 --unload is called when we're switching profiles
 function Dominos:Unload()
-	self.ActionBar:ForAll('Free')
-	
 	self.Frame:ForFrame('pet', 'Free')
 	self.Frame:ForFrame('menu', 'Free')
 	self.Frame:ForFrame('bags', 'Free')
 	self.Frame:ForFrame('vehicle', 'Free')
 
 	--unload any module stuff
-	for _,module in self:IterateModules() do
+	for i, module in self:IterateModules() do
 		module:Unload()
 	end
 end
