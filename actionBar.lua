@@ -14,47 +14,6 @@ local ceil = math.ceil
 local min = math.min
 local format = string.format
 
-local function getOverrideActionButton(id)
-	local name = format('OverrideActionBarButton', id)
-
-	return _G[name]
-end
-
-local function getPetBattleButton(id)
-	if id == BATTLE_PET_ABILITY_SWITCH then
-		return PetBattleFrame.BottomFrame.SwitchPetButton
-	end
-
-	if id == BATTLE_PET_ABILITY_CATCH then
-		return PetBattleFrame.BottomFrame.CatchButton
-	end	
-
-	return PetBattleFrame.BottomFrame.abilityButtons[id]
-end
-
-local function getPetBattleButtonClickMacro(id)
-	if id == BATTLE_PET_ABILITY_SWITCH then
-		return "/run PetBattleFrame.BottomFrame.SwitchPetButton:Click()"
-	end
-
-	if id == BATTLE_PET_ABILITY_CATCH then
-		return "/run PetBattleFrame.BottomFrame.CatchButton:Click()"
-	end	
-
-	return format("/run PetBattleFrame.BottomFrame.abilityButtons[%d]:Click()", id)
-end
-
-local PetBattleButtonCallbacks = setmetatable({}, {__index = function(self, id)
-	local result = function() 
-		return getPetBattleButton(id) 
-	end
-
-	self[id] = result
-
-	return result
-end})
-
-
 --[[ Action Bar ]]--
 
 local ActionBar = Dominos:CreateClass('Frame', Dominos.Frame); Dominos.ActionBar = ActionBar
@@ -258,14 +217,6 @@ function ActionBar:UpdateAction(i)
 
 		b:SetAttribute('action--S' .. i, actionId)
 	end
-
-	if self:IsOverrideBar() then
-		b.bindingButton:SetTarget('petbattleui', PetBattleButtonCallbacks[i], getPetBattleButtonClickMacro(i))
-		b.bindingButton:SetTarget('overrideui', getOverrideActionButton(i))
-	else
-		b.bindingButton:SetTarget('petbattleu', nil)
-		b.bindingButton:SetTarget('overrideui', nil)
-	end	
 end
 
 --updates the actionID of all buttons for all states

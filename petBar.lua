@@ -22,7 +22,6 @@ function PetButton:New(id)
 	local b = self:Restore(id) or self:Create(id)
 
 	Dominos.BindingsController:Register(b)
-	b:UpdateHotkey()
 
 	return b
 end
@@ -85,6 +84,7 @@ Dominos.PetBar  = PetBar
 
 function PetBar:New()
 	local f = self.super.New(self, 'pet')
+	
 	f:LoadButtons()
 	f:Layout()
 
@@ -136,6 +136,7 @@ function PetBar:KEYBOUND_DISABLED()
 	self:UpdateShowStates()
 
 	local petBarShown = PetHasActionBar()
+
 	for _,button in pairs(self.buttons) do
 		if petBarShown and GetPetActionInfo(button:GetID()) then
 			button:Show()

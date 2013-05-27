@@ -13,24 +13,24 @@ local _G = _G
 local AddonName, Addon = ...
 local Dominos = _G['Dominos']
 local KeyBound = LibStub('LibKeyBound-1.0')
-local UIModes = { "normal", "overrideui", "petbattleui" }
 
 
 --[[ 
-	virtual button:
-		these exist purely so that we can bind to an action, without directly binding to the action
-		by doing so, we can implement cast on keypress for things other than Blizzard action buttons
+	surrogate button:
+		a button that clicks another button.  used to implement cast on key press functionality
+		when we aren't able to use a standard blizzard button.
 --]]
 
-local VirtualButton = Dominos:CreateClass('Button')
-local unusedButtons = {}
+local SurrogateButton = Dominos:CreateClass('Button')
 
-function VirtualButton:GetOrCreate()
+SurrogateButton.unused = {}
+
+function SurrogateButton:GetOrCreate()
 	return self:Get() or self:Create()
 end
 
-function VirtualButton:Get()
-	return table.remove(unusedButtons)
+function SurrogateButton:Get()
+	return SurrogateButton.unused and table.remove(SurrogateButton.unused)
 end
 
 do
@@ -44,104 +44,62 @@ do
 		return name
 	end
 
-	function VirtualButton:Create()
-		local button = self:Bind(CreateFrame('Button', getNextName(), nil, 'SecureHandlerStateTemplate, SecureActionButtonTemplate'))
+	function SurrogateButton:Create()
+		local button = self:Bind(CreateFrame('Button', getNextName(), nil, 'SecureActionButtonTemplate'))
 
 		button:Hide()
-		
-		button:RegisterForClicks('anyDown')
-
-		button:SetAttribute('type', 'macro')
-		
+		button:SetAttribute('type', 'click')
 		button:SetScript('OnMouseUp', button.OnMouseUp)
 		button:SetScript('OnMouseDown', button.OnMouseDown)
-
-		button:SetAttribute('_childupdate-uimode', [[
-			self:RunAttribute('UpdateMacro')
-		]])		
-
-		button:SetAttribute('UpdateMacro', [[
-			local parent = self:GetParent()
-			local mode = parent and parent:GetAttribute('state-uimode') or 'normal'
-			local macrotext = self:GetAttribute('macrotext--' .. mode) or self:GetAttribute('macrotext--normal')
-			
-			self:SetAttribute('macrotext', macrotext)
-		]])
 
 		return button	
 	end
 end
 
-function VirtualButton:Free()
+function SurrogateButton:Free()
+	self:SetOwner('owner', nil)
 	self:SetParent(nil)
 
-	self:SetAttribute('owner', nil)
-
-	for i, uiMode in pairs(UIModes) do
-		self:SetTarget(uiMode, nil)
-	end
-
-	table.insert(unusedButtons, self)
-end
-
-function VirtualButton:SetOwner(owner)
-	local ownerName = owner:GetName()
-
-	self:SetAttribute('owner', ownerName)
-	self:SetTarget('normal', owner)
-end
-
-function VirtualButton:SetTarget(uiMode, target, macro)
-	if not(uiMode and type(uiMode) == "string") then
-		error(2, "Invalid ui mode")
-	end
-
-	self:SetAttribute('target--' .. uiMode, target)
-
-	if target and macro then
-		self:SetAttribute('macrotext--' .. uiMode, macro)
-	elseif target then
-		self:SetAttribute('macrotext--' .. uiMode, '/click ' .. target:GetName())
+	if SurrogateButton.unused then
+		table.insert(SurrogateButton.unused, self)
 	else
-		self:SetAttribute('macrotext--' .. uiMode, nil)
+		SurrogateButton.unused = { self }
 	end
-
-	self:Execute([[ self:RunAttribute('UpdateMacro') ]])
 end
 
-function VirtualButton:GetTarget()
-	local uiMode = self:GetAttribute('state-uimode') or 'normal'
+function SurrogateButton:SetOwner(owner)
+	if owner then
+		local ownerName = owner:GetName()
 
-	local result = self:GetAttribute('target--' .. uiMode) or self:GetAttribute('target--normal')
+		if not ownerName then
+			error(2, 'owner must have a name')
+		end
 
-	if type(result) == 'function' then
-		return result()
+		self:SetAttribute('owner', ownerName)
+		self:SetAttribute('clickbutton', owner)	
+	else
+		self:SetAttribute('owner', nil)
+		self:SetAttribute('clickbutton', nil)
 	end
-
-	if type(result) == 'string' then
-		return _G[result]
-	end
-
-	return result
 end
 
-function VirtualButton:OnMouseUp()
-	local target = self:GetTarget()
+function SurrogateButton:OnMouseUp()
+	local target = self:GetAttribute('clickbutton')
 
 	if target then
 		target:SetButtonState('NORMAL')
 	end
 end
 
-function VirtualButton:OnMouseDown()
-	local target = self:GetTarget()
+function SurrogateButton:OnMouseDown()
+	local target = self:GetAttribute('clickbutton')
 
 	if target then
 		target:SetButtonState('PUSHED')
 	end
 end
 
-function VirtualButton:SetCastOnKeyPress(enable)
+function SurrogateButton:SetCastOnKeyPress(enable)
 	self:RegisterForClicks(enable and 'anyDown' or 'anyUp')
 end
 
@@ -153,43 +111,16 @@ Dominos.BindingsController = BindingsController
 
 function BindingsController:Load()
 	self.frames = {}
+	self.surrogates = {}
 
 	self:SetupAttributeMethods()
 	self:HookBindingMethods()
 	self:RegisterEvents()
-
-	Dominos.OverrideController:Add(self)
 end
 
 function BindingsController:SetupAttributeMethods()
 	self:Execute([[ 
 		myFrames = table.new()
-	]])
-
-	self:SetAttribute('_onstate-uimode', [[
-		control:ChildUpdate('uimode', newstate or 'normal')	
-	]])		
-
-	self:SetAttribute('_onstate-overrideui', [[
-		self:RunAttribute('UpdateUIMode')
-	]])
-	
-	self:SetAttribute('_onstate-petbattleui', [[
-		self:RunAttribute('UpdateUIMode')
-	]])	
-
-	self:SetAttribute('UpdateUIMode', [[
-		local uiMode
-
-		if self:GetAttribute('state-petbattleui') then
-			uiMode = 'petbattleui'
-		elseif self:GetAttribute('state-overrideui') then
-			uiMode = 'overrideui'
-		else
-			uiMode = 'normal'
-		end
-
-		self:SetAttribute('state-uimode', uiMode)
 	]])
 
 	--[[ usage: LoadBindings() ]]--
@@ -218,7 +149,7 @@ function BindingsController:SetupAttributeMethods()
 		for i = 2, select('#', ...) do
 			local key = (select(i, ...))
 
-			self:SetBindingClick(true, key, frameName)
+			self:SetBindingClick(false, key, frameName)
 		end
 	]])
 	
@@ -285,19 +216,47 @@ function BindingsController:CVAR_UPDATE(event, variableName)
 	end			
 end
 
-function BindingsController:Register(button)
+function BindingsController:Register(button, createSurrogate)
 	if self.frames[button] then
 		return
 	end
 
 	button:UnregisterEvent('UPDATE_BINDINGS')
+	button:UpdateHotkey()
 
-	local vButton = VirtualButton:GetOrCreate()
-	vButton:SetParent(self)
-	vButton:SetOwner(button)
-	vButton:SetCastOnKeyPress(self:CastingOnKeyPress())
+	if createSurrogate then
+		self:CreateSurrogate(button)
+	end
 
-	self:SetFrameRef('frameToAdd', vButton)
+	self.frames[button] = true
+end
+
+function BindingsController:Unregister(button)
+	if not self.frames[button] then
+		return
+	end
+
+	local surrogate = self:HasSurrogate(button)
+	
+	if surrogate then
+		self:FreeSurrogate(surrogate)
+	end
+
+	self.frames[button] = nil
+end
+
+function BindingsController:CreateSurrogate(button)
+	if self.surrogates[button] then
+		return
+	end
+
+	local surrogate = SurrogateButton:GetOrCreate()
+
+	surrogate:SetParent(self)
+	surrogate:SetOwner(button)
+	surrogate:SetCastOnKeyPress(self:CastingOnKeyPress())
+
+	self:SetFrameRef('frameToAdd', surrogate)
 
 	self:Execute([[ 		
 		local frameToAdd = self:GetFrameRef('frameToAdd')
@@ -312,58 +271,60 @@ function BindingsController:Register(button)
 
 		self:RunAttribute('LoadFrameBindings', #myFrames)
 	]])
-	
-	vButton:Execute([[ self:RunAttribute('UpdateMacro') ]])
 
-	self.frames[button] = vButton
+	self.surrogates[button] = surrogate
 
-	return vButton
+	return surrogate;
 end
 
-function BindingsController:Unregister(button)
-	if not self.frames[button] then
-		return
-	end
+function BindingsController:FreeSurrogate(button)
+	local surrogate = self.surrogates[button]
 
-	local vButton = self.frames[button]
+	if surrogate then
+		self:SetFrameRef('frameToRemove', surrogate)
 
-	self:SetFrameRef('frameToRemove', vButton)
+		self:Execute([[
+			local frameToRemove = self:GetFrameRef('frameToRemove')
 
-	self:Execute([[
-		local frameToRemove = self:GetFrameRef('frameToRemove')
+			for i, frame in ipairs(myFrames) do
+				if frame == frameToRemove then
+					local targetName = frameToRemove:GetAttribute('owner')
 
-		for i, frame in ipairs(myFrames) do
-			if frame == frameToRemove then
-				local targetName = frameToRemove:GetAttribute('owner')
+					self:RunAttribute('ClearOverrideBindings', self:RunAttribute('GetBindings', targetName))
+					self:RunAttribute('ClearOverrideBindings', self:RunAttribute('GetClickBindings', targetName))
 
-				self:RunAttribute('ClearOverrideBindings', self:RunAttribute('GetBindings', targetName))
-				self:RunAttribute('ClearOverrideBindings', self:RunAttribute('GetClickBindings', targetName))
-
-				table.remove(myFrames, i)
-				return
+					table.remove(myFrames, i)
+					return
+				end
 			end
-		end
-	]])
-	
-	vButton:Free()
+		]])
 
-	self.frames[button] = nil
+		surrogate:Free()
+
+		self.surrogates[button] = nil
+	end
+end
+
+function BindingsController:HasSurrogate(button)
+	return self.surrogates[button]
 end
 
 --[[ note, i'm probably going to want to throttle this ]]--
 function BindingsController:UpdateBindings()
 	for button in pairs(self.frames) do
 		button:UpdateHotkey()
-	end
 
-	self:Execute([[ self:RunAttribute('LoadBindings') ]])
+		if self:HasSurrogate(button) then
+			self:Execute([[ self:RunAttribute('LoadBindings') ]])
+		end
+	end
 end
 
 function BindingsController:UpdateCastOnKeyPress()
 	local castingOnKeyPress = self:CastingOnKeyPress()
 
-	for button, vButton in pairs(self.frames) do
-		vButton:SetCastOnKeyPress(castingOnKeyPress)
+	for button, surrogate in pairs(self.surrogates) do
+		surrogate:SetCastOnKeyPress(castingOnKeyPress)
 	end	
 end
 

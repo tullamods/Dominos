@@ -18,6 +18,7 @@ local BindableButton = Dominos:CreateClass('CheckButton'); Dominos.BindableButto
 --the call here is wacky because this functionality is actually called for the blizzard buttons _before_ I'm able to bind the action button methods to them
 function BindableButton:UpdateHotkey(buttonType)
 	local key = BindableButton.GetHotkey(self, buttonType)
+	
 	if key ~= ''  and Dominos:ShowBindingText() then
 		_G[self:GetName()..'HotKey']:SetText(key)
 		_G[self:GetName()..'HotKey']:Show()
