@@ -26,7 +26,6 @@ do
 		local button = self:Restore(id) or self:Create(id)
 
 		Dominos.BindingsController:Register(button)
-		button:UpdateHotkey()
 
 		return button
 	end

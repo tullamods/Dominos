@@ -15,6 +15,7 @@ ActionButton.active = {}
 --constructor
 function ActionButton:New(id)
 	local b = self:Restore(id) or self:Create(id)
+
 	if b then
 		b:SetAttribute('showgrid', 0)
 		b:SetAttribute('action--base', id)
@@ -35,22 +36,21 @@ function ActionButton:New(id)
 			end
 		]])
 
-		b:UpdateGrid()
-		b:UpdateHotkey(b.buttonType)
-		b:UpdateMacro()
+		Dominos.BindingsController:Register(b, b:GetName():match('DominosActionButton%d'))
 
 		--hack #1billion, get rid of range indicator text
 		local hotkey = _G[b:GetName() .. 'HotKey']
 		if hotkey:GetText() == _G['RANGE_INDICATOR'] then
 			hotkey:SetText('')
-		end
+		end		
+
+		b:UpdateGrid()
+		b:UpdateMacro()
 
 		self.active[id] = b
-
-		b.bindingButton = Dominos.BindingsController:Register(b)
-
-		return b
 	end
+
+	return b	
 end
 
 local function Create(id)
