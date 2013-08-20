@@ -20,6 +20,7 @@ local MICRO_BUTTON_NAMES = {
 	['LFDMicroButton'] = DUNGEONS_BUTTON,
 	['CompanionsMicroButton'] = MOUNTS_AND_PETS,
 	['EJMicroButton'] = ENCOUNTER_JOURNAL,
+	['StoreMicroButton'] = BLIZZARD_STORE,
 	['MainMenuMicroButton'] = MAINMENU_BUTTON,
 	['HelpMicroButton'] = HELP_BUTTON
 }
