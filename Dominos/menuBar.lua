@@ -8,22 +8,37 @@ Dominos.MenuBar = MenuBar
 local WIDTH_OFFSET = 2
 local HEIGHT_OFFSET = 20
 
-local MICRO_BUTTONS = _G['MICRO_BUTTONS']
-local MICRO_BUTTON_NAMES = {
-	['CharacterMicroButton'] = CHARACTER_BUTTON,
-	['SpellbookMicroButton'] = SPELLBOOK_ABILITIES_BUTTON,
-	['TalentMicroButton'] = TALENTS_BUTTON,
-	['AchievementMicroButton'] = ACHIEVEMENT_BUTTON,
-	['QuestLogMicroButton'] = QUESTLOG_BUTTON,
-	['GuildMicroButton'] = LOOKINGFORGUILD,
-	['PVPMicroButton'] = PLAYER_V_PLAYER,
-	['LFDMicroButton'] = DUNGEONS_BUTTON,
-	['CompanionsMicroButton'] = MOUNTS_AND_PETS,
-	['EJMicroButton'] = ENCOUNTER_JOURNAL,
-	['StoreMicroButton'] = BLIZZARD_STORE,
-	['MainMenuMicroButton'] = MAINMENU_BUTTON,
-	['HelpMicroButton'] = HELP_BUTTON
+local MICRO_BUTTONS = {
+	'CharacterMicroButton',
+	'SpellbookMicroButton',
+	'TalentMicroButton',
+	'AchievementMicroButton',
+	'QuestLogMicroButton',
+	'GuildMicroButton',
+	'PVPMicroButton',
+	'LFDMicroButton',
+	'EJMicroButton',
+	'CompanionsMicroButton',
+	'StoreMicroButton',	
+	'MainMenuMicroButton'
 }
+
+local MICRO_BUTTON_NAMES = {
+	['CharacterMicroButton'] = _G['CHARACTER_BUTTON'],
+	['SpellbookMicroButton'] = _G['SPELLBOOK_ABILITIES_BUTTON'],
+	['TalentMicroButton'] = _G['TALENTS_BUTTON'],
+	['AchievementMicroButton'] = _G['ACHIEVEMENT_BUTTON'],
+	['QuestLogMicroButton'] = _G['QUESTLOG_BUTTON'],
+	['GuildMicroButton'] = _G['LOOKINGFORGUILD'],
+	['PVPMicroButton'] = _G['PLAYER_V_PLAYER'],
+	['LFDMicroButton'] = _G['DUNGEONS_BUTTON'],
+	['EJMicroButton'] = _G['ENCOUNTER_JOURNAL'],	
+	['CompanionsMicroButton'] = _G['MOUNTS_AND_PETS'],
+	['MainMenuMicroButton'] = _G['MAINMENU_BUTTON'],
+	['HelpMicroButton'] = _G['HELP_BUTTON'],
+	['StoreMicroButton'] = _G['BLIZZARD_STORE']	
+}
+
 
 --[[ Menu Bar ]]--
 
@@ -79,7 +94,33 @@ function MenuBar:Create(frameId)
 	getOrHook(_G['MainMenuBar'], 'OnShow', function() 
 		bar:Layout() 
 	end)
+
+
+	getOrHook(_G['MainMenuMicroButton'], 'OnShow', function()
+		local button = _G['MainMenuMicroButton']
+
+		if bar.isPetBattleUIShown then
+			return
+		end
+		
+		if button and button:IsShown() and bar:IsMenuButtonDisabled(button) then
+			button:Hide()
+		end
+	end)
+
+	getOrHook(_G['StoreMicroButton'], 'OnShow', function()
+		local button = _G['StoreMicroButton']
+
+		if bar.isPetBattleUIShown then
+			return
+		end
+
+		if button and button:IsShown() and bar:IsMenuButtonDisabled(button) then
+			button:Hide()
+		end
+	end)
 	
+
 	-- fixed blizzard nil bug
 	if not _G['AchievementMicroButton_Update'] then
 		_G['AchievementMicroButton_Update'] = function() end
@@ -108,9 +149,11 @@ end
 
 function MenuBar:RemoveButton(i)
 	local button = self.buttons[i]
+
 	if button then
 		button:SetParent(nil)
 		button:Hide()
+
 		self.buttons[i] = nil
 	end
 end
@@ -302,4 +345,23 @@ function MenuBar:CreateMenu()
 	self.menu = menu
 	
 	return menu
+end
+
+
+--[[ module ]]--
+
+local MenuBarController = Dominos:NewModule('MenuBar', 'AceEvent-3.0')
+
+function MenuBarController:OnInitialize()
+end
+
+function MenuBarController:Load()
+	self.frame = MenuBar:New()
+end
+
+function MenuBarController:Unload()
+	if self.frame then
+		self.frame:Free()
+		self.frame = nil
+	end
 end

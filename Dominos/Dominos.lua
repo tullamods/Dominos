@@ -153,7 +153,6 @@ end
 function Dominos:Load()
 	-- load frame modules
 	self.PetBar:New()
-	self.MenuBar:New()
 	self.BagBar:New()
 	self.VehicleBar:New()
 
@@ -168,7 +167,6 @@ end
 --unload is called when we're switching profiles
 function Dominos:Unload()
 	self.Frame:ForFrame('pet', 'Free')
-	self.Frame:ForFrame('menu', 'Free')
 	self.Frame:ForFrame('bags', 'Free')
 	self.Frame:ForFrame('vehicle', 'Free')
 
@@ -418,6 +416,10 @@ end
 --[[ Options Menu Display ]]--
 
 function Dominos:ShowOptions()
+	if InCombatLockdown() then
+		return
+	end
+
 	if LoadAddOn('Dominos_Config') then
 		InterfaceOptionsFrame_OpenToCategory(self.Options)
 		return true
@@ -600,7 +602,12 @@ function Dominos:HideConfigHelper()
 end
 
 function Dominos:SetLock(enable)
+	if InCombatLockdown() then
+		return
+	end
+		
 	self.locked = enable or false
+
 	if self:Locked() then
 		self.Frame:ForAll('Lock')
 		self:HideConfigHelper()
