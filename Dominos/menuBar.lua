@@ -89,37 +89,26 @@ function MenuBar:Create(frameId)
 		bar.isOverrideUIShown = nil
 		bar:Layout()
 	end)
-	
-	
+		
 	getOrHook(_G['MainMenuBar'], 'OnShow', function() 
 		bar:Layout() 
 	end)
 
+	do
+		local forceHideButton = function(button)
+			if bar.isPetBattleUIShown or bar.isOverrideUIShown then
+				return
+			end
+			
+			if bar:IsMenuButtonDisabled(button) then
+				button:Hide()
+			end
+		end	
 
-	getOrHook(_G['MainMenuMicroButton'], 'OnShow', function()
-		local button = _G['MainMenuMicroButton']
-
-		if bar.isPetBattleUIShown then
-			return
+		for i, button in pairs(MICRO_BUTTONS) do
+			getOrHook(_G[button], 'OnShow', forceHideButton)
 		end
-		
-		if button and button:IsShown() and bar:IsMenuButtonDisabled(button) then
-			button:Hide()
-		end
-	end)
-
-	getOrHook(_G['StoreMicroButton'], 'OnShow', function()
-		local button = _G['StoreMicroButton']
-
-		if bar.isPetBattleUIShown then
-			return
-		end
-
-		if button and button:IsShown() and bar:IsMenuButtonDisabled(button) then
-			button:Hide()
-		end
-	end)
-	
+	end
 
 	-- fixed blizzard nil bug
 	if not _G['AchievementMicroButton_Update'] then
@@ -338,11 +327,13 @@ end
 function MenuBar:CreateMenu()
 	local menu = Dominos:NewMenu(self.id)
 
-	Menu_AddLayoutPanel(menu)
-	Menu_AddDisableMenuButtonsPanel(menu)
-	menu:AddAdvancedPanel()
-	
-	self.menu = menu
+	if menu then
+		Menu_AddLayoutPanel(menu)
+		Menu_AddDisableMenuButtonsPanel(menu)
+		menu:AddAdvancedPanel()
+		
+		self.menu = menu
+	end
 	
 	return menu
 end
