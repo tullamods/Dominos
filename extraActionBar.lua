@@ -90,6 +90,7 @@ function ExtraBar:New()
 	
 	f:LoadButtons()
 	f:Layout()
+	f:UpdateShowBlizzardTexture()
 
 	return f
 end
@@ -133,6 +134,47 @@ function ExtraBar:RemoveButton(i)
 	end
 end
 
+function ExtraBar:ShowBlizzardTexture(enable)
+	self.sets.hideBlizzardTeture = not enable
+
+	self:UpdateShowBlizzardTexture()
+end
+
+function ExtraBar:ShowingBlizzardTexture()
+	return not self.sets.hideBlizzardTeture
+end
+
+function ExtraBar:UpdateShowBlizzardTexture()
+	local showTexture = self:ShowingBlizzardTexture()
+
+	for i, button in pairs(self.buttons) do
+		if showTexture then
+			button.style:Show()
+		else
+			button.style:Hide()
+		end
+	end
+end
+
+function ExtraBar:CreateMenu()
+	local bar = self
+	local menu = Dominos:NewMenu(bar.id)
+	local panel = menu:AddLayoutPanel()
+
+	local L = LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')	
+	local showTextureButton = panel:NewCheckButton(L.ExtraBarShowBlizzardTexture)
+
+	showTextureButton:SetScript('OnShow', function(self)
+		self:SetChecked(bar:ShowingBlizzardTexture())
+	end)
+	
+	showTextureButton:SetScript('OnClick', function(self) 
+		bar:ShowBlizzardTexture(self:GetChecked())
+	end)
+		
+	menu:AddAdvancedPanel()
+	self.menu = menu
+end
 
 --[[ module ]]--
 
