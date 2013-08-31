@@ -29,6 +29,10 @@ function EncounterBar:NumButtons()
 end
 
 function EncounterBar:Layout()
+	if InCombatLockdown() then
+		return
+	end
+		
 	local bar = self.PlayerPowerBarAlt
 	local width, height = bar:GetSize()
 	local pW, pH = self:GetPadding()
