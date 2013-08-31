@@ -85,16 +85,16 @@ end
 
 --[[ Module Stuff ]]--
 
-local DRB = Dominos:NewModule('roll')
+local RollBarController = Dominos:NewModule('RollBar')
 
-function DRB:OnInitialize()
+function RollBarController:OnInitialize()
 	_G['GroupLootContainer'].ignoreFramePositionManager = true
 end
 
-function DRB:Load()
+function RollBarController:Load()
 	self.frame = RollBar:New()
 end
 
-function DRB:Unload()
+function RollBarController:Unload()
 	self.frame:Free()
 end
