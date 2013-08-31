@@ -341,12 +341,6 @@ function ActionBar:UpdateGrid()
 	end
 end
 
-function ActionBar:UPDATE_BINDINGS()
-	for _,b in pairs(self.buttons) do
-		b:UpdateHotkey(b.buttonType)
-	end
-end
-
 ---keybound support
 function ActionBar:KEYBOUND_ENABLED()
 	self:ShowGrid()

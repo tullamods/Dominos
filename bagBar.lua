@@ -8,8 +8,6 @@ local LBF = LibStub('LibButtonFacade', true)
 --[[ Bag Bar ]]--
 
 local BagBar = Dominos:CreateClass('Frame', Dominos.Frame)
-Dominos.BagBar  = BagBar
-
 
 function BagBar:New()
 	local f = self.super.New(self, 'bags')
@@ -48,10 +46,10 @@ function BagBar:Reload()
 	end
 	
 	if not self.sets.oneBag then
-		table.insert(self.bags, _G['CharacterBag3Slot'])
-		table.insert(self.bags, _G['CharacterBag2Slot'])
-		table.insert(self.bags, _G['CharacterBag1Slot'])
-		table.insert(self.bags, _G['CharacterBag0Slot'])
+		local startSlot = NUM_BAG_SLOTS - 1
+		for slot = startSlot, 0, -1 do
+			table.insert(self.bags, _G[string.format('CharacterBag%dSlot', slot)])
+		end
 	end
 
 	table.insert(self.bags, _G['MainMenuBarBackpackButton'])
@@ -114,4 +112,19 @@ function BagBar:CreateMenu()
 	
 	menu:AddAdvancedPanel()
 	self.menu = menu
+end
+
+--[[ Bag Bar Controller ]]
+
+local BagBarController = Dominos:NewModule('BagBar')
+
+function BagBarController:Load()
+	self.frame = BagBar:New()
+end
+
+function BagBarController:Unload()
+	if self.frame then
+		self.frame:Free()
+		self.frame = nil
+	end
 end

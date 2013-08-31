@@ -201,7 +201,7 @@ end
 --[[ Module ]]--
 
 do
-	local StanceBarController = Dominos:NewModule('StanceBarController')
+	local StanceBarController = Dominos:NewModule('StanceBar')
 
 	function StanceBarController:Load()
 		self.bar = StanceBar:New()
