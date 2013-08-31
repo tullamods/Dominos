@@ -72,3 +72,6 @@ L.State_CTRLALTSHIFT = CTRL_KEY_TEXT .. '-ALT-' .. SHIFT_KEY_TEXT
 --totems
 L.ShowTotems = 'Show Totems'
 L.ShowTotemRecall = 'Show Recall'
+
+--extra bar
+L.ExtraBarShowBlizzardTexture = 'Show Blizzard Texture'
