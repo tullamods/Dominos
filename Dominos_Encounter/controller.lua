@@ -1,5 +1,5 @@
 local AddonName, Addon = ...
-local EncounterBarController = Dominos:NewModule('encounter')
+local EncounterBarController = Dominos:NewModule('EncounterBar')
 
 function EncounterBarController:OnInitialize()
 	_G['PlayerPowerBarAlt'].ignoreFramePositionManager = true
