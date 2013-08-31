@@ -64,17 +64,32 @@ function MenuBar:Create(frameId)
 			frame:SetScript(script, action)		
 		end
 	end
+
+	local requestLayoutUpdate
+	do
+		local f = CreateFrame('Frame'); f:Hide()
+		local delay = 0.01
+
+		f:SetScript('OnUpdate', function(self, elapsed)
+			self:Hide()
+			bar:Layout()
+		end)
+
+		requestLayoutUpdate = function() f:Show() end
+	end
+
+	hooksecurefunc('UpdateMicroButtons', function() requestLayoutUpdate() end)	
 	
 	local petBattleFrame = _G['PetBattleFrame'].BottomFrame.MicroButtonFrame
 	
 	getOrHook(petBattleFrame, 'OnShow', function()
 		bar.isPetBattleUIShown = true
-		bar:Layout()
+		requestLayoutUpdate()
 	end)
 	
 	getOrHook(petBattleFrame, 'OnHide', function()
 		bar.isPetBattleUIShown = nil
-		bar:Layout()
+		requestLayoutUpdate()
 	end)
 	
 	
@@ -82,38 +97,13 @@ function MenuBar:Create(frameId)
 	
 	getOrHook(overrideActionBar, 'OnShow', function()
 		bar.isOverrideUIShown = Dominos:UsingOverrideUI()
-		bar:Layout()
+		requestLayoutUpdate()
 	end)
 	
 	getOrHook(overrideActionBar, 'OnHide', function()
 		bar.isOverrideUIShown = nil
-		bar:Layout()
+		requestLayoutUpdate()
 	end)
-		
-	getOrHook(_G['MainMenuBar'], 'OnShow', function() 
-		bar:Layout() 
-	end)
-
-	do
-		local forceHideButton = function(button)
-			if bar.isPetBattleUIShown or bar.isOverrideUIShown then
-				return
-			end
-			
-			if bar:IsMenuButtonDisabled(button) then
-				button:Hide()
-			end
-		end	
-
-		for i, button in pairs(MICRO_BUTTONS) do
-			getOrHook(_G[button], 'OnShow', forceHideButton)
-		end
-	end
-
-	-- fixed blizzard nil bug
-	if not _G['AchievementMicroButton_Update'] then
-		_G['AchievementMicroButton_Update'] = function() end
-	end
 	
 	return bar
 end
@@ -341,9 +331,13 @@ end
 
 --[[ module ]]--
 
-local MenuBarController = Dominos:NewModule('MenuBar', 'AceEvent-3.0')
+local MenuBarController = Dominos:NewModule('MenuBar')
 
 function MenuBarController:OnInitialize()
+	-- fixed blizzard nil bug
+	if not _G['AchievementMicroButton_Update'] then
+		_G['AchievementMicroButton_Update'] = function() end
+	end	
 end
 
 function MenuBarController:Load()

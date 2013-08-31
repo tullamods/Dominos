@@ -131,7 +131,7 @@ end
 function Dominos:UpdateSettings(major, minor, bugfix)
 	--inject new roll bar defaults
 	if major == '5' and minor == '0' and bugfix < '14' then
-		for profile,sets in pairs(self.db.sv.profiles) do
+		for profile, sets in pairs(self.db.sv.profiles) do
 			if sets.frames then
 				local rollBarFrameSets = sets.frames['roll']
 				if rollBarFrameSets then
@@ -145,17 +145,13 @@ end
 
 function Dominos:UpdateVersion()
 	DominosVersion = CURRENT_VERSION
-	self:Print(format(L.Updated, DominosVersion))
+
+	self:Print(string.format(L.Updated, DominosVersion))
 end
 
 
 --Load is called  when the addon is first enabled, and also whenever a profile is loaded
 function Dominos:Load()
-	-- load frame modules
-	self.PetBar:New()
-	self.BagBar:New()
-	self.VehicleBar:New()
-
 	for i, module in self:IterateModules() do
 		module:Load()
 	end
@@ -166,10 +162,6 @@ end
 
 --unload is called when we're switching profiles
 function Dominos:Unload()
-	self.Frame:ForFrame('pet', 'Free')
-	self.Frame:ForFrame('bags', 'Free')
-	self.Frame:ForFrame('vehicle', 'Free')
-
 	--unload any module stuff
 	for i, module in self:IterateModules() do
 		module:Unload()

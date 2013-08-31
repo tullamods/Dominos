@@ -81,7 +81,6 @@ hooksecurefunc('PetActionButton_SetHotkeys', PetButton.UpdateHotkey)
 --[[ Pet Bar ]]--
 
 local PetBar = Dominos:CreateClass('Frame', Dominos.Frame)
-Dominos.PetBar  = PetBar
 
 function PetBar:New()
 	local f = self.super.New(self, 'pet')
@@ -127,7 +126,7 @@ end
 function PetBar:KEYBOUND_ENABLED()
 	self.header:SetAttribute('state-visibility', 'display')
 
-	for _,button in pairs(self.buttons) do
+	for _, button in pairs(self.buttons) do
 		button:Show()
 	end
 end
@@ -136,7 +135,8 @@ function PetBar:KEYBOUND_DISABLED()
 	self:UpdateShowStates()
 
 	local petBarShown = PetHasActionBar()
-	for _,button in pairs(self.buttons) do
+
+	for _, button in pairs(self.buttons) do
 		if petBarShown and GetPetActionInfo(button:GetID()) then
 			button:Show()
 		else
@@ -145,8 +145,17 @@ function PetBar:KEYBOUND_DISABLED()
 	end
 end
 
-function PetBar:UPDATE_BINDINGS()
-	for _,b in pairs(self.buttons) do
-		b:UpdateHotkey(b.buttonType)
+--[[ controller good times ]]--
+
+local PetBarController = Dominos:NewModule('PetBar')
+
+function PetBarController:Load()
+	self.frame = PetBar:New()
+end
+
+function PetBarController:Unload()
+	if self.frame then
+		self.frame:Free()
+		self.frame = nil
 	end
 end
