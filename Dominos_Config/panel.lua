@@ -62,6 +62,7 @@ function Panel:New(name, title, subtitle, icon, parent)
 	
 	InterfaceOptions_AddCategory(f)
 
+	f:Hide()
 	return f
 end
 
