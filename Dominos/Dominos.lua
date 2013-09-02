@@ -413,6 +413,7 @@ function Dominos:ShowOptions()
 	end
 
 	if LoadAddOn('Dominos_Config') then
+		InterfaceOptionsFrame_Show()		
 		InterfaceOptionsFrame_OpenToCategory(self.Options)
 		return true
 	end
