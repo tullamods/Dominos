@@ -120,10 +120,12 @@ function MenuBar:AddButton(i)
 	local buttonName = MICRO_BUTTONS[i]
 	local button = _G[buttonName]
 	
-	button:SetParent(self.header)
-	button:Show()
+	if button then
+		button:SetParent(self.header)
+		button:Show()
 
-	self.buttons[i] = button
+		self.buttons[i] = button
+	end
 end
 
 function MenuBar:RemoveButton(i)
