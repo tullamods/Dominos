@@ -1,8 +1,8 @@
-## Interface: 50300
+## Interface: 50400
 ## Title: Dominos
 ## Notes: A main actionbar replacement
 ## Author: Tuller
-## Version: 5.3.1
+## Version: 5.4.1
 ## SavedVariables: DominosDB, DominosVersion
 ## OptionalDeps: Ace3, LibKeyBound-1.0, Masque, FlyPaper
 embeds.xml
