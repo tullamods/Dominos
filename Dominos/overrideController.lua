@@ -6,7 +6,7 @@ local overrideBarStates = {
 	possessbar = '[possessbar]1;0',
 	vehicleui = '[vehicleui]1;0',
 	vehicle = '[@vehicle,exists]1;0',
-	sstemp = '[bonusbar]1;0',
+	sstemp = '[shapeshift]1;0',
 	form = '[form]1;0',
 	modifier = '[mod]1;0'
 }

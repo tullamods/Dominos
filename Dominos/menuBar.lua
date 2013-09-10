@@ -8,21 +8,37 @@ Dominos.MenuBar = MenuBar
 local WIDTH_OFFSET = 2
 local HEIGHT_OFFSET = 20
 
-local MICRO_BUTTONS = _G['MICRO_BUTTONS']
-local MICRO_BUTTON_NAMES = {
-	['CharacterMicroButton'] = CHARACTER_BUTTON,
-	['SpellbookMicroButton'] = SPELLBOOK_ABILITIES_BUTTON,
-	['TalentMicroButton'] = TALENTS_BUTTON,
-	['AchievementMicroButton'] = ACHIEVEMENT_BUTTON,
-	['QuestLogMicroButton'] = QUESTLOG_BUTTON,
-	['GuildMicroButton'] = LOOKINGFORGUILD,
-	['PVPMicroButton'] = PLAYER_V_PLAYER,
-	['LFDMicroButton'] = DUNGEONS_BUTTON,
-	['CompanionsMicroButton'] = MOUNTS_AND_PETS,
-	['EJMicroButton'] = ENCOUNTER_JOURNAL,
-	['MainMenuMicroButton'] = MAINMENU_BUTTON,
-	['HelpMicroButton'] = HELP_BUTTON
+local MICRO_BUTTONS = {
+	'CharacterMicroButton',
+	'SpellbookMicroButton',
+	'TalentMicroButton',
+	'AchievementMicroButton',
+	'QuestLogMicroButton',
+	'GuildMicroButton',
+	'PVPMicroButton',
+	'LFDMicroButton',
+	'EJMicroButton',
+	'CompanionsMicroButton',
+	'StoreMicroButton',	
+	'MainMenuMicroButton'
 }
+
+local MICRO_BUTTON_NAMES = {
+	['CharacterMicroButton'] = _G['CHARACTER_BUTTON'],
+	['SpellbookMicroButton'] = _G['SPELLBOOK_ABILITIES_BUTTON'],
+	['TalentMicroButton'] = _G['TALENTS_BUTTON'],
+	['AchievementMicroButton'] = _G['ACHIEVEMENT_BUTTON'],
+	['QuestLogMicroButton'] = _G['QUESTLOG_BUTTON'],
+	['GuildMicroButton'] = _G['LOOKINGFORGUILD'],
+	['PVPMicroButton'] = _G['PLAYER_V_PLAYER'],
+	['LFDMicroButton'] = _G['DUNGEONS_BUTTON'],
+	['EJMicroButton'] = _G['ENCOUNTER_JOURNAL'],	
+	['CompanionsMicroButton'] = _G['MOUNTS_AND_PETS'],
+	['MainMenuMicroButton'] = _G['MAINMENU_BUTTON'],
+	['HelpMicroButton'] = _G['HELP_BUTTON'],
+	['StoreMicroButton'] = _G['BLIZZARD_STORE']	
+}
+
 
 --[[ Menu Bar ]]--
 
@@ -48,17 +64,32 @@ function MenuBar:Create(frameId)
 			frame:SetScript(script, action)		
 		end
 	end
+
+	local requestLayoutUpdate
+	do
+		local f = CreateFrame('Frame'); f:Hide()
+		local delay = 0.01
+
+		f:SetScript('OnUpdate', function(self, elapsed)
+			self:Hide()
+			bar:Layout()
+		end)
+
+		requestLayoutUpdate = function() f:Show() end
+	end
+
+	hooksecurefunc('UpdateMicroButtons', function() requestLayoutUpdate() end)	
 	
 	local petBattleFrame = _G['PetBattleFrame'].BottomFrame.MicroButtonFrame
 	
 	getOrHook(petBattleFrame, 'OnShow', function()
 		bar.isPetBattleUIShown = true
-		bar:Layout()
+		requestLayoutUpdate()
 	end)
 	
 	getOrHook(petBattleFrame, 'OnHide', function()
 		bar.isPetBattleUIShown = nil
-		bar:Layout()
+		requestLayoutUpdate()
 	end)
 	
 	
@@ -66,23 +97,13 @@ function MenuBar:Create(frameId)
 	
 	getOrHook(overrideActionBar, 'OnShow', function()
 		bar.isOverrideUIShown = Dominos:UsingOverrideUI()
-		bar:Layout()
+		requestLayoutUpdate()
 	end)
 	
 	getOrHook(overrideActionBar, 'OnHide', function()
 		bar.isOverrideUIShown = nil
-		bar:Layout()
+		requestLayoutUpdate()
 	end)
-	
-	
-	getOrHook(_G['MainMenuBar'], 'OnShow', function() 
-		bar:Layout() 
-	end)
-	
-	-- fixed blizzard nil bug
-	if not _G['AchievementMicroButton_Update'] then
-		_G['AchievementMicroButton_Update'] = function() end
-	end
 	
 	return bar
 end
@@ -99,17 +120,21 @@ function MenuBar:AddButton(i)
 	local buttonName = MICRO_BUTTONS[i]
 	local button = _G[buttonName]
 	
-	button:SetParent(self.header)
-	button:Show()
+	if button then
+		button:SetParent(self.header)
+		button:Show()
 
-	self.buttons[i] = button
+		self.buttons[i] = button
+	end
 end
 
 function MenuBar:RemoveButton(i)
 	local button = self.buttons[i]
+
 	if button then
 		button:SetParent(nil)
 		button:Hide()
+
 		self.buttons[i] = nil
 	end
 end
@@ -294,11 +319,36 @@ end
 function MenuBar:CreateMenu()
 	local menu = Dominos:NewMenu(self.id)
 
-	Menu_AddLayoutPanel(menu)
-	Menu_AddDisableMenuButtonsPanel(menu)
-	menu:AddAdvancedPanel()
-	
-	self.menu = menu
+	if menu then
+		Menu_AddLayoutPanel(menu)
+		Menu_AddDisableMenuButtonsPanel(menu)
+		menu:AddAdvancedPanel()
+		
+		self.menu = menu
+	end
 	
 	return menu
+end
+
+
+--[[ module ]]--
+
+local MenuBarController = Dominos:NewModule('MenuBar')
+
+function MenuBarController:OnInitialize()
+	-- fixed blizzard nil bug
+	if not _G['AchievementMicroButton_Update'] then
+		_G['AchievementMicroButton_Update'] = function() end
+	end	
+end
+
+function MenuBarController:Load()
+	self.frame = MenuBar:New()
+end
+
+function MenuBarController:Unload()
+	if self.frame then
+		self.frame:Free()
+		self.frame = nil
+	end
 end

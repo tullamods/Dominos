@@ -1,5 +1,4 @@
 local VehicleBar = Dominos:CreateClass('Frame', Dominos.Frame)
-Dominos.VehicleBar  = VehicleBar
 
 function VehicleBar:New()
 	local f = self.super.New(self, 'vehicle')
@@ -49,4 +48,19 @@ end
 
 function VehicleBar:GetLeaveButton()
 	return _G['MainMenuBarVehicleLeaveButton']
+end
+
+--[[ Controller ]]--
+
+local VehicleBarController = Dominos:NewModule('VehicleBar')
+
+function VehicleBarController:Load()
+	self.frame = VehicleBar:New()
+end
+
+function VehicleBarController:Unload()
+	if self.frame then
+		self.frame:Free()
+		self.frame = nil
+	end
 end
