@@ -277,6 +277,30 @@ end
 
 --basic slider
 do
+	local function Slider_GetNearestValueOnScale(self, value)
+		local value = self:GetValue() or 0
+		local step = self:GetValueStep() or 1
+		local minVal, maxVal = self:GetMinMaxValues()
+
+		local closestValue = minVal
+		local closestValueDistance = math.huge
+		
+		for sliderValue = minVal, maxVal, step do
+			local distance = math.abs(value - sliderValue)
+
+			if distance < closestValueDistance then
+				closestValue = sliderValue
+				closestValueDistance = distance
+			end
+
+			if distance > closestValueDistance then
+				break
+			end
+		end
+
+		return closestValue
+	end
+
 	local function Slider_OnMouseWheel(self, arg1)
 		local step = self:GetValueStep() * arg1
 		local value = self:GetValue()
@@ -300,14 +324,21 @@ do
 	end
 
 	local function Slider_OnValueChanged(self, value)
+		local newValue = Slider_GetNearestValueOnScale(self, value)
+
+		if newValue ~= value then
+			self:SetValue(newValue)
+			return
+		end
+
 		if not self.showing then
-			self:UpdateValue(value)
+			self:UpdateValue(newValue)
 		end
 
 		if self.UpdateText then
-			self:UpdateText(value)
+			self:UpdateText(newValue)
 		else
-			self.valText:SetText(value)
+			self.valText:SetText(newValue)
 		end
 	end
 
