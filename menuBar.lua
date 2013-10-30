@@ -104,8 +104,6 @@ function MenuBar:Create(frameId)
 		bar.isOverrideUIShown = nil
 		requestLayoutUpdate()
 	end)
-
-	_G['StoreMicroButton']:SetScript('OnClick', nil)
 	
 	return bar
 end
@@ -292,12 +290,6 @@ end
 local function Panel_AddDisableMenuButtonCheckbox(panel, button, name)
 	local checkbox = panel:NewCheckButton(name or button:GetName())
 
-	if button:GetName() == 'StoreMicroButton' then
-		checkbox:Disable(true)
-		checkbox:SetChecked(true)
-		return checkbox
-	end
-
 	checkbox:SetScript('OnClick', function(self)
 		local owner = self:GetParent().owner
 		
@@ -348,8 +340,14 @@ function MenuBarController:OnInitialize()
 	if not _G['AchievementMicroButton_Update'] then
 		_G['AchievementMicroButton_Update'] = function() end
 	end	
-
-	C_StorePublic.IsDisabledByParentalControls = function() return true end
+	
+	if GetBuildInfo() == '5.4.1' then
+		hooksecurefunc("StaticPopup_Show", function(self)
+		  if self == 'ADDON_ACTION_FORBIDDEN' then
+		  	StaticPopup_Hide(self)
+		  end
+		end)	
+	end
 end
 
 function MenuBarController:Load()
