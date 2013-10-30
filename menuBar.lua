@@ -104,6 +104,8 @@ function MenuBar:Create(frameId)
 		bar.isOverrideUIShown = nil
 		requestLayoutUpdate()
 	end)
+
+	_G['StoreMicroButton']:SetScript('OnClick', nil)
 	
 	return bar
 end
@@ -266,7 +268,7 @@ function MenuBar:UpdateActiveButtons()
 	for i = 1, #self.activeButtons do self.activeButtons[i] = nil end
 	
 	for i, button in ipairs(self.buttons) do
-		if not self:IsMenuButtonDisabled(button) then
+		if not (self:IsMenuButtonDisabled(button) or button:GetName() == 'StoreMicroButton') then
 			table.insert(self.activeButtons, button)
 		end
 	end
@@ -289,6 +291,12 @@ end
 
 local function Panel_AddDisableMenuButtonCheckbox(panel, button, name)
 	local checkbox = panel:NewCheckButton(name or button:GetName())
+
+	if button:GetName() == 'StoreMicroButton' then
+		checkbox:Disable(true)
+		checkbox:SetChecked(true)
+		return checkbox
+	end
 
 	checkbox:SetScript('OnClick', function(self)
 		local owner = self:GetParent().owner
@@ -340,6 +348,8 @@ function MenuBarController:OnInitialize()
 	if not _G['AchievementMicroButton_Update'] then
 		_G['AchievementMicroButton_Update'] = function() end
 	end	
+
+	C_StorePublic.IsDisabledByParentalControls = function() return true end
 end
 
 function MenuBarController:Load()
