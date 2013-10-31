@@ -9,19 +9,22 @@ local WIDTH_OFFSET = 2
 local HEIGHT_OFFSET = 20
 
 local MICRO_BUTTONS = {
-	'CharacterMicroButton',
-	'SpellbookMicroButton',
-	'TalentMicroButton',
-	'AchievementMicroButton',
-	'QuestLogMicroButton',
-	'GuildMicroButton',
-	'PVPMicroButton',
-	'LFDMicroButton',
-	'EJMicroButton',
-	'CompanionsMicroButton',
-	'StoreMicroButton',	
-	'MainMenuMicroButton'
+	"CharacterMicroButton",
+	"SpellbookMicroButton",
+	"TalentMicroButton",
+	"AchievementMicroButton",
+	"QuestLogMicroButton",
+	"GuildMicroButton",
+	"PVPMicroButton",
+	"LFDMicroButton",
+	"EJMicroButton",
+	"CompanionsMicroButton",
+	"StoreMicroButton",
+	"HelpMicroButton",
+	"MainMenuMicroButton",
 }
+
+local overrideButtons = {}
 
 local MICRO_BUTTON_NAMES = {
 	['CharacterMicroButton'] = _G['CHARACTER_BUTTON'],
@@ -251,12 +254,32 @@ function MenuBar:LayoutOverrideUI()
 end
 
 function MenuBar:FixButtonPositions()
-	local myButtons = self.buttons
-	
-	for i, button in pairs(myButtons) do
-		if not(i == 1 or i == floor(#myButtons / 2) + 1) then
-			button:ClearAllPoints()
-			button:SetPoint('BOTTOMLEFT', myButtons[i - 1], 'BOTTOMRIGHT', -3, 0)
+	local isStoreEnabled = C_StorePublic.IsEnabled()
+	local overrideButtons = {}
+
+	for i, buttonName in ipairs(MICRO_BUTTONS) do
+		local button = _G[buttonName]
+		button:ClearAllPoints()
+		button:Hide()
+
+		local shouldAddButton 
+
+		if buttonName == 'HelpMicroButton' then
+			shouldAddButton = not isStoreEnabled 
+		elseif buttonName == 'StoreMicroButton' then
+			shouldAddButton = isStoreEnabled
+		else
+			shouldAddButton = true
+		end
+
+		if shouldAddButton then
+			table.insert(overrideButtons, button)
+		end
+	end
+
+	for i, button in ipairs(overrideButtons) do
+		if not(i == 1 or i == floor(#overrideButtons / 2) + 1) then
+			button:SetPoint('BOTTOMLEFT', overrideButtons[i - 1], 'BOTTOMRIGHT', -3, 0)
 		end
 		button:Show()
 	end
@@ -266,7 +289,7 @@ function MenuBar:UpdateActiveButtons()
 	for i = 1, #self.activeButtons do self.activeButtons[i] = nil end
 	
 	for i, button in ipairs(self.buttons) do
-		if not (self:IsMenuButtonDisabled(button) or button:GetName() == 'StoreMicroButton') then
+		if not self:IsMenuButtonDisabled(button) then
 			table.insert(self.activeButtons, button)
 		end
 	end
@@ -340,14 +363,14 @@ function MenuBarController:OnInitialize()
 	if not _G['AchievementMicroButton_Update'] then
 		_G['AchievementMicroButton_Update'] = function() end
 	end	
-	
+
 	if GetBuildInfo() == '5.4.1' then
 		hooksecurefunc("StaticPopup_Show", function(self)
 		  if self == 'ADDON_ACTION_FORBIDDEN' then
 		  	StaticPopup_Hide(self)
 		  end
 		end)	
-	end
+	end	
 end
 
 function MenuBarController:Load()
