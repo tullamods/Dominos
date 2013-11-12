@@ -1,3 +1,8 @@
+--[[
+	Opening and closing the SpellBookFrame triggers MultiActionBar_ShowAllGrids and MultiActionBar_HideAllGrids
+	This code works around this behavior
+--]]
+
 local MultiActionBarGridFixer = CreateFrame('Frame', nil, nil, 'SecureHandlerStateTemplate'); MultiActionBarGridFixer:Hide()
 
 function MultiActionBarGridFixer:Load()
