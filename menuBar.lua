@@ -81,7 +81,7 @@ function MenuBar:Create(frameId)
 		requestLayoutUpdate = function() f:Show() end
 	end
 
-	hooksecurefunc('UpdateMicroButtons', function() requestLayoutUpdate() end)	
+	hooksecurefunc('UpdateMicroButtons', requestLayoutUpdate)
 	
 	local petBattleFrame = _G['PetBattleFrame'].BottomFrame.MicroButtonFrame
 	
@@ -362,14 +362,6 @@ function MenuBarController:OnInitialize()
 	-- fixed blizzard nil bug
 	if not _G['AchievementMicroButton_Update'] then
 		_G['AchievementMicroButton_Update'] = function() end
-	end	
-
-	if GetBuildInfo() == '5.4.1' then
-		hooksecurefunc("StaticPopup_Show", function(self)
-		  if self == 'ADDON_ACTION_FORBIDDEN' then
-		  	StaticPopup_Hide(self)
-		  end
-		end)	
 	end	
 end
 
