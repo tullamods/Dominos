@@ -96,6 +96,10 @@ end
 function Drag:OnMouseWheel(arg1)
     local oldAlpha = self.owner.sets and self.owner.sets.alpha or 1
     local newAlpha = min(max(oldAlpha + (arg1 * 0.1), 0), 1)
+
+    -- round to fix floating point fun
+    oldAlpha = math.floor(oldAlpha * 100 + 0.5) / 100
+    newAlpha = math.floor(newAlpha * 100 + 0.5) / 100
     
     if newAlpha ~= oldAlpha then
         self.owner:SetFrameAlpha(newAlpha)
