@@ -23,17 +23,21 @@ function MultiActionBarGridFixer:Load()
 
 	--[[ register events ]]--
 
-	local forceUpdate = function()
+	local setAttribute = function(attributeName, value)
 		if not InCombatLockdown() then
-			self:SetAttribute('state-update', true)
-		end
+			self:SetAttribute(attributeName, value)
+		end	
+	end
+
+	local forceUpdate = function()
+		setAttribute('state-update', true)
 	end
 
 	self:SetScript('OnEvent', function(self, event) 
 		if event == 'ACTIONBAR_SHOWGRID' then
-			self:SetAttribute('state-showGrid', true)
+			setAttribute('state-showGrid', true)
 		elseif event == 'ACTIONBAR_HIDEGRID' then
-			self:SetAttribute('state-showGrid', false)
+			setAttribute('state-showGrid', false)
 		else
 			forceUpdate()
 		end
@@ -46,6 +50,7 @@ function MultiActionBarGridFixer:Load()
 	self:RegisterEvent('PLAYER_REGEN_DISABLED')
 
 	hooksecurefunc('MultiActionBar_ShowAllGrids', forceUpdate)
+
 	hooksecurefunc('MultiActionBar_HideAllGrids', forceUpdate)
 
 
