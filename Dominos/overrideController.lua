@@ -91,13 +91,10 @@ function OverrideController:Load()
 		elseif HasTempShapeshiftActionBar() then
 			newPage = GetTempShapeshiftBarIndex() or 0
 		else
-			newPage = 0
+			newPage = GetBonusBarOffset() or 0
 		end
 		
-		local oldPage = self:GetAttribute('state-overridepage') or 0
-		if oldPage ~= newPage then
-			self:SetAttribute('state-overridepage', newPage)
-		end
+		self:SetAttribute('state-overridepage', newPage)
 	]])
 	
 	
