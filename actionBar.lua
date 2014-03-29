@@ -241,7 +241,7 @@ function ActionBar:LoadStateController()
 
 	self.header:SetAttribute('updateState', [[
 		local state
-		if self:GetAttribute('state-overridepage') > 0 and self:GetAttribute('state-overridebar') then
+		if self:GetAttribute('state-overridepage') > 10 and self:GetAttribute('state-overridebar') then
 			state = 'override'
 		else
 			state = self:GetAttribute('state-page')
