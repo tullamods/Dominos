@@ -153,4 +153,10 @@ function OverrideController:DumpStates()
 	print('effective actionpage', self:GetAttribute('state-overridepage'))
 end
 
+-- returns true if the player is in a state where they should be using actions
+-- normally found on the override bar
+function OverrideController:OverrideBarActive()
+	return (self:GetAttribute('state-overridepage') or 0) > 10
+end
+
 OverrideController:Load()

@@ -512,13 +512,31 @@ end
 local ActionBarController = Dominos:NewModule('ActionBars', 'AceEvent-3.0')
 
 function ActionBarController:Load()
+	self:RegisterEvent('UPDATE_BONUS_ACTIONBAR', 'UpdateOverrideBar')
+	self:RegisterEvent('UPDATE_VEHICLE_ACTIONBAR', 'UpdateOverrideBar')
+	self:RegisterEvent('UPDATE_OVERRIDE_ACTIONBAR', 'UpdateOverrideBar')
+
 	for i = 1, Dominos:NumBars() do
 		ActionBar:New(i)
 	end
 end
 
 function ActionBarController:Unload()
+	self:UnregisterAllEvents()
+
 	for i = 1, Dominos:NumBars() do
 		Dominos.Frame:ForFrame(i, 'Free')
 	end	
+end
+
+function ActionBarController:UpdateOverrideBar()
+	if InCombatLockdown() or (not Dominos.OverrideController:OverrideBarActive()) then
+		return
+	end
+
+	local overrideBar = Dominos:GetOverrideBar()
+
+	for _, button in pairs(overrideBar.buttons) do
+		ActionButton_Update(button)
+	end
 end
