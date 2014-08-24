@@ -45,7 +45,7 @@ function TooltipController:Register(frame)
 end
 
 function TooltipController:Unregister(frame)
-	self.header:UnwrapScript(frame)
+	self.header:UnwrapScript(frame, 'OnEnter')
 end
 
 function TooltipController:SetShowTooltips(enable)
