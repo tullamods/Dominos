@@ -191,6 +191,7 @@ end
 function BindingsController:RegisterEvents()
 	self:SetScript('OnEvent', self.OnEvent)
 
+	self:RegisterEvent('PLAYER_REGEN_ENABLED')
 	self:RegisterEvent('UPDATE_BINDINGS')
 	self:RegisterEvent('PLAYER_LOGIN')
 	self:RegisterEvent('CVAR_UPDATE')
@@ -202,6 +203,12 @@ end
 
 function BindingsController:UPDATE_BINDINGS(event)
 	self:UnregisterEvent(event)
+end
+
+function BindingsController:PLAYER_REGEN_ENABLED()
+	if self.needsUpdate then
+		self:UpdateBindings()
+	end
 end
 
 function BindingsController:PLAYER_LOGIN()
@@ -309,16 +316,23 @@ function BindingsController:HasSurrogate(button)
 	return self.surrogates[button]
 end
 
---[[ note, i'm probably going to want to throttle this ]]--
-function BindingsController:UpdateBindings()
-	for button in pairs(self.frames) do
-		button:UpdateHotkey()
+BindingsController.UpdateBindings = Dominos:Debounce(function(self) 
+	print('UpdateBindings')
 
-		if self:HasSurrogate(button) then
-			self:Execute([[ self:RunAttribute('LoadBindings') ]])
+	if InCombatLockdown() then
+		self.needsUpdate = true
+	else
+		self.needsUpdate = nil
+		
+		for button in pairs(self.frames) do
+			button:UpdateHotkey()
+
+			if self:HasSurrogate(button) then
+				self:Execute([[ self:RunAttribute('LoadBindings') ]])
+			end
 		end
 	end
-end
+end, 0.1)
 
 function BindingsController:UpdateCastOnKeyPress()
 	local castingOnKeyPress = self:CastingOnKeyPress()

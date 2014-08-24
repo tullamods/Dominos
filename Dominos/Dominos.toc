@@ -8,6 +8,7 @@
 embeds.xml
 localization.xml
 Dominos.lua
+debounce.lua
 fadeManager.lua
 overrideController.lua
 tooltipController.lua
