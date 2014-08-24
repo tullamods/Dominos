@@ -45,35 +45,46 @@ end
 
 --returns all click bindings assigned to the button
 function BindableButton:GetClickBindings()
-	return GetBindingKey(format('CLICK %s:LeftButton', self:GetName()))
+	return GetBindingKey(('CLICK %s:LeftButton'):format(self:GetName()))
 end
 
 --returns a comma separated list of all bindings for the given action button
 --used for keybound support
-local function getKeyStrings(...)
-	local keys
-	for i = 1, select('#', ...) do
-		local key = select(i, ...)
-		if keys then
-			keys = keys .. ', ' .. GetBindingText(key, true)
-		else
-			keys = GetBindingText(key, true)
+do
+	local strjoin = string.join
+	local select = select
+	local unpack = unpack
+	local _mapTemp = {}
+
+	local function map(func, ...)
+		for k, v in pairs(_mapTemp) do
+			_mapTemp[k] = nil
 		end
+
+		for i = 1, select('#', ...) do
+			local arg = (select(i, ...))
+			_mapTemp[i] = func(arg)
+		end
+
+		return unpack(_mapTemp)
 	end
-	return keys
-end
 
-function BindableButton:GetBindings()
-	local blizzKeys = getKeyStrings(self:GetBlizzBindings())
-	local clickKeys = getKeyStrings(self:GetClickBindings())
+	local function getKeyStrings(...)
+		return strjoin(', ', map(GetBindingText, ...))
+	end
 
-	if blizzKeys then
-		if clickKeys then
-			return blizzKeys .. ', ' .. clickKeys
+	function BindableButton:GetBindings()
+		local blizzKeys = getKeyStrings(self:GetBlizzBindings())
+		local clickKeys = getKeyStrings(self:GetClickBindings())
+
+		if blizzKeys then
+			if clickKeys then
+				return strjoin(', ', blizzKeys, clickKeys)
+			end
+			return blizzKeys
+		else
+			return clickKeys
 		end
-		return blizzKeys
-	else
-		return clickKeys
 	end
 end
 

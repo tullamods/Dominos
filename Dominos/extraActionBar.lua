@@ -27,7 +27,7 @@ do
 	end
 
 	function ExtraActionButton:Create(id)
-		local b = self:Bind(_G['ExtraActionButton' .. id])
+		local b = self:Bind(_G[('ExtraActionButton%d'):format(id)])
 
 		if b then
 			b.buttonType = 'EXTRAACTIONBUTTON'
@@ -42,7 +42,7 @@ do
 	--otherwise, apply the dominos style to the button to make it pretty
 	function ExtraActionButton:Skin()
 		if not Dominos:Masque('Extra Bar', self) then
-			_G[self:GetName() .. 'Icon']:SetTexCoord(0.06, 0.94, 0.06, 0.94)
+			self.icon:SetTexCoord(0.06, 0.94, 0.06, 0.94)
 			self:GetNormalTexture():SetVertexColor(1, 1, 1, 0.5)
 		end
 	end
