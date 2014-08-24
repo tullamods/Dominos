@@ -196,26 +196,28 @@ function ActionBar:UpdateStateDriver()
 	self:RefreshActions()
 end
 
-local function ToValidID(id)
-	return (id - 1) % MAX_BUTTONS + 1
-end
+do
+	local function ToValidID(id)
+		return (id - 1) % MAX_BUTTONS + 1
+	end
 
---updates the actionID of a given button for all states
-function ActionBar:UpdateAction(i)
-	local b = self.buttons[i]
-	local maxSize = self:MaxLength()
+	--updates the actionID of a given button for all states
+	function ActionBar:UpdateAction(i)
+		local b = self.buttons[i]
+		local maxSize = self:MaxLength()
 
-	b:SetAttribute('button--index', i)
+		b:SetAttribute('button--index', i)
 
-	for i, state in Dominos.BarStates:getAll() do
-		local offset = self:GetOffset(state.id)
-		local actionId = nil
+		for i, state in Dominos.BarStates:getAll() do
+			local offset = self:GetOffset(state.id)
+			local actionId = nil
 
-		if offset then
-			actionId = ToValidID(b:GetAttribute('action--base') + offset * maxSize)
+			if offset then
+				actionId = ToValidID(b:GetAttribute('action--base') + offset * maxSize)
+			end
+
+			b:SetAttribute('action--S' .. i, actionId)
 		end
-
-		b:SetAttribute('action--S' .. i, actionId)
 	end
 end
 
@@ -295,9 +297,6 @@ end
 ---keybound support
 function ActionBar:KEYBOUND_ENABLED()
 	self:ShowGrid()
-	for _, b in pairs(self.buttons) do
-		b:RegisterEvent('UPDATE_BINDINGS')
-	end
 end
 
 function ActionBar:KEYBOUND_DISABLED()
