@@ -20,11 +20,11 @@ function BindableButton:UpdateHotkey(buttonType)
 	local key = BindableButton.GetHotkey(self, buttonType)
 	
 	if key ~= ''  and Dominos:ShowBindingText() then
-		_G[self:GetName()..'HotKey']:SetText(key)
-		_G[self:GetName()..'HotKey']:Show()
+		self.HotKey:SetText(key)
+		self.HotKey:Show()
 	else
-		_G[self:GetName()..'HotKey']:SetText('') --blank out non blank text, such as RANGE_INDICATOR
-		_G[self:GetName()..'HotKey']:Hide()
+		self.HotKey:SetText('') --blank out non blank text, such as RANGE_INDICATOR
+		self.HotKey:Hide()
 	end
 end
 
@@ -55,9 +55,9 @@ local function getKeyStrings(...)
 	for i = 1, select('#', ...) do
 		local key = select(i, ...)
 		if keys then
-			keys = keys .. ", " .. GetBindingText(key, "KEY_")
+			keys = keys .. ', ' .. GetBindingText(key, true)
 		else
-			keys = GetBindingText(key, "KEY_")
+			keys = GetBindingText(key, true)
 		end
 	end
 	return keys
