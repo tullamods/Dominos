@@ -10,6 +10,7 @@ localization.xml
 Dominos.lua
 fadeManager.lua
 overrideController.lua
+tooltipController.lua
 drag.lua
 frame.lua
 bindableButton.lua

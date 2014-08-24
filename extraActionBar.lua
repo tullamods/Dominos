@@ -7,7 +7,8 @@ end
 local _G = _G
 local Dominos = _G['Dominos']
 local KeyBound = LibStub('LibKeyBound-1.0')
-
+local Tooltips = Dominos:GetModule('Tooltips')
+local Bindings = Dominos.BindingsController
 
 --[[ buttons ]]--
 
@@ -19,7 +20,8 @@ do
 	function ExtraActionButton:New(id)
 		local button = self:Restore(id) or self:Create(id)
 
-		Dominos.BindingsController:Register(button)
+		Tooltips:Register(button)
+		Bindings:Register(button)
 
 		return button
 	end
@@ -29,7 +31,7 @@ do
 
 		if b then
 			b.buttonType = 'EXTRAACTIONBUTTON'
-			b:SetScript('OnEnter', self.OnEnter)
+			b:HookScript('OnEnter', self.OnEnter)
 			b:Skin()
 
 			return b
@@ -63,18 +65,12 @@ do
 		self:SetParent(nil)
 		self:Hide()
 
-		Dominos.BindingsController:Unregister(self)
+		Tooltips:Unregister(button)
+		Bindings:Unregister(self)
 	end
 
 	--keybound support
 	function ExtraActionButton:OnEnter()
-		if Dominos:ShouldShowTooltips() then
-			ActionButton_SetTooltip(self)
-			ActionBarButtonEventsFrame.tooltipOwner = self
-			ActionBarActionEventsFrame.tooltipOwner = self
-			ActionButton_UpdateFlyout(self)
-		end
-
 		KeyBound:Set(self)
 	end
 end

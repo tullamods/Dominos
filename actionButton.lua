@@ -3,14 +3,33 @@
 		A dominos action button
 --]]
 
-local HiddenActionButtonFrame = CreateFrame('Frame');  HiddenActionButtonFrame:Hide() 
-
 local KeyBound = LibStub('LibKeyBound-1.0')
+local Bindings = Dominos.BindingsController
+local Tooltips = Dominos:GetModule('Tooltips')
 
 local ActionButton = Dominos:CreateClass('CheckButton', Dominos.BindableButton)
 Dominos.ActionButton = ActionButton
 ActionButton.unused = {}
 ActionButton.active = {}
+
+local function GetOrCreateActionButton(id)
+	if id <= 12 then
+		local b = _G['ActionButton' .. id]
+		b.buttonType = 'ACTIONBUTTON'
+		return b
+	elseif id <= 24 then
+		return CreateFrame('CheckButton', 'DominosActionButton' .. (id-12), nil, 'ActionBarButtonTemplate')
+	elseif id <= 36 then
+		return _G['MultiBarRightButton' .. (id-24)]
+	elseif id <= 48 then
+		return _G['MultiBarLeftButton' .. (id-36)]
+	elseif id <= 60 then
+		return _G['MultiBarBottomRightButton' .. (id-48)]
+	elseif id <= 72 then
+		return _G['MultiBarBottomLeftButton' .. (id-60)]
+	end
+	return CreateFrame('CheckButton', 'DominosActionButton' .. (id-60), nil, 'ActionBarButtonTemplate')
+end
 
 --constructor
 function ActionButton:New(id)
@@ -36,10 +55,11 @@ function ActionButton:New(id)
 			end
 		]])
 
-		Dominos.BindingsController:Register(b, b:GetName():match('DominosActionButton%d'))
+		Bindings:Register(b, b:GetName():match('DominosActionButton%d'))
+		Tooltips:Register(b)
 
-		--hack #1billion, get rid of range indicator text
-		local hotkey = _G[b:GetName() .. 'HotKey']
+		--get rid of range indicator text
+		local hotkey = b.HotKey
 		if hotkey:GetText() == _G['RANGE_INDICATOR'] then
 			hotkey:SetText('')
 		end		
@@ -53,27 +73,9 @@ function ActionButton:New(id)
 	return b	
 end
 
-local function Create(id)
-	if id <= 12 then
-		local b = _G['ActionButton' .. id]
-		b.buttonType = 'ACTIONBUTTON'
-		return b
-	elseif id <= 24 then
-		return CreateFrame('CheckButton', 'DominosActionButton' .. (id-12), nil, 'ActionBarButtonTemplate')
-	elseif id <= 36 then
-		return _G['MultiBarRightButton' .. (id-24)]
-	elseif id <= 48 then
-		return _G['MultiBarLeftButton' .. (id-36)]
-	elseif id <= 60 then
-		return _G['MultiBarBottomRightButton' .. (id-48)]
-	elseif id <= 72 then
-		return _G['MultiBarBottomLeftButton' .. (id-60)]
-	end
-	return CreateFrame('CheckButton', 'DominosActionButton' .. (id-60), nil, 'ActionBarButtonTemplate')
-end
-
 function ActionButton:Create(id)
-	local b = Create(id)
+	local b = GetOrCreateActionButton(id)
+
 	if b then
 		self:Bind(b)
 
@@ -87,7 +89,7 @@ function ActionButton:Create(id)
 		b:SetAttribute('useparent-actionpage', nil)
 		b:SetAttribute('useparent-unit', true)
 		b:EnableMouseWheel(true)
-		b:SetScript('OnEnter', self.OnEnter)
+		b:HookScript('OnEnter', self.OnEnter)
 		b:Skin()
 	end
 	return b
@@ -95,6 +97,7 @@ end
 
 function ActionButton:Restore(id)
 	local b = self.unused[id]
+
 	if b then
 		self.unused[id] = nil
 		b:LoadEvents()
@@ -106,19 +109,25 @@ function ActionButton:Restore(id)
 end
 
 --destructor
-function ActionButton:Free()
-	local id = self:GetAttribute('action--base')
+do
+	local HiddenActionButtonFrame = CreateFrame('Frame')
+	HiddenActionButtonFrame:Hide() 
 
-	self.active[id] = nil
-	
-	ActionBarActionEventsFrame_UnregisterFrame(self)
-	Dominos.BindingsController:Unregister(self)
-	
-	self:SetParent(HiddenActionButtonFrame)
-	self:Hide()
-	self.action = nil
+	function ActionButton:Free()
+		local id = self:GetAttribute('action--base')
 
-	self.unused[id] = self
+		self.active[id] = nil
+		
+		ActionBarActionEventsFrame_UnregisterFrame(self)
+		Tooltips:Unregister(self)
+		Bindings:Unregister(self)
+		
+		self:SetParent(HiddenActionButtonFrame)
+		self:Hide()
+		self.action = nil
+
+		self.unused[id] = self
+	end
 end
 
 --these are all events that are registered OnLoad for action buttons
@@ -128,12 +137,6 @@ end
 
 --keybound support
 function ActionButton:OnEnter()
-	if Dominos:ShouldShowTooltips() then
-		ActionButton_SetTooltip(self)
-		ActionBarButtonEventsFrame.tooltipOwner = self
-		ActionBarActionEventsFrame.tooltipOwner = self
-		ActionButton_UpdateFlyout(self)
-	end
 	KeyBound:Set(self)
 end
 
@@ -154,9 +157,9 @@ end
 --macro text
 function ActionButton:UpdateMacro()
 	if Dominos:ShowMacroText() then
-		_G[self:GetName() .. 'Name']:Show()
+		self.Name:Show()
 	else
-		_G[self:GetName() .. 'Name']:Hide()
+		self.Name:Hide()
 	end
 end
 
@@ -181,11 +184,12 @@ end
 
 function ActionButton:Skin()
 	if not Dominos:Masque('Action Bar', self) then
-		_G[self:GetName() .. 'Icon']:SetTexCoord(0.06, 0.94, 0.06, 0.94)
+		self.icon:SetTexCoord(0.06, 0.94, 0.06, 0.94)
 		self:GetNormalTexture():SetVertexColor(1, 1, 1, 0.5)
 		
-		if _G[self:GetName() .. 'FloatingBG'] then
-			_G[self:GetName() .. 'FloatingBG']:Hide()
+		local floatingBG = _G[self:GetName() .. 'FloatingBG'] 
+		if floatingBG then
+			floatingBG:Hide()
 		end
 	end
 end
