@@ -259,7 +259,6 @@ function MenuBar:FixButtonPositions()
 
 	for i, buttonName in ipairs(MICRO_BUTTONS) do
 		local button = _G[buttonName]
-		-- button:ClearAllPoints()
 		button:Hide()
 
 		local shouldAddButton
@@ -287,10 +286,6 @@ function MenuBar:FixButtonPositions()
 			end
 		end
 
-
-		-- if not(i == 1 or i == floor(#overrideButtons / 2) + 1) then
-		-- 	button:SetPoint('BOTTOMLEFT', overrideButtons[i - 1], 'BOTTOMRIGHT', -3, 0)
-		-- end
 		button:Show()
 	end
 end
