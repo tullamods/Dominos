@@ -13,6 +13,7 @@ local _G = _G
 local AddonName, Addon = ...
 local Dominos = _G['Dominos']
 local KeyBound = LibStub('LibKeyBound-1.0')
+local Timer_After = _G['C_Timer'].After
 
 
 --[[ 
@@ -178,7 +179,7 @@ function BindingsController:SetupAttributeMethods()
 end
 
 function BindingsController:HookBindingMethods()
-	local updateBindings = function() self:UpdateBindings() end
+	local updateBindings = function() self:RequestUpdateBindings() end
 
 	hooksecurefunc('SetBinding', updateBindings)
 	hooksecurefunc('SetBindingClick', updateBindings)
@@ -206,20 +207,20 @@ function BindingsController:UPDATE_BINDINGS(event)
 end
 
 function BindingsController:PLAYER_REGEN_ENABLED()
-	if self.needsUpdate then
-		self:UpdateBindings()
+	if self.__NeedsBindingUpdate then
+		self:RequestUpdateBindings()
 	end
 end
 
 function BindingsController:PLAYER_LOGIN()
 	self:UpdateCastOnKeyPress()
-	self:UpdateBindings()
+	self:RequestUpdateBindings()
 end
 
 function BindingsController:CVAR_UPDATE(event, variableName)
 	if variableName == 'ACTION_BUTTON_USE_KEY_DOWN' then
 		self:UpdateCastOnKeyPress()
-		self:UpdateBindings()
+		self:RequestUpdateBindings()
 	end			
 end
 
@@ -316,21 +317,37 @@ function BindingsController:HasSurrogate(button)
 	return self.surrogates[button]
 end
 
-BindingsController.UpdateBindings = Dominos:Debounce(function(self) 
-	if InCombatLockdown() then
-		self.needsUpdate = true
-	else
-		self.needsUpdate = nil
-
-		for button in pairs(self.frames) do
-			button:UpdateHotkey()
-
-			if self:HasSurrogate(button) then
-				self:Execute([[ self:RunAttribute('LoadBindings') ]])
-			end
+function BindingsController:RequestUpdateBindings()
+	if not self.__UpdateBindings then		
+		self.__UpdateBindings = function()
+			self.__WaitingToUpdateBindings = false
+			self:UpdateBindings()
 		end
 	end
-end, 0.1)
+
+	if not self.__WaitingToUpdateBindings then
+		self.__WaitingToUpdateBindings = true
+
+		Timer_After(0.2, self.__UpdateBindings)
+	end
+end
+
+function BindingsController:UpdateBindings()
+	if InCombatLockdown() then
+		self.__NeedsBindingUpdate = true
+		return
+	end
+
+	self.__NeedsBindingUpdate = nil
+
+	for button in pairs(self.frames) do
+		button:UpdateHotkey()
+
+		if self:HasSurrogate(button) then
+			self:Execute([[ self:RunAttribute('LoadBindings') ]])
+		end
+	end
+end
 
 function BindingsController:UpdateCastOnKeyPress()
 	local castingOnKeyPress = self:CastingOnKeyPress()
