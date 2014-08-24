@@ -50,6 +50,7 @@ function Dominos:OnEnable()
 	self:HideBlizzard()
 	self:CreateDataBrokerPlugin()
 	self:Load()
+
 	self.MultiActionBarGridFixer:SetShowGrid(self:ShowGrid())
 end
 
@@ -154,7 +155,9 @@ end
 --Load is called  when the addon is first enabled, and also whenever a profile is loaded
 function Dominos:Load()
 	for i, module in self:IterateModules() do
-		module:Load()
+		if module.Load then
+			module:Load()
+		end
 	end
 
 	self.Frame:ForAll('Reanchor')
@@ -165,7 +168,9 @@ end
 function Dominos:Unload()
 	--unload any module stuff
 	for i, module in self:IterateModules() do
-		module:Unload()
+		if module.Unload then
+			module:Unload()
+		end
 	end
 end
 
@@ -519,7 +524,7 @@ local function CreateConfigHelperDialog()
 	f:SetWidth(360)
 	f:SetHeight(120)
 	f:SetBackdrop{
-		bgFile='Interface\\DialogFrame\\UI-DialogBox-Background' ,
+		bgFile='Interface\\DialogFrame\\UI-DialogBox-Background',
 		edgeFile='Interface\\DialogFrame\\UI-DialogBox-Border',
 		tile = true,
 		insets = {left = 11, right = 12, top = 12, bottom = 11},
@@ -803,24 +808,20 @@ function Dominos:NumBars()
 	return self.db.profile.ab.count
 end
 
---tooltips
-function Dominos:ShouldShowTooltips()
-	if self:ShowTooltips() then
-		return (not InCombatLockdown()) or self:ShowCombatTooltips()
-	end
-	return false;	
-end
 
+--tooltips
 function Dominos:ShowTooltips()
 	return self.db.profile.showTooltips
 end
 
 function Dominos:SetShowTooltips(enable)
 	self.db.profile.showTooltips = enable or false
+	self:GetModule('Tooltips'):SetShowTooltips(enable)
 end
 
 function Dominos:SetShowCombatTooltips(enable)
 	self.db.profile.showTooltipsCombat = enable or false
+	self:GetModule('Tooltips'):SetShowTooltipsInCombat(enable)
 end
 
 function Dominos:ShowCombatTooltips()
