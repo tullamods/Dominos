@@ -317,13 +317,11 @@ function BindingsController:HasSurrogate(button)
 end
 
 BindingsController.UpdateBindings = Dominos:Debounce(function(self) 
-	print('UpdateBindings')
-
 	if InCombatLockdown() then
 		self.needsUpdate = true
 	else
 		self.needsUpdate = nil
-		
+
 		for button in pairs(self.frames) do
 			button:UpdateHotkey()
 
