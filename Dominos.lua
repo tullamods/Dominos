@@ -91,7 +91,7 @@ function Dominos:CreateDataBrokerPlugin()
 				end
 			end
 
-			local enabled = select(4, GetAddOnInfo('Dominos_Config'))
+			local enabled = select(4, GetAddonInfoByName('Dominos_Config'))
 			if enabled then
 				tooltip:AddLine(L.ShowOptionsTip)
 			end
