@@ -868,7 +868,7 @@ function Frame:CreateMenu()
 end
 
 function Frame:ShowMenu()
-	local enabled = select(4, GetAddOnInfo('Dominos_Config'))
+	local enabled = select(4, GetAddonInfoByName('Dominos_Config'))
 	
 	if enabled then
 		if not self.menu then
