@@ -145,6 +145,6 @@ end
 
 --load up the options menu
 do
-	local name, desc = select(2, GetAddOnInfo('Dominos'))
+	local name, desc = select(2, GetAddonInfoByName('Dominos'))
 	Dominos.Options = Panel:New('DominosOptions', name, desc, [[Interface\Addons\Dominos\Dominos]])
 end
