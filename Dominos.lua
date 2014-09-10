@@ -3,9 +3,13 @@
 		Driver for Dominos Frames
 --]]
 
-Dominos = LibStub('AceAddon-3.0'):NewAddon('Dominos', 'AceEvent-3.0', 'AceConsole-3.0')
-local L = LibStub('AceLocale-3.0'):GetLocale('Dominos')
-local CURRENT_VERSION = GetAddOnMetadata('Dominos', 'Version')
+local AddonName, Addon = ...
+
+Dominos = LibStub('AceAddon-3.0'):NewAddon(AddonName, 'AceEvent-3.0', 'AceConsole-3.0')
+local L = LibStub('AceLocale-3.0'):GetLocale(AddonName)
+
+local CURRENT_VERSION = GetAddOnMetadata(AddonName, 'Version')
+local CONFIG_ADDON_NAME = AddonName .. '_Config'
 
 
 --[[ Startup ]]--
@@ -55,7 +59,7 @@ function Dominos:OnEnable()
 end
 
 function Dominos:CreateDataBrokerPlugin()
-	local dataObject = LibStub:GetLibrary('LibDataBroker-1.1'):NewDataObject('Dominos', {
+	local dataObject = LibStub:GetLibrary('LibDataBroker-1.1'):NewDataObject(AddonName, {
 		type = 'launcher',
 
 		icon = [[Interface\Addons\Dominos\Dominos]],
@@ -74,7 +78,7 @@ function Dominos:CreateDataBrokerPlugin()
 
 		OnTooltipShow = function(tooltip)
 			if not tooltip or not tooltip.AddLine then return end
-			tooltip:AddLine('Dominos')
+			tooltip:AddLine(AddonName)
 
 			if Dominos:Locked() then
 				tooltip:AddLine(L.ConfigEnterTip)
@@ -90,15 +94,14 @@ function Dominos:CreateDataBrokerPlugin()
 					tooltip:AddLine(L.BindingEnterTip)
 				end
 			end
-
-			local enabled = select(4, GetAddonInfoByName('Dominos_Config'))
-			if enabled then
+			
+			if self:IsConfigAddonEnabled() then
 				tooltip:AddLine(L.ShowOptionsTip)
 			end
 		end,
 	})
 	
-	LibStub('LibDBIcon-1.0'):Register('Dominos', dataObject, self.db.profile.minimap)
+	LibStub('LibDBIcon-1.0'):Register(AddonName, dataObject, self.db.profile.minimap)
 end
 
 --[[ Version Updating ]]--
@@ -408,6 +411,7 @@ function Dominos:NewMenu(id)
 	if not self.Menu then
 		LoadAddOn('Dominos_Config')
 	end
+
 	return self.Menu and self.Menu:New(id)
 end
 
@@ -479,34 +483,55 @@ function Dominos:OnCmd(args)
 	end
 end
 
-function Dominos:PrintHelp(cmd)
+do
 	local function PrintCmd(cmd, desc)
 		print(format(' - |cFF33FF99%s|r: %s', cmd, desc))
 	end
 
-	self:Print('Commands (/dom, /dominos)')
-	PrintCmd('config', L.ConfigDesc)
-	PrintCmd('scale <frameList> <scale>', L.SetScaleDesc)
-	PrintCmd('setalpha <frameList> <opacity>', L.SetAlphaDesc)
-	PrintCmd('fade <frameList> <opacity>', L.SetFadeDesc)
-	PrintCmd('setcols <frameList> <columns>', L.SetColsDesc)
-	PrintCmd('pad <frameList> <padding>', L.SetPadDesc)
-	PrintCmd('space <frameList> <spacing>', L.SetSpacingDesc)
-	PrintCmd('show <frameList>', L.ShowFramesDesc)
-	PrintCmd('hide <frameList>', L.HideFramesDesc)
-	PrintCmd('toggle <frameList>', L.ToggleFramesDesc)
-	PrintCmd('save <profile>', L.SaveDesc)
-	PrintCmd('set <profile>', L.SetDesc)
-	PrintCmd('copy <profile>', L.CopyDesc)
-	PrintCmd('delete <profile>', L.DeleteDesc)
-	PrintCmd('reset', L.ResetDesc)
-	PrintCmd('list', L.ListDesc)
-	PrintCmd('version', L.PrintVersionDesc)
+	function Dominos:PrintHelp(cmd)
+		self:Print('Commands (/dom, /dominos)')
+
+		PrintCmd('config', L.ConfigDesc)
+		PrintCmd('scale <frameList> <scale>', L.SetScaleDesc)
+		PrintCmd('setalpha <frameList> <opacity>', L.SetAlphaDesc)
+		PrintCmd('fade <frameList> <opacity>', L.SetFadeDesc)
+		PrintCmd('setcols <frameList> <columns>', L.SetColsDesc)
+		PrintCmd('pad <frameList> <padding>', L.SetPadDesc)
+		PrintCmd('space <frameList> <spacing>', L.SetSpacingDesc)
+		PrintCmd('show <frameList>', L.ShowFramesDesc)
+		PrintCmd('hide <frameList>', L.HideFramesDesc)
+		PrintCmd('toggle <frameList>', L.ToggleFramesDesc)
+		PrintCmd('save <profile>', L.SaveDesc)
+		PrintCmd('set <profile>', L.SetDesc)
+		PrintCmd('copy <profile>', L.CopyDesc)
+		PrintCmd('delete <profile>', L.DeleteDesc)
+		PrintCmd('reset', L.ResetDesc)
+		PrintCmd('list', L.ListDesc)
+		PrintCmd('version', L.PrintVersionDesc)
+	end
 end
 
 --version info
 function Dominos:PrintVersion()
 	self:Print(DominosVersion)
+end
+
+do
+	local configAddonName = AddonName .. '_Config'
+
+	local function getConfigAddonIndex() 
+		for i = 1, GetNumAddOns() do
+			if GetAddOnInfo(i) == configAddonName then
+				return i				
+			end
+		end
+	end
+
+	function Dominos:IsConfigAddonEnabled()
+		local index = getConfigAddonIndex()
+
+		return index and GetAddOnEnableState(UnitName('player'), index) >= 2
+	end
 end
 
 
