@@ -516,22 +516,8 @@ function Dominos:PrintVersion()
 	self:Print(DominosVersion)
 end
 
-do
-	local configAddonName = AddonName .. '_Config'
-
-	local function getConfigAddonIndex() 
-		for i = 1, GetNumAddOns() do
-			if GetAddOnInfo(i) == configAddonName then
-				return i				
-			end
-		end
-	end
-
-	function Dominos:IsConfigAddonEnabled()
-		local index = getConfigAddonIndex()
-
-		return index and GetAddOnEnableState(UnitName('player'), index) >= 2
-	end
+function Dominos:IsConfigAddonEnabled()
+	return GetAddOnEnableState(UnitName('player'), AddonName .. '_Config') >= 1
 end
 
 
