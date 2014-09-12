@@ -7,28 +7,28 @@
 	Copyright (c) 2008-2009 Jason Greer
 	All rights reserved.
 
-	Redistribution and use in source and binary forms, with or without 
+	Redistribution and use in source and binary forms, with or without
 	modification, are permitted provided that the following conditions are met:
 
-		* Redistributions of source code must retain the above copyright notice, 
+		* Redistributions of source code must retain the above copyright notice,
 		  this list of conditions and the following disclaimer.
 		* Redistributions in binary form must reproduce the above copyright
-		  notice, this list of conditions and the following disclaimer in the 
+		  notice, this list of conditions and the following disclaimer in the
 		  documentation and/or other materials provided with the distribution.
-		* Neither the name of the author nor the names of its contributors may 
-		  be used to endorse or promote products derived from this software 
+		* Neither the name of the author nor the names of its contributors may
+		  be used to endorse or promote products derived from this software
 		  without specific prior written permission.
 
-	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
-	AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
-	IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
-	ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE 
-	LIABLE FORANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
-	CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
-	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
-	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
-	CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
-	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
+	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+	AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+	IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+	ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE
+	LIABLE FORANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+	CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+	SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+	INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+	CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+	ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 	POSSIBILITY OF SUCH DAMAGE.
 --]]
 
@@ -42,7 +42,7 @@ function Panel:New(name, title, subtitle, icon, parent)
 	local f = self:Bind(CreateFrame('Frame', name, UIParent))
 	f.name = title
 	f.parent = parent
-	
+
 	local text = f:CreateFontString(nil, 'ARTWORK', 'GameFontNormalLarge')
 	text:SetPoint('TOPLEFT', 16, -16)
 	if icon then
@@ -59,7 +59,7 @@ function Panel:New(name, title, subtitle, icon, parent)
 	subtext:SetJustifyH('LEFT')
 	subtext:SetJustifyV('TOP')
 	subtext:SetText(subtitle)
-	
+
 	InterfaceOptions_AddCategory(f)
 
 	f:Hide()
@@ -145,18 +145,6 @@ end
 
 --load up the options menu
 do
-	local function GetAddonDescription() 
-		for i = 1, GetNumAddOns() do
-			local name, desc = GetAddOnInfo(i)
-
-			if name == 'Dominos' then
-				return name, desc
-			end
-		end
-	end	
-
-
-
-	local name, desc = GetAddonDescription()
+	local name, desc = select(2, GetAddOnInfo('Dominos'))
 	Dominos.Options = Panel:New('DominosOptions', name, desc, [[Interface\Addons\Dominos\Dominos]])
 end
