@@ -331,6 +331,15 @@ end
 
 --[[ Opacity ]]--
 
+hooksecurefunc(Frame, 'SetAlpha', function(self, alpha)
+	self:OnSetAlpha(alpha)
+end)
+
+-- empty hook
+function Frame:OnSetAlpha(alpha)	
+		
+end
+
 function Frame:SetFrameAlpha(alpha)
 	if alpha == 1 then
 		self.sets.alpha = nil

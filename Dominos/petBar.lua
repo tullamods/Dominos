@@ -144,6 +144,18 @@ function PetBar:KEYBOUND_DISABLED()
 	end
 end
 
+--[[ on set alpha hooks ]]--
+
+function PetBar:OnSetAlpha(alpha)
+	if not self.buttons then return end
+
+	for i, button in pairs(self.buttons) do
+		local cooldown = button.cooldown
+		cooldown:SetSwipeColor(0, 0, 0, alpha)
+		cooldown:SetDrawBling(alpha > 0)	
+	end
+end
+
 --[[ controller good times ]]--
 
 local PetBarController = Dominos:NewModule('PetBar')
