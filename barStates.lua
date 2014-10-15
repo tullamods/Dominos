@@ -21,11 +21,11 @@ local BarStates = {
 		end
 		return table.insert(states, state)
 	end,
-	
+
 	getAll = function(self, type)
 		return getStateIterator, type, 0
 	end,
-	
+
 	get = function(self, id)
 		for i, v in pairs(states) do
 			if v.id == id then
@@ -33,7 +33,7 @@ local BarStates = {
 			end
 		end
 	end,
-	
+
 	map = function(self, f)
 		local results = {}
 		for k, v in ipairs(states) do
@@ -48,9 +48,9 @@ Dominos.BarStates = BarStates
 
 local addState = function(stateType, stateId, stateValue, stateText)
 	return BarStates:add{
-		type = stateType, 
-		id = stateId, 
-		value = stateValue, 
+		type = stateType,
+		id = stateId,
+		value = stateValue,
 		text = stateText
 	}
 end
@@ -73,10 +73,10 @@ end
 --class
 do
 	local class = select(2, UnitClass('player'))
-	if class == 'WARRIOR' then		
+	if class == 'WARRIOR' then
 		addState('class', 'battle', '[form:1]', GetSpellInfo(2457))
 		addState('class', 'defensive', '[form:2]', GetSpellInfo(71))
-		addState('class', 'berserker', '[form:3]', GetSpellInfo(2458))
+		--addState('class', 'berserker', '[form:3]', GetSpellInfo(2458))
 	elseif class == 'DRUID' then
 		addState('class', 'moonkin', '[bonusbar:4]', GetSpellInfo(24858))
 		addState('class', 'bear', '[bonusbar:3]', GetSpellInfo(5487))
@@ -95,7 +95,7 @@ do
 	elseif class == 'MONK' then
 		addState('class', 'tiger', '[bonusbar:1]', GetSpellInfo(103985))
 		addState('class', 'ox', '[bonusbar:2]', GetSpellInfo(115069))
-		addState('class', 'serpent', '[bonusbar:3]', GetSpellInfo(115070))		
+		addState('class', 'serpent', '[bonusbar:3]', GetSpellInfo(115070))
 	end
 
 	local race = select(2, UnitRace('player'))
@@ -113,7 +113,7 @@ addState('target', 'notarget', '[noexists]')
 --automatic updating for UPDATE_SHAPESHIFT_FORMS
 do
 	local f = CreateFrame('Frame'); f:Hide()
-	f:SetScript('OnEvent', function() 
+	f:SetScript('OnEvent', function()
 		if not InCombatLockdown() then
 			Dominos.ActionBar:ForAll('UpdateStateDriver')
 		end
