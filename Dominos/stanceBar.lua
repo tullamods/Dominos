@@ -2,7 +2,8 @@
 	StanceBar.lua: A dominos stance bar
 --]]
 
-if select(2, UnitClass('player')) == 'MAGE' or select(2, UnitClass('player')) == 'SHAMAN' then
+
+if select(2, UnitClass('player')) == 'MAGE' or select(2, UnitClass('player')) == 'SHAMAN' or select(2, UnitClass('player')) == 'HUNTER' then
 	return
 end
 
