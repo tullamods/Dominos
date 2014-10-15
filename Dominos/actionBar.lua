@@ -7,6 +7,7 @@
 
 local Dominos = _G['Dominos']
 local ActionButton = Dominos.ActionButton
+local HiddenFrame = CreateFrame('Frame'); HiddenFrame:Hide()
 
 local MAX_BUTTONS = 120
 
@@ -315,14 +316,33 @@ function ActionBar:ForAll(method, ...)
 	end
 end
 
+
 function ActionBar:OnSetAlpha(alpha)
 	if not self.buttons then return end
 
-	for i, button in pairs(self.buttons) do
-		local cooldown = button.cooldown
-		cooldown:SetSwipeColor(0, 0, 0, alpha)
-		cooldown:SetDrawBling(alpha > 0)	
+	local transparent = alpha <= 0
+
+	if self.transparent ~= transparent then
+		self.transparent = transparent
+		self:UpdateCooldownOpacities()
 	end
+end
+
+function ActionBar:UpdateCooldownOpacities()
+	if self.transparent then
+		-- hide cooldown frames on transparent buttons by sticking them onto a different parent
+		for i, button in pairs(self.buttons) do
+			button.cooldown:SetParent(HiddenFrame)				
+		end
+	else	
+		-- show cooldown frames on non transparent buttons
+		for i, button in pairs(self.buttons) do
+			if button.cooldown:GetParent() ~= button then
+				button.cooldown:SetParent(button)	
+				ActionButton_UpdateCooldown(button)
+			end		
+		end
+	end	
 end
 
 --[[ flyout direction updating ]]--
