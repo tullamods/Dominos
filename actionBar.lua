@@ -44,9 +44,9 @@ ActionBar.mainbarOffsets = {
 			pages.bear = 8
 			pages.moonkin = 9
 			pages.tree = 7
-		-- elseif i == 'WARRIOR' then
-			-- pages.battle = 6
-			-- pages.defensive = 7
+		elseif i == 'WARRIOR' then
+			pages.battle = 6
+			pages.defensive = 7
 			-- pages.berserker = 8
 		elseif i == 'PRIEST' then
 			pages.shadow = 6
@@ -168,7 +168,7 @@ function ActionBar:GetOffset(stateId)
 end
 
 -- note to self:
--- if you leave a ; on the end of a statebutton string, it causes evaluation issues, 
+-- if you leave a ; on the end of a statebutton string, it causes evaluation issues,
 -- especially if you're doing right click selfcast on the base state
 function ActionBar:UpdateStateDriver()
 	UnregisterStateDriver(self.header, 'page', 0)
@@ -248,7 +248,7 @@ function ActionBar:LoadStateController()
 		else
 			state = self:GetAttribute('state-page')
 		end
-		
+
 		control:ChildUpdate('action', state)
 	]])
 
@@ -525,7 +525,7 @@ function ActionBarController:Unload()
 
 	for i = 1, Dominos:NumBars() do
 		Dominos.Frame:ForFrame(i, 'Free')
-	end	
+	end
 end
 
 function ActionBarController:UpdateOverrideBar()
