@@ -315,6 +315,16 @@ function ActionBar:ForAll(method, ...)
 	end
 end
 
+function ActionBar:OnSetAlpha(alpha)
+	if not self.buttons then return end
+
+	for i, button in pairs(self.buttons) do
+		local cooldown = button.cooldown
+		cooldown:SetSwipeColor(0, 0, 0, alpha)
+		cooldown:SetDrawBling(alpha > 0)	
+	end
+end
+
 --[[ flyout direction updating ]]--
 
 function ActionBar:GetFlyoutDirection()
