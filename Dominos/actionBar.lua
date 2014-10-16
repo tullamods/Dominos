@@ -392,6 +392,10 @@ do
 		self:SetMinMaxValues(-1, Dominos:NumBars() - 1)
 		self:SetValue(self:GetParent().owner:GetOffset(self.stateId) or -1)
 		self:UpdateText(self:GetValue())
+
+		if self.stateTextFunc then
+			_G[self:GetName() .. 'Text']:SetText(self.stateTextFunc())
+		end
 	end
 
 	local function ConditionSlider_UpdateValue(self, value)
@@ -413,13 +417,23 @@ do
 		s.UpdateValue = ConditionSlider_UpdateValue
 		s.UpdateText = ConditionSlider_UpdateText
 		s.stateId = stateId
+
+
+
 		s:SetWidth(s:GetWidth() + 28)
 
 		local title = _G[s:GetName() .. 'Text']
 		title:ClearAllPoints()
 		title:SetPoint('BOTTOMLEFT', s, 'TOPLEFT')
 		title:SetJustifyH('LEFT')
-		title:SetText(text or L['State_' .. stateId:upper()])
+
+		if type(text) == 'function' then
+			s.stateTextFunc = text
+		else
+			title:SetText(text or 'UNKNOWN STATE')
+		end
+
+		--title:SetText(text or L['State_' .. stateId:upper()])
 
 		local value = s.valText
 		value:ClearAllPoints()
