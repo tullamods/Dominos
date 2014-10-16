@@ -475,6 +475,9 @@ function Dominos:OnCmd(args)
 		self:PrintHelp()
 	elseif cmd == 'statedump' then
 		self.OverrideController:DumpStates()
+	elseif cmd == 'configstatus' then
+		local status = self:IsConfigAddonEnabled() and 'ENABLED' or 'DISABLED'
+		print(('Config Mode Status: %s'):format(status))
 	--options stuff
 	else
 		if not self:ShowOptions() then
