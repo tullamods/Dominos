@@ -74,9 +74,23 @@ end
 do
 	local class = select(2, UnitClass('player'))
 	if class == 'WARRIOR' then
-		addState('class', 'battle', '[form:1]', GetSpellInfo(2457))
+		BarStates:add{
+			type = 'class',
+			id = 'battle',
+			value = '[form:1]',
+			text = function()
+				local talentID = select(2, GetTalentRowSelectionInfo(7)) 
+
+				--handle display of gladiator vs battle stance
+				if talentID == 21206 then
+					return select(2, GetTalentInfoByID(talentID))
+				end
+
+				return GetSpellInfo(2457)
+			end
+		}
+
 		addState('class', 'defensive', '[form:2]', GetSpellInfo(71))
-		--addState('class', 'berserker', '[form:3]', GetSpellInfo(2458))
 	elseif class == 'DRUID' then
 		addState('class', 'moonkin', '[bonusbar:4]', GetSpellInfo(24858))
 		addState('class', 'bear', '[bonusbar:3]', GetSpellInfo(5487))
@@ -93,7 +107,20 @@ do
 		addState('class', 'meta', '[form:1]', GetSpellInfo(103958))
 		-- addState('class', 'darkapotheosis', '[form:2]', GetSpellInfo(114168))
 	elseif class == 'MONK' then
-		addState('class', 'tiger', '[bonusbar:1]', GetSpellInfo(103985))
+		BarStates:add{
+			type = 'class',
+			id = 'tiger',
+			value = '[bonusbar:1]',
+			text = function()
+				--handle display of tiger vs crane stance
+				if GetSpecialization() == 2 then
+					return GetSpellInfo(154436) --Stance of the Spirited Crane
+				end
+
+				return GetSpellInfo(103985)
+			end
+		}
+
 		addState('class', 'ox', '[bonusbar:2]', GetSpellInfo(115069))
 		addState('class', 'serpent', '[bonusbar:3]', GetSpellInfo(115070))
 	end
