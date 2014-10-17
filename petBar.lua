@@ -22,6 +22,7 @@ function PetButton:New(id)
 	local b = self:Restore(id) or self:Create(id)
 
 	Dominos.BindingsController:Register(b)
+	Dominos:GetModule('Tooltips'):Register(b)
 
 	return b
 end
@@ -29,7 +30,8 @@ end
 function PetButton:Create(id)
 	local b = self:Bind(_G['PetActionButton' .. id])
 	b.buttonType = 'BONUSACTIONBUTTON'
-	b:SetScript('OnEnter', self.OnEnter)
+	
+	b:HookScript('OnEnter', self.OnEnter)
 	b:Skin()
 
 	return b
@@ -59,6 +61,7 @@ function PetButton:Free()
 	unused[self:GetID()] = self
 
 	Dominos.BindingsController:Unregister(self)
+	Dominos:GetModule('Tooltips'):Unregister(self)
 
 	self:SetParent(nil)
 	self:Hide()
@@ -66,10 +69,6 @@ end
 
 --keybound support
 function PetButton:OnEnter()
-	if Dominos:ShowTooltips() then
-		PetActionButton_OnEnter(self)
-	end
-	
 	KeyBound:Set(self)
 end
 

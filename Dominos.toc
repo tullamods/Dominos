@@ -1,8 +1,8 @@
-## Interface: 50400
+## Interface: 60000
 ## Title: Dominos
 ## Notes: A main actionbar replacement
 ## Author: Tuller
-## Version: 5.4.12
+## Version: 6.0.8
 ## SavedVariables: DominosDB, DominosVersion
 ## OptionalDeps: Ace3, LibKeyBound-1.0, Masque, FlyPaper
 embeds.xml
@@ -10,6 +10,7 @@ localization.xml
 Dominos.lua
 fadeManager.lua
 overrideController.lua
+tooltipController.lua
 drag.lua
 frame.lua
 bindableButton.lua

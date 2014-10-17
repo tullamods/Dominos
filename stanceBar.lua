@@ -2,7 +2,8 @@
 	StanceBar.lua: A dominos stance bar
 --]]
 
-if select(2, UnitClass('player')) == 'MAGE' or select(2, UnitClass('player')) == 'SHAMAN' then
+
+if select(2, UnitClass('player')) == 'MAGE' or select(2, UnitClass('player')) == 'SHAMAN' or select(2, UnitClass('player')) == 'HUNTER' then
 	return
 end
 
@@ -26,6 +27,7 @@ do
 		local button = self:Restore(id) or self:Create(id)
 
 		Dominos.BindingsController:Register(button)
+		Dominos:GetModule('Tooltips'):Register(button)
 
 		return button
 	end
@@ -34,7 +36,7 @@ do
 		local button = self:Bind(_G['StanceButton' .. id])
 
 		if button then
-			button:SetScript('OnEnter', self.OnEnter)
+			button:HookScript('OnEnter', self.OnEnter)
 			button:Skin()
 		end
 
@@ -75,26 +77,15 @@ do
 
 		self:SetParent(nil)
 		self:Hide()
+		
 		Dominos.BindingsController:Unregister(self)
+		Dominos:GetModule('Tooltips'):Unregister(self)
 	end
 
 	--keybound support
 	function StanceButton:OnEnter()
-		if Dominos:ShowTooltips() then
-			-- this should be the sameish as what is normally called by a stance button
-			if GetCVarBool("UberTooltips") then
-				GameTooltip_SetDefaultAnchor(GameTooltip, self)
-			else
-				GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-			end
-
-			GameTooltip:SetShapeshift(self:GetID())
-		end
-
 		KeyBound:Set(self)
 	end
-
-	StanceButton.UpdateTooltip = StanceButton.OnEnter
 end
 
 

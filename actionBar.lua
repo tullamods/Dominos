@@ -7,6 +7,7 @@
 
 local Dominos = _G['Dominos']
 local ActionButton = Dominos.ActionButton
+local HiddenFrame = CreateFrame('Frame'); HiddenFrame:Hide()
 
 local MAX_BUTTONS = 120
 
@@ -44,9 +45,9 @@ ActionBar.mainbarOffsets = {
 			pages.bear = 8
 			pages.moonkin = 9
 			pages.tree = 7
-		-- elseif i == 'WARRIOR' then
-			-- pages.battle = 6
-			-- pages.defensive = 7
+		elseif i == 'WARRIOR' then
+			pages.battle = 6
+			pages.defensive = 7
 			-- pages.berserker = 8
 		elseif i == 'PRIEST' then
 			pages.shadow = 6
@@ -168,7 +169,7 @@ function ActionBar:GetOffset(stateId)
 end
 
 -- note to self:
--- if you leave a ; on the end of a statebutton string, it causes evaluation issues, 
+-- if you leave a ; on the end of a statebutton string, it causes evaluation issues,
 -- especially if you're doing right click selfcast on the base state
 function ActionBar:UpdateStateDriver()
 	UnregisterStateDriver(self.header, 'page', 0)
@@ -196,26 +197,28 @@ function ActionBar:UpdateStateDriver()
 	self:RefreshActions()
 end
 
-local function ToValidID(id)
-	return (id - 1) % MAX_BUTTONS + 1
-end
+do
+	local function ToValidID(id)
+		return (id - 1) % MAX_BUTTONS + 1
+	end
 
---updates the actionID of a given button for all states
-function ActionBar:UpdateAction(i)
-	local b = self.buttons[i]
-	local maxSize = self:MaxLength()
+	--updates the actionID of a given button for all states
+	function ActionBar:UpdateAction(i)
+		local b = self.buttons[i]
+		local maxSize = self:MaxLength()
 
-	b:SetAttribute('button--index', i)
+		b:SetAttribute('button--index', i)
 
-	for i, state in Dominos.BarStates:getAll() do
-		local offset = self:GetOffset(state.id)
-		local actionId = nil
+		for i, state in Dominos.BarStates:getAll() do
+			local offset = self:GetOffset(state.id)
+			local actionId = nil
 
-		if offset then
-			actionId = ToValidID(b:GetAttribute('action--base') + offset * maxSize)
+			if offset then
+				actionId = ToValidID(b:GetAttribute('action--base') + offset * maxSize)
+			end
+
+			b:SetAttribute('action--S' .. i, actionId)
 		end
-
-		b:SetAttribute('action--S' .. i, actionId)
 	end
 end
 
@@ -246,7 +249,7 @@ function ActionBar:LoadStateController()
 		else
 			state = self:GetAttribute('state-page')
 		end
-		
+
 		control:ChildUpdate('action', state)
 	]])
 
@@ -295,9 +298,6 @@ end
 ---keybound support
 function ActionBar:KEYBOUND_ENABLED()
 	self:ShowGrid()
-	for _, b in pairs(self.buttons) do
-		b:RegisterEvent('UPDATE_BINDINGS')
-	end
 end
 
 function ActionBar:KEYBOUND_DISABLED()
@@ -314,6 +314,35 @@ function ActionBar:ForAll(method, ...)
 	for _,f in pairs(active) do
 		f[method](f, ...)
 	end
+end
+
+
+function ActionBar:OnSetAlpha(alpha)
+	if not self.buttons then return end
+
+	local transparent = alpha <= 0
+
+	if self.transparent ~= transparent then
+		self.transparent = transparent
+		self:UpdateCooldownOpacities()
+	end
+end
+
+function ActionBar:UpdateCooldownOpacities()
+	if self.transparent then
+		-- hide cooldown frames on transparent buttons by sticking them onto a different parent
+		for i, button in pairs(self.buttons) do
+			button.cooldown:SetParent(HiddenFrame)				
+		end
+	else	
+		-- show cooldown frames on non transparent buttons
+		for i, button in pairs(self.buttons) do
+			if button.cooldown:GetParent() ~= button then
+				button.cooldown:SetParent(button)	
+				ActionButton_UpdateCooldown(button)
+			end		
+		end
+	end	
 end
 
 --[[ flyout direction updating ]]--
@@ -363,6 +392,10 @@ do
 		self:SetMinMaxValues(-1, Dominos:NumBars() - 1)
 		self:SetValue(self:GetParent().owner:GetOffset(self.stateId) or -1)
 		self:UpdateText(self:GetValue())
+
+		if self.stateTextFunc then
+			_G[self:GetName() .. 'Text']:SetText(self.stateTextFunc())
+		end
 	end
 
 	local function ConditionSlider_UpdateValue(self, value)
@@ -384,13 +417,23 @@ do
 		s.UpdateValue = ConditionSlider_UpdateValue
 		s.UpdateText = ConditionSlider_UpdateText
 		s.stateId = stateId
+
+
+
 		s:SetWidth(s:GetWidth() + 28)
 
 		local title = _G[s:GetName() .. 'Text']
 		title:ClearAllPoints()
 		title:SetPoint('BOTTOMLEFT', s, 'TOPLEFT')
 		title:SetJustifyH('LEFT')
-		title:SetText(text or L['State_' .. stateId:upper()])
+
+		if type(text) == 'function' then
+			s.stateTextFunc = text
+		else
+			title:SetText(text or 'UNKNOWN STATE')
+		end
+
+		--title:SetText(text or L['State_' .. stateId:upper()])
 
 		local value = s.valText
 		value:ClearAllPoints()
@@ -526,7 +569,7 @@ function ActionBarController:Unload()
 
 	for i = 1, Dominos:NumBars() do
 		Dominos.Frame:ForFrame(i, 'Free')
-	end	
+	end
 end
 
 function ActionBarController:UpdateOverrideBar()

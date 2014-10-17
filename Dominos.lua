@@ -3,9 +3,13 @@
 		Driver for Dominos Frames
 --]]
 
-Dominos = LibStub('AceAddon-3.0'):NewAddon('Dominos', 'AceEvent-3.0', 'AceConsole-3.0')
-local L = LibStub('AceLocale-3.0'):GetLocale('Dominos')
-local CURRENT_VERSION = GetAddOnMetadata('Dominos', 'Version')
+local AddonName, Addon = ...
+
+Dominos = LibStub('AceAddon-3.0'):NewAddon(AddonName, 'AceEvent-3.0', 'AceConsole-3.0')
+local L = LibStub('AceLocale-3.0'):GetLocale(AddonName)
+
+local CURRENT_VERSION = GetAddOnMetadata(AddonName, 'Version')
+local CONFIG_ADDON_NAME = AddonName .. '_Config'
 
 
 --[[ Startup ]]--
@@ -50,11 +54,12 @@ function Dominos:OnEnable()
 	self:HideBlizzard()
 	self:CreateDataBrokerPlugin()
 	self:Load()
+
 	self.MultiActionBarGridFixer:SetShowGrid(self:ShowGrid())
 end
 
 function Dominos:CreateDataBrokerPlugin()
-	local dataObject = LibStub:GetLibrary('LibDataBroker-1.1'):NewDataObject('Dominos', {
+	local dataObject = LibStub:GetLibrary('LibDataBroker-1.1'):NewDataObject(AddonName, {
 		type = 'launcher',
 
 		icon = [[Interface\Addons\Dominos\Dominos]],
@@ -73,7 +78,7 @@ function Dominos:CreateDataBrokerPlugin()
 
 		OnTooltipShow = function(tooltip)
 			if not tooltip or not tooltip.AddLine then return end
-			tooltip:AddLine('Dominos')
+			tooltip:AddLine(AddonName)
 
 			if Dominos:Locked() then
 				tooltip:AddLine(L.ConfigEnterTip)
@@ -89,15 +94,14 @@ function Dominos:CreateDataBrokerPlugin()
 					tooltip:AddLine(L.BindingEnterTip)
 				end
 			end
-
-			local enabled = select(4, GetAddOnInfo('Dominos_Config'))
-			if enabled then
+			
+			if self:IsConfigAddonEnabled() then
 				tooltip:AddLine(L.ShowOptionsTip)
 			end
 		end,
 	})
 	
-	LibStub('LibDBIcon-1.0'):Register('Dominos', dataObject, self.db.profile.minimap)
+	LibStub('LibDBIcon-1.0'):Register(AddonName, dataObject, self.db.profile.minimap)
 end
 
 --[[ Version Updating ]]--
@@ -154,7 +158,9 @@ end
 --Load is called  when the addon is first enabled, and also whenever a profile is loaded
 function Dominos:Load()
 	for i, module in self:IterateModules() do
-		module:Load()
+		if module.Load then
+			module:Load()
+		end
 	end
 
 	self.Frame:ForAll('Reanchor')
@@ -165,7 +171,9 @@ end
 function Dominos:Unload()
 	--unload any module stuff
 	for i, module in self:IterateModules() do
-		module:Unload()
+		if module.Unload then
+			module:Unload()
+		end
 	end
 end
 
@@ -403,6 +411,7 @@ function Dominos:NewMenu(id)
 	if not self.Menu then
 		LoadAddOn('Dominos_Config')
 	end
+
 	return self.Menu and self.Menu:New(id)
 end
 
@@ -466,6 +475,9 @@ function Dominos:OnCmd(args)
 		self:PrintHelp()
 	elseif cmd == 'statedump' then
 		self.OverrideController:DumpStates()
+	elseif cmd == 'configstatus' then
+		local status = self:IsConfigAddonEnabled() and 'ENABLED' or 'DISABLED'
+		print(('Config Mode Status: %s'):format(status))
 	--options stuff
 	else
 		if not self:ShowOptions() then
@@ -474,34 +486,41 @@ function Dominos:OnCmd(args)
 	end
 end
 
-function Dominos:PrintHelp(cmd)
+do
 	local function PrintCmd(cmd, desc)
 		print(format(' - |cFF33FF99%s|r: %s', cmd, desc))
 	end
 
-	self:Print('Commands (/dom, /dominos)')
-	PrintCmd('config', L.ConfigDesc)
-	PrintCmd('scale <frameList> <scale>', L.SetScaleDesc)
-	PrintCmd('setalpha <frameList> <opacity>', L.SetAlphaDesc)
-	PrintCmd('fade <frameList> <opacity>', L.SetFadeDesc)
-	PrintCmd('setcols <frameList> <columns>', L.SetColsDesc)
-	PrintCmd('pad <frameList> <padding>', L.SetPadDesc)
-	PrintCmd('space <frameList> <spacing>', L.SetSpacingDesc)
-	PrintCmd('show <frameList>', L.ShowFramesDesc)
-	PrintCmd('hide <frameList>', L.HideFramesDesc)
-	PrintCmd('toggle <frameList>', L.ToggleFramesDesc)
-	PrintCmd('save <profile>', L.SaveDesc)
-	PrintCmd('set <profile>', L.SetDesc)
-	PrintCmd('copy <profile>', L.CopyDesc)
-	PrintCmd('delete <profile>', L.DeleteDesc)
-	PrintCmd('reset', L.ResetDesc)
-	PrintCmd('list', L.ListDesc)
-	PrintCmd('version', L.PrintVersionDesc)
+	function Dominos:PrintHelp(cmd)
+		self:Print('Commands (/dom, /dominos)')
+
+		PrintCmd('config', L.ConfigDesc)
+		PrintCmd('scale <frameList> <scale>', L.SetScaleDesc)
+		PrintCmd('setalpha <frameList> <opacity>', L.SetAlphaDesc)
+		PrintCmd('fade <frameList> <opacity>', L.SetFadeDesc)
+		PrintCmd('setcols <frameList> <columns>', L.SetColsDesc)
+		PrintCmd('pad <frameList> <padding>', L.SetPadDesc)
+		PrintCmd('space <frameList> <spacing>', L.SetSpacingDesc)
+		PrintCmd('show <frameList>', L.ShowFramesDesc)
+		PrintCmd('hide <frameList>', L.HideFramesDesc)
+		PrintCmd('toggle <frameList>', L.ToggleFramesDesc)
+		PrintCmd('save <profile>', L.SaveDesc)
+		PrintCmd('set <profile>', L.SetDesc)
+		PrintCmd('copy <profile>', L.CopyDesc)
+		PrintCmd('delete <profile>', L.DeleteDesc)
+		PrintCmd('reset', L.ResetDesc)
+		PrintCmd('list', L.ListDesc)
+		PrintCmd('version', L.PrintVersionDesc)
+	end
 end
 
 --version info
 function Dominos:PrintVersion()
 	self:Print(DominosVersion)
+end
+
+function Dominos:IsConfigAddonEnabled()
+	return GetAddOnEnableState(UnitName('player'), AddonName .. '_Config') >= 1
 end
 
 
@@ -519,7 +538,7 @@ local function CreateConfigHelperDialog()
 	f:SetWidth(360)
 	f:SetHeight(120)
 	f:SetBackdrop{
-		bgFile='Interface\\DialogFrame\\UI-DialogBox-Background' ,
+		bgFile='Interface\\DialogFrame\\UI-DialogBox-Background',
 		edgeFile='Interface\\DialogFrame\\UI-DialogBox-Border',
 		tile = true,
 		insets = {left = 11, right = 12, top = 12, bottom = 11},
@@ -803,24 +822,20 @@ function Dominos:NumBars()
 	return self.db.profile.ab.count
 end
 
---tooltips
-function Dominos:ShouldShowTooltips()
-	if self:ShowTooltips() then
-		return (not InCombatLockdown()) or self:ShowCombatTooltips()
-	end
-	return false;	
-end
 
+--tooltips
 function Dominos:ShowTooltips()
 	return self.db.profile.showTooltips
 end
 
 function Dominos:SetShowTooltips(enable)
 	self.db.profile.showTooltips = enable or false
+	self:GetModule('Tooltips'):SetShowTooltips(enable)
 end
 
 function Dominos:SetShowCombatTooltips(enable)
 	self.db.profile.showTooltipsCombat = enable or false
+	self:GetModule('Tooltips'):SetShowTooltipsInCombat(enable)
 end
 
 function Dominos:ShowCombatTooltips()
