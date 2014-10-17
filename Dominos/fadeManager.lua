@@ -4,50 +4,11 @@
 		Necessary since using the blizzard fading functions can cause issues in combat
 --]]
 
-
---[[ Animation Timer ]]--
-
-local function timer_Create()
-	local timer = CreateFrame('Frame')
-
-	local updater = timer:CreateAnimationGroup()
-	updater:SetLooping('NONE')
-	updater:SetScript('OnFinished', function(self)
-		if timer.OnFinished then
-			timer:OnFinished()
-		end
-	end)
-
-	local a = updater:CreateAnimation('Animation'); a:SetOrder(1)
-	timer.updater = updater
-
-	timer.Start = function(self)
-		self:Stop()
-		a:SetDuration(self.duration)
-		updater:Play()
-	end
-
-	timer.Stop = function(self)
-		if updater:IsPlaying() then
-			updater:Stop()
-		end
-	end
-
-	timer.IsPlaying = function(self)
-		return updater:IsPlaying()
-	end
-
-	return timer
-end
-
---[[ Code to watch frames as they're moused over ]]--
-
-local MouseOverWatcher = timer_Create()
+local MouseOverWatcher = {}; Dominos.MouseOverWatcher = MouseOverWatcher
+local Timer_After = _G['C_Timer'].After
 local watched = {}
 
-MouseOverWatcher.duration = 0.15
-
-function MouseOverWatcher:OnFinished()
+function MouseOverWatcher:Update()
 	for f in pairs(watched) do
 		if f:IsFocus() then
 			if not f.focused then
@@ -63,28 +24,40 @@ function MouseOverWatcher:OnFinished()
 	end
 
 	if next(watched) then
-		self:Start()
+		self:RequestUpdate()		
+	end
+end
+
+function MouseOverWatcher:RequestUpdate()
+	if not self.__Update then
+		self.__Update = function()
+			self.__Waiting = false
+			self:Update()
+		end
+	end
+
+	if not self.__Waiting then
+		self.__Waiting = true
+		Timer_After(0.15, self.__Update)
 	end
 end
 
 function MouseOverWatcher:Add(f)
-	if watched[f] then return end
+	if not watched[f] then
+		watched[f] = true
 
-	watched[f] = true
-	f.focused = f:IsFocus() and true or nil
-	f:UpdateAlpha()
+		f.focused = f:IsFocus() and true or nil
+		f:UpdateAlpha()
 
-	if not self:IsPlaying() then
-		self:Start()
+		self:RequestUpdate()
 	end
 end
 
 function MouseOverWatcher:Remove(f)
-	if not watched[f] then return end
+	if watched[f] then
+		watched[f] = nil
 
-	watched[f] = nil
-	f.focused = nil
-	f:UpdateAlpha()
+		f.focused = nil
+		f:UpdateAlpha()
+	end
 end
-
-Dominos.MouseOverWatcher = MouseOverWatcher

@@ -13,6 +13,7 @@ local _G = _G
 local AddonName, Addon = ...
 local Dominos = _G['Dominos']
 local KeyBound = LibStub('LibKeyBound-1.0')
+local Timer_After = _G['C_Timer'].After
 
 
 --[[ 
@@ -178,7 +179,7 @@ function BindingsController:SetupAttributeMethods()
 end
 
 function BindingsController:HookBindingMethods()
-	local updateBindings = function() self:UpdateBindings() end
+	local updateBindings = function() self:RequestUpdateBindings() end
 
 	hooksecurefunc('SetBinding', updateBindings)
 	hooksecurefunc('SetBindingClick', updateBindings)
@@ -191,6 +192,7 @@ end
 function BindingsController:RegisterEvents()
 	self:SetScript('OnEvent', self.OnEvent)
 
+	self:RegisterEvent('PLAYER_REGEN_ENABLED')
 	self:RegisterEvent('UPDATE_BINDINGS')
 	self:RegisterEvent('PLAYER_LOGIN')
 	self:RegisterEvent('CVAR_UPDATE')
@@ -204,15 +206,21 @@ function BindingsController:UPDATE_BINDINGS(event)
 	self:UnregisterEvent(event)
 end
 
+function BindingsController:PLAYER_REGEN_ENABLED()
+	if self.__NeedsBindingUpdate then
+		self:RequestUpdateBindings()
+	end
+end
+
 function BindingsController:PLAYER_LOGIN()
 	self:UpdateCastOnKeyPress()
-	self:UpdateBindings()
+	self:RequestUpdateBindings()
 end
 
 function BindingsController:CVAR_UPDATE(event, variableName)
 	if variableName == 'ACTION_BUTTON_USE_KEY_DOWN' then
 		self:UpdateCastOnKeyPress()
-		self:UpdateBindings()
+		self:RequestUpdateBindings()
 	end			
 end
 
@@ -309,8 +317,29 @@ function BindingsController:HasSurrogate(button)
 	return self.surrogates[button]
 end
 
---[[ note, i'm probably going to want to throttle this ]]--
+function BindingsController:RequestUpdateBindings()
+	if not self.__UpdateBindings then		
+		self.__UpdateBindings = function()
+			self.__WaitingToUpdateBindings = false
+			self:UpdateBindings()
+		end
+	end
+
+	if not self.__WaitingToUpdateBindings then
+		self.__WaitingToUpdateBindings = true
+
+		Timer_After(0.2, self.__UpdateBindings)
+	end
+end
+
 function BindingsController:UpdateBindings()
+	if InCombatLockdown() then
+		self.__NeedsBindingUpdate = true
+		return
+	end
+
+	self.__NeedsBindingUpdate = nil
+
 	for button in pairs(self.frames) do
 		button:UpdateHotkey()
 
