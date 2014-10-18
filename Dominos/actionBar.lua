@@ -430,10 +430,8 @@ do
 		if type(text) == 'function' then
 			s.stateTextFunc = text
 		else
-			title:SetText(text or 'UNKNOWN STATE')
+			title:SetText(text or L['State_' .. stateId:upper()])
 		end
-
-		--title:SetText(text or L['State_' .. stateId:upper()])
 
 		local value = s.valText
 		value:ClearAllPoints()
