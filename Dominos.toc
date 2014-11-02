@@ -8,10 +8,10 @@
 embeds.xml
 localization.xml
 Dominos.lua
+core\configOverlay.lua
 fadeManager.lua
 overrideController.lua
 tooltipController.lua
-drag.lua
 frame.lua
 bindableButton.lua
 bindingsController.lua
