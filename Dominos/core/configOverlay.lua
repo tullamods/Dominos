@@ -2,7 +2,9 @@
 	configOverlay.lua
 		The configuration overlay interface for dominos
 --]]
+local AddonName, Addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale('Dominos')
+local KEYBOARD_MOVEMENT_INCREMENT = 1
 
 local function rgbToHSL(r, g, b)
 	local h, s, l
@@ -118,6 +120,19 @@ local function colorFader_Create(parent, saveColor, loadColor)
 	return fader
 end
 
+local function movementButton_Create(name, parent)
+	local button = CreateFrame('Button', parent:GetName() .. name, parent)
+
+	button:SetSize(24, 24)
+	button:RegisterForClicks('AnyUp')
+
+	local bg = button:CreateTexture(nil, 'OVERLAY')
+	bg:SetAllPoints(button)
+	bg:SetTexture(0, 0, 0, 0.5)			
+
+	return button	
+end
+
 
 -- [[ overlay that goes on each bar for configuration ]]--
 
@@ -134,13 +149,24 @@ do
 		insets   = 	{ left = 2, right = 2, top = 2, bottom = 2 },
 	}
 
+	local getNextOverlayFrameName
+
+	do
+		local overlayFrameId = 0
+
+		getNextOverlayFrameName = function()
+			overlayFrameId = overlayFrameId + 1
+
+			return ('%sOverlayFrame%d'):format(AddonName, overlayFrameId)
+		end
+	end
+
 	function FrameOverlay:New(owner, parent)
-		local f = self:Bind(CreateFrame('Button', nil, parent))
+		local f = self:Bind(CreateFrame('Button', getNextOverlayFrameName(), parent))
 		f.owner = owner
 
 		f:EnableMouseWheel(true)
 		f:SetClampedToScreen(true)
-		--f:SetFrameStrata(owner:GetFrameStrata())
 		f:SetAllPoints(owner)
 		f:SetFrameLevel(owner:GetFrameLevel() + 5)
 		f:SetBackdrop(BACKDROP)
@@ -156,28 +182,119 @@ do
 		f:SetScript('OnClick', self.OnClick)
 		f:SetScript('OnEnter', self.OnEnter)
 		f:SetScript('OnLeave', self.OnLeave)
+		f:SetScript('OnKeyUp', f.OnKeyUp)
+		f:SetScript('OnKeyDown', f.OnKeyDown)
 
 		f:UpdateColor(true)
 		f:UpdateBorderColor(true)
+		f:EnableKeyboard(true)		
+
+		-- local leftButton = movementButton_Create('MoveLeftButton', f)
+		
+		-- leftButton:SetPoint('RIGHT', f, 'LEFT', 0, 0)
+		
+		-- leftButton:SetScript('OnClick', function(self, ...) 
+		-- 	print('left', ...)
+		-- 	f:MoveLeft(...)
+		-- end)
+
+		-- local rightButton = movementButton_Create('MoveRightButton', f)
+		
+		-- rightButton:SetPoint('LEFT', f, 'RIGHT', 0, 0)
+		
+		-- rightButton:SetScript('OnClick', function(self, ...) 
+		-- 	print('right', ...)
+		-- 	f:MoveRight(...)
+		-- end)			
+
+		-- local upButton = movementButton_Create('MoveUpButton', f)
+		
+		-- upButton:SetPoint('BOTTOM', f, 'TOP', 0, 0)
+		
+		-- upButton:SetScript('OnClick', function(self, ...) 
+		-- 	print('up', ...)
+		-- 	f:MoveUp(...)
+		-- end)
+
+
+		-- local downButton = movementButton_Create('MoveDownButton', f)
+		
+		-- downButton:SetPoint('TOP', f, 'BOTTOM', 0, 0)
+		
+		-- downButton:SetScript('OnClick', function(self, ...) 
+		-- 	print('down', ...)
+		-- 	f:MoveDown(...)
+		-- end)
+
 
 		return f
 	end
 
+	function FrameOverlay:OnKeyUp(key)
+		-- local handled = false
+
+		-- if self.watchingKeyboardMovement then
+		-- 	if key == 'UP' then
+		-- 		self:StopMovingUp()
+		-- 	elseif key == 'DOWN' then
+		-- 		self:StopMovingDown()
+		-- 	elseif key == 'LEFT' then
+		-- 		self:StopMovingLeft()
+		-- 	elseif key == 'RIGHT' then
+		-- 		self:StopMovingRight()
+		-- 	end
+		-- end
+	end
+
+	function FrameOverlay:OnKeyDown(key)
+		local handled = false
+
+		if self.watchingKeyboardMovement then
+			if key == 'UP' then
+				self:NudgeFrame(0, KEYBOARD_MOVEMENT_INCREMENT)		
+				handled = true
+			elseif key == 'DOWN' then
+				self:NudgeFrame(0, -KEYBOARD_MOVEMENT_INCREMENT)				
+				handled = true
+			elseif key == 'LEFT' then
+				self:NudgeFrame(-KEYBOARD_MOVEMENT_INCREMENT, 0)
+				handled = true
+			elseif key == 'RIGHT' then
+				self:NudgeFrame(KEYBOARD_MOVEMENT_INCREMENT, 0)		
+				handled = true
+			end
+		end
+
+		self:SetPropagateKeyboardInput(not handled)	
+	end	
+
+	function FrameOverlay:EnableArrowKeyMovement()		
+		self.watchingKeyboardMovement = true	
+		self:EnableKeyboard(true)
+	end
+
+	function FrameOverlay:DisableArrowKeyMovement()
+		self.watchingKeyboardMovement = nil	
+		self:EnableKeyboard(false)
+	end
+
 	function FrameOverlay:OnEnter()
 		if not self.isMouseOver then
-			self.isMouseOver = true
+			self.isMouseOver = true	
 
 			self:UpdateTooltip()
 			self:UpdateBorderColor()
+			self:EnableArrowKeyMovement()
 		end
 	end
 
 	function FrameOverlay:OnLeave()
 		if self.isMouseOver then
-			self.isMouseOver = nil
+			self.isMouseOver = nil			
 
 			self:UpdateBorderColor()
 			GameTooltip:Hide()
+			self:DisableArrowKeyMovement()
 		end
 	end
 
@@ -232,6 +349,16 @@ do
 		self:UpdateTooltip()
 		self:UpdateColor()
 		self:UpdateBorderColor()
+	end
+
+	function FrameOverlay:NudgeFrame(dx, dy)
+		local point, x, y = self.owner:GetRelativeFramePosition()
+
+		self.owner:ClearAnchor()
+		self.owner:SetAndSaveFramePosition(point, x + dx, y + dy)
+		self.owner:Stick()
+		
+		self:UpdateColor()		
 	end
 
 	function FrameOverlay:UpdateTooltip()
@@ -365,7 +492,7 @@ end
 do
 	local ConfigOverlay = Dominos:NewModule('ConfigOverlay')
 	local frameOverlays = {}
-
+	
 	function ConfigOverlay:OnInitialize()
 		-- create overlay background
 		local overlay = CreateFrame('Frame', nil, _G['UIParent'], 'SecureHandlerStateTemplate')
