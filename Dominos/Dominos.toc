@@ -8,7 +8,7 @@
 embeds.xml
 localization.xml
 Dominos.lua
-core\configOverlay.lua
+configOverlay.lua
 fadeManager.lua
 overrideController.lua
 tooltipController.lua
