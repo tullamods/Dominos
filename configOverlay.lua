@@ -6,6 +6,14 @@ local AddonName, Addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale('Dominos')
 local KEYBOARD_MOVEMENT_INCREMENT = 1
 
+local round = function(x)	
+	if x > 0 then
+		return math.floor(x + 0.5)
+	end
+
+	return math.ceil(x - 0.5)	
+end
+
 local function rgbToHSL(r, g, b)
 	local h, s, l
 
@@ -120,19 +128,6 @@ local function colorFader_Create(parent, saveColor, loadColor)
 	return fader
 end
 
-local function movementButton_Create(name, parent)
-	local button = CreateFrame('Button', parent:GetName() .. name, parent)
-
-	button:SetSize(24, 24)
-	button:RegisterForClicks('AnyUp')
-
-	local bg = button:CreateTexture(nil, 'OVERLAY')
-	bg:SetAllPoints(button)
-	bg:SetTexture(0, 0, 0, 0.5)			
-
-	return button	
-end
-
 
 -- [[ overlay that goes on each bar for configuration ]]--
 
@@ -189,61 +184,7 @@ do
 		f:UpdateBorderColor(true)
 		f:EnableKeyboard(true)		
 
-		-- local leftButton = movementButton_Create('MoveLeftButton', f)
-		
-		-- leftButton:SetPoint('RIGHT', f, 'LEFT', 0, 0)
-		
-		-- leftButton:SetScript('OnClick', function(self, ...) 
-		-- 	print('left', ...)
-		-- 	f:MoveLeft(...)
-		-- end)
-
-		-- local rightButton = movementButton_Create('MoveRightButton', f)
-		
-		-- rightButton:SetPoint('LEFT', f, 'RIGHT', 0, 0)
-		
-		-- rightButton:SetScript('OnClick', function(self, ...) 
-		-- 	print('right', ...)
-		-- 	f:MoveRight(...)
-		-- end)			
-
-		-- local upButton = movementButton_Create('MoveUpButton', f)
-		
-		-- upButton:SetPoint('BOTTOM', f, 'TOP', 0, 0)
-		
-		-- upButton:SetScript('OnClick', function(self, ...) 
-		-- 	print('up', ...)
-		-- 	f:MoveUp(...)
-		-- end)
-
-
-		-- local downButton = movementButton_Create('MoveDownButton', f)
-		
-		-- downButton:SetPoint('TOP', f, 'BOTTOM', 0, 0)
-		
-		-- downButton:SetScript('OnClick', function(self, ...) 
-		-- 	print('down', ...)
-		-- 	f:MoveDown(...)
-		-- end)
-
-
 		return f
-	end
-
-	function FrameOverlay:OnKeyUp(key)
-		-- local handled = false
-
-		-- if self.watchingKeyboardMovement then
-		-- 	if key == 'UP' then
-		-- 		self:StopMovingUp()
-		-- 	elseif key == 'DOWN' then
-		-- 		self:StopMovingDown()
-		-- 	elseif key == 'LEFT' then
-		-- 		self:StopMovingLeft()
-		-- 	elseif key == 'RIGHT' then
-		-- 		self:StopMovingRight()
-		-- 	end
-		-- end
 	end
 
 	function FrameOverlay:OnKeyDown(key)
@@ -354,11 +295,12 @@ do
 	function FrameOverlay:NudgeFrame(dx, dy)
 		local point, x, y = self.owner:GetRelativeFramePosition()
 
-		self.owner:ClearAnchor()
-		self.owner:SetAndSaveFramePosition(point, x + dx, y + dy)
-		self.owner:Stick()
-		
-		self:UpdateColor()		
+		if self.owner:GetAnchor() then
+			self.owner:ClearAnchor()
+			self:UpdateColor()		
+		end
+
+		self.owner:SetAndSaveFramePosition(point, round(x + dx), round(y + dy))		
 	end
 
 	function FrameOverlay:UpdateTooltip()
@@ -569,7 +511,7 @@ do
 				frameOverlays[frame] = frameOverlay
 			end
 		end
-	end
+	end	
 
 	function ConfigOverlay:CreateHelpDialog()
 		local f = CreateFrame('Frame', 'DominosConfigHelperDialog', self.overlay)
