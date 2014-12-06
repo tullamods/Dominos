@@ -25,7 +25,7 @@ L.SetAlphaDesc = "Imposta l'opacità di <frameList>"
 L.SetFadeDesc = "Imposta la dissolvenza di <frameList>"
 
 L.SetColsDesc = 'Imposta il numero di colonne per <frameList>'
-L.SetPadDesc = 'Imposta la quantità di spazio intorno alla barra per <frameList>'
+L.SetPadDesc = "Imposta l'imbottitura per <frameList>"
 L.SetSpacingDesc = 'Imposta la distanza per <frameList>'
 
 L.ShowFramesDesc = 'Mostra la barra <frameList>'
@@ -50,7 +50,7 @@ L.SetAlpha = "<Rotella del mouse> per impostare l'opacità (|cffffffff%d|r)"
 
 --minimap button stuff
 L.ConfigEnterTip = '<Clic Sinistro> per entrare nella modalità configurazione.'
-L.ConfigExitTip = '<Clic Sinistro> per uscire dalla modalità configurare.'
+L.ConfigExitTip = '<Clic Sinistro> per uscire dalla modalità configurazione.'
 L.BindingEnterTip = '<Shift+Clic Sinistro> per entrare nella modalità assegnazione.'
 L.BindingExitTip = '<Shift+Clic Sinistro> per uscire dalla modalità assegnazione.'
 L.ShowOptionsTip = '<Clic Destro> per mostrare il menù opzioni.'
@@ -58,10 +58,10 @@ L.ShowOptionsTip = '<Clic Destro> per mostrare il menù opzioni.'
 --helper dialog stuff
 L.ConfigMode = 'Modalità Configurazione'
 L.ConfigModeExit = 'Esci dalla Modalità Configurazione'
-L.ConfigModeHelp = '<Trascina> qualsiasi barra per muoverla.  <Clic Destro> per configurare.  <Clic Centrale> o <Shift+Clic Destro> per cambiare la visibilità'
+L.ConfigModeHelp = '<Trascina> qualsiasi barra per muoverla.            <Clic Destro> per configurare.  <Clic Centrale> o <Shift+Clic Destro> per cambiare la visibilità'
 
 --bar tooltips
-L.TipRollBar = 'Mostra la finestra dei tiri del bottino quando ci si trova in un gruppo'
+L.TipRollBar = 'Mostra la finestra dei tiri del bottino quando ci si trova in un gruppo.'
 L.TipVehicleBar = [[
 Mostra i controlli per entrare e uscire da un veicolo.
 Tutte le altre azioni del veicolo sono visualizzate sulla barra principale in uso.]]
