@@ -1,4 +1,4 @@
---[[ 
+--[[
 	Action Button.lua
 		A dominos action button
 --]]
@@ -42,13 +42,13 @@ function ActionButton:New(id)
 			local state = message
 			local overridePage = self:GetParent():GetAttribute('state-overridepage')
 			local newActionID
-			
+
 			if state == 'override' then
 				newActionID = self:GetAttribute('button--index') + (overridePage - 1) * 12
 			else
 				newActionID = state and self:GetAttribute('action--' .. state) or self:GetAttribute('action--base')
 			end
-			
+
 			if newActionID ~= self:GetAttribute('action') then
 				self:SetAttribute('action', newActionID)
 				self:CallMethod('UpdateState')
@@ -62,7 +62,7 @@ function ActionButton:New(id)
 		local hotkey = b.HotKey
 		if hotkey:GetText() == _G['RANGE_INDICATOR'] then
 			hotkey:SetText('')
-		end		
+		end
 
 		b:UpdateGrid()
 		b:UpdateMacro()
@@ -70,7 +70,7 @@ function ActionButton:New(id)
 		self.active[id] = b
 	end
 
-	return b	
+	return b
 end
 
 function ActionButton:Create(id)
@@ -111,20 +111,18 @@ end
 --destructor
 do
 	local HiddenActionButtonFrame = CreateFrame('Frame')
-	HiddenActionButtonFrame:Hide() 
+	HiddenActionButtonFrame:Hide()
 
 	function ActionButton:Free()
 		local id = self:GetAttribute('action--base')
 
 		self.active[id] = nil
-		
-		ActionBarActionEventsFrame_UnregisterFrame(self)
+
 		Tooltips:Unregister(self)
 		Bindings:Unregister(self)
-		
+
 		self:SetParent(HiddenActionButtonFrame)
 		self:Hide()
-		self.action = nil
 
 		self.unused[id] = self
 	end
@@ -146,7 +144,7 @@ hooksecurefunc('ActionButton_UpdateHotkeys', ActionButton.UpdateHotkey)
 --button visibility
 function ActionButton:UpdateGrid()
 	if InCombatLockdown() then return end
-	
+
 	if self:GetAttribute('showgrid') > 0 then
 		ActionButton_ShowGrid(self)
 	else
@@ -165,7 +163,7 @@ end
 
 function ActionButton:SetFlyoutDirection(direction)
 	if InCombatLockdown() then return end
-	
+
 	self:SetAttribute('flyoutDirection', direction)
 	ActionButton_UpdateFlyout(self)
 end
@@ -178,7 +176,7 @@ end
 function ActionButton:LoadAction()
 	local state = self:GetParent():GetAttribute('state-page')
 	local id = state and self:GetAttribute('action--' .. state) or self:GetAttribute('action--base')
-	
+
 	self:SetAttribute('action', id)
 end
 
@@ -186,8 +184,8 @@ function ActionButton:Skin()
 	if not Dominos:Masque('Action Bar', self) then
 		self.icon:SetTexCoord(0.06, 0.94, 0.06, 0.94)
 		self:GetNormalTexture():SetVertexColor(1, 1, 1, 0.5)
-		
-		local floatingBG = _G[self:GetName() .. 'FloatingBG'] 
+
+		local floatingBG = _G[self:GetName() .. 'FloatingBG']
 		if floatingBG then
 			floatingBG:Hide()
 		end
