@@ -1,8 +1,8 @@
-## Interface: 60000
+## Interface: 60100
 ## Title: Dominos
 ## Notes: A main actionbar replacement
 ## Author: Tuller
-## Version: 6.0.13
+## Version: 6.1.0
 ## SavedVariables: DominosDB, DominosVersion
 ## OptionalDeps: Ace3, LibKeyBound-1.0, Masque, FlyPaper
 embeds.xml
