@@ -17,9 +17,9 @@ local MICRO_BUTTONS = {
 	"GuildMicroButton",
 	"EJMicroButton",
 	"CollectionsMicroButton",
-	"MainMenuMicroButton",
 	"StoreMicroButton",
 	"HelpMicroButton",
+	"MainMenuMicroButton"
 }
 
 local overrideButtons = {}
