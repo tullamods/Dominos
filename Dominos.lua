@@ -830,20 +830,31 @@ end
 
 --[[ Masque Support ]]--
 
-function Dominos:Masque(group, button, buttonData)
+function Dominos:Masque(groupName, button, buttonData)
 	local Masque = LibStub('Masque', true)
 	if Masque then
-		Masque:Group('Dominos', group):AddButton(button, buttonData)
-		return true
+		local group = Masque:Group('Dominos', groupName)
+
+		group:AddButton(button, buttonData)
+
+		return not group.Disable
 	end
+
+	return false
 end
 
-function Dominos:RemoveMasque(group, button)
+function Dominos:RemoveMasque(groupName, button)
 	local Masque = LibStub('Masque', true)
+
 	if Masque then
-		Masque:Group('Dominos', group):RemoveButton(button)
-		return true
+		local group = Masque:Group('Dominos', groupName)
+
+		group:RemoveButton(button, buttonData)
+
+		return not group.Disable
 	end
+
+	return false
 end
 
 
