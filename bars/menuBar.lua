@@ -15,13 +15,11 @@ local MICRO_BUTTONS = {
 	"AchievementMicroButton",
 	"QuestLogMicroButton",
 	"GuildMicroButton",
-	-- "PVPMicroButton",
-	"LFDMicroButton",
-	"CompanionsMicroButton",
 	"EJMicroButton",
+	"CollectionsMicroButton",
+	"MainMenuMicroButton",
 	"StoreMicroButton",
 	"HelpMicroButton",
-	"MainMenuMicroButton",
 }
 
 local overrideButtons = {}
@@ -33,13 +31,11 @@ local MICRO_BUTTON_NAMES = {
 	['AchievementMicroButton'] = _G['ACHIEVEMENT_BUTTON'],
 	['QuestLogMicroButton'] = _G['QUESTLOG_BUTTON'],
 	['GuildMicroButton'] = _G['LOOKINGFORGUILD'],
-	-- ['PVPMicroButton'] = _G['PLAYER_V_PLAYER'],
-	['LFDMicroButton'] = _G['DUNGEONS_BUTTON'],
 	['EJMicroButton'] = _G['ENCOUNTER_JOURNAL'],
-	['CompanionsMicroButton'] = _G['MOUNTS_AND_PETS'],
 	['MainMenuMicroButton'] = _G['MAINMENU_BUTTON'],
 	['HelpMicroButton'] = _G['HELP_BUTTON'],
-	['StoreMicroButton'] = _G['BLIZZARD_STORE']
+	['StoreMicroButton'] = _G['BLIZZARD_STORE'],
+	['CollectionsMicroButton'] = _G['COLLECTIONS']
 }
 
 
