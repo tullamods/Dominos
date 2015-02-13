@@ -1,4 +1,4 @@
-﻿--[[
+--[[
 	actionBar.lua
 		the code for Dominos action bars and buttons
 --]]
@@ -531,6 +531,115 @@ do
 		return p
 	end
 
+
+local function newMenu(menu, name, key, table)
+	local s
+	local f = CreateFrame("Frame", menu:GetName()..name, menu)
+	f:SetSize(24, 24)
+	f.button = CreateFrame("Button", f:GetName().."Button", f)
+	f.button:SetPoint("Top")
+	f.button:SetSize(24, 24)
+	f.button:SetNormalTexture("Interface\\ChatFrame\\UI-ChatIcon-ScrollDown-Up")
+	f.button:SetPushedTexture("Interface\\ChatFrame\\UI-ChatIcon-ScrollDown-Down")
+	f.button:SetDisabledTexture("Interface\\ChatFrame\\UI-ChatIcon-ScrollDown-Disabled")
+	f.button:SetHighlightTexture("Interface\\Buttons\\UI-Common-MouseHilight")
+
+	f.text = f:CreateFontString(f:GetName() .. 'Text', "OVERLAY", "GameFontHighlightSmall")
+	f.text:SetPoint("BottomLeft", f.button, "BottomRight", 6, 2)
+	f.text:SetJustifyH('LEFT')
+
+	local title = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+	title:SetPoint("TopLeft", f.button, "TopRight", 4, -2)
+	title:SetText(name)	
+
+	f:SetScript('OnShow', function(self)
+		if self~= f then
+			return
+		end
+		f:initialize()
+		f.text:SetText(f:GetParent().owner.sets[key])
+	end)
+
+	f:SetScript("OnHide", function() CloseDropDownMenus() end)
+
+	f.button:SetScript("OnClick", function(self)
+		ToggleDropDownMenu(1, nil, f, "cursor")
+		PlaySound("igMainMenuOptionCheckBoxOn")
+	end)
+
+	function f:initialize()
+		local owner = f:GetParent().owner
+		local info = UIDropDownMenu_CreateInfo()
+		for i, anchor in ipairs(table) do
+			wipe(info)
+			info.text = anchor
+			info.func = function(item, name)
+				owner.sets[key] = name
+				owner:Layout()
+				f.text:SetText(name)
+			end
+			info.checked = (anchor == owner.sets[key])
+			info.arg1 = anchor
+			UIDropDownMenu_AddButton(info)
+		end
+	end
+	
+	local dropDownList = _G["DropDownList"..1]
+	dropDownList.dropdown = f
+	dropDownList.shouldRefresh = true
+	
+	local prev = menu.checkbutton
+	if prev then
+		f:SetPoint('TOP', prev, 'BOTTOM', 0, -0)
+	else
+		f:SetPoint('TOPLEFT', 2, -5)
+	end
+	f.point = {f:GetPoint()}
+	menu.checkbutton = f.button
+
+	menu.height = menu.height + 32
+	return f
+
+end
+
+	local shapes = {
+		"Round",
+		"Bar"
+	}
+
+	local function StylePanel(menu)
+		local p = menu:NewPanel("Style")
+		local style = newMenu(p, "Style", "style", shapes)
+	
+		local h = p:NewSlider("Height", 8, 250, 1)
+		h.OnShow = function(self)
+			self:SetValue(self:GetParent().owner.sets.height)
+		end
+		h.UpdateValue = function(self, value)
+			self:GetParent().owner.sets.height = value
+			self:GetParent().owner:Layout()
+		end
+
+		local w = p:NewSlider("Width", 8, 250, 1)
+		w.OnShow = function(self)
+			self:SetValue(self:GetParent().owner.sets.width)
+		end
+		w.UpdateValue = function(self, value)
+			self:GetParent().owner.sets.width = value
+			self:GetParent().owner:Layout()
+		end
+
+		local a = p:NewSlider("Angle", 0, 360, 1)
+		a.OnShow = function(self)
+			self:SetValue(self:GetParent().owner.sets.angle)
+		end
+		a.UpdateValue = function(self, value)
+			self:GetParent().owner.sets.angle = value
+			self:GetParent().owner:Layout()
+		end
+	end
+
+
 	function ActionBar:CreateMenu()
 		local menu = Dominos:NewMenu(self.id)
 
@@ -542,7 +651,7 @@ do
 		AddTargeting(menu)
 		AddShowState(menu)
 		AddAdvancedLayout(menu)
-
+		StylePanel(menu)
 		ActionBar.menu = menu
 	end
 end
