@@ -240,47 +240,101 @@ function Frame:GetTopToBottom()
 	return not self.sets.isBottomToTop
 end
 
+local shapes = {
+	"Round",
+	"Bar"
+}
+
+local Shapes = {
+				["Round"] = {true, true, true, true},
+				["SQUARE"] = {false, false, false, false},
+				["CORNER-TOPLEFT"] = {false, false, false, true},
+				["CORNER-TOPRIGHT"] = {false, false, true, false},
+				["CORNER-BOTTOMLEFT"] = {false, true, false, false},
+				["CORNER-BOTTOMRIGHT"] = {true, false, false, false},
+				["SIDE-LEFT"] = {false, true, false, true},
+				["SIDE-RIGHT"] = {true, false, true, false},
+				["SIDE-TOP"] = {false, false, true, true},
+				["SIDE-BOTTOM"] = {true, true, false, false},
+				["TRICORNER-TOPLEFT"] = {false, true, true, true},
+				["TRICORNER-TOPRIGHT"] = {true, false, true, true},
+				["TRICORNER-BOTTOMLEFT"] = {true, true, false, true},
+				["TRICORNER-BOTTOMRIGHT"] = {true, true, true, false},
+			}
+
 function Frame:Layout()
 	local width, height
 
-	if #self.buttons > 0 then
-		local cols = min(self:NumColumns(), #self.buttons)
-		local rows = ceil(#self.buttons / cols)
-		local pW, pH = self:GetPadding()
-		local spacing = self:GetSpacing()
-		local isLeftToRight = self:GetLeftToRight()
-		local isTopToBottom = self:GetTopToBottom()
+	self.sets.style = self.sets.style or "Round"
+	self.sets.angle = self.sets.angle or 0
+	self.sets.width = self.sets.width or 100
+	self.sets.height = self.sets.height or 100
 
-		local b = self.buttons[1]
-		local w = b:GetWidth() + spacing
-		local h = b:GetHeight() + spacing
-
-		for i,b in pairs(self.buttons) do
-			local col
-			local row
-			if isLeftToRight then
-				col = (i-1) % cols
-			else
-				col = (cols-1) - (i-1) % cols
-			end
-
-			if isTopToBottom then
-				row = ceil(i / cols) - 1
-			else
-				row = rows - ceil(i / cols)
-			end
-
-			b:ClearAllPoints()
-			b:SetPoint('TOPLEFT', w*col + pW, -(h*row + pH))
+	if self.sets.style == "Round" then
+		for i,button in pairs(self.buttons) do
+				local angle = math.rad(self.sets.angle + ((360/self:NumButtons()) *i)- (360/self:NumButtons()))
+				local x, y, q = math.cos(angle), math.sin(angle), 1
+				if x < 0 then q = q + 1 end
+				if y > 0 then q = q + 2 end
+				local quadTable = Shapes[self.sets.style]
+				local w = self.sets.width
+				local h = self.sets.height
+				if quadTable[q] then
+					x, y = x*w, y*h
+				else
+					x = math.max(-w, math.min(x*w, eighty))
+					y = math.max(-h, math.min(y*h, eighty))
+				end
+				button:ClearAllPoints()
+				if self:GetLeftToRight() then
+					x = -x
+				end
+				if self:GetTopToBottom() then
+					y = -y
+				end
+				button:SetPoint("CENTER", self, "CENTER", x, y)
 		end
-
-		width = w*cols - spacing + pW*2
-		height = h*ceil(#self.buttons/cols) - spacing + pH*2
+		local pW, pH = self:GetPadding()
+		width, height = self.sets.width+pW, self.sets.height+pH
 	else
-		width = 30
-		height = 30
-	end
+		if #self.buttons > 0 then
+			local cols = min(self:NumColumns(), #self.buttons)
+			local rows = ceil(#self.buttons / cols)
+			local pW, pH = self:GetPadding()
+			local spacing = self:GetSpacing()
+			local isLeftToRight = self:GetLeftToRight()
+			local isTopToBottom = self:GetTopToBottom()
 
+			local b = self.buttons[1]
+			local w = b:GetWidth() + spacing
+			local h = b:GetHeight() + spacing
+
+			for i,b in pairs(self.buttons) do
+				local col
+				local row
+				if isLeftToRight then
+					col = (i-1) % cols
+				else
+					col = (cols-1) - (i-1) % cols
+				end
+
+				if isTopToBottom then
+					row = ceil(i / cols) - 1
+				else
+					row = rows - ceil(i / cols)
+				end
+
+				b:ClearAllPoints()
+				b:SetPoint('TOPLEFT', w*col + pW, -(h*row + pH))
+			end
+
+			width = w*cols - spacing + pW*2
+			height = h*ceil(#self.buttons/cols) - spacing + pH*2
+		else
+			width = 30
+			height = 30
+		end
+	end
 	self:SetSize(max(width, 8), max(height, 8))
 end
 
@@ -844,10 +898,89 @@ end
 
 --[[ Menus ]]--
 
+
+local function newMenu(menu, name, key, table)
+	local s
+	local f = CreateFrame("Frame", menu:GetName()..name, menu)
+	f:SetSize(24, 24)
+	f.button = CreateFrame("Button", f:GetName().."Button", f)
+	f.button:SetPoint("Top")
+	f.button:SetSize(24, 24)
+	f.button:SetNormalTexture("Interface\\ChatFrame\\UI-ChatIcon-ScrollDown-Up")
+	f.button:SetPushedTexture("Interface\\ChatFrame\\UI-ChatIcon-ScrollDown-Down")
+	f.button:SetDisabledTexture("Interface\\ChatFrame\\UI-ChatIcon-ScrollDown-Disabled")
+	f.button:SetHighlightTexture("Interface\\Buttons\\UI-Common-MouseHilight")
+
+	f.text = f:CreateFontString(f:GetName() .. 'Text', "OVERLAY", "GameFontHighlightSmall")
+	f.text:SetPoint("BottomLeft", f.button, "BottomRight", 6, 2)
+	f.text:SetJustifyH('LEFT')
+
+	local title = f:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+	title:SetPoint("TopLeft", f.button, "TopRight", 4, -2)
+	title:SetText(name)	
+
+	f:SetScript('OnShow', function(self)
+		if self~= f then
+			return
+		end
+		f:initialize()
+		f.text:SetText(f:GetParent().owner.sets[menu.name][key])
+	end)
+
+	f:SetScript("OnHide", function() CloseDropDownMenus() end)
+
+	f.button:SetScript("OnClick", function(self)
+		ToggleDropDownMenu(1, nil, f, "cursor")
+		PlaySound("igMainMenuOptionCheckBoxOn")
+	end)
+
+	function f:initialize()
+		local owner = f:GetParent().owner
+		local info = UIDropDownMenu_CreateInfo()
+		for i, anchor in ipairs(table) do
+			wipe(info)
+			info.text = anchor
+			info.func = function(item, name)
+				owner.sets[menu.name][key] = name
+				owner:Layout()
+				f.text:SetText(name)
+			end
+			info.checked = (anchor == owner.sets[menu.name][key])
+			info.arg1 = anchor
+			UIDropDownMenu_AddButton(info)
+		end
+	end
+	
+	local dropDownList = _G["DropDownList"..1]
+	dropDownList.dropdown = f
+	dropDownList.shouldRefresh = true
+	
+	local prev = menu.checkbutton
+	if prev then
+		f:SetPoint('TOP', prev, 'BOTTOM', 0, -0)
+	else
+		f:SetPoint('TOPLEFT', 2, -5)
+	end
+	f.point = {f:GetPoint()}
+	menu.checkbutton = f.button
+
+	menu.height = menu.height + 24
+	return f
+
+end
+
+
+
+local function StylePanel(menu)
+	local panel = menu:NewPanel("Style")
+	local style = newMenu(panel, "Style", "style", shapes)
+end
+
 function Frame:CreateMenu()
 	self.menu = Dominos:NewMenu(self.id)
 	self.menu:AddLayoutPanel()
 	self.menu:AddAdvancedPanel()
+	StylePanel(menu)
 end
 
 function Frame:ShowMenu()
