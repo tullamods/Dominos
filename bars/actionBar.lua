@@ -17,10 +17,12 @@ local format = string.format
 
 --[[ Action Bar ]]--
 
-local ActionBar = Dominos:CreateClass('Frame', Dominos.ButtonBar); Dominos.ActionBar = ActionBar
+local ActionBar = Dominos:CreateClass('Frame', Dominos.ButtonBar)
+Dominos.ActionBar = ActionBar
 
---metatable magic.  Basically this says, 'create a new table for this index'
---I do this so that I only create page tables for classes the user is actually playing
+-- Metatable magic.  Basically this says, 'create a new table for this index'
+-- I do this so that I only create page tables for classes the user is actually
+-- playing
 ActionBar.defaultOffsets = {
 	__index = function(t, i)
 		t[i] = {}
@@ -28,8 +30,9 @@ ActionBar.defaultOffsets = {
 	end
 }
 
---metatable magic.  Basically this says, 'create a new table for this index, with these defaults'
---I do this so that I only create page tables for classes the user is actually playing
+-- Metatable magic.  Basically this says, 'create a new table for this index,
+-- with these defaults. I do this so that I only create page tables for classes
+-- the user is actually playing
 ActionBar.mainbarOffsets = {
 	__index = function(t, i)
 		local pages = {
@@ -69,25 +72,26 @@ ActionBar.class = select(2, UnitClass('player'))
 local active = {}
 
 function ActionBar:New(id)
-	local f = self.super.New(self, id)
-	f.sets.pages = setmetatable(f.sets.pages, f.id == 1 and self.mainbarOffsets or self.defaultOffsets)
+	local bar = ActionBar.proto.New(self, id)
 
-	f.pages = f.sets.pages[f.class]
-	f.baseID = f:MaxLength() * (id-1)
+	bar.sets.pages = setmetatable(bar.sets.pages, bar.id == 1 and self.mainbarOffsets or self.defaultOffsets)
 
-	f:LoadButtons()
-	f:LoadStateController()
-	f:UpdateClickThrough()
-	f:UpdateStateDriver()
-	f:Layout()
-	f:UpdateGrid()
-	f:UpdateRightClickUnit()
-	f:SetScript('OnSizeChanged', self.OnSizeChanged)
-	f:UpdateFlyoutDirection()
+	bar.pages = bar.sets.pages[bar.class]
+	bar.baseID = bar:MaxLength() * (id-1)
 
-	active[id] = f
+	bar:LoadButtons()
+	bar:LoadStateController()
+	bar:UpdateClickThrough()
+	bar:UpdateStateDriver()
+	bar:Layout()
+	bar:UpdateGrid()
+	bar:UpdateRightClickUnit()
+	bar:SetScript('OnSizeChanged', self.OnSizeChanged)
+	bar:UpdateFlyoutDirection()
 
-	return f
+	active[id] = bar
+
+	return bar
 end
 
 function ActionBar:OnSizeChanged()
@@ -113,7 +117,8 @@ end
 
 function ActionBar:Free()
 	active[self.id] = nil
-	self.super.Free(self)
+
+	ActionBar.proto.Free(self)
 end
 
 --returns the maximum possible size for a given bar
@@ -127,6 +132,7 @@ end
 function ActionBar:LoadButtons()
 	for i = 1, self:NumButtons() do
 		local b = ActionButton:New(self.baseID + i)
+
 		if b then
 			b:SetParent(self.header)
 			b:SetFlyoutDirection(self:GetFlyoutDirection())
@@ -135,6 +141,7 @@ function ActionBar:LoadButtons()
 			break
 		end
 	end
+
 	self:UpdateActions()
 end
 
@@ -165,8 +172,8 @@ function ActionBar:GetOffset(stateId)
 end
 
 -- note to self:
--- if you leave a ; on the end of a statebutton string, it causes evaluation issues,
--- especially if you're doing right click selfcast on the base state
+-- if you leave a ; on the end of a statebutton string, it causes evaluation
+-- issues, especially if you're doing right click selfcast on the base state
 function ActionBar:UpdateStateDriver()
 	UnregisterStateDriver(self.header, 'page', 0)
 
@@ -270,16 +277,16 @@ end
 
 --Empty button display
 function ActionBar:ShowGrid()
-	for _,b in pairs(self.buttons) do
-		b:SetAttribute('showgrid', b:GetAttribute('showgrid') + 1)
-		b:UpdateGrid()
+	for _, button in pairs(self.buttons) do
+		button:SetAttribute('showgrid', button:GetAttribute('showgrid') + 1)
+		button:UpdateGrid()
 	end
 end
 
 function ActionBar:HideGrid()
-	for _,b in pairs(self.buttons) do
-		b:SetAttribute('showgrid', max(b:GetAttribute('showgrid') - 1, 0))
-		b:UpdateGrid()
+	for _, button in pairs(self.buttons) do
+		button:SetAttribute('showgrid', max(button:GetAttribute('showgrid') - 1, 0))
+		button:UpdateGrid()
 	end
 end
 
@@ -326,7 +333,8 @@ end
 
 function ActionBar:UpdateCooldownOpacities()
 	if self.transparent then
-		-- hide cooldown frames on transparent buttons by sticking them onto a different parent
+		-- hide cooldown frames on transparent buttons by sticking them onto a
+		-- different parent
 		for i, button in pairs(self.buttons) do
 			button.cooldown:SetParent(HiddenFrame)
 		end
@@ -352,34 +360,36 @@ function ActionBar:GetFlyoutDirection()
 		if anchor and anchor:match('LEFT') then
 			return 'RIGHT'
 		end
+
 		return 'LEFT'
 	end
 
 	if anchor and anchor:match('TOP') then
 		return 'DOWN'
 	end
+
 	return 'UP'
 end
 
 function ActionBar:UpdateFlyoutDirection()
-	if self.buttons then
-		local direction = self:GetFlyoutDirection()
+	local direction = self:GetFlyoutDirection()
 
-		--dear blizzard, I'd like to be able to use the useparent-* attribute stuff for this
-		for _,b in pairs(self.buttons) do
-			b:SetFlyoutDirection(direction)
-		end
+	-- dear blizzard, I'd like to be able to use the useparent-* attribute stuff for this
+	for _,b in pairs(self.buttons) do
+		b:SetFlyoutDirection(direction)
 	end
 end
 
 function ActionBar:SavePosition()
-	Dominos.Frame.SavePosition(self)
+	ActionBar.proto.SavePosition(self)
+
 	self:UpdateFlyoutDirection()
 end
 
 
---right click menu code for action bars
---TODO: Probably enable the showstate stuff for other bars, since every bar basically has showstate functionality for 'free'
+-- right click menu code for action bars
+-- TODO: Probably enable the showstate stuff for other bars, since every bar
+-- basically has showstate functionality for 'free'
 do
 	local L
 
@@ -458,14 +468,21 @@ do
 
 	--GetSpellInfo(spellID) is awesome for localization
 	local function addStatePanel(self, name, type)
-		local states = Dominos.BarStates:map(function(s) return s.type == type end)
+		local states = Dominos.BarStates:map(function(s)
+			return s.type == type
+		end)
+
 		if #states > 0 then
 			local p = self:NewPanel(name)
 
 			--HACK: Make the state panel wider for monks
 			--		since their stances have long names
 			local playerClass = select(2, UnitClass('player'))
-			local hasLongStanceNames = playerClass == 'MONK' or playerClass == 'ROGUE' or playerClass == 'DRUID'
+
+			local hasLongStanceNames = playerClass == 'MONK'
+									or playerClass == 'ROGUE'
+									or playerClass == 'DRUID'
+
 			for i = #states, 1, -1 do
 				local state = states[i]
 				local slider = ConditionSlider_New(p, state.id, state.text)
@@ -500,7 +517,7 @@ do
 		local p = self:NewPanel(L.ShowStates)
 		p.height = 56
 
-		local editBox = CreateFrame('EditBox', p:GetName() .. 'StateText', p,  'InputBoxTemplate')
+		local editBox = CreateFrame('EditBox', p:GetName() .. 'StateText', p, 'InputBoxTemplate')
 		editBox:SetWidth(148) editBox:SetHeight(20)
 		editBox:SetPoint('TOPLEFT', 12, -10)
 		editBox:SetAutoFocus(false)

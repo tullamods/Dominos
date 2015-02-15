@@ -9,7 +9,9 @@ embeds.xml
 localization.xml
 Dominos.lua
 core\classy.lua
+core\events.lua
 core\frame.lua
+core\buttonBar.lua
 core\configOverlay.lua
 core\bindableButton.lua
 fadeManager.lua

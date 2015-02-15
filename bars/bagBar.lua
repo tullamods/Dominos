@@ -10,7 +10,8 @@ local LBF = LibStub('LibButtonFacade', true)
 local BagBar = Dominos:CreateClass('Frame', Dominos.ButtonBar)
 
 function BagBar:New()
-	local f = self.super.New(self, 'bags')
+	local f = BagBar.proto.New(self, 'bags')
+
 	f:Reload()
 
 	return f

@@ -1,7 +1,7 @@
 local VehicleBar = Dominos:CreateClass('Frame', Dominos.ButtonBar)
 
 function VehicleBar:New()
-	local f = self.super.New(self, 'vehicle')
+	local f = VehicleBar.proto.New(self, 'vehicle')
 
 	f:LoadButtons()
 	f:Layout()
