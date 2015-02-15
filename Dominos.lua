@@ -859,20 +859,3 @@ end
 
 
 --[[ Utility Functions ]]--
-
---utility function: create a widget class
-function Dominos:CreateClass(type, parentClass)
-	local class = CreateFrame(type)
-	class.mt = {__index = class}
-
-	if parentClass then
-		class = setmetatable(class, {__index = parentClass})
-		class.super = parentClass
-	end
-
-	function class:Bind(o)
-		return setmetatable(o, self.mt)
-	end
-
-	return class
-end

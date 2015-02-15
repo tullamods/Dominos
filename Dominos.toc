@@ -8,12 +8,13 @@
 embeds.xml
 localization.xml
 Dominos.lua
-configOverlay.lua
+core\classy.lua
+core\frame.lua
+core\configOverlay.lua
+core\bindableButton.lua
 fadeManager.lua
 overrideController.lua
 tooltipController.lua
-frame.lua
-bindableButton.lua
 bindingsController.lua
 barStates.lua
 multiActionBarFixer.lua
