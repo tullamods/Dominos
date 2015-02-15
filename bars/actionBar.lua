@@ -1,4 +1,4 @@
-﻿--[[
+--[[
 	actionBar.lua
 		the code for Dominos action bars and buttons
 --]]
