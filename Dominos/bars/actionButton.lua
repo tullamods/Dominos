@@ -3,42 +3,53 @@
 		A dominos action button
 --]]
 
+local AddonName, Addon = ...
 local KeyBound = LibStub('LibKeyBound-1.0')
 local Bindings = Dominos.BindingsController
 local Tooltips = Dominos:GetModule('Tooltips')
 
 local ActionButton = Dominos:CreateClass('CheckButton', Dominos.BindableButton)
 Dominos.ActionButton = ActionButton
+
 ActionButton.unused = {}
 ActionButton.active = {}
 
+local function CreateActionButton(id)
+	local name = ('%sActionButton%d'):format(AddonName, id)
+
+	return CreateFrame('CheckButton', name, nil, 'ActionBarButtonTemplate')
+end
+
 local function GetOrCreateActionButton(id)
 	if id <= 12 then
-		local b = _G['ActionButton' .. id]
-		b.buttonType = 'ACTIONBUTTON'
-		return b
+		local button = _G[('ActionButton%d'):format(id)]
+
+		button.buttonType = 'ACTIONBUTTON'
+
+		return button
 	elseif id <= 24 then
-		return CreateFrame('CheckButton', 'DominosActionButton' .. (id-12), nil, 'ActionBarButtonTemplate')
+		return CreateActionButton(id - 12)
 	elseif id <= 36 then
-		return _G['MultiBarRightButton' .. (id-24)]
+		return _G[('MultiBarRightButton%d'):format(id - 24)]
 	elseif id <= 48 then
-		return _G['MultiBarLeftButton' .. (id-36)]
+		return _G[('MultiBarLeftButton%d'):format(id - 36)]
 	elseif id <= 60 then
-		return _G['MultiBarBottomRightButton' .. (id-48)]
+		return _G[('MultiBarBottomRightButton%d'):format(id - 48)]
 	elseif id <= 72 then
-		return _G['MultiBarBottomLeftButton' .. (id-60)]
+		return _G[('MultiBarBottomLeftButton%d'):format(id - 60)]
+	else
+		return CreateActionButton(id - 60)
 	end
-	return CreateFrame('CheckButton', 'DominosActionButton' .. (id-60), nil, 'ActionBarButtonTemplate')
 end
 
 --constructor
 function ActionButton:New(id)
-	local b = self:Restore(id) or self:Create(id)
+	local button = self:Restore(id) or self:Create(id)
 
-	if b then
-		b:SetAttribute('showgrid', 0)
-		b:SetAttribute('action--base', id)
-		b:SetAttribute('_childupdate-action', [[
+	if button then
+		button:SetAttribute('showgrid', 0)
+		button:SetAttribute('action--base', id)
+		button:SetAttribute('_childupdate-action', [[
 			local state = message
 			local overridePage = self:GetParent():GetAttribute('state-overridepage')
 			local newActionID
@@ -55,56 +66,59 @@ function ActionButton:New(id)
 			end
 		]])
 
-		Bindings:Register(b, b:GetName():match('DominosActionButton%d'))
-		Tooltips:Register(b)
+		Bindings:Register(button, button:GetName():match('DominosActionButton%d'))
+		Tooltips:Register(button)
 
 		--get rid of range indicator text
-		local hotkey = b.HotKey
+		local hotkey = button.HotKey
 		if hotkey:GetText() == _G['RANGE_INDICATOR'] then
 			hotkey:SetText('')
 		end
 
-		b:UpdateGrid()
-		b:UpdateMacro()
+		button:UpdateGrid()
+		button:UpdateMacro()
 
-		self.active[id] = b
+		self.active[id] = button
 	end
 
-	return b
+	return button
 end
 
 function ActionButton:Create(id)
-	local b = GetOrCreateActionButton(id)
+	local button = GetOrCreateActionButton(id)
 
-	if b then
-		self:Bind(b)
+	if button then
+		self:Bind(button)
 
 		--this is used to preserve the button's old id
 		--we cannot simply keep a button's id at > 0 or blizzard code will take control of paging
 		--but we need the button's id for the old bindings system
-		b:SetAttribute('bindingid', b:GetID())
-		b:SetID(0)
+		button:SetAttribute('bindingid', button:GetID())
+		button:SetID(0)
 
-		b:ClearAllPoints()
-		b:SetAttribute('useparent-actionpage', nil)
-		b:SetAttribute('useparent-unit', true)
-		b:EnableMouseWheel(true)
-		b:HookScript('OnEnter', self.OnEnter)
-		b:Skin()
+		button:ClearAllPoints()
+		button:SetAttribute('useparent-actionpage', nil)
+		button:SetAttribute('useparent-unit', true)
+		button:EnableMouseWheel(true)
+		button:HookScript('OnEnter', self.OnEnter)
+		button:Skin()
 	end
-	return b
+
+	return button
 end
 
 function ActionButton:Restore(id)
-	local b = self.unused[id]
+	local button = self.unused[id]
 
-	if b then
+	if button then
 		self.unused[id] = nil
-		b:LoadEvents()
-		ActionButton_UpdateAction(b)
-		b:Show()
-		self.active[id] = b
-		return b
+
+		button:LoadEvents()
+		ActionButton_UpdateAction(button)
+		button:Show()
+
+		self.active[id] = button
+		return button
 	end
 end
 
