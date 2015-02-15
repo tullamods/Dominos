@@ -1,6 +1,7 @@
-﻿--[[
-	bindableButton.lua
-		An abstract button class used to allow keybound to work transparently on both the stock blizzard bindings, and click bindings
+--[[
+	bindableButton:
+		An abstract button class used to allow keybound to work transparently
+		on both the stock blizzard bindings, and click bindings
 --]]
 
 --[[ Globals ]]--
@@ -12,25 +13,31 @@ local KeyBound = LibStub('LibKeyBound-1.0')
 
 --[[ Class ]]--
 
-local BindableButton = Dominos:CreateClass('CheckButton'); Dominos.BindableButton = BindableButton
+local BindableButton = Dominos:CreateClass('CheckButton')
+Dominos.BindableButton = BindableButton
 
---there's a nice assumption here: all hotkey text will use the same naming convention
---the call here is wacky because this functionality is actually called for the blizzard buttons _before_ I'm able to bind the action button methods to them
+-- there's a nice assumption here: all hotkey text will use the same naming
+-- convention the call here is wacky because this functionality is actually
+-- called for the blizzard buttons _before_ I'm able to bind the action button
+-- methods to them
 function BindableButton:UpdateHotkey(buttonType)
 	local key = BindableButton.GetHotkey(self, buttonType)
-	
+
 	if key ~= ''  and Dominos:ShowBindingText() then
 		self.HotKey:SetText(key)
 		self.HotKey:Show()
 	else
-		self.HotKey:SetText('') --blank out non blank text, such as RANGE_INDICATOR
+		--blank out non blank text, such as RANGE_INDICATOR
+		self.HotKey:SetText('')
 		self.HotKey:Hide()
 	end
 end
 
 --returns what hotkey to display for the button
 function BindableButton:GetHotkey(buttonType)
-	local key = BindableButton.GetBlizzBindings(self, buttonType) or BindableButton.GetClickBindings(self)
+	local key = BindableButton.GetBlizzBindings(self, buttonType)
+			 or BindableButton.GetClickBindings(self)
+
 	return key and KeyBound:ToShortKey(key) or ''
 end
 
@@ -99,13 +106,15 @@ function BindableButton:SetKey(key)
 end
 
 --clears all bindings from the button (keybound support again)
-local function ClearBindings(...)
-	for i = 1, select('#', ...) do
-		SetBinding(select(i, ...), nil)
+do
+	local function clearBindings(...)
+		for i = 1, select('#', ...) do
+			SetBinding(select(i, ...), nil)
+		end
 	end
-end
 
-function BindableButton:ClearBindings()
-	ClearBindings(self:GetBlizzBindings())
-	ClearBindings(self:GetClickBindings())
+	function BindableButton:ClearBindings()
+		clearBindings(self:GetBlizzBindings())
+		clearBindings(self:GetClickBindings())
+	end
 end
