@@ -27,14 +27,14 @@ do
 	end
 
 	function ExtraActionButton:Create(id)
-		local b = self:Bind(_G[('ExtraActionButton%d'):format(id)])
+		local button = self:Bind(_G[('ExtraActionButton%d'):format(id)])
 
-		if b then
-			b.buttonType = 'EXTRAACTIONBUTTON'
-			b:HookScript('OnEnter', self.OnEnter)
-			b:Skin()
+		if button then
+			button.buttonType = 'EXTRAACTIONBUTTON'
+			button:HookScript('OnEnter', self.OnEnter)
+			button:Skin()
 
-			return b
+			return button
 		end
 	end
 
@@ -78,11 +78,11 @@ end
 
 --[[ bar ]]--
 
-local ExtraBar = Dominos:CreateClass('Frame', Dominos.Frame)
+local ExtraBar = Dominos:CreateClass('Frame', Dominos.ButtonBar)
 
 function ExtraBar:New()
 	local f = Dominos.Frame.New(self, 'extra')
-	
+
 	f:LoadButtons()
 	f:Layout()
 	f:UpdateShowBlizzardTexture()
@@ -118,17 +118,6 @@ function ExtraBar:AddButton(i)
 	end
 end
 
-function ExtraBar:RemoveButton(i)
-	local b = self.buttons[i]
-
-	if b then
-		b:SetParent(nil)
-		b:Hide()
-
-		self.buttons[i] = nil
-	end
-end
-
 function ExtraBar:ShowBlizzardTexture(enable)
 	self.sets.hideBlizzardTeture = not enable
 
@@ -156,17 +145,17 @@ function ExtraBar:CreateMenu()
 	local menu = Dominos:NewMenu(bar.id)
 	local panel = menu:AddLayoutPanel()
 
-	local L = LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')	
+	local L = LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')
 	local showTextureButton = panel:NewCheckButton(L.ExtraBarShowBlizzardTexture)
 
 	showTextureButton:SetScript('OnShow', function(self)
 		self:SetChecked(bar:ShowingBlizzardTexture())
 	end)
-	
-	showTextureButton:SetScript('OnClick', function(self) 
+
+	showTextureButton:SetScript('OnClick', function(self)
 		bar:ShowBlizzardTexture(self:GetChecked())
 	end)
-		
+
 	menu:AddAdvancedPanel()
 	self.menu = menu
 end

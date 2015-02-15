@@ -40,7 +40,7 @@ do
 			button:Skin()
 		end
 
-		return button		
+		return button
 	end
 
 	--if we have button facade support, then skin the button that way
@@ -58,7 +58,7 @@ do
 		nt:SetPoint('BOTTOMRIGHT', 15 * r, -15 * r)
 
 		self.icon:SetTexCoord(0.06, 0.94, 0.06, 0.94)
-		self:GetNormalTexture():SetVertexColor(1, 1, 1, 0.5)	
+		self:GetNormalTexture():SetVertexColor(1, 1, 1, 0.5)
 	end
 
 	function StanceButton:Restore(id)
@@ -77,7 +77,7 @@ do
 
 		self:SetParent(nil)
 		self:Hide()
-		
+
 		Dominos.BindingsController:Unregister(self)
 		Dominos:GetModule('Tooltips'):Unregister(self)
 	end
@@ -91,14 +91,14 @@ end
 
 --[[ Bar ]]--
 
-local StanceBar = Dominos:CreateClass('Frame', Dominos.Frame)
+local StanceBar = Dominos:CreateClass('Frame', Dominos.ButtonBar)
 
 do
 	function StanceBar:New()
 		local f = Dominos.Frame.New(self, 'class')
 
 		f:SetScript('OnEvent', f.OnEvent)
-		
+
 		f:RegisterEvent('UPDATE_SHAPESHIFT_FORMS')
 		f:RegisterEvent('PLAYER_REGEN_ENABLED')
 		f:RegisterEvent('PLAYER_ENTERING_WORLD')
@@ -162,15 +162,7 @@ do
 
 		return b
 	end
-
-	function StanceBar:RemoveButton(i)
-		local b = self.buttons[i]
-		
-		self.buttons[i] = nil
-
-		b:Free()
-	end
-
+	
 	function StanceBar:UpdateNumForms()
 		if InCombatLockdown() then
 			return

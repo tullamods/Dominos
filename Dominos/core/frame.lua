@@ -15,9 +15,10 @@ function Frame:New(id, tooltipText)
 	local id = tonumber(id) or id
 
 	local f = self:Restore(id) or self:Create(id)
+
 	f:LoadSettings()
-	f.buttons = {}
 	f:SetTooltipText(tooltipText)
+
 	Dominos.OverrideController:Add(f.header)
 
 	active[id] = f
@@ -28,6 +29,7 @@ function Frame:Create(id)
 	local f = self:Bind(CreateFrame('Frame', format('DominosFrame%s', id), UIParent))
 	f:SetClampedToScreen(true)
 	f:SetMovable(true)
+
 	f.id = id
 
 
@@ -112,10 +114,6 @@ function Frame:Free()
 	Dominos.MouseOverWatcher:Remove(self)
 	Dominos.OverrideController:Remove(self.header)
 
-	for i in pairs(self.buttons) do
-		self:RemoveButton(i)
-	end
-	self.buttons = nil
 	self.docked = nil
 
 	self:ClearAllPoints()
@@ -130,7 +128,7 @@ function Frame:Delete()
 	Dominos:SetFrameSets(self.id, nil)
 end
 
-function Frame:LoadSettings(defaults)
+function Frame:LoadSettings()
 	self.sets = Dominos:GetFrameSets(self.id) or Dominos:SetFrameSets(self.id, self:GetDefaults()) --get defaults must be provided by anything implementing the Frame type
 	self:Reposition()
 
@@ -146,142 +144,28 @@ function Frame:LoadSettings(defaults)
 	self:ShowInPetBattleUI(self:ShowingInPetBattleUI())
 end
 
+
 --[[ Layout ]]--
-
---this function is used in a lot of places, but never called in Frame
-function Frame:LoadButtons()
-	if not self.AddButton then return end
-
-	for i = 1, self:NumButtons() do
-		self:AddButton(i)
-	end
-
-	self:UpdateClickThrough()
-end
-
-function Frame:RemoveButton(i)
-	local b = self.buttons and self.buttons[i]
-	if b and b.Free then
-		b:Free()
-		self.buttons[i] = nil
-	end
-end
-
-function Frame:UpdateButtonCount(numButtons)
-	for i = numButtons + 1, #self.buttons do
-		self:RemoveButton(i)
-	end
-
-	for i = #self.buttons + 1, numButtons do
-		self:AddButton(i)
-	end
-end
-
-function Frame:SetNumButtons(numButtons)
-	self.sets.numButtons = numButtons
-	self:UpdateButtonCount(self:NumButtons())
-	self:Layout()
-end
-
-function Frame:NumButtons()
-	return self.sets.numButtons or 0
-end
-
-function Frame:SetColumns(columns)
-	self.sets.columns = columns ~= self:NumButtons() and columns or nil
-	self:Layout()
-end
-
-function Frame:NumColumns()
-	return self.sets.columns or self:NumButtons()
-end
-
-function Frame:SetSpacing(spacing)
-	self.sets.spacing = spacing
-	self:Layout()
-end
-
-function Frame:GetSpacing()
-	return self.sets.spacing or 0
-end
 
 function Frame:SetPadding(w, h)
 	self.sets.padW = w
 	self.sets.padH = h or w
+
 	self:Layout()
 end
 
 function Frame:GetPadding()
 	local w = self.sets.padW or 0
 	local h = self.sets.padH or w
+
 	return w, h
 end
 
---the wackiness here is for backward compaitbility reasons, since I did not implement true defaults
-function Frame:SetLeftToRight(isLeftToRight)
-	local isRightToLeft = not isLeftToRight
-
-	self.sets.isRightToLeft = isRightToLeft and true or nil
-	self:Layout()
-end
-
-function Frame:GetLeftToRight()
-	return not self.sets.isRightToLeft
-end
-
-function Frame:SetTopToBottom(isTopToBottom)
-	local isBottomToTop = not isTopToBottom
-
-	self.sets.isBottomToTop = isBottomToTop and true or nil
-	self:Layout()
-end
-
-function Frame:GetTopToBottom()
-	return not self.sets.isBottomToTop
-end
-
 function Frame:Layout()
-	local width, height
+	local width, height = 32, 32
+	local paddingW, paddingH = self:GetPadding()
 
-	if #self.buttons > 0 then
-		local cols = min(self:NumColumns(), #self.buttons)
-		local rows = ceil(#self.buttons / cols)
-		local pW, pH = self:GetPadding()
-		local spacing = self:GetSpacing()
-		local isLeftToRight = self:GetLeftToRight()
-		local isTopToBottom = self:GetTopToBottom()
-
-		local b = self.buttons[1]
-		local w = b:GetWidth() + spacing
-		local h = b:GetHeight() + spacing
-
-		for i,b in pairs(self.buttons) do
-			local col
-			local row
-			if isLeftToRight then
-				col = (i-1) % cols
-			else
-				col = (cols-1) - (i-1) % cols
-			end
-
-			if isTopToBottom then
-				row = ceil(i / cols) - 1
-			else
-				row = rows - ceil(i / cols)
-			end
-
-			b:ClearAllPoints()
-			b:SetPoint('TOPLEFT', w*col + pW, -(h*row + pH))
-		end
-
-		width = w*cols - spacing + pW*2
-		height = h*ceil(#self.buttons/cols) - spacing + pH*2
-	else
-		width = 30
-		height = 30
-	end
-
-	self:SetSize(max(width, 8), max(height, 8))
+	self:SetSize(width + paddingW, height + paddingH)
 end
 
 
@@ -326,9 +210,7 @@ hooksecurefunc(Frame, 'SetAlpha', function(self, alpha)
 end)
 
 -- empty hook
-function Frame:OnSetAlpha(alpha)
-
-end
+function Frame:OnSetAlpha(alpha) end
 
 function Frame:SetFrameAlpha(alpha)
 	if alpha == 1 then
@@ -572,19 +454,7 @@ function Frame:GetClickThrough()
 	return self.sets.clickThrough
 end
 
-function Frame:UpdateClickThrough()
-	local buttons = self.buttons
-	if not buttons then return end
-
-	local clickThrough = self:GetClickThrough()
-	for i, button in pairs(self.buttons) do
-		if clickThrough then
-			button:EnableMouse(false)
-		else
-			button:EnableMouse(true)
-		end
-	end
-end
+function Frame:UpdateClickThrough() end
 
 
 --[[ Show states ]]--

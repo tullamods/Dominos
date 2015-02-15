@@ -17,7 +17,7 @@ local format = string.format
 
 --[[ Action Bar ]]--
 
-local ActionBar = Dominos:CreateClass('Frame', Dominos.Frame); Dominos.ActionBar = ActionBar
+local ActionBar = Dominos:CreateClass('Frame', Dominos.ButtonBar); Dominos.ActionBar = ActionBar
 
 --metatable magic.  Basically this says, 'create a new table for this index'
 --I do this so that I only create page tables for classes the user is actually playing
@@ -140,22 +140,18 @@ end
 
 function ActionBar:AddButton(i)
 	local b = ActionButton:New(self.baseID + i)
+
 	if b then
 		self.buttons[i] = b
+
 		b:SetParent(self.header)
 		b:SetFlyoutDirection(self:GetFlyoutDirection())
 		b:LoadAction()
+
 		self:UpdateAction(i)
 		self:UpdateGrid()
 	end
 end
-
-function ActionBar:RemoveButton(i)
-	local b = self.buttons[i]
-	self.buttons[i] = nil
-	b:Free()
-end
-
 
 --[[ Paging Code ]]--
 
@@ -332,17 +328,17 @@ function ActionBar:UpdateCooldownOpacities()
 	if self.transparent then
 		-- hide cooldown frames on transparent buttons by sticking them onto a different parent
 		for i, button in pairs(self.buttons) do
-			button.cooldown:SetParent(HiddenFrame)				
+			button.cooldown:SetParent(HiddenFrame)
 		end
-	else	
+	else
 		-- show cooldown frames on non transparent buttons
 		for i, button in pairs(self.buttons) do
 			if button.cooldown:GetParent() ~= button then
-				button.cooldown:SetParent(button)	
+				button.cooldown:SetParent(button)
 				ActionButton_UpdateCooldown(button)
-			end		
+			end
 		end
-	end	
+	end
 end
 
 --[[ flyout direction updating ]]--
