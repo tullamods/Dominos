@@ -10,6 +10,7 @@ local KeyBound = LibStub('LibKeyBound-1.0')
 local Tooltips = Dominos:GetModule('Tooltips')
 local Bindings = Dominos.BindingsController
 
+
 --[[ buttons ]]--
 
 local ExtraActionButton = Dominos:CreateClass('CheckButton', Dominos.BindableButton)
@@ -65,7 +66,7 @@ do
 		self:SetParent(nil)
 		self:Hide()
 
-		Tooltips:Unregister(button)
+		Tooltips:Unregister(self)
 		Bindings:Unregister(self)
 	end
 
@@ -80,84 +81,86 @@ end
 
 local ExtraBar = Dominos:CreateClass('Frame', Dominos.ButtonBar)
 
-function ExtraBar:New()
-	local f = Dominos.Frame.New(self, 'extra')
+do
+	function ExtraBar:New()
+		local bar = ExtraBar.proto.New(self, 'extra')
 
-	f:LoadButtons()
-	f:Layout()
-	f:UpdateShowBlizzardTexture()
+		bar:LoadButtons()
+		bar:Layout()
+		bar:UpdateShowBlizzardTexture()
 
-	return f
-end
-
-function ExtraBar:GetDefaults()
-	return {
-		point = 'CENTER',
-		x = -244,
-		y = 0,
-	}
-end
-
-function ExtraBar:GetShowStates()
-	return '[extrabar]show;hide'
-end
-
-function ExtraBar:NumButtons()
-	return 1
-end
-
-function ExtraBar:AddButton(i)
-	local b = ExtraActionButton:New(i)
-
-	if b then
-		b:SetAttribute('showgrid', 1)
-		b:SetParent(self.header)
-		b:Show()
-
-		self.buttons[i] = b
+		return bar
 	end
-end
 
-function ExtraBar:ShowBlizzardTexture(enable)
-	self.sets.hideBlizzardTeture = not enable
+	function ExtraBar:GetDefaults()
+		return {
+			point = 'CENTER',
+			x = -244,
+			y = 0,
+		}
+	end
 
-	self:UpdateShowBlizzardTexture()
-end
+	function ExtraBar:GetShowStates()
+		return '[extrabar]show;hide'
+	end
 
-function ExtraBar:ShowingBlizzardTexture()
-	return not self.sets.hideBlizzardTeture
-end
+	function ExtraBar:NumButtons()
+		return 1
+	end
 
-function ExtraBar:UpdateShowBlizzardTexture()
-	local showTexture = self:ShowingBlizzardTexture()
+	function ExtraBar:AddButton(index)
+		local button = ExtraActionButton:New(index)
 
-	for i, button in pairs(self.buttons) do
-		if showTexture then
-			button.style:Show()
-		else
-			button.style:Hide()
+		if button then
+			button:SetAttribute('showgrid', 1)
+			button:SetParent(self.header)
+			button:Show()
+
+			self.buttons[index] = button
 		end
 	end
-end
 
-function ExtraBar:CreateMenu()
-	local bar = self
-	local menu = Dominos:NewMenu(bar.id)
-	local panel = menu:AddLayoutPanel()
+	function ExtraBar:ShowBlizzardTexture(show)
+		self.sets.hideBlizzardTeture = not show
 
-	local L = LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')
-	local showTextureButton = panel:NewCheckButton(L.ExtraBarShowBlizzardTexture)
+		self:UpdateShowBlizzardTexture()
+	end
 
-	showTextureButton:SetScript('OnShow', function(self)
-		self:SetChecked(bar:ShowingBlizzardTexture())
-	end)
+	function ExtraBar:ShowingBlizzardTexture()
+		return not self.sets.hideBlizzardTeture
+	end
 
-	showTextureButton:SetScript('OnClick', function(self)
-		bar:ShowBlizzardTexture(self:GetChecked())
-	end)
+	function ExtraBar:UpdateShowBlizzardTexture()
+		local showTexture = self:ShowingBlizzardTexture()
 
-	menu:AddAdvancedPanel()
-	self.menu = menu
+		for i, button in pairs(self.buttons) do
+			if showTexture then
+				button.style:Show()
+			else
+				button.style:Hide()
+			end
+		end
+	end
+
+	function ExtraBar:CreateMenu()
+		local bar = self
+		local menu = Dominos:NewMenu(bar.id)
+		local panel = menu:AddLayoutPanel()
+
+		local L = LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')
+		local showTextureButton = panel:NewCheckButton(L.ExtraBarShowBlizzardTexture)
+
+		showTextureButton:SetScript('OnShow', function(self)
+			self:SetChecked(bar:ShowingBlizzardTexture())
+		end)
+
+		showTextureButton:SetScript('OnClick', function(self)
+			bar:ShowBlizzardTexture(self:GetChecked())
+		end)
+
+		menu:AddAdvancedPanel()
+		self.menu = menu
+	end
 end
 
 --[[ module ]]--

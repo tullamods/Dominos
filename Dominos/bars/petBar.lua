@@ -78,7 +78,7 @@ hooksecurefunc('PetActionButton_SetHotkeys', PetButton.UpdateHotkey)
 local PetBar = Dominos:CreateClass('Frame', Dominos.ButtonBar)
 
 function PetBar:New()
-	local f = self.super.New(self, 'pet')
+	local f = PetBar.proto.New(self, 'pet')
 
 	f:LoadButtons()
 	f:Layout()

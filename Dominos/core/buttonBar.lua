@@ -1,11 +1,11 @@
 -- buttonBar.lua
 -- a dominos frame that contains buttons
 
-local ButtonBar = Dominos:CreateClass('CheckButton', Dominos.Frame)
+local ButtonBar = Dominos:CreateClass('Frame', Dominos.Frame)
 Dominos.ButtonBar = ButtonBar
 
-function ButtonBar:Create()
-    local bar = ButtonBar.super.Create(self)
+function ButtonBar:Create(id)
+    local bar = ButtonBar.proto.Create(self, id)
 
     bar.buttons = {}
 
@@ -17,7 +17,7 @@ function ButtonBar:Free()
         self:RemoveButton(i)
     end
 
-    return ButtonBar.super.Free(self)
+    return ButtonBar.proto.Free(self)
 end
 
 --this function is used in a lot of places, but never called in Frame
@@ -59,9 +59,7 @@ function ButtonBar:NumButtons()
 end
 
 --this function is used in a lot of places, but never called in Frame
-function Frame:LoadButtons()
-    if not self.AddButton then return end
-
+function ButtonBar:LoadButtons()
     for i = 1, self:NumButtons() do
         self:AddButton(i)
     end
@@ -69,53 +67,52 @@ function Frame:LoadButtons()
     self:UpdateClickThrough()
 end
 
-function Frame:SetColumns(columns)
+function ButtonBar:SetColumns(columns)
     self.sets.columns = columns ~= self:NumButtons() and columns or nil
     self:Layout()
 end
 
-function Frame:NumColumns()
+function ButtonBar:NumColumns()
     return self.sets.columns or self:NumButtons()
 end
 
-function Frame:SetSpacing(spacing)
+function ButtonBar:SetSpacing(spacing)
     self.sets.spacing = spacing
     self:Layout()
 end
 
-function Frame:GetSpacing()
+function ButtonBar:GetSpacing()
     return self.sets.spacing or 0
 end
 
 --[[ Layout ]]--
 
 --the wackiness here is for backward compaitbility reasons, since I did not implement true defaults
-function Frame:SetLeftToRight(isLeftToRight)
+function ButtonBar:SetLeftToRight(isLeftToRight)
     local isRightToLeft = not isLeftToRight
 
     self.sets.isRightToLeft = isRightToLeft and true or nil
     self:Layout()
 end
 
-function Frame:GetLeftToRight()
+function ButtonBar:GetLeftToRight()
     return not self.sets.isRightToLeft
 end
 
-function Frame:SetTopToBottom(isTopToBottom)
+function ButtonBar:SetTopToBottom(isTopToBottom)
     local isBottomToTop = not isTopToBottom
 
     self.sets.isBottomToTop = isBottomToTop and true or nil
     self:Layout()
 end
 
-function Frame:GetTopToBottom()
+function ButtonBar:GetTopToBottom()
     return not self.sets.isBottomToTop
 end
 
-function Frame:Layout()
+function ButtonBar:Layout()
     if #self.buttons <= 0 then
-        self.super.Layout(self)
-        return
+        return ButtonBar.proto.Layout(self)
     end
 
     local cols = min(self:NumColumns(), #self.buttons)
@@ -125,11 +122,11 @@ function Frame:Layout()
     local isLeftToRight = self:GetLeftToRight()
     local isTopToBottom = self:GetTopToBottom()
 
-    local b = self.buttons[1]
-    local w = b:GetWidth() + spacing
-    local h = b:GetHeight() + spacing
+    local firstButton = self.buttons[1]
+    local w = firstButton:GetWidth() + spacing
+    local h = firstButton:GetHeight() + spacing
 
-    for i,b in pairs(self.buttons) do
+    for i, button in pairs(self.buttons) do
         local col
         local row
         if isLeftToRight then
@@ -144,23 +141,21 @@ function Frame:Layout()
             row = rows - ceil(i / cols)
         end
 
-        b:ClearAllPoints()
-        b:SetPoint('TOPLEFT', w*col + pW, -(h*row + pH))
+        button:ClearAllPoints()
+        button:SetPoint('TOPLEFT', w*col + pW, -(h*row + pH))
     end
 
     local width = w*cols - spacing + pW*2
     local height = h*ceil(#self.buttons/cols) - spacing + pH*2
 
-    self:SetSize(width + paddingW, height + paddingH)
+    self:SetSize(width + pW, height + pH)
 end
 
 function ButtonBar:UpdateClickThrough()
-    local buttons = self.buttons
-    if not buttons then return end
+    local isClickThroughEnabled = self:GetClickThrough()
 
-    local clickThrough = self:GetClickThrough()
-    for i, button in pairs(self.buttons) do
-        if clickThrough then
+    for _, button in pairs(self.buttons) do
+        if isClickThroughEnabled then
             button:EnableMouse(false)
         else
             button:EnableMouse(true)

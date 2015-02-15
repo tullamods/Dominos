@@ -856,6 +856,3 @@ function Dominos:RemoveMasque(groupName, button)
 
 	return false
 end
-
-
---[[ Utility Functions ]]--

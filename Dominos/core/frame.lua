@@ -3,10 +3,8 @@
 		A dominos frame, a generic container object
 --]]
 
-local Frame = Dominos:CreateClass('Frame')
-Dominos.Frame = Frame
-
-local FadeManager = Dominos.FadeManager
+local Frame = Dominos:CreateClass('Frame'); Dominos.Frame = Frame
+local Events = Dominos.Events
 local active = {}
 local unused = {}
 
@@ -27,11 +25,11 @@ end
 
 function Frame:Create(id)
 	local f = self:Bind(CreateFrame('Frame', format('DominosFrame%s', id), UIParent))
+
 	f:SetClampedToScreen(true)
 	f:SetMovable(true)
 
 	f.id = id
-
 
 	f.header = CreateFrame('Frame', nil, f, 'SecureHandlerStateTemplate')
 
@@ -95,19 +93,25 @@ function Frame:Create(id)
 
 	f.header:SetAllPoints(f)
 
+	Events:Fire('Frame_OnCreate', f)
 	return f
 end
 
 function Frame:Restore(id)
-	local f = unused[id]
-	if f then
+	local frame = unused[id]
+
+	if frame then
 		unused[id] = nil
-		return f
+
+		Events:Fire('Frame_OnRestore', frame)
+		return frame
 	end
 end
 
 --destructor
 function Frame:Free()
+	Events:Fire('Frame_OnFree', self)
+
 	active[self.id] = nil
 
 	UnregisterStateDriver(self.header, 'display', 'show')
@@ -124,6 +128,8 @@ function Frame:Free()
 end
 
 function Frame:Delete()
+	Events:Fire('Frame_OnDelete', self)
+
 	self:Free()
 	Dominos:SetFrameSets(self.id, nil)
 end
@@ -142,26 +148,34 @@ function Frame:LoadSettings()
 
 	self:ShowInOverrideUI(self:ShowingInOverrideUI())
 	self:ShowInPetBattleUI(self:ShowingInPetBattleUI())
+
+	Events:Fire('Frame_OnLoadSettings', self)
 end
 
 
 --[[ Layout ]]--
 
-function Frame:SetPadding(w, h)
-	self.sets.padW = w
-	self.sets.padH = h or w
+function Frame:SetPadding(width, height)
+	local width = width or 0
+	local height = height or width
 
+	self.sets.padW = width ~= 0 and width or nil
+	self.sets.padH = height ~= 0 and height or nil
+
+	Events:Fire('Frame_OnSetPadding', self, width, height)
 	self:Layout()
 end
 
 function Frame:GetPadding()
-	local w = self.sets.padW or 0
-	local h = self.sets.padH or w
+	local width = self.sets.padW or 0
+	local height = self.sets.padH or width
 
-	return w, h
+	return width, height
 end
 
 function Frame:Layout()
+	Events:Fire('Frame_OnLayout', self, width, height)
+
 	local width, height = 32, 32
 	local paddingW, paddingH = self:GetPadding()
 
@@ -170,6 +184,14 @@ end
 
 
 --[[ Scaling ]]--
+
+hooksecurefunc(Frame, 'SetScale', function(self, scale)
+	Events:Fire('Frame_OnSetScale', self, width, height)
+
+	self:OnSetScale(scale)
+end)
+
+function Frame:OnSetScale(scale) end
 
 function Frame:SetFrameScale(newScale, scaleAnchored)
 	local newScale = newScale or 1
@@ -206,6 +228,8 @@ end
 --[[ Opacity ]]--
 
 hooksecurefunc(Frame, 'SetAlpha', function(self, alpha)
+	Events:Fire('Frame_OnSetAlpha', self, alpha)
+
 	self:OnSetAlpha(alpha)
 end)
 
@@ -287,12 +311,14 @@ local function isChildFocus(...)
 			return true
 		end
 	end
+
 	for i = 1, select('#', ...) do
 		local f = select(i, ...)
 		if f:IsShown() and isChildFocus(f:GetChildren()) then
 			return true
 		end
 	end
+
 	return false
 end
 
@@ -303,12 +329,14 @@ local function isDescendant(frame, ...)
 			return true
 		end
 	end
+
 	for i = 1, select('#', ...) do
 		local f = select(i, ...)
 		if isDescendant(frame, f:GetChildren()) then
 			return true
 		end
 	end
+
 	return false
 end
 
@@ -317,9 +345,11 @@ function Frame:IsFocus()
 	if self:IsMouseOver(1, -1, -1, 1) then
 		return (GetMouseFocus() == WorldFrame) or isChildFocus(self:GetChildren())
 	end
+
 	if SpellFlyout and SpellFlyout:IsMouseOver(1, -1, -1, 1) and isDescendant(SpellFlyout:GetParent(), self) then
 		return true
 	end
+
 	return Dominos:IsLinkedOpacityEnabled() and self:IsDockedFocus()
 end
 
@@ -379,6 +409,7 @@ function Frame:Fade()
 	end
 
 	Fade[self](self:GetExpectedAlpha(), 0.1)
+
 	if Dominos:IsLinkedOpacityEnabled() then
 		self:ForDocked('Fade')
 	end
@@ -389,6 +420,7 @@ end
 
 function Frame:ShowFrame()
 	self.sets.hidden = nil
+
 	self:Show()
 	self:UpdateWatched()
 	self:UpdateAlpha()
@@ -400,6 +432,7 @@ end
 
 function Frame:HideFrame()
 	self.sets.hidden = true
+
 	self:Hide()
 	self:UpdateWatched()
 	self:UpdateAlpha()
@@ -426,6 +459,7 @@ end
 
 function Frame:ShowInOverrideUI(enable)
 	self.sets.showInOverrideUI = enable and true or false
+
 	self.header:SetAttribute('state-showinoverrideui', enable)
 end
 

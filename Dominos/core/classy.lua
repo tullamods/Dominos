@@ -1,21 +1,19 @@
--- classy.lua
+-- classy
 -- A utility function for extending blizzard widget types (Frames, Buttons, etc)
 
-local function object_Bind(self, obj)
-    return setmetatable(obj, self.mt)
-end
-
 function Dominos:CreateClass(frameType, prototype)
-    local obj = CreateFrame(frameType)
+    local class = CreateFrame(frameType)
+    local class_mt = { __index = class }
 
-    obj.Bind = object_Bind
-
-    obj.mt = {__index = obj}
-
-    if prototype then
-        obj = setmetatable(obj, {__index = prototype})
-        obj.super = prototype
+    class.Bind = function(self, obj)
+        return setmetatable(obj, class_mt)
     end
 
-    return obj
+    if prototype then
+        class.proto = prototype
+
+        return setmetatable(class, {__index = prototype})
+    end
+
+    return class
 end

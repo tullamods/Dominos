@@ -95,7 +95,7 @@ local StanceBar = Dominos:CreateClass('Frame', Dominos.ButtonBar)
 
 do
 	function StanceBar:New()
-		local f = Dominos.Frame.New(self, 'class')
+		local f = StanceBar.proto.New(self, 'class')
 
 		f:SetScript('OnEvent', f.OnEvent)
 
@@ -162,7 +162,7 @@ do
 
 		return b
 	end
-	
+
 	function StanceBar:UpdateNumForms()
 		if InCombatLockdown() then
 			return

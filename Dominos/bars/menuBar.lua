@@ -22,8 +22,6 @@ local MICRO_BUTTONS = {
 	"MainMenuMicroButton"
 }
 
-local overrideButtons = {}
-
 local MICRO_BUTTON_NAMES = {
 	['CharacterMicroButton'] = _G['CHARACTER_BUTTON'],
 	['SpellbookMicroButton'] = _G['SPELLBOOK_ABILITIES_BUTTON'],
@@ -42,7 +40,7 @@ local MICRO_BUTTON_NAMES = {
 --[[ Menu Bar ]]--
 
 function MenuBar:New()
-	local bar = MenuBar.super.New(self, 'menu')
+	local bar = MenuBar.proto.New(self, 'menu')
 
 	bar:LoadButtons()
 	bar:Layout()
@@ -51,7 +49,7 @@ function MenuBar:New()
 end
 
 function MenuBar:Create(frameId)
-	local bar = MenuBar.super.Create(self, frameId)
+	local bar = MenuBar.proto.Create(self, frameId)
 
 	bar.buttons = {}
 	bar.activeButtons = {}
@@ -139,7 +137,7 @@ function MenuBar:RemoveButton(i)
 end
 
 function MenuBar:LoadSettings(...)
-	MenuBar.super.LoadSettings(self, ...)
+	MenuBar.proto.LoadSettings(self, ...)
 
 	self.activeButtons = {}
 end
@@ -360,6 +358,7 @@ end
 local MenuBarController = Dominos:NewModule('MenuBar')
 
 function MenuBarController:OnInitialize()
+
 	-- fixed blizzard nil bug
 	if not _G['AchievementMicroButton_Update'] then
 		_G['AchievementMicroButton_Update'] = function() end
