@@ -6,12 +6,12 @@ local AddonName, Addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale('Dominos')
 local KEYBOARD_MOVEMENT_INCREMENT = 1
 
-local round = function(x)	
+local round = function(x)
 	if x > 0 then
 		return math.floor(x + 0.5)
 	end
 
-	return math.ceil(x - 0.5)	
+	return math.ceil(x - 0.5)
 end
 
 local function rgbToHSL(r, g, b)
@@ -135,7 +135,7 @@ local FrameOverlay
 do
 	FrameOverlay = Dominos:CreateClass('Button'); FrameOverlay:Hide()
 
-	local FRAME_COLOR = {h = 213, s = 0.76, l = 0.27 }
+	local FRAME_COLOR = { h = 213, s = 0.76, l = 0.27 }
 
 	local BACKDROP = {
 		bgFile   = 	[[Interface\ChatFrame\ChatFrameBackground]],
@@ -182,7 +182,7 @@ do
 
 		f:UpdateColor(true)
 		f:UpdateBorderColor(true)
-		f:EnableKeyboard(true)		
+		f:EnableKeyboard(true)
 
 		return f
 	end
@@ -192,36 +192,36 @@ do
 
 		if self.watchingKeyboardMovement then
 			if key == 'UP' then
-				self:NudgeFrame(0, KEYBOARD_MOVEMENT_INCREMENT)		
+				self:NudgeFrame(0, KEYBOARD_MOVEMENT_INCREMENT)
 				handled = true
 			elseif key == 'DOWN' then
-				self:NudgeFrame(0, -KEYBOARD_MOVEMENT_INCREMENT)				
+				self:NudgeFrame(0, -KEYBOARD_MOVEMENT_INCREMENT)
 				handled = true
 			elseif key == 'LEFT' then
 				self:NudgeFrame(-KEYBOARD_MOVEMENT_INCREMENT, 0)
 				handled = true
 			elseif key == 'RIGHT' then
-				self:NudgeFrame(KEYBOARD_MOVEMENT_INCREMENT, 0)		
+				self:NudgeFrame(KEYBOARD_MOVEMENT_INCREMENT, 0)
 				handled = true
 			end
 		end
 
-		self:SetPropagateKeyboardInput(not handled)	
-	end	
+		self:SetPropagateKeyboardInput(not handled)
+	end
 
-	function FrameOverlay:EnableArrowKeyMovement()		
-		self.watchingKeyboardMovement = true	
+	function FrameOverlay:EnableArrowKeyMovement()
+		self.watchingKeyboardMovement = true
 		self:EnableKeyboard(true)
 	end
 
 	function FrameOverlay:DisableArrowKeyMovement()
-		self.watchingKeyboardMovement = nil	
+		self.watchingKeyboardMovement = nil
 		self:EnableKeyboard(false)
 	end
 
 	function FrameOverlay:OnEnter()
 		if not self.isMouseOver then
-			self.isMouseOver = true	
+			self.isMouseOver = true
 
 			self:UpdateTooltip()
 			self:UpdateBorderColor()
@@ -231,7 +231,7 @@ do
 
 	function FrameOverlay:OnLeave()
 		if self.isMouseOver then
-			self.isMouseOver = nil			
+			self.isMouseOver = nil
 
 			self:UpdateBorderColor()
 			GameTooltip:Hide()
@@ -297,10 +297,10 @@ do
 
 		if self.owner:GetAnchor() then
 			self.owner:ClearAnchor()
-			self:UpdateColor()		
+			self:UpdateColor()
 		end
 
-		self.owner:SetAndSaveFramePosition(point, round(x + dx), round(y + dy))		
+		self.owner:SetAndSaveFramePosition(point, round(x + dx), round(y + dy))
 	end
 
 	function FrameOverlay:UpdateTooltip()
@@ -434,7 +434,7 @@ end
 do
 	local ConfigOverlay = Dominos:NewModule('ConfigOverlay')
 	local frameOverlays = {}
-	
+
 	function ConfigOverlay:OnInitialize()
 		-- create overlay background
 		local overlay = CreateFrame('Frame', nil, _G['UIParent'], 'SecureHandlerStateTemplate')
@@ -511,7 +511,7 @@ do
 				frameOverlays[frame] = frameOverlay
 			end
 		end
-	end	
+	end
 
 	function ConfigOverlay:CreateHelpDialog()
 		local f = CreateFrame('Frame', 'DominosConfigHelperDialog', self.overlay)
