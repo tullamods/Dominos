@@ -17,32 +17,38 @@ end
 
 -- Core Code
 function CastBar:New()
-	local f = self.super.New(self, 'cast')
+	local frame = CastBar.proto.New(self, 'cast')
+
 	if not self.cast then
-		f.header:SetParent(nil)
-		f.header:ClearAllPoints()
-		f:SetWidth(240) 
-		f:SetHeight(24)
+		frame.header:SetParent(nil)
+		frame.header:ClearAllPoints()
+		frame:SetWidth(240)
+		frame:SetHeight(24)
 	end
+
+	frame:CheckDefaults()
+	frame:Time()
+	frame:Layout()
+	frame:AdjustCastingBar()
+	frame:UpdateText()
+	frame:UpdateTexture()
+	frame:RegisterEvent("UNIT_SPELLCAST_START")
+	frame:RegisterEvent("UNIT_SPELLCAST_CHANNEL_START")
+	frame:RegisterEvent("PLAYER_ENTERING_WORLD")
+
+	frame:SetScript("OnEvent", function(_, event)
+		frame.event = event
+	end)
 	
-	f:CheckDefaults()
-	f:Time()
-	f:Layout()
-	f:AdjustCastingBar()
-	f:UpdateText()
-	f:UpdateTexture()
-	f:RegisterEvent("UNIT_SPELLCAST_START")
-	f:RegisterEvent("UNIT_SPELLCAST_CHANNEL_START")
-	f:RegisterEvent("PLAYER_ENTERING_WORLD")
-	f:SetScript("OnEvent", function(_, event) f.event = event end)
-	f:HookScript("OnEvent", f.ForceShow)
-	return f
+	frame:HookScript("OnEvent", frame.ForceShow)
+
+	return frame
 end
 
 function CastBar:ForceShow()
 	local sets = self.sets.hidden
 	local f = CastingBarFrame
-	
+
 	if ((sets and (sets == true)) or (not sets))
 	and((f:GetScript("OnEvent") ~= CastingBarFrame_OnEvent)
 	or (f:GetScript("OnShow") ~= CastingBarFrame_OnShow)
@@ -82,7 +88,7 @@ function CastBar:CheckDefaults()
 end
 
 function CastBar:Layout()
-	
+
 	local height = ((self.sets.height*10) * (100/256))
 	local width = ((self.sets.width * 10) * (206/256))
 
@@ -99,7 +105,7 @@ function CastBar:Layout()
 		self.time:SetJustifyH("RIGHT")
 	end
 
-	
+
 	CastingBarFrameBorderShield:SetSize(self.widthAdjust, self.heightAdjust)
 	CastingBarFrame:SetSize( (self.sets.width * 10) * (47/64), (self.sets.height * 10) * (11/64))
 
@@ -109,13 +115,13 @@ end
 function CastBar:AdjustCastingBar()
 	CastingBarFrameBorder:ClearAllPoints()
 	CastingBarFrameBorder:SetAllPoints(CastingBarFrameBorderShield)
-	
+
 	CastingBarFrameFlash:ClearAllPoints()
 	CastingBarFrameFlash:SetAllPoints(CastingBarFrameBorderShield)
-	
+
 	CastingBarFrameText:ClearAllPoints()
 	CastingBarFrameText:SetAllPoints(CastingBarFrameBorderShield)
-	
+
 	CastingBarFrameBorderShield:ClearAllPoints()
 	CastingBarFrameBorderShield:SetPoint("CENTER", self)
 
@@ -198,8 +204,8 @@ end
 
 function CastBar:Configuration()
 	if not self.border then
-		--This texture allows the user to modify 
-		--the cast bar and see what it will look 
+		--This texture allows the user to modify
+		--the cast bar and see what it will look
 		--like without having to cast a spell
 		local border = self:CreateTexture(nil, 'BACKGROUND')
 		border:SetAllPoints(CastingBarFrameBorder)
@@ -212,11 +218,11 @@ function CastBar:Configuration()
 	local FACTION = UnitFactionGroup("player")
 	local texture
 	local flash
-	
+
 	if self.sets.border then
 		texture = "Interface\\UnitPowerBarAlt\\".. FACTION .."_Horizontal_Frame"
 		flash = texture
-	
+
 	elseif self.sets.SetBlizzBorder then
 		texture = "Interface\\CastingBar\\UI-CastingBar-Border"
 		flash = "Interface\\CastingBar\\UI-CastingBar-Flash"
@@ -276,7 +282,7 @@ local function AddLayoutPanel(menu)
 	p:NewScaleSlider()
 	CreatePaddingSlider(p)
 
-	
+
 	local time = p:NewCheckButton(L.ShowTime)
 	time:SetScript('OnClick', function(self) self:GetParent().owner:ToggleText(self:GetChecked()) end)
 	time:SetScript('OnShow', function(self) self:SetChecked(self:GetParent().owner.sets.showText) end)
@@ -302,7 +308,7 @@ local function AddAdvancedLayout(self)
 end
 
 --[[
-	Texture Picker 
+	Texture Picker
 	Derived from the code in Dominos XP, and modified
 	slightly to work under any Dominos based addon.
 	Aslo corrected the uncapitalized constants.
@@ -313,7 +319,7 @@ function CastBar:UpdateTexture()
 
 	local texture = (LSM and LSM:Fetch('statusbar', self.sets.texture)) or DEFAULT_STATUSBAR_TEXTURE
 	CastingBarFrame:SetStatusBarTexture(texture)
-	
+
 	if CastingBarFrame:GetStatusBarTexture().SetHorizTile then
 		CastingBarFrame:GetStatusBarTexture():SetHorizTile(false)
 	end
