@@ -2,7 +2,7 @@
 	MenuBar, by Goranaws
 --]]
 
-local MenuBar = Dominos:CreateClass('Frame', Dominos.Frame)
+local MenuBar = Dominos:CreateClass('Frame', Dominos.ButtonBar)
 Dominos.MenuBar = MenuBar
 
 local WIDTH_OFFSET = 2

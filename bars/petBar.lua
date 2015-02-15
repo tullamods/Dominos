@@ -1,7 +1,4 @@
-﻿--[[
-	petBar.lua
-		A Dominos pet bar
---]]
+-- A bar that contains pet actions
 
 
 --[[ Globals ]]--
@@ -30,7 +27,7 @@ end
 function PetButton:Create(id)
 	local b = self:Bind(_G['PetActionButton' .. id])
 	b.buttonType = 'BONUSACTIONBUTTON'
-	
+
 	b:HookScript('OnEnter', self.OnEnter)
 	b:Skin()
 
@@ -78,11 +75,11 @@ hooksecurefunc('PetActionButton_SetHotkeys', PetButton.UpdateHotkey)
 
 --[[ Pet Bar ]]--
 
-local PetBar = Dominos:CreateClass('Frame', Dominos.Frame)
+local PetBar = Dominos:CreateClass('Frame', Dominos.ButtonBar)
 
 function PetBar:New()
 	local f = self.super.New(self, 'pet')
-	
+
 	f:LoadButtons()
 	f:Layout()
 
@@ -109,14 +106,10 @@ end
 
 function PetBar:AddButton(i)
 	local b = PetButton:New(i)
-	b:SetParent(self.header)
-	self.buttons[i] = b
-end
 
-function PetBar:RemoveButton(i)
-	local b = self.buttons[i]
-	self.buttons[i] = nil
-	b:Free()
+	b:SetParent(self.header)
+
+	self.buttons[i] = b
 end
 
 

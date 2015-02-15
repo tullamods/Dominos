@@ -7,7 +7,7 @@ local LBF = LibStub('LibButtonFacade', true)
 
 --[[ Bag Bar ]]--
 
-local BagBar = Dominos:CreateClass('Frame', Dominos.Frame)
+local BagBar = Dominos:CreateClass('Frame', Dominos.ButtonBar)
 
 function BagBar:New()
 	local f = self.super.New(self, 'bags')
@@ -18,9 +18,9 @@ end
 
 function BagBar:SkinButton(b)
 	if b.skinned then return end
-	
+
 	Dominos:Masque('Bag Bar', b, {Icon = _G[b:GetName() .. 'IconTexture']})
-	
+
 	b.skinned = true
 end
 
@@ -44,7 +44,7 @@ function BagBar:Reload()
 			self.bags[i] = nil
 		end
 	end
-	
+
 	if not self.sets.oneBag then
 		local startSlot = NUM_BAG_SLOTS - 1
 		for slot = startSlot, 0, -1 do
@@ -53,7 +53,7 @@ function BagBar:Reload()
 	end
 
 	table.insert(self.bags, _G['MainMenuBarBackpackButton'])
-	
+
 	self:SetNumButtons(#self.bags)
 	self:UpdateClickThrough()
 end
@@ -61,7 +61,7 @@ end
 
 --[[ Frame Overrides ]]--
 
-function BagBar:AddButton(i) 
+function BagBar:AddButton(i)
 	local b = self.bags[i]
 	b:SetParent(self.header)
 	b:Show()
@@ -97,19 +97,19 @@ function BagBar:CreateMenu()
 	local menu = Dominos:NewMenu(self.id)
 	local panel = menu:AddLayoutPanel()
 	local L = LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')
-	
+
 	--add onebag and showkeyring options
 	local oneBag = panel:NewCheckButton(L.OneBag)
-	oneBag:SetScript('OnShow', function() 
-		oneBag:SetChecked(self.sets.oneBag) 
+	oneBag:SetScript('OnShow', function()
+		oneBag:SetChecked(self.sets.oneBag)
 	end)
-	
-	oneBag:SetScript('OnClick', function() 
+
+	oneBag:SetScript('OnClick', function()
 		self:SetSetOneBag(oneBag:GetChecked())
 		_G[panel:GetName() .. L.Columns]:OnShow()
 	end)
-	
-	
+
+
 	menu:AddAdvancedPanel()
 	self.menu = menu
 end
