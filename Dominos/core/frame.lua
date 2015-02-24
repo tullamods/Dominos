@@ -3,6 +3,7 @@
 		A dominos frame, a generic container object
 --]]
 
+local AddonName, Addon = ...
 local Frame = Dominos:CreateClass('Frame'); Dominos.Frame = Frame
 local Events = Dominos.Events
 local active = {}
@@ -12,50 +13,52 @@ local unused = {}
 function Frame:New(id, tooltipText)
 	local id = tonumber(id) or id
 
-	local f = self:Restore(id) or self:Create(id)
+	local frame = self:Restore(id) or self:Create(id)
+	frame:LoadSettings()
+	frame:SetTooltipText(tooltipText)
 
-	f:LoadSettings()
-	f:SetTooltipText(tooltipText)
+	Dominos.OverrideController:Add(frame.header)
 
-	Dominos.OverrideController:Add(f.header)
+	active[id] = frame
 
-	active[id] = f
-	return f
+	Events:Fire('Frame_OnCreate', frame)
+	return frame
 end
 
 function Frame:Create(id)
-	local f = self:Bind(CreateFrame('Frame', format('DominosFrame%s', id), UIParent))
+	local frameName = ('%sFrame%s'):format(AddonName, id)
+	
+	local frame = self:Bind(CreateFrame('Frame', frameName, _G['UIParent']))
+	frame:SetClampedToScreen(true)
+	frame:SetMovable(true)
 
-	f:SetClampedToScreen(true)
-	f:SetMovable(true)
+	frame.id = id
 
-	f.id = id
+	frame.header = CreateFrame('Frame', nil, frame, 'SecureHandlerStateTemplate')
 
-	f.header = CreateFrame('Frame', nil, f, 'SecureHandlerStateTemplate')
+	frame.header:SetAttribute('id', id)
 
-	f.header:SetAttribute('id', id)
-
-	f.header:SetAttribute('_onstate-overrideui', [[
+	frame.header:SetAttribute('_onstate-overrideui', [[
 		self:RunAttribute('updateShown')
 	]])
 
-	f.header:SetAttribute('_onstate-showinoverrideui', [[
+	frame.header:SetAttribute('_onstate-showinoverrideui', [[
 		self:RunAttribute('updateShown')
 	]])
 
-	f.header:SetAttribute('_onstate-petbattleui', [[
+	frame.header:SetAttribute('_onstate-petbattleui', [[
 		self:RunAttribute('updateShown')
 	]])
 
-	f.header:SetAttribute('_onstate-showinpetbattleui', [[
+	frame.header:SetAttribute('_onstate-showinpetbattleui', [[
 		self:RunAttribute('updateShown')
 	]])
 
-	f.header:SetAttribute('_onstate-display', [[
+	frame.header:SetAttribute('_onstate-display', [[
 		self:RunAttribute('updateShown')
 	]])
 
-	f.header:SetAttribute('updateShown', [[
+	frame.header:SetAttribute('updateShown', [[
 		local isOverrideUIShown = self:GetAttribute('state-overrideui') and true or false
 		local isPetBattleUIShown = self:GetAttribute('state-petbattleui') and true or false
 
@@ -85,16 +88,16 @@ function Frame:Create(id)
 		self:Show()
 	]])
 
-	f.header:SetAttribute('_onstate-alpha', [[
+	frame.header:SetAttribute('_onstate-alpha', [[
 		self:CallMethod('Fade')
 	]])
 
-	f.header.Fade = function() f:Fade() end
+	frame.header.Fade = function() frame:Fade() end
 
-	f.header:SetAllPoints(f)
+	frame.header:SetAllPoints(frame)
 
-	Events:Fire('Frame_OnCreate', f)
-	return f
+	Events:Fire('Frame_OnCreate', frame)
+	return frame
 end
 
 function Frame:Restore(id)
