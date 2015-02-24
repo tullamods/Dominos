@@ -24,12 +24,14 @@ end
 function ButtonBar:AddButton(index) end
 
 function ButtonBar:RemoveButton(index)
-    local button = self.buttons and self.buttons[index]
+    local button = self.buttons[index]
 
     if button then
-
         if type(button.Free) == 'function' then
             button:Free()
+        else
+            button:SetParent(nil)
+            button:Hide()
         end
 
         self.buttons[index] = nil
