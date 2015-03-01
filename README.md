@@ -33,7 +33,7 @@
 
 * To see the current list of slash commands, type /dom ? or /dominos ?
 * To open up the options menu, either go into interface options, or type /dom
-* To move bars around, either go into the options menu and press the "Enter Config Mode" button, or type /dom lock
+* To move bars around, either go into the options menu and press the "Enter Config Mode" button, or type /dom config
 * To bind keys, enter binding mode via /kb or /keybound, or press the "Enter Binding Mode" button in the options menu.
 
 ## [You can find help in the wiki](http://code.google.com/p/tullamods/wiki/Dominos)
