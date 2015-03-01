@@ -9,20 +9,18 @@
 
 --[[ globals ]]--
 
-local _G = _G
-local AddonName, Addon = ...
-local Dominos = _G['Dominos']
-local KeyBound = LibStub('LibKeyBound-1.0')
-local Timer_After = _G['C_Timer'].After
+local AddonName = ...
+local Addon = _G[AddonName]
+local Timer_After = _G.C_Timer.After
 
 
---[[ 
+--[[
 	surrogate button:
 		a button that clicks another button.  used to implement cast on key press functionality
 		when we aren't able to use a standard blizzard button.
 --]]
 
-local SurrogateButton = Dominos:CreateClass('Button')
+local SurrogateButton = Addon:CreateClass('Button')
 
 SurrogateButton.unused = {}
 
@@ -38,7 +36,7 @@ do
 	local id = 1
 
 	local function getNextName()
-		local name = string.format('%sVirtualBindingButton%d', AddonName, id)		
+		local name = string.format('%sVirtualBindingButton%d', AddonName, id)
 
 		id = id + 1
 
@@ -53,7 +51,7 @@ do
 		button:SetScript('OnMouseUp', button.OnMouseUp)
 		button:SetScript('OnMouseDown', button.OnMouseDown)
 
-		return button	
+		return button
 	end
 end
 
@@ -77,7 +75,7 @@ function SurrogateButton:SetOwner(owner)
 		end
 
 		self:SetAttribute('owner', ownerName)
-		self:SetAttribute('clickbutton', owner)	
+		self:SetAttribute('clickbutton', owner)
 	else
 		self:SetAttribute('owner', nil)
 		self:SetAttribute('clickbutton', nil)
@@ -107,8 +105,8 @@ end
 
 --[[ controller ]]--
 
-local BindingsController = CreateFrame('Frame', nil, UIParent, 'SecureHandlerStateTemplate'); BindingsController:Hide()
-Dominos.BindingsController = BindingsController
+local BindingsController = Addon:CreateHiddenFrame('Frame', nil, UIParent, 'SecureHandlerStateTemplate')
+Addon.BindingsController = BindingsController
 
 function BindingsController:Load()
 	self.frames = {}
@@ -120,17 +118,17 @@ function BindingsController:Load()
 end
 
 function BindingsController:SetupAttributeMethods()
-	self:Execute([[ 
+	self:Execute([[
 		myFrames = table.new()
 	]])
 
 	--[[ usage: LoadBindings() ]]--
-	self:SetAttribute('LoadBindings', [[	
-		self:ClearBindings() 
-				
+	self:SetAttribute('LoadBindings', [[
+		self:ClearBindings()
+
 		for i, frame in ipairs(myFrames) do
 			self:RunAttribute('LoadFrameBindings', i)
-		end	
+		end
 	]])
 
 	--[[ usage: LoadFrameBindings(frameID) ]]--
@@ -140,9 +138,9 @@ function BindingsController:SetupAttributeMethods()
 		local targetName = frame:GetAttribute('owner')
 
 		self:RunAttribute('SetBindings', frameName, self:RunAttribute('GetBindings', targetName))
-		self:RunAttribute('SetBindings', frameName, self:RunAttribute('GetClickBindings', targetName))				
+		self:RunAttribute('SetBindings', frameName, self:RunAttribute('GetClickBindings', targetName))
 	]])
-	
+
 	--[[ usage: SetBindings(frameName, [binding1, binding2, ...]) ]]--
 	self:SetAttribute('SetBindings', [[
 		local frameName = (...)
@@ -153,13 +151,13 @@ function BindingsController:SetupAttributeMethods()
 			self:SetBindingClick(false, key, frameName)
 		end
 	]])
-	
+
 	--[[ usage: GetBindings(frameName) ]]--
 	self:SetAttribute('GetBindings', [[
 		local frameName = (...)
-		
+
 		return GetBindingKey(frameName)
-	]])		
+	]])
 
 	--[[ usage: GetClickBindings(frameName) ]]--
 	self:SetAttribute('GetClickBindings', [[
@@ -175,7 +173,7 @@ function BindingsController:SetupAttributeMethods()
 
 			self:ClearBinding(key)
 		end
-	]])	
+	]])
 end
 
 function BindingsController:HookBindingMethods()
@@ -221,7 +219,7 @@ function BindingsController:CVAR_UPDATE(event, variableName)
 	if variableName == 'ACTION_BUTTON_USE_KEY_DOWN' then
 		self:UpdateCastOnKeyPress()
 		self:RequestUpdateBindings()
-	end			
+	end
 end
 
 function BindingsController:Register(button, createSurrogate)
@@ -245,7 +243,7 @@ function BindingsController:Unregister(button)
 	end
 
 	local surrogate = self:HasSurrogate(button)
-	
+
 	if surrogate then
 		self:FreeSurrogate(surrogate)
 	end
@@ -266,7 +264,7 @@ function BindingsController:CreateSurrogate(button)
 
 	self:SetFrameRef('frameToAdd', surrogate)
 
-	self:Execute([[ 		
+	self:Execute([[
 		local frameToAdd = self:GetFrameRef('frameToAdd')
 
 		for i, frame in pairs(myFrames) do
@@ -318,7 +316,7 @@ function BindingsController:HasSurrogate(button)
 end
 
 function BindingsController:RequestUpdateBindings()
-	if not self.__UpdateBindings then		
+	if not self.__UpdateBindings then
 		self.__UpdateBindings = function()
 			self.__WaitingToUpdateBindings = false
 			self:UpdateBindings()
@@ -354,7 +352,7 @@ function BindingsController:UpdateCastOnKeyPress()
 
 	for button, surrogate in pairs(self.surrogates) do
 		surrogate:SetCastOnKeyPress(castingOnKeyPress)
-	end	
+	end
 end
 
 function BindingsController:CastingOnKeyPress()
