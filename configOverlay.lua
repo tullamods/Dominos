@@ -131,6 +131,8 @@ end
 
 -- [[ overlay that goes on each bar for configuration ]]--
 
+local frameOverlays = {}
+
 local FrameOverlay
 do
 	FrameOverlay = Dominos:CreateClass('Button'); FrameOverlay:Hide()
@@ -261,7 +263,44 @@ do
 		end
 	end
 
+	local over = {}
+	function FrameOverlay:ShiftScroll(delta)
+		wipe(over)
+		local at = 1
+		local count = 0
+		if self.isMouseOver and IsShiftKeyDown() then
+			for i, b in Dominos.Frame:GetAll() do
+				if MouseIsOver(b)then
+					local lay = frameOverlays[b]
+					count = count + 1
+					if GetMouseFocus() == lay then
+						at = count
+					end
+					tinsert(over, lay)
+				end
+			end
+
+			local a, b
+			local one, two
+
+			one  = over[at+delta] or over[count]
+			a = one:GetFrameLevel()
+			two = over[at]
+			b = two:GetFrameLevel()
+
+			if a and b then
+				one:SetFrameLevel(7)
+				two:SetFrameLevel(6)
+			end
+		end
+	end
+
 	function FrameOverlay:OnMouseWheel(delta)
+		if IsShiftKeyDown() then
+			self:ShiftScroll(delta)
+			return
+		end
+	
 		local oldAlpha = self.owner.sets and self.owner.sets.alpha or 1
 		local newAlpha = min(max(oldAlpha + (delta * 0.1), 0), 1)
 
@@ -274,6 +313,7 @@ do
 
 			self:UpdateTooltip()
 		end
+		
 	end
 
 	function FrameOverlay:OnClick(button)
@@ -433,7 +473,7 @@ end
 
 do
 	local ConfigOverlay = Dominos:NewModule('ConfigOverlay')
-	local frameOverlays = {}
+	--local frameOverlays = {} --moved to line 134..
 	
 	function ConfigOverlay:OnInitialize()
 		-- create overlay background
