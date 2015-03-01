@@ -3,7 +3,7 @@
 		The configuration overlay interface for dominos
 --]]
 local AddonName, Addon = ...
-local L = LibStub('AceLocale-3.0'):GetLocale('Dominos')
+local L = LibStub('AceLocale-3.0'):GetLocale(AddonName)
 local KEYBOARD_MOVEMENT_INCREMENT = 1
 
 local round = function(x)
