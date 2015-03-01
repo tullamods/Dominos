@@ -8,7 +8,7 @@
 embeds.xml
 localization.xml
 Dominos.lua
-core\classy.lua
+core\helpers.lua
 core\events.lua
 core\frame.lua
 core\buttonBar.lua
@@ -28,3 +28,6 @@ bars\bagBar.lua
 bars\menuBar.lua
 bars\extraActionBar.lua
 bars\vehicleBar.lua
+plugins\slashCommands.lua
+plugins\launcher.lua
+plugins\blizzardHider.lua
