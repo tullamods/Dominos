@@ -6,7 +6,11 @@ local AddonName, Addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(AddonName)
 local KEYBOARD_MOVEMENT_INCREMENT = 1
 
+-- a table for storing all overlays that have been created
 local frameOverlays = {}
+
+--a table for storing frames the mouse is currently over
+local overlaysUnderMouse = {}
 
 local round = function(x)
 	if x > 0 then
@@ -263,61 +267,17 @@ do
 		end
 	end
 
-	local over = {} --a table for storing frames the mouse is currently over
-	function FrameOverlay:ShiftScroll(delta)
-		wipe(over)
-		local at = 1
-		local count = 0
-		if self.isMouseOver and IsShiftKeyDown() then
-			for i, frame in Dominos.Frame:GetAll() do
-				if frame:IsMouseOver() then
-					local lay = frameOverlays[frame]
-					count = count + 1
-					if GetMouseFocus() == lay then
-						at = count
-					end
-					tinsert(over, lay)
-				end
-			end
-
-			local a, b
-			local one, two
-
-			one  = over[at+delta] or over[count]
-			a = one:GetFrameLevel()
-			two = over[at]
-			b = two:GetFrameLevel()
-
-			if a and b then
-				one:SetFrameLevel(7)
-				two:SetFrameLevel(6)
-			end
-		end
-	end
-
 	function FrameOverlay:OnMouseWheel(delta)
-		if IsShiftKeyDown() then
-			self:ShiftScroll(delta)
-			return
-		end
-
-		local oldAlpha = self.owner.sets and self.owner.sets.alpha or 1
-		local newAlpha = min(max(oldAlpha + (delta * 0.1), 0), 1)
-
-		-- round to fix floating point fun
-		oldAlpha = math.floor(oldAlpha * 100 + 0.5) / 100
-		newAlpha = math.floor(newAlpha * 100 + 0.5) / 100
-
-		if newAlpha ~= oldAlpha then
-			self.owner:SetFrameAlpha(newAlpha)
-
-			self:UpdateTooltip()
+		if IsModifierKeyDown() then
+			self:CycleFocus(delta)
+		else
+			self:IncrementOpacity(delta)
 		end
 	end
 
 	function FrameOverlay:OnClick(button)
 		if button == 'RightButton' then
-			if IsShiftKeyDown() then
+			if IsModifierKeyDown() then
 				self.owner:ToggleFrame()
 			else
 				self.owner:ShowMenu()
@@ -363,6 +323,58 @@ do
 
 		GameTooltip:AddLine(format(L.SetAlpha, ceil(self.owner:GetFrameAlpha()*100)))
 		GameTooltip:Show()
+	end
+
+	function FrameOverlay:CycleFocus(delta)
+		table.wipe(overlaysUnderMouse)
+		local currentIndex = 1
+		local count = 0
+
+		-- grab all frames under the mouse
+		for _, frame in Dominos.Frame:GetAll() do
+			if frame:IsMouseOver() then
+				count = count + 1
+
+				local overlay = frameOverlays[frame]
+
+				if GetMouseFocus() == overlay then
+					currentIndex = count
+				end
+
+				tinsert(overlaysUnderMouse, overlay)
+			end
+		end
+
+		-- need at least two frames to cycle through
+		if #overlaysUnderMouse < 2 then
+			return
+		end
+
+		local nextIndex = currentIndex + delta
+
+		if nextIndex > #overlaysUnderMouse then
+			nextIndex = nextIndex % #overlaysUnderMouse
+		elseif nextIndex <= 0 then
+			nextIndex = #overlaysUnderMouse - nextIndex
+		end
+
+		overlaysUnderMouse[currentIndex]:SetFrameLevel(1)
+		overlaysUnderMouse[nextIndex]:SetFrameLevel(100)
+	end
+
+	function FrameOverlay:IncrementOpacity(delta)
+		local oldAlpha = self.owner.sets and self.owner.sets.alpha or 1
+		local newAlpha = min(max(oldAlpha + (delta * 0.1), 0), 1)
+
+		-- round to fix floating point fun
+		oldAlpha = math.floor(oldAlpha * 100 + 0.5) / 100
+		newAlpha = math.floor(newAlpha * 100 + 0.5) / 100
+
+		if newAlpha ~= oldAlpha then
+			self.owner:SetFrameAlpha(newAlpha)
+
+			self:UpdateTooltip()
+		end
 	end
 
 	--updates the drag button color of a given bar if its attached to another bar
