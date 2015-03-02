@@ -263,15 +263,15 @@ do
 		end
 	end
 
-	local over = {}
+	local over = {} --a table for storing frames the mouse is currently over
 	function FrameOverlay:ShiftScroll(delta)
 		wipe(over)
 		local at = 1
 		local count = 0
 		if self.isMouseOver and IsShiftKeyDown() then
-			for i, b in Dominos.Frame:GetAll() do
-				if MouseIsOver(b)then
-					local lay = frameOverlays[b]
+			for i, frame in Dominos.Frame:GetAll() do
+				if frame:IsMouseOver() then
+					local lay = frameOverlays[frame]
 					count = count + 1
 					if GetMouseFocus() == lay then
 						at = count
