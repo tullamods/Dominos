@@ -7,7 +7,7 @@ local Addon = _G[AddonName]
 local skinnedButtons = {}
 
 
---[[ Bag Bar - A button frame for  ]]--
+--[[ Bag Bar ]]--
 
 local BagBar = Addon:CreateClass('Frame', Addon.ButtonBar)
 
