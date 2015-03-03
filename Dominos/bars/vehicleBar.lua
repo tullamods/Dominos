@@ -25,10 +25,19 @@ function VehicleBar:Create(...)
 
 	bar.header:SetAttribute('updateVehicleButton', [[
 		local isVisible = self:GetAttribute('state-taxi') == 1
-		 				  or self:GetAttribute('state-canexitvehicle') == 1
+		 			   or self:GetAttribute('state-canexitvehicle') == 1
 
 		self:SetAttribute('state-display', isVisible and 'show' or 'hide')
+		self:CallMethod('UpdateExitButton')
 	]])
+
+	bar.header.UpdateExitButton = function(self)
+		if self:GetAttribute('state-display') == 'show' then
+			_G.MainMenuBarVehicleLeaveButton:Show()
+		else
+			 _G.MainMenuBarVehicleLeaveButton:Hide()
+		end
+	end
 
 	RegisterStateDriver(bar.header, 'canexitvehicle', '[canexitvehicle]1;0')
 
@@ -55,24 +64,18 @@ function VehicleBar:NumButtons()
 	return 1
 end
 
-function VehicleBar:AddButton(index)
-	local button = VehicleBar.proto.AddButton(self, index)
-
-	if button then
-		button:UnregisterAllEvents()
-	end
-
-	return button
-end
-
 function VehicleBar:GetButton(index)
-	return _G['MainMenuBarVehicleLeaveButton']
+	return _G.MainMenuBarVehicleLeaveButton
 end
 
 
 --[[ Controller ]]--
 
 local VehicleBarController = Addon:NewModule('VehicleBar', 'AceEvent-3.0')
+
+function VehicleBarController:OnInitialize()
+	_G.MainMenuBarVehicleLeaveButton:UnregisterAllEvents()
+end
 
 function VehicleBarController:Load()
 	self.frame = VehicleBar:New()
