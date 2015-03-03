@@ -117,7 +117,7 @@ function MenuBar:NumButtons()
 	return #self.activeButtons
 end
 
-function MenuBar:UpdateNumButtons()
+function MenuBar:UpdateActiveButtons()
 	table.wipe(self.activeButtons)
 
 	for _, name in ipairs(MICRO_BUTTONS) do
@@ -127,9 +127,34 @@ function MenuBar:UpdateNumButtons()
 			table.insert(self.activeButtons, button)
 		end
 	end
+end
 
-	table.wipe(self.buttons)
-	MenuBar.proto.UpdateNumButtons(self)
+function MenuBar:UpdateOverrideBarButtons()
+	table.wipe(self.overrideButtons)
+
+	local isStoreEnabled = C_StorePublic.IsEnabled()
+
+	for _, buttonName in ipairs(MICRO_BUTTONS) do
+		local shouldAddButton
+
+		if buttonName == 'HelpMicroButton' then
+			shouldAddButton = not isStoreEnabled
+		elseif buttonName == 'StoreMicroButton' then
+			shouldAddButton = isStoreEnabled
+		else
+			shouldAddButton = true
+		end
+
+		if shouldAddButton then
+			table.insert(self.overrideButtons, _G[buttonName])
+		end
+	end
+end
+
+function MenuBar:ReloadButtons()
+	self:UpdateActiveButtons()
+
+	MenuBar.proto.ReloadButtons(self)
 end
 
 function MenuBar:DisableMenuButton(button, disabled)
@@ -138,7 +163,7 @@ function MenuBar:DisableMenuButton(button, disabled)
 	disabledButtons[button:GetName()] = disabled or false
 	self.sets.disabled = disabledButtons
 
-	self:UpdateNumButtons()
+	self:ReloadButtons()
 end
 
 function MenuBar:IsMenuButtonDisabled(button)
@@ -224,25 +249,7 @@ function MenuBar:LayoutOverrideUI()
 end
 
 function MenuBar:FixButtonPositions()
-	table.wipe(self.overrideButtons)
-
-	local isStoreEnabled = C_StorePublic.IsEnabled()
-
-	for i, name in ipairs(MICRO_BUTTONS) do
-		local shouldAddButton
-
-		if name == 'HelpMicroButton' then
-			shouldAddButton = not isStoreEnabled
-		elseif name == 'StoreMicroButton' then
-			shouldAddButton = isStoreEnabled
-		else
-			shouldAddButton = true
-		end
-
-		if shouldAddButton then
-			table.insert(self.overrideButtons, _G[button])
-		end
-	end
+	self:UpdateOverrideBarButtons()
 
 	for i, button in ipairs(self.overrideButtons) do
 		if i > 1 then
