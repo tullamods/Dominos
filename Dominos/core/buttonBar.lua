@@ -7,7 +7,7 @@ Dominos.ButtonBar = ButtonBar
 function ButtonBar:New(...)
     local bar = ButtonBar.proto.New(self, ...)
 
-    bar:UpdateNumButtons()
+    bar:ReloadButtons()
 
     return bar
 end
@@ -58,6 +58,20 @@ function ButtonBar:DetachButton(index)
 
         self.buttons[index] = nil
     end
+end
+
+function ButtonBar:ReloadButtons()
+    local oldNumButtons = #self.buttons
+    for i = 1, oldNumButtons do
+		self:DetachButton(i)
+	end
+
+    local newNumButtons = self:NumButtons()
+    for i = 1, newNumButtons do
+        self:AttachButton(i)
+    end
+
+    self:Layout()
 end
 
 function ButtonBar:SetNumButtons(numButtons)
