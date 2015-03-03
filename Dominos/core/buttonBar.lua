@@ -4,8 +4,16 @@
 local ButtonBar = Dominos:CreateClass('Frame', Dominos.Frame)
 Dominos.ButtonBar = ButtonBar
 
-function ButtonBar:Create(id)
-    local bar = ButtonBar.proto.Create(self, id)
+function ButtonBar:New(...)
+    local bar = ButtonBar.proto.New(self, ...)
+
+    bar:UpdateNumButtons()
+
+    return bar
+end
+
+function ButtonBar:Create(...)
+    local bar = ButtonBar.proto.Create(self, ...)
 
     bar.buttons = {}
 
@@ -14,16 +22,30 @@ end
 
 function ButtonBar:Free()
     for i in pairs(self.buttons) do
-        self:RemoveButton(i)
+        self:DetachButton(i)
     end
 
     return ButtonBar.proto.Free(self)
 end
 
---this function is used in a lot of places, but never called in Frame
-function ButtonBar:AddButton(index) end
+-- retrives the button that should be placed at index
+function ButtonBar:GetButton(index) end
 
-function ButtonBar:RemoveButton(index)
+-- adds the specified button to the bar
+function ButtonBar:AttachButton(index)
+    local button = self:GetButton(index)
+
+    if button then
+        button:SetParent(self.header)
+		button:EnableMouse(not self:GetClickThrough())
+		button:Show()
+
+        self.buttons[index] = button
+    end
+end
+
+-- removes the specified button from the bar
+function ButtonBar:DetachButton(index)
     local button = self.buttons[index]
 
     if button then
@@ -39,34 +61,28 @@ function ButtonBar:RemoveButton(index)
 end
 
 function ButtonBar:SetNumButtons(numButtons)
-    local numButtons = numButtons or 0
+    self.sets.numButtons = numButtons or 0
 
-    if numButtons ~= self:NumButtons() then
-        self.sets.numButtons = numButtons
+    self:UpdateNumButtons()
+end
 
-        for i = numButtons + 1, #self.buttons do
-            self:RemoveButton(i)
-        end
+function ButtonBar:UpdateNumButtons()
+    local oldNumButtons = #self.buttons
+    local newNumButtons = self:NumButtons()
 
-        for i = #self.buttons + 1, numButtons do
-            self:AddButton(i)
-        end
-
-        self:Layout()
+    for i = newNumButtons + 1, oldNumButtons do
+        self:DetachButton(i)
     end
+
+    for i = oldNumButtons + 1, newNumButtons do
+        self:AttachButton(i)
+    end
+
+    self:Layout()
 end
 
 function ButtonBar:NumButtons()
     return self.sets.numButtons or 0
-end
-
---this function is used in a lot of places, but never called in Frame
-function ButtonBar:LoadButtons()
-    for i = 1, self:NumButtons() do
-        self:AddButton(i)
-    end
-
-    self:UpdateClickThrough()
 end
 
 function ButtonBar:SetColumns(columns)
