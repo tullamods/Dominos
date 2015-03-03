@@ -1,22 +1,21 @@
 --[[
-	StanceBar.lua: A dominos stance bar
+	stanceBar - a bar for displaying class specific buttons for things like stances/forms/etc
 --]]
 
-
+-- don't bother loading the module if the player is currently playing something without a stance
 if select(2, UnitClass('player')) == 'MAGE' or select(2, UnitClass('player')) == 'SHAMAN' or select(2, UnitClass('player')) == 'HUNTER' then
 	return
 end
 
 --[[ Globals ]]--
 
-local _G = _G
-local Dominos = _G['Dominos']
+local Addon = _G[...]
 local KeyBound = LibStub('LibKeyBound-1.0')
 
 
 --[[ Button ]]--
 
-local StanceButton = Dominos:CreateClass('CheckButton', Dominos.BindableButton)
+local StanceButton = Addon:CreateClass('CheckButton', Addon.BindableButton)
 
 do
 	local unused = {}
@@ -26,8 +25,8 @@ do
 	function StanceButton:New(id)
 		local button = self:Restore(id) or self:Create(id)
 
-		Dominos.BindingsController:Register(button)
-		Dominos:GetModule('Tooltips'):Register(button)
+		Addon.BindingsController:Register(button)
+		Addon:GetModule('Tooltips'):Register(button)
 
 		return button
 	end
@@ -46,7 +45,7 @@ do
 	--if we have button facade support, then skin the button that way
 	--otherwise, apply the dominos style to the button to make it pretty
 	function StanceButton:Skin()
-		if Dominos:Masque('Class Bar', self) then
+		if Addon:Masque('Class Bar', self) then
 			return
 		end
 
@@ -78,8 +77,8 @@ do
 		self:SetParent(nil)
 		self:Hide()
 
-		Dominos.BindingsController:Unregister(self)
-		Dominos:GetModule('Tooltips'):Unregister(self)
+		Addon.BindingsController:Unregister(self)
+		Addon:GetModule('Tooltips'):Unregister(self)
 	end
 
 	--keybound support
@@ -91,21 +90,15 @@ end
 
 --[[ Bar ]]--
 
-local StanceBar = Dominos:CreateClass('Frame', Dominos.ButtonBar)
+local StanceBar = Addon:CreateClass('Frame', Addon.ButtonBar)
 
 do
 	function StanceBar:New()
-		local f = StanceBar.proto.New(self, 'class')
+		local bar = StanceBar.proto.New(self, 'class')
 
-		f:SetScript('OnEvent', f.OnEvent)
+		bar:UpdateNumForms()
 
-		f:RegisterEvent('UPDATE_SHAPESHIFT_FORMS')
-		f:RegisterEvent('PLAYER_REGEN_ENABLED')
-		f:RegisterEvent('PLAYER_ENTERING_WORLD')
-
-		f:UpdateNumForms()
-
-		return f
+		return bar
 	end
 
 	function StanceBar:GetDefaults()
@@ -116,65 +109,43 @@ do
 	end
 
 	function StanceBar:Free()
-		self:UnregisterAllEvents()
-
 		self.numForms = nil
 
-		Dominos.Frame.Free(self)
-	end
-
-
-	--[[ Events/Messages ]]--
-
-	function StanceBar:OnEvent(event, ...)
-		local f = self[event]
-
-		if f and type(f) == 'function' then
-			f(self, event, ...)
-		end
-	end
-
-	function StanceBar:UPDATE_SHAPESHIFT_FORMS()
-		self:UpdateNumForms()
-	end
-
-	function StanceBar:PLAYER_REGEN_ENABLED()
-		self:UpdateNumForms()
-	end
-
-	function StanceBar:PLAYER_ENTERING_WORLD()
-		self:UpdateNumForms()
+		StanceBar.proto.Free(self)
 	end
 
 
 	--[[ button stuff]]--
 
-	function StanceBar:LoadButtons()
-		self:UpdateForms()
-		self:UpdateClickThrough()
-	end
+	function StanceBar:AddButton(index)
+		local button = StanceButton:New(index)
 
-	function StanceBar:AddButton(i)
-		local b = StanceButton:New(i)
+		button:SetParent(self.header)
+		button:EnableMouse(not self:GetClickThrough())
 
-		b:SetParent(self.header)
-		self.buttons[i] = b
+		self.buttons[index] = button
 
-		return b
+		return button
 	end
 
 	function StanceBar:UpdateNumForms()
-		if InCombatLockdown() then
-			return
-		end
+		if InCombatLockdown() then return end
 
-		local oldNumForms = self.numForms
-		local numForms = GetNumShapeshiftForms() or 0
+		local oldNumForms = self.numForms or 0
+		local newNumForms = GetNumShapeshiftForms() or 0
 
-		if oldNumForms ~= numForms then
-			self.numForms = numForms
+		if oldNumForms ~= newNumForms then
+			self.numForms = newNumForms
 
-			self:SetNumButtons(numForms)
+			for i = newNumForms + 1, oldNumForms do
+	            self:RemoveButton(i)
+	        end
+
+	        for i = oldNumForms + 1, newNumForms do
+	            self:AddButton(i)
+	        end
+
+			self:Layout()
 		end
 	end
 end
@@ -183,15 +154,25 @@ end
 --[[ Module ]]--
 
 do
-	local StanceBarController = Dominos:NewModule('StanceBar')
+	local StanceBarController = Addon:NewModule('StanceBar', 'AceEvent-3.0')
 
 	function StanceBarController:Load()
 		self.bar = StanceBar:New()
+
+		self:RegisterEvent('UPDATE_SHAPESHIFT_FORMS', 'UpdateNumForms')
+		self:RegisterEvent('PLAYER_REGEN_ENABLED', 'UpdateNumForms')
+		self:RegisterEvent('PLAYER_ENTERING_WORLD', 'UpdateNumForms')
 	end
 
 	function StanceBarController:Unload()
+		self:UnregisterAllEvents()
+
 		if self.bar then
 			self.bar:Free()
 		end
+	end
+
+	function StanceBarController:UpdateNumForms()
+		self.bar:UpdateNumForms()
 	end
 end

@@ -1,28 +1,34 @@
-﻿--[[
-	bagBar.lua
-		Defines the Dominos bagBar object
+--[[
+	bagBar -  A bar for holding container buttons
 --]]
 
-local LBF = LibStub('LibButtonFacade', true)
+local AddonName = ...
+local Addon = _G[AddonName]
+local skinnedButtons = {}
 
---[[ Bag Bar ]]--
 
-local BagBar = Dominos:CreateClass('Frame', Dominos.ButtonBar)
+--[[ Bag Bar - A button frame for  ]]--
+
+local BagBar = Addon:CreateClass('Frame', Addon.ButtonBar)
 
 function BagBar:New()
-	local f = BagBar.proto.New(self, 'bags')
+	local bar = BagBar.proto.New(self, 'bags')
 
-	f:Reload()
+	bar:Reload()
 
-	return f
+	return bar
 end
 
-function BagBar:SkinButton(b)
-	if b.skinned then return end
+function BagBar:SkinButton(button)
+	if skinnedButtons[button] then return end
 
-	Dominos:Masque('Bag Bar', b, {Icon = _G[b:GetName() .. 'IconTexture']})
+	Addon:Masque(
+		'Bag Bar',
+		button,
+		{ Icon = _G[button:GetName() .. 'IconTexture'] }
+	)
 
-	b.skinned = true
+	skinnedButtons[button] = true
 end
 
 function BagBar:GetDefaults()
@@ -41,52 +47,45 @@ function BagBar:Reload()
 	if not self.bags then
 		self.bags = {}
 	else
-		for i = 1, #self.bags do
-			self.bags[i] = nil
-		end
+		table.wipe(self.bags)
 	end
 
 	if not self.sets.oneBag then
-		local startSlot = NUM_BAG_SLOTS - 1
-		for slot = startSlot, 0, -1 do
-			table.insert(self.bags, _G[string.format('CharacterBag%dSlot', slot)])
+		for slot = (NUM_BAG_SLOTS - 1), 0, -1 do
+			local buttonName = ('CharacterBag%dSlot'):format(slot)
+			table.insert(self.bags, _G[buttonName])
 		end
 	end
 
 	table.insert(self.bags, _G['MainMenuBarBackpackButton'])
 
-	self:SetNumButtons(#self.bags)
-	self:UpdateClickThrough()
+	if #self.bags ~= #self.buttons then
+		for i = 1, #self.bags + 1, #self.buttons do
+			self:RemoveButton(i)
+		end
+
+		for i = 1, #self.buttons + 1, #self.bags do
+			self:AddButton(i)
+		end
+
+		self:Layout()
+	end
 end
 
 
 --[[ Frame Overrides ]]--
 
-function BagBar:AddButton(i)
-	local b = self.bags[i]
-	b:SetParent(self.header)
-	b:Show()
-	self:SkinButton(b)
+function BagBar:AddButton(index)
+	local button = self.bags[index]
 
-	self.buttons[i] = b
-end
+	if button then
+		button:SetParent(self.header)
+		button:EnableMouse(not self:GetClickThrough())
+		button:Show()
 
-function BagBar:RemoveButton(i)
-	local b = self.buttons[i]
-	if b then
-		b:SetParent(nil)
-		b:Hide()
-		self.buttons[i] = nil
-	end
-end
+		self:SkinButton(button)
 
-function BagBar:UpdateButtonCount(numButtons)
-	for i = 1, #self.buttons do
-		self:RemoveButton(i)
-	end
-
-	for i = 1, numButtons do
-		self:AddButton(i)
+		self.buttons[index] = button
 	end
 end
 
@@ -95,11 +94,12 @@ function BagBar:NumButtons()
 end
 
 function BagBar:CreateMenu()
-	local menu = Dominos:NewMenu(self.id)
-	local panel = menu:AddLayoutPanel()
+	local menu = Addon:NewMenu(self.id)
 	local L = LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')
 
-	--add onebag and showkeyring options
+	local panel = menu:AddLayoutPanel()
+
+	-- add option to show only one bag
 	local oneBag = panel:NewCheckButton(L.OneBag)
 	oneBag:SetScript('OnShow', function()
 		oneBag:SetChecked(self.sets.oneBag)
@@ -110,14 +110,13 @@ function BagBar:CreateMenu()
 		_G[panel:GetName() .. L.Columns]:OnShow()
 	end)
 
-
 	menu:AddAdvancedPanel()
 	self.menu = menu
 end
 
 --[[ Bag Bar Controller ]]
 
-local BagBarController = Dominos:NewModule('BagBar')
+local BagBarController = Addon:NewModule('BagBar')
 
 function BagBarController:Load()
 	self.frame = BagBar:New()
