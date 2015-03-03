@@ -5,30 +5,34 @@ local Addon = _G[...]
 local VehicleBar = Addon:CreateClass('Frame', Addon.ButtonBar)
 
 function VehicleBar:New()
-	local frame = VehicleBar.proto.New(self, 'vehicle')
+	local bar = VehicleBar.proto.New(self, 'vehicle')
 
-	frame.header:SetAttribute('_onstate-taxi', [[
+	bar:UpdateOnTaxi()
+
+	return bar
+end
+
+function VehicleBar:Create(...)
+	local bar = VehicleBar.proto.Create(self, ...)
+
+	bar.header:SetAttribute('_onstate-taxi', [[
 		self:RunAttribute('updateVehicleButton')
 	]])
 
-	frame.header:SetAttribute('_onstate-canexitvehicle', [[
+	bar.header:SetAttribute('_onstate-canexitvehicle', [[
 		self:RunAttribute('updateVehicleButton')
 	]])
 
-	frame.header:SetAttribute('updateVehicleButton', [[
+	bar.header:SetAttribute('updateVehicleButton', [[
 		local isVisible = self:GetAttribute('state-taxi') == 1
 		 				  or self:GetAttribute('state-canexitvehicle') == 1
 
 		self:SetAttribute('state-display', isVisible and 'show' or 'hide')
 	]])
 
-	RegisterStateDriver(frame.header, 'canexitvehicle', '[canexitvehicle]1;0')
+	RegisterStateDriver(bar.header, 'canexitvehicle', '[canexitvehicle]1;0')
 
-	frame:UpdateOnTaxi()
-	frame:LoadButtons()
-	frame:Layout()
-
-	return frame
+	return bar
 end
 
 function VehicleBar:UpdateOnTaxi()
@@ -52,18 +56,16 @@ function VehicleBar:NumButtons()
 end
 
 function VehicleBar:AddButton(index)
-	local button = self:GetLeaveButton()
-	button:UnregisterAllEvents()
+	local button = VehicleBar.proto.AddButton(self, index)
 
 	if button then
-		button:SetParent(self.header)
-		button:Show()
-
-		self.buttons[index] = button
+		button:UnregisterAllEvents()
 	end
+
+	return button
 end
 
-function VehicleBar:GetLeaveButton()
+function VehicleBar:GetButton(index)
 	return _G['MainMenuBarVehicleLeaveButton']
 end
 

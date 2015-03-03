@@ -75,19 +75,13 @@ function ActionBar:New(id)
 	local bar = ActionBar.proto.New(self, id)
 
 	bar.sets.pages = setmetatable(bar.sets.pages, bar.id == 1 and self.mainbarOffsets or self.defaultOffsets)
-
 	bar.pages = bar.sets.pages[bar.class]
-	bar.baseID = bar:MaxLength() * (id-1)
 
-	bar:LoadButtons()
 	bar:LoadStateController()
-	bar:UpdateClickThrough()
 	bar:UpdateStateDriver()
-	bar:Layout()
-	bar:UpdateGrid()
 	bar:UpdateRightClickUnit()
+	bar:UpdateGrid()
 	bar:SetScript('OnSizeChanged', self.OnSizeChanged)
-	bar:UpdateFlyoutDirection()
 
 	active[id] = bar
 
@@ -129,36 +123,28 @@ end
 
 --[[ button stuff]]--
 
-function ActionBar:LoadButtons()
-	for i = 1, self:NumButtons() do
-		local b = ActionButton:New(self.baseID + i)
-
-		if b then
-			b:SetParent(self.header)
-			b:SetFlyoutDirection(self:GetFlyoutDirection())
-			self.buttons[i] = b
-		else
-			break
-		end
-	end
-
-	self:UpdateActions()
+function ActionBar:BaseActionID()
+	return self:MaxLength() * (self.id - 1)
 end
 
-function ActionBar:AddButton(i)
-	local b = ActionButton:New(self.baseID + i)
-
-	if b then
-		self.buttons[i] = b
-
-		b:SetParent(self.header)
-		b:SetFlyoutDirection(self:GetFlyoutDirection())
-		b:LoadAction()
-
-		self:UpdateAction(i)
-		self:UpdateGrid()
-	end
+function ActionBar:GetButton(index)
+	return ActionButton:New(self:BaseActionID() + index)
 end
+
+function ActionBar:AttachButton(index)
+	local button = ActionBar.proto.AttachButton(self, index)
+
+	if button then
+		button:SetFlyoutDirection(self:GetFlyoutDirection())
+		button:LoadAction()
+
+		self:UpdateAction(index)
+		self:UpdateButtonGrid(index)
+	end
+
+	return button
+end
+
 
 --[[ Paging Code ]]--
 
@@ -206,21 +192,21 @@ do
 	end
 
 	--updates the actionID of a given button for all states
-	function ActionBar:UpdateAction(i)
-		local b = self.buttons[i]
+	function ActionBar:UpdateAction(index)
+		local button = self.buttons[index]
 		local maxSize = self:MaxLength()
 
-		b:SetAttribute('button--index', i)
+		button:SetAttribute('button--index', index)
 
 		for i, state in Dominos.BarStates:getAll() do
 			local offset = self:GetOffset(state.id)
 			local actionId = nil
 
 			if offset then
-				actionId = ToValidID(b:GetAttribute('action--base') + offset * maxSize)
+				actionId = ToValidID(button:GetAttribute('action--base') + offset * maxSize)
 			end
 
-			b:SetAttribute('action--S' .. i, actionId)
+			button:SetAttribute('action--S' .. i, actionId)
 		end
 	end
 end
@@ -276,6 +262,13 @@ end
 
 
 --Empty button display
+function ActionBar:UpdateButtonGrid()
+	local offset = Dominos:ShowGrid() and 1 or -1
+
+	button:SetAttribute('showgrid', max(button:GetAttribute('showgrid') + offset, 0))
+	button:UpdateGrid()
+end
+
 function ActionBar:ShowGrid()
 	for _, button in pairs(self.buttons) do
 		button:SetAttribute('showgrid', button:GetAttribute('showgrid') + 1)
@@ -375,8 +368,8 @@ function ActionBar:UpdateFlyoutDirection()
 	local direction = self:GetFlyoutDirection()
 
 	-- dear blizzard, I'd like to be able to use the useparent-* attribute stuff for this
-	for _,b in pairs(self.buttons) do
-		b:SetFlyoutDirection(direction)
+	for _, button in pairs(self.buttons) do
+		button:SetFlyoutDirection(direction)
 	end
 end
 
