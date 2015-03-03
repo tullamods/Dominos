@@ -21,11 +21,11 @@ do
 		table.insert(bagButtons, button)
 	end
 
-	addButton('MainMenuBarBackpackButton')
-
 	for slot = (NUM_BAG_SLOTS - 1), 0, -1 do
 		addButton(('CharacterBag%dSlot'):format(slot))
 	end
+
+	addButton('MainMenuBarBackpackButton')
 end
 
 
@@ -34,11 +34,7 @@ end
 local BagBar = Addon:CreateClass('Frame', Addon.ButtonBar)
 
 function BagBar:New()
-	local bar = BagBar.proto.New(self, 'bags')
-
-	bar:UpdateNumButtons()
-
-	return bar
+	return BagBar.proto.New(self, 'bags')
 end
 
 function BagBar:GetDefaults()
@@ -48,21 +44,33 @@ function BagBar:GetDefaults()
 	}
 end
 
-function BagBar:SetSetOneBag(enable)
+function BagBar:SetOneBag(enable)
 	self.sets.oneBag = enable or nil
 
-	self:UpdateNumButtons()
+	self:ReloadButtons()
+end
+
+function BagBar:OneBag()
+	return self.sets.oneBag
 end
 
 
 --[[ Frame Overrides ]]--
 
 function BagBar:GetButton(index)
+	if self:OneBag() then
+		if index == 1 then
+			return bagButtons[#bagButtons]
+		end
+
+		return nil
+	end
+
 	return bagButtons[index]
 end
 
 function BagBar:NumButtons()
-	if self.sets.oneBag then
+	if self:OneBag() then
 		return 1
 	end
 
@@ -78,11 +86,11 @@ function BagBar:CreateMenu()
 	-- add option to show only one bag
 	local oneBag = panel:NewCheckButton(L.OneBag)
 	oneBag:SetScript('OnShow', function()
-		oneBag:SetChecked(self.sets.oneBag)
+		oneBag:SetChecked(self:OneBag())
 	end)
 
 	oneBag:SetScript('OnClick', function()
-		self:SetSetOneBag(oneBag:GetChecked())
+		self:SetOneBag(oneBag:GetChecked())
 		_G[panel:GetName() .. L.Columns]:OnShow()
 	end)
 
