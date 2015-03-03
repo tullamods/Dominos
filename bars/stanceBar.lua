@@ -32,7 +32,8 @@ do
 	end
 
 	function StanceButton:Create(id)
-		local button = self:Bind(_G['StanceButton' .. id])
+		local buttonName = ('StanceButton%d'):format(id)
+		local button = self:Bind(_G[buttonName])
 
 		if button then
 			button:HookScript('OnEnter', self.OnEnter)
@@ -45,9 +46,7 @@ do
 	--if we have button facade support, then skin the button that way
 	--otherwise, apply the dominos style to the button to make it pretty
 	function StanceButton:Skin()
-		if Addon:Masque('Class Bar', self) then
-			return
-		end
+		if Addon:Masque('Class Bar', self) then	return end
 
 		local r = self:GetWidth() / _G['ActionButton1']:GetWidth()
 
@@ -61,12 +60,13 @@ do
 	end
 
 	function StanceButton:Restore(id)
-		local b = unused[id]
-		if b then
-			unused[id] = nil
-			b:Show()
+		local button = unused[id]
 
-			return b
+		if button then
+			unused[id] = nil
+			button:Show()
+
+			return button
 		end
 	end
 
@@ -94,11 +94,7 @@ local StanceBar = Addon:CreateClass('Frame', Addon.ButtonBar)
 
 do
 	function StanceBar:New()
-		local bar = StanceBar.proto.New(self, 'class')
-
-		bar:UpdateNumForms()
-
-		return bar
+		return StanceBar.proto.New(self, 'class')
 	end
 
 	function StanceBar:GetDefaults()
@@ -108,45 +104,12 @@ do
 		}
 	end
 
-	function StanceBar:Free()
-		self.numForms = nil
-
-		StanceBar.proto.Free(self)
+	function StanceBar:NumButtons()
+		return GetNumShapeshiftForms() or 0
 	end
 
-
-	--[[ button stuff]]--
-
-	function StanceBar:AddButton(index)
-		local button = StanceButton:New(index)
-
-		button:SetParent(self.header)
-		button:EnableMouse(not self:GetClickThrough())
-
-		self.buttons[index] = button
-
-		return button
-	end
-
-	function StanceBar:UpdateNumForms()
-		if InCombatLockdown() then return end
-
-		local oldNumForms = self.numForms or 0
-		local newNumForms = GetNumShapeshiftForms() or 0
-
-		if oldNumForms ~= newNumForms then
-			self.numForms = newNumForms
-
-			for i = newNumForms + 1, oldNumForms do
-	            self:RemoveButton(i)
-	        end
-
-	        for i = oldNumForms + 1, newNumForms do
-	            self:AddButton(i)
-	        end
-
-			self:Layout()
-		end
+	function StanceBar:GetButton(index)
+		return StanceButton:New(index)
 	end
 end
 
@@ -173,6 +136,8 @@ do
 	end
 
 	function StanceBarController:UpdateNumForms()
-		self.bar:UpdateNumForms()
+		if InCombatLockdown() then return end
+
+		self.bar:UpdateNumButtons()
 	end
 end

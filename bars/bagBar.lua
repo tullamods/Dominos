@@ -4,7 +4,29 @@
 
 local AddonName = ...
 local Addon = _G[AddonName]
-local skinnedButtons = {}
+
+-- register buttons for use later
+local bagButtons = {}
+
+do
+	local function addButton(buttonName)
+		local button = _G[buttonName]
+
+		Addon:Masque(
+			'Bag Bar',
+			button,
+			{ Icon = _G[button:GetName() .. 'IconTexture'] }
+		)
+
+		table.insert(bagButtons, button)
+	end
+
+	addButton('MainMenuBarBackpackButton')
+
+	for slot = (NUM_BAG_SLOTS - 1), 0, -1 do
+		addButton(('CharacterBag%dSlot'):format(slot))
+	end
+end
 
 
 --[[ Bag Bar ]]--
@@ -14,21 +36,9 @@ local BagBar = Addon:CreateClass('Frame', Addon.ButtonBar)
 function BagBar:New()
 	local bar = BagBar.proto.New(self, 'bags')
 
-	bar:Reload()
+	bar:UpdateNumButtons()
 
 	return bar
-end
-
-function BagBar:SkinButton(button)
-	if skinnedButtons[button] then return end
-
-	Addon:Masque(
-		'Bag Bar',
-		button,
-		{ Icon = _G[button:GetName() .. 'IconTexture'] }
-	)
-
-	skinnedButtons[button] = true
 end
 
 function BagBar:GetDefaults()
@@ -40,57 +50,23 @@ end
 
 function BagBar:SetSetOneBag(enable)
 	self.sets.oneBag = enable or nil
-	self:Reload()
-end
 
-function BagBar:Reload()
-	if not self.bags then
-		self.bags = {}
-	else
-		table.wipe(self.bags)
-	end
-
-	if not self.sets.oneBag then
-		for slot = (NUM_BAG_SLOTS - 1), 0, -1 do
-			local buttonName = ('CharacterBag%dSlot'):format(slot)
-			table.insert(self.bags, _G[buttonName])
-		end
-	end
-
-	table.insert(self.bags, _G['MainMenuBarBackpackButton'])
-
-	if #self.bags ~= #self.buttons then
-		for i = 1, #self.bags + 1, #self.buttons do
-			self:RemoveButton(i)
-		end
-
-		for i = 1, #self.buttons + 1, #self.bags do
-			self:AddButton(i)
-		end
-
-		self:Layout()
-	end
+	self:UpdateNumButtons()
 end
 
 
 --[[ Frame Overrides ]]--
 
-function BagBar:AddButton(index)
-	local button = self.bags[index]
-
-	if button then
-		button:SetParent(self.header)
-		button:EnableMouse(not self:GetClickThrough())
-		button:Show()
-
-		self:SkinButton(button)
-
-		self.buttons[index] = button
-	end
+function BagBar:GetButton(index)
+	return bagButtons[index]
 end
 
 function BagBar:NumButtons()
-	return #self.bags
+	if self.sets.oneBag then
+		return 1
+	end
+
+	return #bagButtons
 end
 
 function BagBar:CreateMenu()

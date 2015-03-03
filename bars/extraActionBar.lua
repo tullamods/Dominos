@@ -1,19 +1,16 @@
-if not _G['ExtraActionBarFrame'] then
-	return
-end
+if not _G['ExtraActionBarFrame'] then return end
 
 --[[ Globals ]]--
 
-local _G = _G
-local Dominos = _G['Dominos']
+local Addon = _G[...]
 local KeyBound = LibStub('LibKeyBound-1.0')
-local Tooltips = Dominos:GetModule('Tooltips')
-local Bindings = Dominos.BindingsController
+local Tooltips = Addon:GetModule('Tooltips')
+local Bindings = Addon.BindingsController
 
 
 --[[ buttons ]]--
 
-local ExtraActionButton = Dominos:CreateClass('CheckButton', Dominos.BindableButton)
+local ExtraActionButton = Addon:CreateClass('CheckButton', Addon.BindableButton)
 
 do
 	local unused = {}
@@ -42,7 +39,7 @@ do
 	--if we have button facade support, then skin the button that way
 	--otherwise, apply the dominos style to the button to make it pretty
 	function ExtraActionButton:Skin()
-		if not Dominos:Masque('Extra Bar', self) then
+		if not Addon:Masque('Extra Bar', self) then
 			self.icon:SetTexCoord(0.06, 0.94, 0.06, 0.94)
 			self:GetNormalTexture():SetVertexColor(1, 1, 1, 0.5)
 		end
@@ -79,14 +76,12 @@ end
 
 --[[ bar ]]--
 
-local ExtraBar = Dominos:CreateClass('Frame', Dominos.ButtonBar)
+local ExtraBar = Addon:CreateClass('Frame', Addon.ButtonBar)
 
 do
 	function ExtraBar:New()
 		local bar = ExtraBar.proto.New(self, 'extra')
 
-		bar:LoadButtons()
-		bar:Layout()
 		bar:UpdateShowBlizzardTexture()
 
 		return bar
@@ -108,16 +103,12 @@ do
 		return 1
 	end
 
-	function ExtraBar:AddButton(index)
+	function ExtraBar:GetButton(index)
 		local button = ExtraActionButton:New(index)
 
-		if button then
-			button:SetAttribute('showgrid', 1)
-			button:SetParent(self.header)
-			button:Show()
+		button:SetAttribute('showgrid', 1)
 
-			self.buttons[index] = button
-		end
+		return button
 	end
 
 	function ExtraBar:ShowBlizzardTexture(show)
@@ -144,7 +135,7 @@ do
 
 	function ExtraBar:CreateMenu()
 		local bar = self
-		local menu = Dominos:NewMenu(bar.id)
+		local menu = Addon:NewMenu(bar.id)
 		local panel = menu:AddLayoutPanel()
 
 		local L = LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')
@@ -165,7 +156,7 @@ end
 
 --[[ module ]]--
 
-local ExtraBarController = Dominos:NewModule('ExtraBar')
+local ExtraBarController = Addon:NewModule('ExtraBar')
 
 function ExtraBarController:OnInitialize()
 	_G['ExtraActionBarFrame'].ignoreFramePositionManager = true
