@@ -1,4 +1,5 @@
 local Addon = _G[...]
+local VehicleLeaveButton = _G.MainMenuBarVehicleLeaveButton
 
 --[[ The Bar ]]--
 
@@ -33,9 +34,12 @@ function VehicleBar:Create(...)
 
 	bar.header.UpdateExitButton = function(self)
 		if self:GetAttribute('state-display') == 'show' then
-			_G.MainMenuBarVehicleLeaveButton:Show()
+			VehicleLeaveButton:Show()
+			VehicleLeaveButton:Enable()
 		else
-			 _G.MainMenuBarVehicleLeaveButton:Hide()
+			VehicleLeaveButton:Hide()
+			VehicleLeaveButton:Disable()
+			VehicleLeaveButton:UnlockHighlight()
 		end
 	end
 
@@ -65,7 +69,7 @@ function VehicleBar:NumButtons()
 end
 
 function VehicleBar:GetButton(index)
-	return _G.MainMenuBarVehicleLeaveButton
+	return VehicleLeaveButton
 end
 
 
@@ -74,7 +78,7 @@ end
 local VehicleBarController = Addon:NewModule('VehicleBar', 'AceEvent-3.0')
 
 function VehicleBarController:OnInitialize()
-	_G.MainMenuBarVehicleLeaveButton:UnregisterAllEvents()
+	VehicleLeaveButton:UnregisterAllEvents()
 end
 
 function VehicleBarController:Load()
