@@ -41,7 +41,7 @@ local L = LibStub('AceLocale-3.0'):GetLocale('Dominos')
 
 function RollBar:New()
 	local bar = RollBar.proto.New(self, 'roll', L.TipRollBar)
-	
+
 	bar:Layout()
 
 	return bar
@@ -68,6 +68,20 @@ end
 
 function RollBar:GetGroupLootContainer()
 	return _G['GroupLootContainer']
+end
+
+function RollBar:CreateMenu()
+	local menu = Dominos:NewMenu(self.id)
+	local L = LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')
+
+	local panel = menu:NewPanel(L.Layout)
+
+	panel.opacitySlider = panel:NewOpacitySlider()
+	panel.fadeSlider = panel:NewFadeSlider()
+	panel.scaleSlider = panel:NewScaleSlider()
+	panel.paddingSlider = panel:NewPaddingSlider()
+
+	self.menu = menu
 end
 
 
