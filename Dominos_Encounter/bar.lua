@@ -78,8 +78,7 @@ function EncounterBar:AddLayoutPanel(menu)
 	panel.opacitySlider = panel:NewOpacitySlider()
 	panel.fadeSlider = panel:NewFadeSlider()
 	panel.scaleSlider = panel:NewScaleSlider()
-	panel.paddingSlider = panel:NewPaddingSlider()
-	panel.spacingSlider = panel:NewSpacingSlider()
+	panel.paddingSlider = panel:NewPaddingSlider()	
 
 	return panel
 end
