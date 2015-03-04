@@ -48,7 +48,7 @@ function MenuBar:Create(...)
 	local bar = MenuBar.proto.Create(self, ...)
 
 	bar.activeButtons = {}
-	bar.overideButtons = {}
+	bar.overrideButtons = {}
 
 	local getOrHook = function(frame, script, action)
 		if frame:GetScript(script) then
