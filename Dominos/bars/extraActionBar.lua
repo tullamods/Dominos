@@ -30,18 +30,9 @@ do
 		if button then
 			button.buttonType = 'EXTRAACTIONBUTTON'
 			button:HookScript('OnEnter', self.OnEnter)
-			button:Skin()
+			Addon:GetModule('ButtonThemer'):Register(button, 'Extra Bar')
 
 			return button
-		end
-	end
-
-	--if we have button facade support, then skin the button that way
-	--otherwise, apply the dominos style to the button to make it pretty
-	function ExtraActionButton:Skin()
-		if not Addon:Masque('Extra Bar', self) then
-			self.icon:SetTexCoord(0.06, 0.94, 0.06, 0.94)
-			self:GetNormalTexture():SetVertexColor(1, 1, 1, 0.5)
 		end
 	end
 

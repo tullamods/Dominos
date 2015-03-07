@@ -5,8 +5,6 @@
 
 local Addon = _G[...]
 local KeyBound = LibStub('LibKeyBound-1.0')
-
-local format = string.format
 local unused = {}
 
 
@@ -15,31 +13,25 @@ local unused = {}
 local PetButton = Addon:CreateClass('CheckButton', Addon.BindableButton)
 
 function PetButton:New(id)
-	local b = self:Restore(id) or self:Create(id)
+	local button = self:Restore(id) or self:Create(id)
 
-	Addon.BindingsController:Register(b)
-	Addon:GetModule('Tooltips'):Register(b)
+	Addon.BindingsController:Register(button)
+	Addon:GetModule('Tooltips'):Register(button)
 
-	return b
+	return button
 end
 
 function PetButton:Create(id)
-	local b = self:Bind(_G['PetActionButton' .. id])
-	b.buttonType = 'BONUSACTIONBUTTON'
+	local buttonName = ('PetActionButton%d'):format(id)
 
-	b:HookScript('OnEnter', self.OnEnter)
-	b:Skin()
+	local button = self:Bind(_G[buttonName])
+	button.buttonType = 'BONUSACTIONBUTTON'
 
-	return b
-end
+	button:HookScript('OnEnter', self.OnEnter)
 
---if we have button facade support, then skin the button that way
---otherwise, apply the dominos style to the button to make it pretty
-function PetButton:Skin()
-	if not Addon:Masque('Pet Bar', self) then
-		_G[self:GetName() .. 'Icon']:SetTexCoord(0.06, 0.94, 0.06, 0.94)
-		self:GetNormalTexture():SetVertexColor(1, 1, 1, 0.5)
-	end
+	Addon:GetModule('ButtonThemer'):Register(button, 'Pet Bar')
+
+	return button
 end
 
 function PetButton:Restore(id)

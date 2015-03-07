@@ -8,26 +8,6 @@ local Addon = _G[AddonName]
 -- register buttons for use later
 local bagButtons = {}
 
-do
-	local function addButton(buttonName)
-		local button = _G[buttonName]
-
-		Addon:Masque(
-			'Bag Bar',
-			button,
-			{ Icon = _G[button:GetName() .. 'IconTexture'] }
-		)
-
-		table.insert(bagButtons, button)
-	end
-
-	for slot = (NUM_BAG_SLOTS - 1), 0, -1 do
-		addButton(('CharacterBag%dSlot'):format(slot))
-	end
-
-	addButton('MainMenuBarBackpackButton')
-end
-
 
 --[[ Bag Bar ]]--
 
@@ -102,6 +82,20 @@ end
 
 local BagBarController = Addon:NewModule('BagBar')
 
+function BagBarController:OnInitialize()
+	for slot = (NUM_BAG_SLOTS - 1), 0, -1 do
+		self:RegisterButton(('CharacterBag%dSlot'):format(slot))
+	end
+
+	self:RegisterButton('MainMenuBarBackpackButton')
+end
+
+function BagBarController:OnEnable()
+	for i, button in pairs(bagButtons) do
+		Addon:GetModule('ButtonThemer'):Register(button, 'Bag Bar', { Icon = button.icon, Border = button.IconBorder })
+	end
+end
+
 function BagBarController:Load()
 	self.frame = BagBar:New()
 end
@@ -111,4 +105,12 @@ function BagBarController:Unload()
 		self.frame:Free()
 		self.frame = nil
 	end
+end
+
+function BagBarController:RegisterButton(name)
+	local button = _G[name]
+
+
+
+	table.insert(bagButtons, button)
 end

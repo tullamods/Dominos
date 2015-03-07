@@ -31,3 +31,4 @@ bars\vehicleBar.lua
 plugins\slashCommands.lua
 plugins\launcher.lua
 plugins\blizzardHider.lua
+plugins\buttonThemer.lua
