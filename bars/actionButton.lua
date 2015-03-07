@@ -3,13 +3,14 @@
 		A dominos action button
 --]]
 
-local AddonName, Addon = ...
+local AddonName = ...
+local Addon = LibStub('AceAddon-3.0'):GetAddon(AddonName)
 local KeyBound = LibStub('LibKeyBound-1.0')
-local Bindings = Dominos.BindingsController
-local Tooltips = Dominos:GetModule('Tooltips')
+local Bindings = Addon.BindingsController
+local Tooltips = Addon:GetModule('Tooltips')
 
-local ActionButton = Dominos:CreateClass('CheckButton', Dominos.BindableButton)
-Dominos.ActionButton = ActionButton
+local ActionButton = Addon:CreateClass('CheckButton', Addon.BindableButton)
+Addon.ActionButton = ActionButton
 
 ActionButton.unused = {}
 ActionButton.active = {}
@@ -66,7 +67,7 @@ function ActionButton:New(id)
 			end
 		]])
 
-		Bindings:Register(button, button:GetName():match('DominosActionButton%d'))
+		Bindings:Register(button, button:GetName():match(AddonName .. 'ActionButton%d'))
 		Tooltips:Register(button)
 
 		--get rid of range indicator text
@@ -101,7 +102,8 @@ function ActionButton:Create(id)
 		button:SetAttribute('useparent-unit', true)
 		button:EnableMouseWheel(true)
 		button:HookScript('OnEnter', self.OnEnter)
-		button:Skin()
+
+		Addon:GetModule('ButtonThemer'):Register(button, 'Action Bar')
 	end
 
 	return button
@@ -192,16 +194,4 @@ function ActionButton:LoadAction()
 	local id = state and self:GetAttribute('action--' .. state) or self:GetAttribute('action--base')
 
 	self:SetAttribute('action', id)
-end
-
-function ActionButton:Skin()
-	if not Dominos:Masque('Action Bar', self) then
-		self.icon:SetTexCoord(0.06, 0.94, 0.06, 0.94)
-		self:GetNormalTexture():SetVertexColor(1, 1, 1, 0.5)
-
-		local floatingBG = _G[self:GetName() .. 'FloatingBG']
-		if floatingBG then
-			floatingBG:Hide()
-		end
-	end
 end

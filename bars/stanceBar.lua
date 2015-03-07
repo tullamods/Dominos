@@ -37,26 +37,10 @@ do
 
 		if button then
 			button:HookScript('OnEnter', self.OnEnter)
-			button:Skin()
+			Addon:GetModule('ButtonThemer'):Register(button, 'Class Bar')
 		end
 
 		return button
-	end
-
-	--if we have button facade support, then skin the button that way
-	--otherwise, apply the dominos style to the button to make it pretty
-	function StanceButton:Skin()
-		if Addon:Masque('Class Bar', self) then	return end
-
-		local r = self:GetWidth() / _G['ActionButton1']:GetWidth()
-
-		local nt = self:GetNormalTexture()
-		nt:ClearAllPoints()
-		nt:SetPoint('TOPLEFT', -15 * r, 15 * r)
-		nt:SetPoint('BOTTOMRIGHT', 15 * r, -15 * r)
-
-		self.icon:SetTexCoord(0.06, 0.94, 0.06, 0.94)
-		self:GetNormalTexture():SetVertexColor(1, 1, 1, 0.5)
 	end
 
 	function StanceButton:Restore(id)
