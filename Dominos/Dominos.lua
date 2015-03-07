@@ -613,33 +613,3 @@ end
 function Dominos:IsLinkedOpacityEnabled()
 	return self.db.profile.linkedOpacity
 end
-
---[[ Masque Support ]]--
-
-function Dominos:Masque(groupName, button, buttonData)
-	local Masque = LibStub('Masque', true)
-
-	if Masque then
-		local group = Masque:Group('Dominos', groupName)
-
-		group:AddButton(button, buttonData)
-
-		return not group.Disable
-	end
-
-	return false
-end
-
-function Dominos:RemoveMasque(groupName, button)
-	local Masque = LibStub('Masque', true)
-
-	if Masque then
-		local group = Masque:Group('Dominos', groupName)
-
-		group:RemoveButton(button, buttonData)
-
-		return not group.Disable
-	end
-
-	return false
-end
