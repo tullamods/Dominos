@@ -81,17 +81,10 @@ function ActionBar:New(id)
 	bar:UpdateStateDriver()
 	bar:UpdateRightClickUnit()
 	bar:UpdateGrid()
-	bar:SetScript('OnSizeChanged', self.OnSizeChanged)
 
 	active[id] = bar
 
 	return bar
-end
-
-function ActionBar:OnSizeChanged()
-	if not InCombatLockdown() then
-		self:UpdateFlyoutDirection()
-	end
 end
 
 --TODO: change the position code to be based more on the number of action bars
@@ -373,8 +366,15 @@ function ActionBar:UpdateFlyoutDirection()
 	end
 end
 
-function ActionBar:SavePosition()
-	ActionBar.proto.SavePosition(self)
+function ActionBar:Layout(...)
+	ActionBar.proto.Layout(self, ...)
+
+	self:UpdateFlyoutDirection()
+end
+
+
+function ActionBar:SaveFramePosition(...)
+	ActionBar.proto.SaveFramePosition(self, ...)
 
 	self:UpdateFlyoutDirection()
 end
