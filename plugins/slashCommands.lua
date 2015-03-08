@@ -15,63 +15,78 @@ function SlashCommands:OnEnable()
     self:RegisterChatCommand('dominos', 'OnCmd')
     self:RegisterChatCommand('dom', 'OnCmd')
 end
+local args = {}
+local splitting
+local function getArgs(msg) --Breaks the msg up into a table.
+	wipe(args)
+	splitting = nil
+	while string.find(msg, ' ') do
+		splitting = string.split(' ', msg) or msg
+		msg = string.gsub(msg, splitting..' ', "")
+		tinsert(args, splitting)
+	end
+	if msg and not string.find(msg, ' ') then
+		tinsert(args, msg)
+	end
+	return args or msg
+end
 
-function SlashCommands:OnCmd(args)
-	local cmd = string.split(' ', args):lower() or args:lower()
-
-	if cmd == 'config' or cmd == 'lock' then
+function SlashCommands:OnCmd(msg)
+   local args  = getArgs(msg)
+   local cmd1, cmd2 = args[1], args[2] 
+   if cmd1 == 'config' or cmd1 == 'lock' then
         Addon:ToggleLockedFrames()
-    elseif cmd == 'bind' then
+    elseif cmd1 == 'bind' then
         Addon:ToggleBindingMode()
         --frame functions
-    elseif cmd == 'scale' then
-        Addon:ScaleFrames(select(2, string.split(' ', args)))
-	elseif cmd == 'setalpha' then
-        Addon:SetOpacityForFrames(select(2, string.split(' ', args)))
-	elseif cmd == 'fade' then
-        Addon:SetFadeForFrames(select(2, string.split(' ', args)))
-	elseif cmd == 'setcols' then
-        Addon:SetColumnsForFrames(select(2, string.split(' ', args)))
-	elseif cmd == 'pad' then
-        Addon:SetPaddingForFrames(select(2, string.split(' ', args)))
-	elseif cmd == 'space' then
-        Addon:SetSpacingForFrame(select(2, string.split(' ', args)))
-	elseif cmd == 'show' then
-        Addon:ShowFrames(select(2, string.split(' ', args)))
-	elseif cmd == 'hide' then
-        Addon:HideFrames(select(2, string.split(' ', args)))
-	elseif cmd == 'toggle' then
-        Addon:ToggleFrames(select(2, string.split(' ', args)))
+    elseif cmd1 == 'scale' then
+        Addon:ScaleFrames(cmd2)
+	elseif cmd1 == 'setalpha' then
+        Addon:SetOpacityForFrames(cmd2)
+	elseif cmd1 == 'fade' then
+        Addon:SetFadeForFrames(cmd2)
+	elseif cmd1 == 'setcols' then
+        Addon:SetColumnsForFrames(cmd2)
+	elseif cmd1 == 'pad' then
+        Addon:SetPaddingForFrames(cmd2)
+	elseif cmd1 == 'space' then
+        Addon:SetSpacingForFrame(cmd2)
+	elseif cmd1 == 'show' then
+        Addon:ShowFrames(cmd2)
+	elseif cmd1 == 'hide' then
+        Addon:HideFrames(cmd2)
+	elseif cmd1 == 'toggle' then
+        Addon:ToggleFrames(cmd2)
 	--actionbar functions
-	elseif cmd == 'numbars' then
-        Addon:SetNumBars(tonumber(select(2, string.split(' ', args))))
-	elseif cmd == 'numbuttons' then
-        Addon:SetNumButtons(tonumber(select(2, string.split(' ', args))))
+	elseif cmd1 == 'numbars' then
+        Addon:SetNumBars(tonumber(cmd2))
+	elseif cmd1 == 'numbuttons' then
+        Addon:SetNumButtons(tonumber(cmd2))
 	--profile functions
-	elseif cmd == 'save' then
-		local profileName = string.join(' ', select(2, string.split(' ', args)))
+	elseif cmd1 == 'save' then
+		local profileName = string.join(' ', cmd2)
         Addon:SaveProfile(profileName)
-	elseif cmd == 'set' then
-		local profileName = string.join(' ', select(2, string.split(' ', args)))
+	elseif cmd1 == 'set' then
+		local profileName = string.join(' ', cmd2)
         Addon:SetProfile(profileName)
-	elseif cmd == 'copy' then
-		local profileName = string.join(' ', select(2, string.split(' ', args)))
+	elseif cmd1 == 'copy' then
+		local profileName = string.join(' ', cmd2)
         Addon:CopyProfile(profileName)
-	elseif cmd == 'delete' then
-		local profileName = string.join(' ', select(2, string.split(' ', args)))
+	elseif cmd1 == 'delete' then
+		local profileName = string.join(' ', cmd2)
         Addon:DeleteProfile(profileName)
-	elseif cmd == 'reset' then
+	elseif cmd1 == 'reset' then
         Addon:ResetProfile()
-	elseif cmd == 'list' then
+	elseif cmd1 == 'list' then
         Addon:ListProfiles()
-	elseif cmd == 'version' then
+	elseif cmd1 == 'version' then
         Addon:PrintVersion()
-	elseif cmd == 'help' or cmd == '?' then
+	elseif cmd1 == 'help' or cmd1 == '?' then
         self:PrintHelp()
     --debug methods
-	elseif cmd == 'statedump' then
+	elseif cmd1 == 'statedump' then
         Addon.OverrideController:DumpStates()
-	elseif cmd == 'configstatus' then
+	elseif cmd1 == 'configstatus' then
     	self:PrintConfigModeStatus()
     --default case, show the options menu if present, otherwise display list of commands
 	else
