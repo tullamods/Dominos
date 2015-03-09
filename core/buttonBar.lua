@@ -180,7 +180,7 @@ function ButtonBar:Layout()
     local width = w*cols - spacing + pW*2
     local height = h*ceil(#self.buttons/cols) - spacing + pH*2
 
-    self:SetSize(width + pW, height + pH)
+    self:SetSize(width, height)
 end
 
 function ButtonBar:UpdateClickThrough()
