@@ -27,7 +27,7 @@ end
 
 function Frame:Create(id)
 	local frameName = ('%sFrame%s'):format(AddonName, id)
-	
+
 	local frame = self:Bind(CreateFrame('Frame', frameName, _G['UIParent']))
 	frame:SetClampedToScreen(true)
 	frame:SetMovable(true)
@@ -182,7 +182,7 @@ function Frame:Layout()
 	local width, height = 32, 32
 	local paddingW, paddingH = self:GetPadding()
 
-	self:SetSize(width + paddingW, height + paddingH)
+	self:SetSize(width + paddingW*2, height + paddingH*2)
 end
 
 
