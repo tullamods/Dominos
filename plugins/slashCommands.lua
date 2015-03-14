@@ -15,6 +15,7 @@ function SlashCommands:OnEnable()
     self:RegisterChatCommand('dominos', 'OnCmd')
     self:RegisterChatCommand('dom', 'OnCmd')
 end
+
 local args = {}
 local splitting
 local function getArgs(msg) --Breaks the msg up into a table.
@@ -28,52 +29,56 @@ local function getArgs(msg) --Breaks the msg up into a table.
 	if msg and not string.find(msg, ' ') then
 		tinsert(args, msg)
 	end
-	return args or msg
+	return args
 end
 
 function SlashCommands:OnCmd(msg)
-   local args  = getArgs(msg)
-   local cmd1, cmd2 = args[1], args[2] 
-   if cmd1 == 'config' or cmd1 == 'lock' then
+	
+	local args = getArgs(msg)
+
+	local cmd1 = args[1]
+	
+
+	if cmd1 == 'config' or cmd1 == 'lock' then
         Addon:ToggleLockedFrames()
     elseif cmd1 == 'bind' then
         Addon:ToggleBindingMode()
         --frame functions
     elseif cmd1 == 'scale' then
-        Addon:ScaleFrames(cmd2)
+        Addon:ScaleFrames(select(2, unpack(args)))
 	elseif cmd1 == 'setalpha' then
-        Addon:SetOpacityForFrames(cmd2)
+        Addon:SetOpacityForFrames(select(2, unpack(args)))
 	elseif cmd1 == 'fade' then
-        Addon:SetFadeForFrames(cmd2)
+        Addon:SetFadeForFrames(select(2, unpack(args)))
 	elseif cmd1 == 'setcols' then
-        Addon:SetColumnsForFrames(cmd2)
+        Addon:SetColumnsForFrames(select(2, unpack(args)))
 	elseif cmd1 == 'pad' then
-        Addon:SetPaddingForFrames(cmd2)
+        Addon:SetPaddingForFrames(select(2, unpack(args)))
 	elseif cmd1 == 'space' then
-        Addon:SetSpacingForFrame(cmd2)
+        Addon:SetSpacingForFrame(select(2, unpack(args)))
 	elseif cmd1 == 'show' then
-        Addon:ShowFrames(cmd2)
+        Addon:ShowFrames(2, unpack(args))
 	elseif cmd1 == 'hide' then
-        Addon:HideFrames(cmd2)
+        Addon:HideFrames(2, unpack(args))
 	elseif cmd1 == 'toggle' then
-        Addon:ToggleFrames(cmd2)
+        Addon:ToggleFrames(2, unpack(args))
 	--actionbar functions
 	elseif cmd1 == 'numbars' then
-        Addon:SetNumBars(tonumber(cmd2))
+        Addon:SetNumBars(tonumber(select(2, unpack(args))))
 	elseif cmd1 == 'numbuttons' then
-        Addon:SetNumButtons(tonumber(cmd2))
+        Addon:SetNumButtons(tonumber(select(2, unpack(args))))
 	--profile functions
 	elseif cmd1 == 'save' then
-		local profileName = string.join(' ', cmd2)
+		local profileName = string.join(' ', select(2, unpack(args)))
         Addon:SaveProfile(profileName)
 	elseif cmd1 == 'set' then
-		local profileName = string.join(' ', cmd2)
+		local profileName = string.join(' ', select(2, unpack(args)))
         Addon:SetProfile(profileName)
 	elseif cmd1 == 'copy' then
-		local profileName = string.join(' ', cmd2)
+		local profileName = string.join(' ', select(2, unpack(args)))
         Addon:CopyProfile(profileName)
 	elseif cmd1 == 'delete' then
-		local profileName = string.join(' ', cmd2)
+		local profileName = string.join(' ', select(2, unpack(args)))
         Addon:DeleteProfile(profileName)
 	elseif cmd1 == 'reset' then
         Addon:ResetProfile()
