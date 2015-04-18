@@ -142,45 +142,89 @@ function ButtonBar:GetTopToBottom()
     return not self.sets.isBottomToTop
 end
 
-function ButtonBar:Layout()
-    if #self.buttons <= 0 then
-        return ButtonBar.proto.Layout(self)
+function ButtonBar:GetButtonInsets()
+    if #self.buttons >= 1 then
+        return self.buttons[1]:GetHitRectInsets()
     end
 
-    local cols = min(self:NumColumns(), #self.buttons)
-    local rows = ceil(#self.buttons / cols)
-    local pW, pH = self:GetPadding()
-    local spacing = self:GetSpacing()
+    return 0, 0, 0, 0
+end
+
+function ButtonBar:GetButtonSize()
+    if #self.buttons >= 1 then
+        local w, h = self.buttons[1]:GetSize()
+        local l, r, t, b = self:GetButtonInsets()
+
+        return w - (l + r), h - (t + b)
+    end
+
+    return 0, 0
+end
+
+--[[
+    A rough model of a bar for doing calculations
+    ^
+    | Padding
+    v
+    <--Padding-->[Button]<--Spacing-->[Button]<--Padding-->
+    ^
+    | Spacing
+    v
+    <--Padding-->[Button]<--Spacing-->[Button]<--Padding-->
+    ^
+    | Padding
+    v
+--]]
+function ButtonBar:Layout()
+    if InCombatLockdown() then return end
+
+    local numButtons = #self.buttons
+    if numButtons < 1 then
+        ButtonBar.proto.Layout(self)
+        return
+    end
+
+    local cols = min(self:NumColumns(), numButtons)
+    local rows = ceil(numButtons / cols)
+
     local isLeftToRight = self:GetLeftToRight()
     local isTopToBottom = self:GetTopToBottom()
 
-    local firstButton = self.buttons[1]
-    local w = firstButton:GetWidth() + spacing
-    local h = firstButton:GetHeight() + spacing
+    -- grab base button sizes
+    local l, r, t, b = self:GetButtonInsets()
+    local bW, bH = self:GetButtonSize()
+    local pW, pH = self:GetPadding()
+    local spacing = self:GetSpacing()
 
-    for i, button in pairs(self.buttons) do
-        local col
-        local row
-        if isLeftToRight then
-            col = (i-1) % cols
-        else
-            col = (cols-1) - (i-1) % cols
+    local buttonWidth = bW + spacing
+    local buttonHeight = bH + spacing
+
+    local xOff = pW - l
+    local yOff = pH - t
+
+    for i, button in ipairs(self.buttons) do
+        local row = floor((i - 1) / cols)
+        if not isTopToBottom then
+            row = rows - (row + 1)
         end
 
-        if isTopToBottom then
-            row = ceil(i / cols) - 1
-        else
-            row = rows - ceil(i / cols)
+        local col = (i - 1) % cols
+        if not isLeftToRight then
+            col = cols - (col + 1)
         end
 
+        local x = xOff + buttonWidth*col
+        local y = yOff + buttonHeight*row
+
+        button:SetParent(self.header)
         button:ClearAllPoints()
-        button:SetPoint('TOPLEFT', w*col + pW, -(h*row + pH))
+        button:SetPoint('TOPLEFT', x, -y)
     end
 
-    local width = w*cols - spacing + pW*2
-    local height = h*ceil(#self.buttons/cols) - spacing + pH*2
+    local barWidth = (buttonWidth * cols) + (pW * 2) - spacing
+    local barHeight = (buttonHeight * rows) + (pH * 2) - spacing
 
-    self:SetSize(width, height)
+    self:SetSize(barWidth, barHeight)
 end
 
 function ButtonBar:UpdateClickThrough()

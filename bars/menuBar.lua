@@ -5,9 +5,6 @@
 local MenuBar = Dominos:CreateClass('Frame', Dominos.ButtonBar)
 Dominos.MenuBar = MenuBar
 
-local WIDTH_OFFSET = 2
-local HEIGHT_OFFSET = 20
-
 local MICRO_BUTTONS = {
 	"CharacterMicroButton",
 	"SpellbookMicroButton",
@@ -117,6 +114,12 @@ function MenuBar:NumButtons()
 	return #self.activeButtons
 end
 
+function MenuBar:GetButtonInsets()
+	local l, r, t, b = MenuBar.proto.GetButtonInsets(self)
+
+	return l, r + 1, t + 3, b
+end
+
 function MenuBar:UpdateActiveButtons()
 	table.wipe(self.activeButtons)
 
@@ -191,53 +194,11 @@ function MenuBar:LayoutNormal()
 		_G[name]:Hide()
 	end
 
-	local numButtons = #self.buttons
-	if numButtons == 0 then
-		self:SetSize(36, 36)
-		return
-	end
-
-	local cols = min(self:NumColumns(), numButtons)
-	local rows = ceil(numButtons / cols)
-
-	local pW, pH = self:GetPadding()
-	local spacing = self:GetSpacing()
-
-	local isLeftToRight = self:GetLeftToRight()
-	local isTopToBottom = self:GetTopToBottom()
-
-	local firstButton = self.buttons[1]
-	local w = firstButton:GetWidth() + spacing - WIDTH_OFFSET
-	local h = firstButton:GetHeight() + spacing - HEIGHT_OFFSET
-
-	for i, button in pairs(self.buttons) do
-		local col, row
-
-		if isLeftToRight then
-			col = (i-1) % cols
-		else
-			col = (cols-1) - (i-1) % cols
-		end
-
-		if isTopToBottom then
-			row = ceil(i / cols) - 1
-		else
-			row = rows - ceil(i / cols)
-		end
-
-		button:SetParent(self.header)
-		button:ClearAllPoints()
-		button:SetPoint('TOPLEFT', w*col + pW, -(h*row + pH) + HEIGHT_OFFSET)
+	for _, button in pairs(self.buttons) do
 		button:Show()
 	end
 
-	-- Update bar size, if we're not in combat
-	-- TODO: manage bar size via secure code
-	if not InCombatLockdown() then
-		local newWidth = max(w*cols - spacing + pW*2 + WIDTH_OFFSET, 8)
-		local newHeight = max(h*ceil(numButtons / cols) - spacing + pH*2, 8)
-		self:SetSize(newWidth, newHeight)
-	end
+	MenuBar.proto.Layout(self)
 end
 
 function MenuBar:LayoutPetBattle()
@@ -251,13 +212,15 @@ end
 function MenuBar:FixButtonPositions()
 	self:UpdateOverrideBarButtons()
 
+	local l, r, t, b = self:GetButtonInsets()
+
 	for i, button in ipairs(self.overrideButtons) do
 		if i > 1 then
 			button:ClearAllPoints()
 			if i == 7 then
-				button:SetPoint('TOPLEFT', self.overrideButtons[1], 'BOTTOMLEFT', 0, HEIGHT_OFFSET + 4)
+				button:SetPoint('TOPLEFT', self.overrideButtons[1], 'BOTTOMLEFT', 0, 4 + (t - b))
 			else
-				button:SetPoint('BOTTOMLEFT', self.overrideButtons[i - 1], 'BOTTOMRIGHT', -WIDTH_OFFSET, 0)
+				button:SetPoint('BOTTOMLEFT', self.overrideButtons[i - 1], 'BOTTOMRIGHT', (l - r), 0)
 			end
 		end
 
