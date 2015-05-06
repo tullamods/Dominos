@@ -1,4 +1,4 @@
-## Interface: 60100
+## Interface: 60200
 ## Title: Dominos Encounter
 ## Notes: Makes the PlayerPowerBarAlt movable
 ## Author: Tuller (with help from Goranaws)
