@@ -22,7 +22,7 @@ function ButtonThemer:OnInitialize()
 
             group:AddButton(button, ...)
 
-            if group.Disable then
+            if group.db.disabled then
                 self:ApplyDefaultTheme(button)
             end
         end
