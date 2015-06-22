@@ -295,11 +295,15 @@ end
 --[[ Options Menu Display ]]--
 
 function Dominos:ShowOptions()
-	if (not InCombatLockdown()) and LoadAddOn(CONFIG_ADDON_NAME) then
-		self:GetModule('AddonOptions'):Show()
-		return true
+	if InCombatLockdown() then
+		return
 	end
 
+	if LoadAddOn('Dominos_Config') then
+		InterfaceOptionsFrame_Show()
+		InterfaceOptionsFrame_OpenToCategory(self.Options)
+		return true
+	end
 	return false
 end
 
@@ -312,7 +316,7 @@ function Dominos:NewMenu(id)
 end
 
 function Dominos:IsConfigAddonEnabled()
-	return GetAddOnEnableState(UnitName('player'), CONFIG_ADDON_NAME) >= 1
+	return GetAddOnEnableState(UnitName('player'), AddonName .. '_Config') >= 1
 end
 
 
