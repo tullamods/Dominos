@@ -5,7 +5,7 @@ local EncounterBar = Dominos:CreateClass('Frame', Dominos.Frame); Addon.Encounte
 function EncounterBar:New()
 	local f = EncounterBar.proto.New(self, 'encounter')
 
-	f:AttachPlayerPowerBarAlt()
+	f:InitPlayerPowerBarAlt()
 	f:ShowInOverrideUI(true)
 	f:ShowInPetBattleUI(true)
 	f:Layout()
@@ -13,23 +13,19 @@ function EncounterBar:New()
 	return f
 end
 
-function EncounterBar:OnEvent(self, event, ...)
-	local f = self[event]
-	if f then
-		f(self, event, ...)
-	end
-end
-
 function EncounterBar:GetDefaults()
 	return { point = 'CENTER' }
 end
 
 function EncounterBar:Layout()
-	if InCombatLockdown() then
-		return
-	end
+	if InCombatLockdown() then return end		
 
-	local bar = self.PlayerPowerBarAlt
+	-- always reparent + position the bar due to UIParent.lua moving it whenever its shown
+	local bar = self.__PlayerPowerBarAlt
+	bar:ClearAllPoints()
+	bar:SetParent(self.header)
+	bar:SetPoint('CENTER', self.header)		
+	
 	local width, height = bar:GetSize()
 	local pW, pH = self:GetPadding()
 
@@ -39,26 +35,20 @@ function EncounterBar:Layout()
 	self:SetSize(width + pW, height + pH)
 end
 
-function EncounterBar:AttachPlayerPowerBarAlt()
-	if not self.PlayerPowerBarAlt then
+-- grab a reference to the bar
+-- and hook the scripts we need to hook
+function EncounterBar:InitPlayerPowerBarAlt()
+	if not self.__PlayerPowerBarAlt then
 		local bar = _G['PlayerPowerBarAlt']
-
-		bar:ClearAllPoints()
-		bar:SetParent(self.header)
-		bar:SetPoint('CENTER', self.header)
-
+		
 		if bar:GetScript('OnSizeChanged') then
 			bar:HookScript('OnSizeChanged', function() self:Layout() end)
 		else
 			bar:SetScript('OnSizeChanged', function() self:Layout() end)
 		end
 
-		self.PlayerPowerBarAlt = bar
+		self.__PlayerPowerBarAlt = bar
 	end
-end
-
-function EncounterBar:GetPlayerPowerBarAlt()
-	return _G['PlayerPowerBarAlt']
 end
 
 function EncounterBar:CreateMenu()
