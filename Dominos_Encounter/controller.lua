@@ -24,6 +24,7 @@ end
 
 function EncounterBarModule:Unload()
 	self.frame:Free()
+	self:UnregisterEvent('PLAYER_REGEN_ENABLED')
 end
 
 function EncounterBarModule:PLAYER_REGEN_ENABLED()
@@ -33,7 +34,7 @@ function EncounterBarModule:PLAYER_REGEN_ENABLED()
 end
 
 function EncounterBarModule:RepositionBar()
-	if not InCombatLockdown() then
+	if InCombatLockdown() then
 		self.__NeedToRepositionBar = true
 		return 
 	end
