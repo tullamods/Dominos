@@ -102,7 +102,11 @@ end
 function Dominos:UpdateVersion()
 	DominosVersion = CURRENT_VERSION
 
-	self:Print(string.format(L.Updated, DominosVersion))
+	self:Printf(L.Updated, DominosVersion)
+end
+
+function Dominos:PrintVersion()
+	self:Print(DominosVersion)
 end
 
 
@@ -128,7 +132,7 @@ function Dominos:Unload()
 end
 
 --[[
- 	Configuration
+	 Configuration
 --]]
 
 function Dominos:SetUseOverrideUI(enable)
