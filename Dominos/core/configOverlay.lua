@@ -559,6 +559,7 @@ do
 			if not frameOverlay then
 				frameOverlay = FrameOverlay:New(frame, self.overlay)
 				frameOverlays[frame] = frameOverlay
+				frame.frameOverlay = frameOverlay
 			end
 		end
 	end
