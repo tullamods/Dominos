@@ -132,7 +132,6 @@ function ActionBar:AttachButton(index)
 		button:LoadAction()
 
 		self:UpdateAction(index)
-		self:UpdateButtonGrid(index)
 	end
 
 	return button
@@ -255,13 +254,6 @@ end
 
 
 --Empty button display
-function ActionBar:UpdateButtonGrid()
-	local offset = Dominos:ShowGrid() and 1 or -1
-
-	button:SetAttribute('showgrid', max(button:GetAttribute('showgrid') + offset, 0))
-	button:UpdateGrid()
-end
-
 function ActionBar:ShowGrid()
 	for _, button in pairs(self.buttons) do
 		button:SetAttribute('showgrid', button:GetAttribute('showgrid') + 1)
