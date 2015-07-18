@@ -81,6 +81,7 @@ function ActionBar:New(id)
 	bar:UpdateStateDriver()
 	bar:UpdateRightClickUnit()
 	bar:UpdateGrid()
+	bar:UpdateTransparent(true)
 
 	active[id] = bar
 
@@ -299,33 +300,40 @@ end
 
 
 function ActionBar:OnSetAlpha(alpha)
-	if not self.buttons then return end
-
-	local transparent = alpha <= 0
-
-	if self.transparent ~= transparent then
-		self.transparent = transparent
-		self:UpdateCooldownOpacities()
-	end
+	self:UpdateTransparent()
 end
 
-function ActionBar:UpdateCooldownOpacities()
-	if self.transparent then
-		-- hide cooldown frames on transparent buttons by sticking them onto a
-		-- different parent
-		for i, button in pairs(self.buttons) do
-			button.cooldown:SetParent(HiddenFrame)
-		end
-	else
-		-- show cooldown frames on non transparent buttons
-		for i, button in pairs(self.buttons) do
-			if button.cooldown:GetParent() ~= button then
-				button.cooldown:SetParent(button)
-				ActionButton_UpdateCooldown(button)
-			end
+function ActionBar:UpdateTransparent(force)
+	local isTransparent = self:GetAlpha() == 0
+	
+	if self.__transparent ~= isTransparent or force then
+		self.__transparent = isTransparent
+		
+		if isTransparent then
+			self:HideButtonCooldowns()
+		else
+			self:ShowButtonCooldowns()
 		end
 	end
 end
+		
+function ActionBar:ShowButtonCooldowns()
+	for i, button in pairs(self.buttons) do
+		if button.cooldown:GetParent() ~= button then
+			button.cooldown:SetParent(button)
+			ActionButton_UpdateCooldown(button)
+		end
+	end	
+end
+
+function ActionBar:HideButtonCooldowns()
+	-- hide cooldown frames on transparent buttons by sticking them onto a
+	-- different parent
+	for i, button in pairs(self.buttons) do
+		button.cooldown:SetParent(HiddenFrame)
+	end	
+end
+
 
 --[[ flyout direction updating ]]--
 
