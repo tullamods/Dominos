@@ -39,8 +39,8 @@ function EncounterBarModule:RepositionBar()
 		return 
 	end
 	
-	if self.bar then
-		self.bar:Layout()
+	if self.frame then
+		self.frame:Layout()
 		self.__NeedToRepositionBar = nil		
 	end
 end
