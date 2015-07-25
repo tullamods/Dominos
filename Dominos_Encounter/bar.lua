@@ -17,22 +17,22 @@ function EncounterBar:GetDefaults()
 	return { point = 'CENTER' }
 end
 
-function EncounterBar:Layout()
-	if InCombatLockdown() then return end		
-
+function EncounterBar:Layout()	
 	-- always reparent + position the bar due to UIParent.lua moving it whenever its shown
 	local bar = self.__PlayerPowerBarAlt
 	bar:ClearAllPoints()
 	bar:SetParent(self.header)
 	bar:SetPoint('CENTER', self.header)		
+
+	if not self:InCombatLockdown() then
+		local width, height = bar:GetSize()
+		local pW, pH = self:GetPadding()
 	
-	local width, height = bar:GetSize()
-	local pW, pH = self:GetPadding()
-
-	width = math.max(width, 36 * 6)
-	height = math.max(height, 36)
-
-	self:SetSize(width + pW, height + pH)
+		width = math.max(width, 36 * 6)
+		height = math.max(height, 36)
+	
+		self:SetSize(width + pW, height + pH)
+	end
 end
 
 -- grab a reference to the bar

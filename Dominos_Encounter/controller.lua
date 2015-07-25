@@ -34,13 +34,7 @@ function EncounterBarModule:PLAYER_REGEN_ENABLED()
 end
 
 function EncounterBarModule:RepositionBar()
-	if InCombatLockdown() then
-		self.__NeedToRepositionBar = true
-		return 
-	end
-	
 	if self.frame then
-		self.frame:Layout()
-		self.__NeedToRepositionBar = nil		
+		self.frame:Layout()	
 	end
 end
