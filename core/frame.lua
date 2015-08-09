@@ -182,7 +182,13 @@ function Frame:Layout()
 	local width, height = 32, 32
 	local paddingW, paddingH = self:GetPadding()
 
-	self:SetSize(width + paddingW*2, height + paddingH*2)
+	self:TrySetSize(width + paddingW*2, height + paddingH*2)
+end
+
+function Frame:TrySetSize(width, height)
+	if InCombatLockdown() then return end
+	
+	self:SetSize(width, height)
 end
 
 
