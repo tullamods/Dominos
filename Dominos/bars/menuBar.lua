@@ -2,8 +2,23 @@
 	MenuBar, by Goranaws
 --]]
 
-local MenuBar = Dominos:CreateClass('Frame', Dominos.ButtonBar)
-Dominos.MenuBar = MenuBar
+--[[ globals ]]--
+
+local _G = _G
+local CreateFrame = _G.CreateFrame
+local hooksecurefunc = _G.hooksecurefunc
+local table = _G.table
+local ipairs = _G.ipairs
+local pairs = _G.pairs
+local LibStub = _G.LibStub
+local C_StorePublic = _G.C_StorePublic
+
+local AddonName = ...
+local Addon = LibStub('AceAddon-3.0'):GetAddon(AddonName)
+local MenuBar = Addon:CreateClass('Frame', Addon.ButtonBar); Addon.MenuBar = MenuBar
+
+
+--[[ local constants ]]--
 
 local MICRO_BUTTONS = {
 	"CharacterMicroButton",
@@ -57,7 +72,7 @@ function MenuBar:Create(...)
 
 	local requestLayoutUpdate
 	do
-		local frame = CreateFrame('Frame'); frame:Hide()
+		local frame = Addon:CreateHiddenFrame('Frame')
 		local delay = 0.01
 
 		frame:SetScript('OnUpdate', function(self, elapsed)
@@ -65,7 +80,9 @@ function MenuBar:Create(...)
 			bar:Layout()
 		end)
 
-		requestLayoutUpdate = function() frame:Show() end
+		requestLayoutUpdate = function() 
+			frame:Show() 
+		end
 	end
 
 	hooksecurefunc('UpdateMicroButtons', requestLayoutUpdate)
@@ -86,7 +103,7 @@ function MenuBar:Create(...)
 	local overrideActionBar = _G['OverrideActionBar']
 
 	getOrHook(overrideActionBar, 'OnShow', function()
-		bar.isOverrideUIShown = Dominos:UsingOverrideUI()
+		bar.isOverrideUIShown = Addon:UsingOverrideUI()
 		requestLayoutUpdate()
 	end)
 
@@ -273,7 +290,7 @@ local function Menu_AddDisableMenuButtonsPanel(menu)
 end
 
 function MenuBar:CreateMenu()
-	local menu = Dominos:NewMenu(self.id)
+	local menu = Addon:NewMenu(self.id)
 
 	if menu then
 		Menu_AddLayoutPanel(menu)
@@ -289,7 +306,7 @@ end
 
 --[[ module ]]--
 
-local MenuBarController = Dominos:NewModule('MenuBar')
+local MenuBarController = Addon:NewModule('MenuBar')
 
 function MenuBarController:OnInitialize()
 
