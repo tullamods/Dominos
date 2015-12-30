@@ -38,12 +38,12 @@ L.ShowMacroText = '매크로 문자 표시'
 L.ShowBindingText = '단축키 문자 표시'
 L.ShowEmptyButtons = '빈 버튼 표시'
 L.LockActionButtons = '행동 단축 버튼 위치 잠금'
-L.EnterBindingMode = '키 조합...'
+L.EnterBindingMode = '단축키 설정...'
 L.EnterConfigMode = '설정 모드 들어가기'
 L.ActionBarSettings = '행동 단축바 %d 설정'
 L.BarSettings = '%s 바 설정'
 L.ShowTooltips = '툴팁 표시'
-L.ShowTooltipsCombat = '전투시 툴팁 표시'
+L.ShowTooltipsCombat = '전투 중 툴팁 표시'
 L.OneBag = '원백'
 L.ShowKeyring = '열쇠고리 표시'
 L.StickyBars = '바 고정'
@@ -54,6 +54,9 @@ L.TopToBottom = '위에서 아래로 레이아웃 버튼'
 L.LinkedOpacity = '도킹된 바 투명도 상속'
 L.ClickThrough = '마우스 클릭 통과 사용'
 L.DisableMenuButtons = '버튼 사용안함'
+L.ShowOverrideUI = '블리자드 기본 행동 바 사용'
+L.ShowInOverrideUI = '기본 UI와 함께 표시'
+L.ShowInPetBattleUI = '애완동물 대전 UI와 함께 표시'
 
 L.ALT_KEY_TEXT = 'ALT'
 
@@ -69,3 +72,6 @@ L.CtrlAltShift = CTRL_KEY_TEXT .. '-ALT-' .. SHIFT_KEY_TEXT
 --totems
 L.ShowTotems = '토템 표시'
 L.ShowTotemRecall = '토템의 부름 표시'
+
+--extra bar
+L.ExtraBarShowBlizzardTexture = '블리자드 기본 무늬 표시'
