@@ -24,7 +24,7 @@ function EncounterBar:Layout()
 	bar:SetParent(self.header)
 	bar:SetPoint('CENTER', self.header)		
 
-	if not self:InCombatLockdown() then
+	if not InCombatLockdown() then
 		local width, height = bar:GetSize()
 		local pW, pH = self:GetPadding()
 	
