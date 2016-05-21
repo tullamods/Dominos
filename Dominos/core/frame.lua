@@ -187,7 +187,7 @@ end
 
 function Frame:TrySetSize(width, height)
 	if InCombatLockdown() then return end
-	
+
 	self:SetSize(width, height)
 end
 
@@ -383,7 +383,7 @@ local function fader_Create(parent)
 	fadeGroup:SetScript('OnFinished', function(self) parent:SetAlpha(self.targetAlpha) end)
 
 	local fade = fadeGroup:CreateAnimation('Alpha')
-	fade:SetSmoothing('NONE')
+	fade:SetSmoothing('IN_OUT')
 	fade:SetOrder(1)
 
 	return function(targetAlpha, duration)
@@ -393,7 +393,8 @@ local function fader_Create(parent)
 		end
 
 		fadeGroup.targetAlpha = targetAlpha
-		fade:SetChange(targetAlpha - parent:GetAlpha())
+		fade:SetFromAlpha(parent:GetAlpha())
+		fade:SetToAlpha(targetAlpha)
 		fade:SetDuration(duration)
 		fadeGroup:Play()
 	end
