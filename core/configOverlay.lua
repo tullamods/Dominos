@@ -124,7 +124,7 @@ local function colorFader_Create(parent, saveColor, loadColor)
 	--start the animation as completely transparent
 	local animator = fader:CreateAnimation('Animation')
 	animator:SetDuration(0.2)
-	animator:SetOrder(0)
+	-- animator:SetOrder(0)
 	fader.animator = animator
 
 	fader.SetColor = colorFader_SetColor
@@ -506,7 +506,7 @@ do
 
 		local fadeIn = fadeInGroup:CreateAnimation('Alpha')
 
-		fadeIn:SetOrder(0)
+		-- fadeIn:SetOrder(0)
 		fadeIn:SetFromAlpha(0)
 		fadeIn:SetToAlpha(1)
 		fadeIn:SetSmoothing('IN')
@@ -525,7 +525,7 @@ do
 
 		local fadeOut = fadeOutGroup:CreateAnimation('Alpha')
 
-		fadeOut:SetOrder(0)
+		-- fadeOut:SetOrder(0)
 		fadeOut:SetFromAlpha(1)
 		fadeOut:SetToAlpha(0)
 		fadeOut:SetSmoothing('OUT')
