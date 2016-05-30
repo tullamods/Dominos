@@ -138,7 +138,8 @@ function Frame:Delete()
 end
 
 function Frame:LoadSettings()
-	self.sets = Dominos:GetFrameSets(self.id) or Dominos:SetFrameSets(self.id, self:GetDefaults()) --get defaults must be provided by anything implementing the Frame type
+	--get defaults must be provided by anything implementing the Frame type
+	self.sets = Dominos:GetFrameSets(self.id) or Dominos:SetFrameSets(self.id, self:GetDefaults())
 	self:Reposition()
 
 	if self.sets.hidden then
