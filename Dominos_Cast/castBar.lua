@@ -9,34 +9,42 @@ local CastingBar = Addon:CreateClass('Frame', Addon.Frame); Addon.CastingBar = C
 
 function CastingBar:New()
 	local bar = CastingBar.proto.New(self, 'cast')
-	
+
 	bar:Layout()
-	
+
 	return bar
 end
 
 function CastingBar:Create(...)
-	local bar = CastingBar.proto.Create(self, ...)	
-	
+	local bar = CastingBar.proto.Create(self, ...)
+
 	bar:SetFrameStrata('HIGH')
-	
-	local cbf = _G.CastingBarFrame 
-		
+
+	local cbf = _G.CastingBarFrame
+
 	cbf:SetParent(bar.header)
 	cbf:ClearAllPoints()
-	cbf:SetPoint('CENTER', bar.header, 'CENTER', 0, -2)	
-	
+	cbf:SetPoint('CENTER', bar.header, 'CENTER', 0, -2)
+
 	self.__cbf = cbf
-	
+
 	return bar
+end
+
+function CastingBar:GetDefaults()
+	return {
+		point = 'CENTER',
+		x = 0,
+		y = 30
+	}
 end
 
 function CastingBar:Layout()
 	local width, height = self.__cbf:GetSize()
-	
+
 	width = width + 16
 	height = height + 17
-	
+
 	local paddingW, paddingH = self:GetPadding()
 
 	self:TrySetSize(width + paddingW*2, height + paddingH*2)
@@ -46,7 +54,7 @@ end
 
 local function AddLayoutPanel(menu)
 	local L = LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')
-	
+
 	local panel = menu:NewPanel(L.Layout)
 
 	panel.opacitySlider = panel:NewOpacitySlider()
@@ -59,14 +67,14 @@ end
 
 local function AddAdvancedPanel(menu)
 	local L = LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')
-	
+
 	local panel = menu:NewPanel(L.Advanced)
 
 	panel:NewShowInOverrideUICheckbox()
 	panel:NewShowInPetBattleUICheckbox()
-	
+
 	panel.width = 256
-	
+
 	return panel
 end
 
