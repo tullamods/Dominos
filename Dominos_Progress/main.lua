@@ -129,7 +129,7 @@ function ProgressBarModule:UpdateArtifactBar()
 	local numPoints, artifactXP, xpForNextPoint = MainMenuBar_GetNumArtifactTraitsPurchasableFromXP(pointsSpent, totalXP)
 	
 	artifactBar:SetValue(artifactXP, 0, xpForNextPoint)
-	artifactBar:SetText(ARTIFACT_POWER_BAR, BreakUpLargeNumbers(artifactXP), BreakUpLargeNumbers(xpForNextPoint))
+	artifactBar:SetText(ARTIFACT_POWER_BAR, artifactXP, xpForNextPoint)
 end
 
 
