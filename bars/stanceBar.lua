@@ -3,7 +3,7 @@
 --]]
 
 -- don't bother loading the module if the player is currently playing something without a stance
-if select(2, UnitClass('player')) == 'MAGE' or select(2, UnitClass('player')) == 'SHAMAN' or select(2, UnitClass('player')) == 'HUNTER' then
+if not (select(2, UnitClass('player')) == 'DRUID' or select(2, UnitClass('player')) == 'ROGUE') then
 	return
 end
 
