@@ -73,54 +73,16 @@ end
 --class
 do
 	local class = select(2, UnitClass('player'))
-	if class == 'WARRIOR' then
-		BarStates:add{
-			type = 'class',
-			id = 'battle',
-			value = '[form:1]',
-			text = function()
-				local talentID = select(2, GetTalentRowSelectionInfo(7)) 
-
-				--handle display of gladiator vs battle stance
-				if talentID == 21206 then
-					return select(2, GetTalentInfoByID(talentID))
-				end
-
-				return GetSpellInfo(2457)
-			end
-		}
-
-		addState('class', 'defensive', '[form:2]', GetSpellInfo(71))
-	elseif class == 'DRUID' then
+	
+	if class == 'DRUID' then
 		addState('class', 'moonkin', '[bonusbar:4]', GetSpellInfo(24858))
 		addState('class', 'bear', '[bonusbar:3]', GetSpellInfo(5487))
 		addState('class', 'tree', function() return format('[form:%d]', GetNumShapeshiftForms() + 1) end, GetSpellInfo(33891))
 		addState('class', 'prowl', '[bonusbar:1,stealth]', GetSpellInfo(5215))
 		addState('class', 'cat', '[bonusbar:1]', GetSpellInfo(768))
-	elseif class == 'PRIEST' then
-		addState('class', 'shadow', '[bonusbar:1]', GetSpellInfo(15473))
 	elseif class == 'ROGUE' then
-		addState('class', 'shadowdance', '[form:2]', GetSpellInfo(185313) .. '/' .. GetSpellInfo(1856))
-		addState('class', 'stealth', '[bonusbar:1]', GetSpellInfo(1784))
-	elseif class == 'WARLOCK' then
-		addState('class', 'meta', '[form:1]', GetSpellInfo(103958))
-	elseif class == 'MONK' then
-		BarStates:add{
-			type = 'class',
-			id = 'tiger',
-			value = '[bonusbar:1]',
-			text = function()
-				--handle display of tiger vs crane stance
-				if GetSpecialization() == 2 then
-					return GetSpellInfo(154436) --Stance of the Spirited Crane
-				end
-
-				return GetSpellInfo(103985)
-			end
-		}
-
-		addState('class', 'ox', '[bonusbar:2]', GetSpellInfo(115069))
-		addState('class', 'serpent', '[bonusbar:3]', GetSpellInfo(115070))
+		addState('class', 'stealth', '[bonusbar:1]', GetSpellInfo(1784))		
+		addState('class', 'shadowdance', '[form:2]', GetSpellInfo(1856))
 	end
 
 	local race = select(2, UnitRace('player'))
