@@ -47,6 +47,7 @@ function BlizzardHider:Hide()
     disableFrameSlidingAnimation('MainMenuBar')
     disableFrameSlidingAnimation('OverrideActionBar')
 
+    disableFrame('ArtifactWatchBar')
     disableFrame('MultiBarBottomLeft')
     disableFrame('MultiBarBottomRight')
     disableFrame('MultiBarLeft')
