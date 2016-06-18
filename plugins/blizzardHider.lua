@@ -39,15 +39,16 @@ function BlizzardHider:OnEnable()
 end
 
 function BlizzardHider:Hide()
-	-- disable, but don't hide the menu bar to work around Blizzard assumptions
-	_G['MainMenuBar']:EnableMouse(false)
-	_G['MainMenuBar'].ignoreFramePositionManager = true
+    -- disable, but don't hide the menu bar to work around Blizzard assumptions
+    _G['MainMenuBar']:EnableMouse(false)
+    _G['MainMenuBar'].ignoreFramePositionManager = true
 
     -- disable override bar transition animations
     disableFrameSlidingAnimation('MainMenuBar')
     disableFrameSlidingAnimation('OverrideActionBar')
 
     disableFrame('ArtifactWatchBar')
+    disableFrame('HonorWatchBar')
     disableFrame('MultiBarBottomLeft')
     disableFrame('MultiBarBottomRight')
     disableFrame('MultiBarLeft')
