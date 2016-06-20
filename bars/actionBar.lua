@@ -48,19 +48,19 @@ ActionBar.mainbarOffsets = {
 			pages.bear = 8
 			pages.moonkin = 9
 			pages.tree = 7
-		elseif i == 'WARRIOR' then
-			pages.battle = 6
-			pages.defensive = 7
-			-- pages.berserker = 8
-		elseif i == 'PRIEST' then
-			pages.shadow = 6
+		-- elseif i == 'WARRIOR' then
+		-- 	pages.battle = 6
+		-- 	pages.defensive = 7
+		-- 	-- pages.berserker = 8
+		-- elseif i == 'PRIEST' then
+		-- 	pages.shadow = 6
 		elseif i == 'ROGUE' then
 			pages.stealth = 6
 			pages.shadowdance = 6
-		elseif i == 'MONK' then
-			pages.tiger = 6
-			pages.ox = 7
-			pages.serpent = 8
+		-- elseif i == 'MONK' then
+		-- 	pages.tiger = 6
+		-- 	pages.ox = 7
+		-- 	pages.serpent = 8
 		end
 
 		t[i] = pages
@@ -226,7 +226,7 @@ function ActionBar:LoadStateController()
 
 	self.header:SetAttribute('updateState', [[
         local overridePage = self:GetAttribute('state-overridepage')
-        
+
 		local state
 		if overridePage and overridePage > 10 and self:GetAttribute('state-overridebar') then
 			state = 'override'
@@ -307,10 +307,10 @@ end
 
 function ActionBar:UpdateTransparent(force)
 	local isTransparent = self:GetAlpha() == 0
-	
+
 	if self.__transparent ~= isTransparent or force then
 		self.__transparent = isTransparent
-		
+
 		if isTransparent then
 			self:HideButtonCooldowns()
 		else
@@ -318,14 +318,14 @@ function ActionBar:UpdateTransparent(force)
 		end
 	end
 end
-		
+
 function ActionBar:ShowButtonCooldowns()
 	for i, button in pairs(self.buttons) do
 		if button.cooldown:GetParent() ~= button then
 			button.cooldown:SetParent(button)
 			ActionButton_UpdateCooldown(button)
 		end
-	end	
+	end
 end
 
 function ActionBar:HideButtonCooldowns()
@@ -333,7 +333,7 @@ function ActionBar:HideButtonCooldowns()
 	-- different parent
 	for i, button in pairs(self.buttons) do
 		button.cooldown:SetParent(HiddenFrame)
-	end	
+	end
 end
 
 
