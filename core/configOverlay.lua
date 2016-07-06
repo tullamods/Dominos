@@ -489,7 +489,7 @@ do
 		-- create overlay background
 		local overlay = CreateFrame('Frame', nil, _G['UIParent'], 'SecureHandlerStateTemplate')
 
-		overlay:SetFrameStrata('DIALOG')
+		overlay:SetFrameStrata('HIGH')
 		overlay:Hide()
 		overlay:EnableMouse(false)
 		overlay:SetAllPoints(overlay:GetParent())
@@ -498,7 +498,7 @@ do
 
 		--add a texture for the  background
 		local overlayBG = overlay:CreateTexture(nil, 'BACKGROUND')
-		overlayBG:SetTexture(0, 0, 0, 0.5)
+		overlayBG:SetColorTexture(0, 0, 0, 0.3)
 		overlayBG:SetAllPoints(overlay)
 
 		--add a fade effect for when showing
