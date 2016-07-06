@@ -225,7 +225,7 @@ function ActionBar:LoadStateController()
 	]])
 
 	self.header:SetAttribute('updateState', [[
-        local overridePage = self:GetAttribute('state-overridepage')
+		local overridePage = self:GetAttribute('state-overridepage')
 
 		local state
 		if overridePage and overridePage > 10 and self:GetAttribute('state-overridebar') then
@@ -382,176 +382,121 @@ function ActionBar:SaveFramePosition(...)
 end
 
 
--- right click menu code for action bars
--- TODO: Probably enable the showstate stuff for other bars, since every bar
--- basically has showstate functionality for 'free'
-do
-	local L
-
-	--state slider template
-	local function ConditionSlider_OnShow(self)
-		self:SetMinMaxValues(-1, Dominos:NumBars() - 1)
-		self:SetValue(self:GetParent().owner:GetOffset(self.stateId) or -1)
-		self:UpdateText(self:GetValue())
-
-		if self.stateTextFunc then
-			_G[self:GetName() .. 'Text']:SetText(self.stateTextFunc())
+do	
+	local function getDropdownItems()
+		local items = {
+			{ value = -1, text = _G.DISABLE }
+		}	
+					
+		for i = 1, Dominos:NumBars() do
+			table.insert(items, { 
+				value = i, 
+				text = ('Action Bar %d'):format(i)
+			})
 		end
+		
+		return items
 	end
-
-	local function ConditionSlider_UpdateValue(self, value)
-		self:GetParent().owner:SetOffset(self.stateId, (value > -1 and value) or nil)
-	end
-
-	local function ConditionSlider_UpdateText(self, value)
-		if value > -1 then
-			local page = (self:GetParent().owner.id + value - 1) % Dominos:NumBars() + 1
-			self.valText:SetFormattedText(L.Bar, page)
-		else
-			self.valText:SetText(DISABLE)
-		end
-	end
-
-	local function ConditionSlider_New(panel, stateId, text)
-		local s = panel:NewSlider(stateId, 0, 1, 1)
-		s.OnShow = ConditionSlider_OnShow
-		s.UpdateValue = ConditionSlider_UpdateValue
-		s.UpdateText = ConditionSlider_UpdateText
-		s.stateId = stateId
-
-
-
-		s:SetWidth(s:GetWidth() + 28)
-
-		local title = _G[s:GetName() .. 'Text']
-		title:ClearAllPoints()
-		title:SetPoint('BOTTOMLEFT', s, 'TOPLEFT')
-		title:SetJustifyH('LEFT')
-
-		if type(text) == 'function' then
-			s.stateTextFunc = text
-		else
-			title:SetText(text or L['State_' .. stateId:upper()])
-		end
-
-		local value = s.valText
-		value:ClearAllPoints()
-		value:SetPoint('BOTTOMRIGHT', s, 'TOPRIGHT')
-		value:SetJustifyH('RIGHT')
-
-		return s
-	end
-
-	local function AddLayout(self)
-		local p = self:AddLayoutPanel()
-
-		local size = p:NewSlider(L.Size, 1, 1, 1)
-		size.OnShow = function(self)
-			self:SetMinMaxValues(1, self:GetParent().owner:MaxLength())
-			self:SetValue(self:GetParent().owner:NumButtons())
-		end
-
-		size.UpdateValue = function(self, value)
-			self:GetParent().owner:SetNumButtons(value)
-			_G[self:GetParent():GetName() .. L.Columns]:OnShow()
-		end
-	end
-
-	local function AddAdvancedLayout(self)
-		self:AddAdvancedPanel()
-	end
-
-	--GetSpellInfo(spellID) is awesome for localization
-	local function addStatePanel(self, name, type)
+	
+	local function AddStateGroup(panel, categoryName, stateType, l)
 		local states = Dominos.BarStates:map(function(s)
-			return s.type == type
+			return s.type == stateType
 		end)
-
-		if #states > 0 then
-			local p = self:NewPanel(name)
-
-			--HACK: Make the state panel wider for monks
-			--		since their stances have long names
-			local playerClass = select(2, UnitClass('player'))
-
-			local hasLongStanceNames = playerClass == 'MONK'
-									or playerClass == 'ROGUE'
-									or playerClass == 'DRUID'
-
-			for i = #states, 1, -1 do
-				local state = states[i]
-				local slider = ConditionSlider_New(p, state.id, state.text)
-				if hasLongStanceNames then
-					slider:SetWidth(slider:GetWidth() + 48)
+		
+		if #states == 0 then 
+			return 
+		end
+		
+		panel:NewHeader(categoryName)
+		
+		local items = getDropdownItems()
+		for i, state in ipairs(states) do
+			local id = state.id
+			local name = state.text
+			if type(name) == 'function' then
+				name = name()
+			elseif not name then
+				name = l['State_' .. id:upper()]
+			end
+			
+			panel:NewDropdown{ 
+				name = name, 
+				items = items,
+				
+				get = function()
+					local value = panel.owner:GetOffset(state.id) or -1
+					if value > -1 then
+						return (panel.owner.id + value - 1) % Dominos:NumBars() + 1
+					end					
+					return value
+				end,
+				
+				set = function(self, value)
+					local offset
+					
+					if value == -1 then
+						offset = nil
+					elseif value < panel.owner.id then
+						offset = (Dominos:NumBars() - panel.owner.id) + value
+					else
+						offset = panel.owner.id - value
+					end
+					
+					panel.owner:SetOffset(state.id, offset) 
 				end
-			end
-
-			if hasLongStanceNames then
-				p.width = 228
-			end
+			}	
 		end
 	end
-
-	local function AddClass(self)
-		addStatePanel(self, UnitClass('player'), 'class')
-	end
-
-	local function AddPaging(self)
-		addStatePanel(self, L.QuickPaging, 'page')
-	end
-
-	local function AddModifier(self)
-		addStatePanel(self, L.Modifiers, 'modifier')
-	end
-
-	local function AddTargeting(self)
-		addStatePanel(self, L.Targeting, 'target')
-	end
-
-	local function AddShowState(self)
-		local p = self:NewPanel(L.ShowStates)
-		p.height = 56
-
-		local editBox = CreateFrame('EditBox', p:GetName() .. 'StateText', p, 'InputBoxTemplate')
-		editBox:SetWidth(148) editBox:SetHeight(20)
-		editBox:SetPoint('TOPLEFT', 12, -10)
-		editBox:SetAutoFocus(false)
-		editBox:SetScript('OnShow', function(self)
-			self:SetText(self:GetParent().owner:GetShowStates() or '')
-		end)
-		editBox:SetScript('OnEnterPressed', function(self)
-			local text = self:GetText()
-			self:GetParent().owner:SetShowStates(text ~= '' and text or nil)
-		end)
-		editBox:SetScript('OnEditFocusLost', function(self) self:HighlightText(0, 0) end)
-		editBox:SetScript('OnEditFocusGained', function(self) self:HighlightText() end)
-
-		local set = CreateFrame('Button', p:GetName() .. 'Set', p, 'UIPanelButtonTemplate')
-		set:SetWidth(30) set:SetHeight(20)
-		set:SetText(L.Set)
-		set:SetScript('OnClick', function(self)
-			local text = editBox:GetText()
-			self:GetParent().owner:SetShowStates(text ~= '' and text or nil)
-			editBox:SetText(self:GetParent().owner:GetShowStates() or '')
-		end)
-		set:SetPoint('BOTTOMRIGHT', -8, 2)
-
-		return p
-	end
-
+	
 	function ActionBar:CreateMenu()
 		local menu = Dominos:NewMenu(self.id)
-
-		L = LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')
-		AddLayout(menu)
-		AddClass(menu)
-		AddPaging(menu)
-		AddModifier(menu)
-		AddTargeting(menu)
-		AddShowState(menu)
-		AddAdvancedLayout(menu)
-
+				
+		self:AddLayoutPanel(menu, l)		
+		self:AddPagingPanel(menu, l)
+		menu:AddAdvancedPanel()
+		
 		ActionBar.menu = menu
+	end
+	
+	function ActionBar:AddLayoutPanel(menu, l)
+		local l = LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')		
+		local panel = menu:NewPanel(l.Layout)	
+		
+		panel.sizeSlizer = panel:NewSlider{
+			name = l.Size,
+			
+			min = 1,
+			
+			max = function() 
+				return panel.owner:MaxLength() 
+			end,			
+			
+			get = function() 
+				return panel.owner:NumButtons() 
+			end,
+			
+			set = function(_, value) 
+				panel.owner:SetNumButtons(value) 
+				panel.colsSlider:UpdateValue()
+			end,
+		}
+		
+		panel:AddLayoutOptions()
+		panel.width = menu:GetWidth() - 8
+		
+		return panel
+	end	
+	
+	function ActionBar:AddPagingPanel(menu, l)
+		local l = LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')
+		local panel = menu:NewPanel('Paging')	
+		
+		AddStateGroup(panel, UnitClass('player'), 'class', l)
+		AddStateGroup(panel, l.QuickPaging, 'page', l)
+		AddStateGroup(panel, l.Modifiers, 'modifier', l)
+		AddStateGroup(panel, l.Targeting, 'target', l)
+		
+		return panel		
 	end
 end
 
