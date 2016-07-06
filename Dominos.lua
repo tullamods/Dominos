@@ -298,25 +298,34 @@ end
 
 --[[ Options Menu Display ]]--
 
-function Dominos:ShowOptions()
-	if InCombatLockdown() then
-		return
+function Dominos:GetOptions()
+	local options = self.Options
+	
+	if (not options) and LoadAddOn('Dominos_Config') then
+		options = self.Options
 	end
+	
+	return options
+end
 
-	if LoadAddOn('Dominos_Config') then
-		InterfaceOptionsFrame_Show()
-		InterfaceOptionsFrame_OpenToCategory(self.Options)
+function Dominos:ShowOptions()
+	if InCombatLockdown() then return end
+		
+	local options = self:GetOptions()	
+	if options then
+		options:ShowAddonPanel()
 		return true
 	end
+	
 	return false
 end
 
-function Dominos:NewMenu(id)
-	if not self.Menu then
-		LoadAddOn(CONFIG_ADDON_NAME)
-	end
-
-	return self.Menu and self.Menu:New(id)
+function Dominos:NewMenu()
+	local options = self:GetOptions()	
+	if options then
+		return options.Menu:New()
+	end	
+	return nil
 end
 
 function Dominos:IsConfigAddonEnabled()

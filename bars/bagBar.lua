@@ -64,15 +64,15 @@ function BagBar:CreateMenu()
 	local panel = menu:AddLayoutPanel()
 
 	-- add option to show only one bag
-	local oneBag = panel:NewCheckButton(L.OneBag)
-	oneBag:SetScript('OnShow', function()
-		oneBag:SetChecked(self:OneBag())
-	end)
-
-	oneBag:SetScript('OnClick', function()
-		self:SetOneBag(oneBag:GetChecked())
-		_G[panel:GetName() .. L.Columns]:OnShow()
-	end)
+	local oneBag = panel:NewCheckButton(L.OneBag, 'OneBag', 'SetOneBag')
+	-- oneBag:SetScript('OnShow', function()
+	-- 	oneBag:SetChecked(self:OneBag())
+	-- end)
+	-- 
+	-- oneBag:SetScript('OnClick', function()
+	-- 	self:SetOneBag(oneBag:GetChecked())
+	-- 	_G[panel:GetName() .. L.Columns]:OnShow()
+	-- end)
 
 	menu:AddAdvancedPanel()
 	self.menu = menu

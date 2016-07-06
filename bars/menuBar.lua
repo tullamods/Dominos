@@ -260,32 +260,45 @@ local function Menu_AddLayoutPanel(menu)
 	return panel
 end
 
-local function Panel_AddDisableMenuButtonCheckbox(panel, button, name)
-	local checkbox = panel:NewCheckButton(name or button:GetName())
-
-	checkbox:SetScript('OnClick', function(self)
-		local owner = self:GetParent().owner
-
-		owner:DisableMenuButton(button, self:GetChecked())
-	end)
-
-	checkbox:SetScript('OnShow', function(self)
-		local owner = self:GetParent().owner
-
-		self:SetChecked(owner:IsMenuButtonDisabled(button))
-	end)
-
-	return checkbox
+local function MenuButtonCheckbox_Create(panel, button, name)
+	if not button then return end
+	
+	return panel:NewCheckButton{
+		name = name or button:GetName(),
+		
+		get = function() 
+			return not panel.owner:IsMenuButtonDisabled(button) 
+		end,
+		
+		set = function(_, enable)
+			panel.owner:DisableMenuButton(button, not enable)
+		end			
+	}
 end
 
 local function Menu_AddDisableMenuButtonsPanel(menu)
-	local panel = menu:NewPanel(LibStub('AceLocale-3.0'):GetLocale('Dominos-Config').DisableMenuButtons)
-	panel.width = 200
-
-	for i, name in ipairs(MICRO_BUTTONS) do
-		Panel_AddDisableMenuButtonCheckbox(panel, _G[name], MICRO_BUTTON_NAMES[i])
+	local panel = menu:NewPanel('Buttons')
+	local prev  = nil
+	local width, height = 0, 0
+	
+	for i, buttonName in ipairs(MICRO_BUTTONS) do
+		local button = MenuButtonCheckbox_Create(panel, _G[buttonName], MICRO_BUTTON_NAMES[buttonName])
+		if button then
+			if prev then
+				button:SetPoint('TOPLEFT', prev, 'BOTTOMLEFT', 0, -2)
+			else
+				button:SetPoint('TOPLEFT', 0, -2)
+			end
+			
+			local bWidth, bHeight = button:GetEffectiveSize()
+			width = math.max(width, bWidth)
+			height = height + (bHeight + 2) 
+			prev = button			
+		end
 	end
-
+	
+	panel.width = width
+	panel.height = height
 	return panel
 end
 
