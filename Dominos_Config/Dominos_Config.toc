@@ -7,7 +7,6 @@
 ## Dependencies: Dominos
 ## LoadOnDemand: 1
 localization.xml
-menu.lua
-panel.lua
-general.lua
-profiles.lua
+embeds.xml
+widgets\include.xml
+panels\include.xml
