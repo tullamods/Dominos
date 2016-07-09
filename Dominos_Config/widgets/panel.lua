@@ -12,7 +12,13 @@ Panel.width = 0
 Panel.height = 0
 
 function Panel:New(parent)
-	return self:Bind(CreateFrame('Frame', nil, parent))
+	local frame = self:Bind(CreateFrame('Frame', nil, parent))
+
+	frame.bg = frame:CreateTexture(nil, 'BACKGROUND')
+	frame.bg:SetAllPoints(bg)
+	frame.bg:SetColorTexture(0, 0, 0, 0.3)
+
+	return frame
 end
 
 function Panel:SetOwner(owner)
@@ -33,20 +39,20 @@ end
 
 --[[ generic widgets ]]--
 
-function Panel:NewHeader(name)		
-	local frame = CreateFrame('Frame', nil, self)	
-		
-	local text = frame:CreateFontString(nil, 'ARTWORK', 'GameFontNormalSmall')	
+function Panel:NewHeader(name)
+	local frame = CreateFrame('Frame', nil, self)
+
+	local text = frame:CreateFontString(nil, 'ARTWORK', 'GameFontNormalSmall')
 	text:SetJustifyH('LEFT')
-	text:SetPoint('BOTTOMLEFT')
+	text:SetPoint('BOTTOMLEFT', 0, 1)
 	text:SetText(name)
-	
+
 	local border = frame:CreateTexture(nil, 'ARTWORK')
-	border:SetPoint('BOTTOMLEFT')
-	border:SetPoint('BOTTOMRIGHT')
+	border:SetPoint('TOPLEFT', text, 'BOTTOMLEFT')
+	border:SetPoint('RIGHT')
 	border:SetHeight(1)
 	border:SetColorTexture(0.3, 0.3, 0.3, 0.8)
-		
+
 	local prev = self.lastWidget
 	if prev then
 		frame:SetPoint('TOPLEFT', self.lastWidget, 'BOTTOMLEFT', 0, -2)
@@ -54,22 +60,22 @@ function Panel:NewHeader(name)
 		frame:SetPoint('TOPLEFT', 0, -2)
 	end
 	frame:SetPoint('RIGHT')
-	
-	local width, height = text:GetSize()	
+
+	local width, height = text:GetSize()
 	frame:SetSize(width + 4, height + 4)
-	
+
 	self.height = self.height + (frame:GetHeight() + 2)
-	self.width = max(self.width, frame:GetWidth())		
+	self.width = max(self.width, frame:GetWidth())
 	self.lastWidget = frame
-	
+
 	self:Render()
-	
+
 	return frame
 end
 
-function Panel:NewCheckButton(options)	
+function Panel:NewCheckButton(options)
 	options.parent = self
-	
+
 	local button = Addon.CheckButton:New(options)
 
 	local prev = self.lastWidget
@@ -81,18 +87,18 @@ function Panel:NewCheckButton(options)
 
 	local width, height = button:GetEffectiveSize()
 	self.height = self.height + (height + 2)
-	self.width = max(self.width, width)		
+	self.width = max(self.width, width)
 	self.lastWidget = button
 
 	self:Render()
-	
+
 	return button
 end
 
 function Panel:NewSlider(options)
 	options.parent = self
-	
-	local slider = Addon.Slider:New(options)		
+
+	local slider = Addon.Slider:New(options)
 
 	local prev = self.lastWidget
 	if prev then
@@ -104,18 +110,18 @@ function Panel:NewSlider(options)
 
 	local width, height = slider:GetEffectiveSize()
 	self.height = self.height + (height + 8)
-	self.width = max(self.width, width)		
+	self.width = max(self.width, width)
 	self.lastWidget = slider
-	
-	self:Render()	
+
+	self:Render()
 
 	return slider
 end
 
 function Panel:NewDropdown(options)
 	options.parent = self
-	
-	local dropdown = Addon.Dropdown:New(options)		
+
+	local dropdown = Addon.Dropdown:New(options)
 
 	local prev = self.lastWidget
 	if prev then
@@ -127,10 +133,10 @@ function Panel:NewDropdown(options)
 
 	local width, height = dropdown:GetEffectiveSize()
 	self.height = self.height + (height + 2)
-	self.width = max(self.width, width)		
+	self.width = max(self.width, width)
 	self.lastWidget = dropdown
-	
-	self:Render()	
+
+	self:Render()
 
 	return dropdown
 end
@@ -142,14 +148,14 @@ function Panel:NewScaleSlider()
 		name = L.Scale,
 		min = 50,
 		max = 150,
-		
+
 		get = function()
 			return round(self.owner:GetFrameScale() * 100)
 		end,
-		
+
 		set = function(_, value)
 			self.owner:SetFrameScale(value / 100)
-		end		
+		end
 	}
 end
 
@@ -160,10 +166,10 @@ function Panel:NewOpacitySlider()
 		get = function()
 			return round(self.owner:GetFrameAlpha() * 100)
 		end,
-		
+
 		set = function(_, value)
 			self.owner:SetFrameAlpha(value / 100)
-		end	
+		end
 	}
 end
 
@@ -174,10 +180,10 @@ function Panel:NewFadeSlider()
 		get = function()
 			return round(self.owner:GetFadeMultiplier() * 100)
 		end,
-		
+
 		set = function(_, value)
 			self.owner:SetFadeMultiplier(value / 100)
-		end		
+		end
 	}
 end
 
@@ -190,10 +196,10 @@ function Panel:NewPaddingSlider()
 		get = function()
 			return self.owner:GetPadding()
 		end,
-		
+
 		set = function(_, value)
 			self.owner:SetPadding(value)
-		end		
+		end
 	}
 end
 
@@ -206,30 +212,30 @@ function Panel:NewSpacingSlider()
 		get = function()
 			return self.owner:GetSpacing()
 		end,
-		
+
 		set = function(_, value)
 			self.owner:SetSpacing(value)
-		end	
+		end
 	}
 end
 
 function Panel:NewColumnsSlider()
 	return self:NewSlider{
 		name = L.Columns,
-		
+
 		min = 1,
-		
-		max = function() 
-			return self.owner:NumButtons() 
+
+		max = function()
+			return self.owner:NumButtons()
 		end,
 
 		get = function()
 			return self.owner:NumColumns()
 		end,
-		
+
 		set = function(_, value)
 			self.owner:SetColumns(value)
-		end		
+		end
 	}
 end
 
@@ -279,7 +285,7 @@ function Panel:AddLayoutOptions()
 	self.paddingSlider = self:NewPaddingSlider()
 	self.scaleSlider = self:NewScaleSlider()
 	self.opacitySlider = self:NewOpacitySlider()
-	self.fadeSlider = self:NewFadeSlider()			
+	self.fadeSlider = self:NewFadeSlider()
 end
 
 function Panel:AddAdvancedOptions()
@@ -287,7 +293,7 @@ function Panel:AddAdvancedOptions()
 	self:NewTopToBottomCheckbox()
 	self:NewClickThroughCheckbox()
 	self:NewShowInOverrideUICheckbox()
-	self:NewShowInPetBattleUICheckbox()	
+	self:NewShowInPetBattleUICheckbox()
 end
 
 Addon.Panel = Panel

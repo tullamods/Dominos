@@ -21,33 +21,33 @@ function Menu:New(parent)
 	f:SetBackdropColor(0, 0, 0, 0.8)
 	f:SetBackdropBorderColor(0.3, 0.3, 0.3, 0.8)
 	f:EnableMouse(true)
-	f:SetToplevel(true)
+	-- f:SetToplevel(true)
 	f:SetMovable(true)
 	f:SetClampedToScreen(true)
 	f:SetFrameStrata('DIALOG')
-	
+
 	-- title region
 	local tr = f:CreateTitleRegion()
 	tr:SetPoint('TOPLEFT', f, 'TOPLEFT', 2, -2)
 	tr:SetPoint('BOTTOMRIGHT', f, 'TOPRIGHT', -2, -20)
-	
+
 	local trBackground = f:CreateTexture(nil, 'ARTWORK')
 	trBackground:SetAllPoints(tr)
 	trBackground:SetColorTexture(0.2, 0.2, 0.2, 0.5)
 
 	--title text
 	local text = f:CreateFontString(nil, 'OVERLAY', 'GameFontNormal')
-	text:SetPoint('CENTER', tr)	
+	text:SetPoint('CENTER', tr)
 	f.text = text
-		
+
 	-- this was originally a standard close button
 	-- but placement looked weird when scaled
 	local closeButton = CreateFrame('Button', nil, f)
-	closeButton:SetNormalFontObject('GameFontRedLarge')	
+	closeButton:SetNormalFontObject('GameFontRedLarge')
 	closeButton:SetHighlightFontObject('GameFontHighlightLarge')
 	closeButton:SetText('×')
 	closeButton:SetSize(closeButton:GetFontString():GetSize())
-	closeButton:SetPoint('RIGHT', tr, -2, 0)
+	closeButton:SetPoint('TOPRIGHT', tr, -2, -2)
 	closeButton:SetScript('OnClick', function() f:Hide() end)
 
 	-- panel selector
@@ -55,18 +55,18 @@ function Menu:New(parent)
 	panelSelector:SetPoint('TOPLEFT', tr, 'BOTTOMLEFT', 0, 0)
 	panelSelector:SetPoint('TOPRIGHT', tr, 'BOTTOMRIGHT', 0, 0)
 	panelSelector:SetHeight(20)
-	panelSelector.OnSelect = function(self, id) 
-		f:ShowPanel(id) 
-	end		
+	panelSelector.OnSelect = function(self, id)
+		f:ShowPanel(id)
+	end
 	f.panelSelector = panelSelector
-	
+
 	-- panel container
 	local panelContainer = CreateFrame('Frame', nil, f)
 	panelContainer:SetPoint('TOPLEFT', panelSelector, 'BOTTOMLEFT', 2, -2)
 	panelContainer:SetPoint('TOPRIGHT', panelSelector, 'BOTTOMRIGHT', -2, -2)
-	panelContainer:SetPoint('BOTTOMRIGHT', 0, 4)
-	f.panelContainer = panelContainer	
-	
+	panelContainer:SetPoint('BOTTOM', 0, 4)
+	f.panelContainer = panelContainer
+
 	f:SetSize(240 * 1.25, 320 * 1.25)
 	return f
 end
@@ -99,17 +99,17 @@ end
 
 function Menu:NewPanel(id)
 	self.panelSelector:AddPanel(id)
-	
+
 	local panel = Addon.ScrollablePanel:New(self.panelContainer)
 	panel:SetAllPoints(self.panelContainer)
 	panel:Hide()
-	
+
 	self.panels[id] = panel
-	
+
 	return panel.container
 end
 
-function Menu:ShowPanel(id)	
+function Menu:ShowPanel(id)
 	if self.panels then
 		for i, panel in pairs(self.panels) do
 			if i == id then
@@ -123,9 +123,8 @@ end
 
 function Menu:AddLayoutPanel()
 	local panel = self:NewPanel(L.Layout)
-	
+
 	panel:AddLayoutOptions()
-	panel.width = self:GetWidth() - 8
 
 	return panel
 end
@@ -134,7 +133,6 @@ function Menu:AddAdvancedPanel()
 	local panel = self:NewPanel(L.Advanced)
 
 	panel:AddAdvancedOptions()
-	panel.width = self:GetWidth() - 8
 
 	return panel
 end
