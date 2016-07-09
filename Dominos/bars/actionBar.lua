@@ -461,14 +461,14 @@ do
 	function ActionBar:CreateMenu()
 		local menu = Dominos:NewMenu(self.id)
 
-		self:AddLayoutPanel(menu, l)
-		self:AddPagingPanel(menu, l)
+		self:AddLayoutPanel(menu)
+		self:AddPagingPanel(menu)
 		menu:AddAdvancedPanel()
 
 		ActionBar.menu = menu
 	end
 
-	function ActionBar:AddLayoutPanel(menu, l)
+	function ActionBar:AddLayoutPanel(menu)
 		local l = LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')
 		local panel = menu:NewPanel(l.Layout)
 
@@ -496,7 +496,7 @@ do
 		return panel
 	end
 
-	function ActionBar:AddPagingPanel(menu, l)
+	function ActionBar:AddPagingPanel(menu)
 		local l = LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')
 		local panel = menu:NewPanel('Paging')
 
