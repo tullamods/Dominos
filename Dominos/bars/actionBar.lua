@@ -362,6 +362,7 @@ end
 function ActionBar:UpdateFlyoutDirection()
 	local direction = self:GetFlyoutDirection()
 
+
 	-- dear blizzard, I'd like to be able to use the useparent-* attribute stuff for this
 	for _, button in pairs(self.buttons) do
 		button:SetFlyoutDirection(direction)
@@ -382,33 +383,33 @@ function ActionBar:SaveFramePosition(...)
 end
 
 
-do	
+do
 	local function getDropdownItems()
 		local items = {
 			{ value = -1, text = _G.DISABLE }
-		}	
-					
+		}
+
 		for i = 1, Dominos:NumBars() do
-			table.insert(items, { 
-				value = i, 
+			table.insert(items, {
+				value = i,
 				text = ('Action Bar %d'):format(i)
 			})
 		end
-		
+
 		return items
 	end
-	
+
 	local function AddStateGroup(panel, categoryName, stateType, l)
 		local states = Dominos.BarStates:map(function(s)
 			return s.type == stateType
 		end)
-		
-		if #states == 0 then 
-			return 
+
+		if #states == 0 then
+			return
 		end
-		
+
 		panel:NewHeader(categoryName)
-		
+
 		local items = getDropdownItems()
 		for i, state in ipairs(states) do
 			local id = state.id
@@ -418,22 +419,22 @@ do
 			elseif not name then
 				name = l['State_' .. id:upper()]
 			end
-			
-			panel:NewDropdown{ 
-				name = name, 
+
+			panel:NewDropdown{
+				name = name,
 				items = items,
-				
+
 				get = function()
 					local value = panel.owner:GetOffset(state.id) or -1
 					if value > -1 then
 						return (panel.owner.id + value - 1) % Dominos:NumBars() + 1
-					end					
+					end
 					return value
 				end,
-				
+
 				set = function(self, value)
 					local offset
-					
+
 					if value == -1 then
 						offset = nil
 					elseif value < panel.owner.id then
@@ -441,62 +442,61 @@ do
 					else
 						offset = panel.owner.id - value
 					end
-					
-					panel.owner:SetOffset(state.id, offset) 
+
+					panel.owner:SetOffset(state.id, offset)
 				end
-			}	
+			}
 		end
 	end
-	
+
 	function ActionBar:CreateMenu()
 		local menu = Dominos:NewMenu(self.id)
-				
-		self:AddLayoutPanel(menu, l)		
+
+		self:AddLayoutPanel(menu, l)
 		self:AddPagingPanel(menu, l)
 		menu:AddAdvancedPanel()
-		
+
 		ActionBar.menu = menu
 	end
-	
+
 	function ActionBar:AddLayoutPanel(menu, l)
-		local l = LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')		
-		local panel = menu:NewPanel(l.Layout)	
-		
+		local l = LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')
+		local panel = menu:NewPanel(l.Layout)
+
 		panel.sizeSlizer = panel:NewSlider{
 			name = l.Size,
-			
+
 			min = 1,
-			
-			max = function() 
-				return panel.owner:MaxLength() 
-			end,			
-			
-			get = function() 
-				return panel.owner:NumButtons() 
+
+			max = function()
+				return panel.owner:MaxLength()
 			end,
-			
-			set = function(_, value) 
-				panel.owner:SetNumButtons(value) 
+
+			get = function()
+				return panel.owner:NumButtons()
+			end,
+
+			set = function(_, value)
+				panel.owner:SetNumButtons(value)
 				panel.colsSlider:UpdateValue()
 			end,
 		}
-		
+
 		panel:AddLayoutOptions()
-		panel.width = menu:GetWidth() - 8
-		
+
 		return panel
-	end	
-	
+	end
+
 	function ActionBar:AddPagingPanel(menu, l)
 		local l = LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')
-		local panel = menu:NewPanel('Paging')	
-		
+		local panel = menu:NewPanel('Paging')
+
 		AddStateGroup(panel, UnitClass('player'), 'class', l)
 		AddStateGroup(panel, l.QuickPaging, 'page', l)
 		AddStateGroup(panel, l.Modifiers, 'modifier', l)
 		AddStateGroup(panel, l.Targeting, 'target', l)
-		
-		return panel		
+
+		return panel
 	end
 end
 
