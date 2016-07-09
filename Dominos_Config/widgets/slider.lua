@@ -29,6 +29,9 @@ do
 		self:ClearFocus()
 	end
 
+	-- a hacky way to go to the next edit box
+	-- with the assumption we only care about edit boxes that are
+	-- valText properties of other elements
 	local function editBox_FocusNext(self, ...)
 		local editBoxes = {}
 
@@ -88,8 +91,6 @@ do
 		editBox:SetHeight(f.text:GetHeight())
 		editBox:SetWidth(f.text:GetHeight() * 3)
 		editBox:HighlightText(0, 0)
-		-- editBox:SetJustifyH('RIGHT')
-		-- editBox:SetText('')
 		editBox:SetScript('OnTextChanged', editBox_OnTextChanged)
 		editBox:SetScript('OnEditFocusLost', editBox_OnEditFocusLost)
 		editBox:SetScript('OnEscapePressed', editBox_OnEscapePressed)

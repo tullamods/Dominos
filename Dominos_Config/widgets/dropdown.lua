@@ -13,8 +13,8 @@ do
 		ct:SetSize(12, 12)
 		button:SetCheckedTexture(ct)
 
-		button:SetNormalFontObject('GameFontNormalSmall')
-		button:SetHighlightFontObject('GameFontHighlightSmall')
+		button:SetNormalFontObject('GameFontNormal')
+		button:SetHighlightFontObject('GameFontHighlight')
 		button:SetText('Loading...')
 		button:GetFontString():ClearAllPoints()
 		button:GetFontString():SetPoint('LEFT', ct, 'RIGHT', 2, 0)
@@ -48,10 +48,16 @@ do
 		self.owner:OnSelectValue(self.value)
 	end
 
-	function DropdownButton:SetItem(value, text, selected)
-		self.value = value
-		self:SetText(text or value)
-		self:SetChecked(selected)
+	function DropdownButton:SetItem(item, selectedValue)
+		if type(item) == 'table' then
+			self.value = item.value
+			self:SetText(item.text or item.value)
+		else
+			self.value = item
+			self:SetText(item)
+		end
+
+		self:SetChecked(self.value == selectedValue)
 
 		local width, height = self:GetFontString():GetSize()
 		self:SetSize(width + 14, height)
@@ -67,6 +73,9 @@ do
 		edgeSize = -2,
 	}
 
+	DropdownDialog.minWidth = 120
+	DropdownDialog.minHeight = 120
+
 	function DropdownDialog:New()
 		local frame = Addon.ScrollablePanel.New(self, _G.UIParent)
 
@@ -79,12 +88,16 @@ do
 		frame:SetClampedToScreen(true)
 		frame:SetFrameStrata('DIALOG')
 		frame:Hide()
-		frame:SetSize(240/2, 240/2)
+		frame:SetScript('OnShow', self.OnShow)
 		frame:SetScript('OnHide', self.OnHide)
 
 		frame.buttons = {}
 
 		return frame
+	end
+
+	function DropdownDialog:OnShow()
+		self.vScrollBar:SetValue(0)
 	end
 
 	function DropdownDialog:OnHide()
@@ -117,6 +130,8 @@ do
 	end
 
 	function DropdownDialog:Free()
+		self.owner = nil
+
 		local button = table.remove(self.buttons)
 		local i = 0
 		while button do
@@ -126,7 +141,7 @@ do
 		end
 	end
 
-	function DropdownDialog:Refresh(items, value)
+	function DropdownDialog:Refresh(items, selectedValue)
 		local width, height = 0, 0
 
 		for i, item in ipairs(items) do
@@ -137,12 +152,13 @@ do
 				button:SetPoint('TOPLEFT', self.buttons[i - 1], 'BOTTOMLEFT', 0, -2)
 			end
 
-			button:SetItem(item.value, item.text, item.value == value)
+			button:SetItem(item, selectedValue)
 			width = max(width, button:GetWidth() + 2)
 			height = height + button:GetHeight() + 2
 		end
 
 		self.container:SetSize(width, height)
+		self:SetHeight(math.min(height + 2, self.minHeight))
 		self:SetWidth(width + 8)
 	end
 end
@@ -150,33 +166,51 @@ end
 local Dropdown = Addon:CreateClass('Frame')
 do
 	local dialog = DropdownDialog:New()
-	local dialogOwner = nil
 
 	local function valueButton_OnClick(self)
-		self:GetParent():ShowMenu()
+		local parent = self:GetParent()
+
+		if parent == dialog.owner then
+			dialog:Hide()
+		else
+			parent:ShowMenu()
+		end
 	end
+
+	Dropdown.items = {}
 
 	function Dropdown:New(options)
 		local f = self:Bind(CreateFrame('Frame', nil, options.parent))
 
 		f.buttons = {}
-		f.items = options.items
+
+		if type(options.items) == 'function' then
+			f.GetItems = options.items
+		else
+			f.items = options.items
+		end
+
 		f.SetSavedValue = options.set
 		f.GetSavedValue = options.get
 
 		local text = f:CreateFontString(nil, 'ARTWORK', 'GameFontHighlight')
 		text:SetPoint('LEFT')
-		text:SetText(options.name .. ': ')
+		text:SetText(options.name)
 		f.text = text
 
 		local valueButton = CreateFrame('Button', nil, f)
-		valueButton:SetNormalFontObject('GameFontNormal')
-		valueButton:SetHighlightFontObject('GameFontHighlight')
+		valueButton:SetNormalFontObject('GameFontNormalRight')
+		valueButton:SetHighlightFontObject('GameFontHighlightRight')
 		valueButton:SetScript('OnClick', valueButton_OnClick)
 		valueButton:SetPoint('RIGHT')
-		valueButton:SetText(_G.DISABLE)
+		valueButton:SetText('Nopenopenope')
 		valueButton:SetSize(valueButton:GetFontString():GetSize())
 		f.valueButton = valueButton
+
+		local bg = f:CreateTexture(nil, 'BACKGROUND')
+		bg:SetAllPoints(bg:GetParent())
+		bg:SetColorTexture(0.2, 0.2, 0.2, 0.5)
+		f.bg = bg
 
 		local width = max(4 + text:GetWidth() + valueButton:GetWidth(), 240)
 		local height = 4 + text:GetHeight()
@@ -193,7 +227,7 @@ do
 	end
 
 	function Dropdown:OnHide()
-		if dialogOwner == self then
+		if dialog.owner == self then
 			dialog:Hide()
 		end
 	end
@@ -216,22 +250,27 @@ do
 	function Dropdown:ShowMenu()
 		dialog:Open{
 			owner = self,
-			items = self.items,
+			items = self:GetItems(),
 			value = self:GetSavedValue()
 		}
 
 		dialogOwner = self
 	end
 
-	function Dropdown:SetItems(items)
-		self.items = items
+	function Dropdown:GetItems()
+		return self.items
 	end
 
 	function Dropdown:UpdateText()
-		local value = self:GetSavedValue()
+		local selectedValue = self:GetSavedValue()
 
-		for i, item in pairs(self.items) do
-			if item.value == value then
+		for i, item in pairs(self:GetItems()) do
+			if item == selectedValue then
+				self.valueButton:SetText(item)
+				return
+			end
+
+			if type(item) == "table" and item.value == selectedValue then
 				self.valueButton:SetText(item.text or item.value)
 				return
 			end

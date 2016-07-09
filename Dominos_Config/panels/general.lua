@@ -114,75 +114,79 @@ do
 		set = function(enable) Dominos:SetUseOverrideUI(enable) end
 	})
 	useBlizzardOverrideUIToggle:SetPoint('TOP', showTooltipsInCombatToggle, 'BOTTOM', -8, -10)
-end
 
---
---
--- --[[ Dropdowns ]]--
---
--- do
--- 	local info = {}
--- 	local function AddItem(text, value, func, checked, arg1)
--- 		info.text = text
--- 		info.func = func
--- 		info.value = value
--- 		info.checked = checked
--- 		info.arg1 = arg1
--- 		UIDropDownMenu_AddButton(info)
--- 	end
---
--- 	local function AddRightClickTargetSelector(self)
--- 		local dd = self:NewDropdown(L.RightClickUnit)
---
--- 		dd:SetScript('OnShow', function(self)
--- 			UIDropDownMenu_SetWidth(self, 110)
--- 			UIDropDownMenu_Initialize(self, self.Initialize)
--- 			UIDropDownMenu_SetSelectedValue(self, Dominos:GetRightClickUnit() or 'NONE')
--- 		end)
---
--- 		local function Item_OnClick(self)
--- 			Dominos:SetRightClickUnit(self.value ~= 'NONE' and self.value or nil)
--- 			UIDropDownMenu_SetSelectedValue(dd, self.value)
--- 		end
---
--- 		function dd:Initialize()
--- 			local selected = Dominos:GetRightClickUnit()  or 'NONE'
---
--- 			AddItem(L.RCUPlayer, 'player', Item_OnClick, 'player' == selected)
--- 			AddItem(L.RCUFocus, 'focus', Item_OnClick, 'focus' == selected)
--- 			AddItem(L.RCUToT, 'targettarget', Item_OnClick, 'targettarget' == selected)
--- 			AddItem(NONE_KEY, 'NONE', Item_OnClick, 'NONE' == selected)
--- 		end
--- 		return dd
--- 	end
---
--- 	local function AddPossessBarSelector(self)
--- 		local dd = self:NewDropdown(L.PossessBar)
---
--- 		dd:SetScript('OnShow', function(self)
--- 			UIDropDownMenu_SetWidth(self, 110)
--- 			UIDropDownMenu_Initialize(self, self.Initialize)
--- 			UIDropDownMenu_SetSelectedValue(self, Dominos:GetOverrideBar().id)
--- 		end)
---
--- 		local function Item_OnClick(self)
--- 			Dominos:SetOverrideBar(self.value)
--- 			UIDropDownMenu_SetSelectedValue(dd, self.value)
--- 		end
---
--- 		function dd:Initialize()
--- 			local selected = Dominos:GetOverrideBar().id
---
--- 			for i = 1, Dominos:NumBars() do
--- 				AddItem('Action Bar ' .. i, i, Item_OnClick, i == selected)
--- 			end
--- 		end
--- 		return dd
--- 	end
---
--- 	local rightClickUnit = AddRightClickTargetSelector(Options)
--- 	rightClickUnit:SetPoint('TOPRIGHT', -10, -120)
---
--- 	local possess = AddPossessBarSelector(Options)
--- 	possess:SetPoint('TOP', rightClickUnit, 'BOTTOM', 0, -16)
--- end
+
+	--right click unit
+	local rightClickUnitSelector = GeneralPanel:Add('Dropdown', {
+		name = L.RightClickUnit,
+		get = function()
+			return Dominos:GetRightClickUnit() or 'NONE'
+		end,
+
+		set = function(_, value)
+			Dominos:SetRightClickUnit(value ~= 'NONE' and value or nil)
+		end,
+
+		items = {
+			{text = L.RCUPlayer, value = 'player'},
+			{text = L.RCUFocus, value = 'focus'},
+			{text = L.RCUToT, value = 'targettarget'},
+			{text = NONE_KEY, value = 'NONE'},
+		}
+	})
+
+	rightClickUnitSelector:SetPoint('TOPRIGHT', -10, -120)
+
+
+	--right click unit
+	local possessBarSelector = GeneralPanel:Add('Dropdown', {
+		name = L.PossessBar,
+
+		get = function()
+			local bar = Dominos:GetOverrideBar()
+
+			return bar and bar.id or 1
+		end,
+
+		set = function(_, value)
+			Dominos:SetOverrideBar(value)
+		end,
+
+		items = function()
+			local items = {}
+
+			for i = 1, Dominos:NumBars() do
+				table.insert(items, { text = ('Action Bar %d'):format(i), value = i })
+			end
+
+			return items
+		end
+	})
+
+	possessBarSelector:SetPoint('TOP', rightClickUnitSelector, 'BOTTOM', 0, -2)
+
+	-- profile selector
+	local profileSelector = GeneralPanel:Add('Dropdown', {
+		name = 'Profile',
+
+		get = function()
+			return Dominos.db:GetCurrentProfile()
+		end,
+
+		set = function(_, value)
+			Dominos:SetProfile(value)
+			GeneralPanel:Hide()
+			GeneralPanel:Show()
+		end,
+
+		items = function()
+			local profiles = Dominos.db:GetProfiles()
+
+			table.sort(profiles)
+
+			return profiles
+		end
+	})
+
+	profileSelector:SetPoint('TOP', possessBarSelector, 'BOTTOM', 0, -2)
+end

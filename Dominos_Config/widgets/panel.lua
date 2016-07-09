@@ -110,7 +110,7 @@ function Panel:NewSlider(options)
 
 	local width, height = slider:GetEffectiveSize()
 	self.height = self.height + (height + 8)
-	self.width = max(self.width, width)
+	self.width = math.max(self.width, width)
 	self.lastWidget = slider
 
 	self:Render()
@@ -133,7 +133,30 @@ function Panel:NewDropdown(options)
 
 	local width, height = dropdown:GetEffectiveSize()
 	self.height = self.height + (height + 2)
-	self.width = max(self.width, width)
+	self.width = math.max(self.width, width)
+	self.lastWidget = dropdown
+
+	self:Render()
+
+	return dropdown
+end
+
+function Panel:NewTextureSelector(options)
+	options.parent = self
+
+	local dropdown = Addon.Dropdown:New(options)
+
+	local prev = self.lastWidget
+	if prev then
+		dropdown:SetPoint('TOPLEFT', self.lastWidget, 'BOTTOMLEFT', 0, -2)
+	else
+		dropdown:SetPoint('TOPLEFT', 0, -2)
+	end
+	dropdown:SetPoint('RIGHT')
+
+	local width, height = dropdown:GetEffectiveSize()
+	self.height = self.height + (height + 2)
+	self.width = math.max(self.width, width)
 	self.lastWidget = dropdown
 
 	self:Render()
