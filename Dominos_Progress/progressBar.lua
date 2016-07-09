@@ -4,23 +4,24 @@ local ProgressBar = Dominos:CreateClass('Frame', Dominos.ButtonBar); Dominos.Pro
 function ProgressBar:Create(...)
 	local bar = ProgressBar.proto.Create(self, ...)
 
+	bar:SetFrameStrata('BACKGROUND')
+
 	bar.colors = {
 		base = {0, 0, 0},
 		rest = {0, 0, 0, 0},
 		bg = {0, 0, 0, 1}
 	}
-	
+
 	local textArea = CreateFrame('Frame', nil, bar.header)
 	textArea:SetFrameLevel(20)
 	textArea:SetAllPoints(bar)
 
 	local text = textArea:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
-	text:SetPoint('CENTER')	
+	text:SetPoint('CENTER')
 	bar.text = text
 
 	local bg = bar.header:CreateTexture(nil, 'BACKGROUND')
-	bg:SetTexture([[Interface\ChatFrame\ChatFrameBackground]])
-	bg:SetVertexColor(0, 0, 0, 1)
+	bg:SetColorTexture(0, 0, 0, 1)
 	bg:SetAllPoints(bar)
 	bar.bg = bg
 
@@ -118,8 +119,8 @@ function ProgressBar:SetColor(r, g, b, a)
 	colors[4] = tonumber(a) or 1
 
 	local r, g, b, a = self:GetColor()
-	for i, bar in pairs(self.buttons) do		
-		bar.bg:SetVertexColor(r / 2, g / 2, b / 2, a / 2)	
+	for i, bar in pairs(self.buttons) do
+		bar.bg:SetVertexColor(r / 2, g / 2, b / 2, a / 2)
 		bar.value:SetStatusBarColor(r, g, b, a)
 	end
 
@@ -173,53 +174,46 @@ function ProgressBar:GetBackgroundColor()
 	return r or 0, g or 0, b or 0, a or 1
 end
 
+
+function ProgressBar:SetDesiredWidth(width)
+	self.sets.width = width
+	self:Layout()
+end
+
+function ProgressBar:GetDesiredWidth()
+	return self.sets.width or 1024
+end
+
+function ProgressBar:SetDesiredHeight(height)
+	self.sets.height = height
+	self:Layout()
+end
+
+function ProgressBar:GetDesiredHeight()
+	return self.sets.height or 18
+end
+
+function ProgressBar:NumColumns()
+	return self:NumButtons()
+end
+
+
 -- segment stuff
 function ProgressBar:SetSegmentCount(count)
 	local count = tonumber(count) or 1
-	
+
 	if count ~= self:GetSegmentCount() then
 		self:SetNumButtons(count)
 		self:UpdateValue()
 		self:UpdateRest()
-	end		
+	end
 end
 
 ProgressBar.GetSegmentCount = ProgressBar.NumButtons
 
-function ProgressBar:SetSegmentSize(width, height)
-	local changed = false
-
-	width = max(tonumber(width) or 0, 1)
-	if self.sets.segmentWidth ~= width then
-		self.sets.segmentWidth = width
-		changed = true
-	end
-
-
-	height = max(tonumber(height) or 0, 1)
-	if self.sets.segmentHeight ~= height then
-		self.sets.segmentHeight = height
-		changed = true
-	end
-
-	if changed then
-		for i, segment in pairs(self.buttons) do
-			segment:SetSize(width, height)
-		end
-
-		self:Layout()
-	end
-
-	return self
-end
-
-function ProgressBar:GetSegmentSize()
-	return self.sets.segmentWidth , self.sets.segmentHeight
-end
-
 function ProgressBar:SetSegmentTextureID(id)
 	self.sets.texture = id
-
+	self:UpdateSegmentTexture()
 	return self
 end
 
@@ -231,16 +225,59 @@ function ProgressBar:GetSegmentTexture()
 	return LibStub('LibSharedMedia-3.0'):Fetch('statusbar', self:GetSegmentTextureID())
 end
 
+function ProgressBar:UpdateSegmentTexture()
+	local texture = self:GetSegmentTexture()
+
+	for i, segment in pairs(self.buttons) do
+		segment.bg:SetTexture(texture)
+		segment.value:SetStatusBarTexture(texture)
+		segment.rest:SetStatusBarTexture(texture)
+	end
+end
+
 --[[ actions ]]--
+
+function ProgressBar:GetSegmentSize()
+	local width = self:GetDesiredWidth()
+	local height = self:GetDesiredHeight()
+	local numButtons = self:NumButtons()
+	local columns = self:NumColumns()
+	local rows = math.ceil(numButtons / columns)
+	local spacing = self:GetSpacing()
+
+	-- subtract spacing between segments
+	width = width - (spacing * (columns - 1))
+
+	-- divide by the number of columns
+	width = (width / columns)
+
+	-- subtract the spacing between segments
+	height = height - (spacing * (rows - 1))
+
+	-- divide height by the number of rows
+	height = (height / rows)
+
+	return width, height
+end
+
+function ProgressBar:Layout()
+	local width, height = self:GetSegmentSize()
+
+	for i, segment in pairs(self.buttons) do
+		segment:SetSize(width, height)
+	end
+
+	Dominos.ButtonBar.Layout(self)
+end
 
 function ProgressBar:UpdateValue()
 	local value, min, max = self:GetValue()
 	value = math.min(value, max)
-	
+
 	local segmentValue = max / self:GetSegmentCount()
 	local lastFilledIndex = floor(value / segmentValue)
 	local remainder = floor(100 * (value % segmentValue) / (segmentValue * 1.0) + 0.5)
-	
+
 	for i, segment in pairs(self.buttons) do
 		if i <= lastFilledIndex then
 			segment.value:SetValue(100)
@@ -255,11 +292,11 @@ end
 function ProgressBar:UpdateRest()
 	local value, min, max = self:GetValue()
 	local rest = math.min(value + self:GetRestValue(), max)
-	
+
 	local segmentValue = max / self:GetSegmentCount()
 	local lastFilledIndex = floor(rest / segmentValue)
 	local remainder = floor(100 * (rest % segmentValue) / (segmentValue * 1.0) + 0.5)
-	
+
 	for i, segment in pairs(self.buttons) do
 		if i <= lastFilledIndex then
 			segment.rest:SetValue(100)
@@ -274,22 +311,22 @@ end
 
 --[[ overrides ]]--
 
-do 
+do
 	local segmentPool = CreateFramePool('Frame')
-	
+
 	function ProgressBar:GetButton(index)
 		local segment = segmentPool:Acquire()
-		
+
 		if not segment.value then
 			local bg = segment:CreateTexture(nil, 'ARTWORK')
 			bg:SetAllPoints(segment)
 			segment.bg = bg
-			
+
 			local rest = CreateFrame('StatusBar', nil, segment)
 			rest:SetMinMaxValues(0, 100)
 			rest:SetValue(0)
 			rest:EnableMouse(false)
-			rest:SetAllPoints(segment)	
+			rest:SetAllPoints(segment)
 
 			segment.rest = rest
 
@@ -301,13 +338,13 @@ do
 
 			segment.value = value
 		end
-		
+
 		segment:SetSize(self:GetSegmentSize())
-		
+
 		local r, g, b, a = self:GetColor()
 		segment.bg:SetTexture(self:GetSegmentTexture())
 		segment.bg:SetVertexColor(r / 3, g / 3, b / 3, a)
-				
+
 		segment.value:SetStatusBarTexture(self:GetSegmentTexture())
 		segment.value:SetStatusBarColor(self:GetColor())
 
@@ -318,50 +355,106 @@ do
 	end
 end
 
+
+--[[ menu ]]--
+
 do
 	function ProgressBar:CreateMenu()
-		local bar = self
 		local menu = Dominos:NewMenu(self.id)
-		local L = LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')
-	
-		local panel = menu:AddLayoutPanel()
-		
-		local segmentWidthSlider = panel:NewSlider('Segment Width', 1, 1024, 1)
-		
-		segmentWidthSlider.OnShow = function(self)
-			local w, h = bar:GetSegmentSize()
-			self:SetValue(w)
-		end
 
-		segmentWidthSlider.UpdateValue = function(self, value)
-			local w, h = bar:GetSegmentSize()
-			bar:SetSegmentSize(value, h)
-		end
-		
-		local segmentHeightSlider = panel:NewSlider('Segment Height', 1, 1024, 1)
-		
-		segmentHeightSlider.OnShow = function(self)
-			local w, h = bar:GetSegmentSize()
-			self:SetValue(h)
-		end
+		-- things we need to configure:
 
-		segmentHeightSlider.UpdateValue = function(self, value)
-			local w, h = bar:GetSegmentSize()
-			bar:SetSegmentSize(w, value)
-		end		
-				
-		local segmentCountSlider = panel:NewSlider('Segments', 1, 200, 1)
-		
-		segmentCountSlider.OnShow = function(self)
-			self:SetValue(bar:GetSegmentCount())
-		end
-
-		segmentCountSlider.UpdateValue = function(self, value)
-			bar:SetSegmentCount(value)		
-			_G[self:GetParent():GetName() .. L.Columns]:OnShow()
-		end
+		self:AddLayoutPanel(menu)
+		self:AddTexturePanel(menu)
+		self:AddFontPanel(menu)
 
 		menu:AddAdvancedPanel()
-		self.menu = menu
+
+		ProgressBar.menu = menu
+	end
+
+	function ProgressBar:AddLayoutPanel(menu)
+		local l = LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')
+
+		local panel = menu:NewPanel(l.Layout)
+
+		panel.segmentedCheckbox = panel:NewCheckButton{
+			name = 'Segmented',
+
+			get = function()
+				return panel.owner:GetSegmentCount() > 1
+			end,
+
+			set = function(_, enable)
+				local segmentCount = enable and 20 or 1
+				panel.owner:SetSegmentCount(segmentCount)
+			end
+		}
+
+		panel.widthSlider = panel:NewSlider{
+			name = 'Width',
+
+			min = 1,
+
+			max = function()
+				return math.ceil(_G.UIParent:GetWidth() / panel.owner:GetScale())
+			end,
+
+			get = function()
+				return panel.owner:GetDesiredWidth()
+			end,
+
+			set = function(_, value)
+				panel.owner:SetDesiredWidth(value)
+			end,
+		}
+
+		panel.heightSlider = panel:NewSlider{
+			name = 'Height',
+
+			min = 1,
+
+			max = function()
+				return math.ceil(_G.UIParent:GetHeight() / panel.owner:GetScale())
+			end,
+
+			get = function()
+				return panel.owner:GetDesiredHeight()
+			end,
+
+			set = function(_, value)
+				panel.owner:SetDesiredHeight(value)
+			end,
+		}
+
+		panel.spacingSlider = panel:NewSpacingSlider()
+		panel.paddingSlider = panel:NewPaddingSlider()
+		panel.scaleSlider = panel:NewScaleSlider()
+		panel.opacitySlider = panel:NewOpacitySlider()
+		panel.fadeSlider = panel:NewFadeSlider()
+	end
+
+	function ProgressBar:AddFontPanel(menu)
+		local l = LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')
+
+		local panel = menu:NewPanel('Font')
+	end
+
+	function ProgressBar:AddTexturePanel(menu)
+		local l = LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')
+
+		local panel = menu:NewPanel('Texture')
+
+		panel.textureSelector = Dominos.Options.TextureSelector:New{
+			parent = panel,
+
+			get = function()
+				return panel.owner:GetSegmentTextureID()
+			end,
+
+			set = function(_, value)
+				panel.owner:SetSegmentTextureID(value)
+			end,
+		}
 	end
 end
