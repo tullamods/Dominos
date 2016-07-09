@@ -384,19 +384,28 @@ end
 
 
 do
-	local function getDropdownItems()
-		local items = {
-			{ value = -1, text = _G.DISABLE }
-		}
+	local dropdownItems = {}
+	local lastNumBars = -1
 
-		for i = 1, Dominos:NumBars() do
-			table.insert(items, {
-				value = i,
-				text = ('Action Bar %d'):format(i)
-			})
+	local function getDropdownItems()
+		local numBars = Dominos:NumBars()
+
+		if lastNumBars ~= numBars then
+			dropdownItems = {
+				{ value = -1, text = _G.DISABLE }
+			}
+
+			for i = 1, numBars do
+				dropdownItems[i + 1] = {
+					value = i,
+					text = ('Action Bar %d'):format(i)
+				}
+			end
+
+			lastNumBars = numBars
 		end
 
-		return items
+		return dropdownItems
 	end
 
 	local function AddStateGroup(panel, categoryName, stateType, l)
@@ -410,7 +419,7 @@ do
 
 		panel:NewHeader(categoryName)
 
-		local items = getDropdownItems()
+		-- local items = getDropdownItems()
 		for i, state in ipairs(states) do
 			local id = state.id
 			local name = state.text
@@ -422,14 +431,14 @@ do
 
 			panel:NewDropdown{
 				name = name,
-				items = items,
+				items = getDropdownItems,
 
 				get = function()
-					local value = panel.owner:GetOffset(state.id) or -1
-					if value > -1 then
-						return (panel.owner.id + value - 1) % Dominos:NumBars() + 1
+					local offset = panel.owner:GetOffset(state.id) or -1
+					if offset > -1 then
+						return (panel.owner.id + offset - 1) % Dominos:NumBars() + 1
 					end
-					return value
+					return offset
 				end,
 
 				set = function(self, value)
@@ -440,7 +449,7 @@ do
 					elseif value < panel.owner.id then
 						offset = (Dominos:NumBars() - panel.owner.id) + value
 					else
-						offset = panel.owner.id - value
+						offset = value - panel.owner.id
 					end
 
 					panel.owner:SetOffset(state.id, offset)
