@@ -11,6 +11,7 @@
 	<Script file="textInput.lua"/>
 	<Script file="dropdown.lua"/>
 	<Script file="textureSelector.lua"/>
+	<Script file="fontSelector.lua"/>
 
 	<Script file="menu.lua"/>
 	<Script file="panelSelector.lua"/>
