@@ -8,7 +8,8 @@ local ProgressBarModule = Dominos:NewModule('ProgressBars', 'AceEvent-3.0')
 
 function ProgressBarModule:Load()
 	self.bars = {
-		xp = Addon.XPBar:New('exp')
+		Addon.ProgressBar:New('exp', { 'xp', 'reputation', 'honor' }),
+		Addon.ProgressBar:New('artifact', { 'artifact' })
 	}
 
 	-- common events
@@ -37,9 +38,9 @@ function ProgressBarModule:UpdateAllBars()
 	end
 end
 
-function ProgressBarModule:UpdateAllBarsOfType(type)
+function ProgressBarModule:UpdateAllBarsInMode(mode)
 	for _, bar in pairs(self.bars) do
-		if bar.type == type then
+		if bar:GetMode() == mode then
 			bar:Update()
 		end
 	end
@@ -66,29 +67,29 @@ function ProgressBarModule:PLAYER_UPDATE_RESTING()
 end
 
 function ProgressBarModule:PLAYER_XP_UPDATE()
-	self:UpdateAllBarsOfType('xp')
+	self:UpdateAllBarsInMode('xp')
 end
 
 function ProgressBarModule:UPDATE_FACTION(event, unit)
 	if unit ~= 'player' then return end
 
-	self:UpdateAllBarsOfType('rep')
+	self:UpdateAllBarsInMode('reputation')
 end
 
 function ProgressBarModule:ARTIFACT_XP_UPDATE()
-	self:UpdateAllBarsOfType('artifact')
+	self:UpdateAllBarsInMode('artifact')
 end
 
 function ProgressBarModule:UNIT_INVENTORY_CHANGED(event, unit)
 	if unit ~= 'player' then return end
 
-	self:UpdateAllBarsOfType('artifact')
+	self:UpdateAllBarsInMode('artifact')
 end
 
 function ProgressBarModule:HONOR_XP_UPDATE()
-	self:UpdateAllBarsOfType('honor')
+	self:UpdateAllBarsInMode('honor')
 end
 
 function ProgressBarModule:HONOR_LEVEL_UPDATE()
-	self:UpdateAllBarsOfType('honor')
+	self:UpdateAllBarsInMode('honor')
 end

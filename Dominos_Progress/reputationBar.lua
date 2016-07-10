@@ -1,16 +1,14 @@
 local AddonName, Addon = ...
-local ReputationBar = Dominos:CreateClass('Frame', Dominos.ProgressBar)
+local Dominos = _G.Dominos
+local ReputationBar = Dominos:CreateClass('Frame', Addon.ProgressBar)
 
 do
     local FRIEND_ID_FACTION_COLOR_INDEX = 5
 
-    ReputationBar.type = 'rep'
-
     function ReputationBar:Init()
         if not GetWatchedFactionInfo() then
-            self:SetToNextType()
+            self:NextMode()
         else
-            self:SetRestValue(0)
             self:Update()
         end
     end
@@ -21,9 +19,8 @@ do
             local color = FACTION_BAR_COLORS[0]
 
             self:SetColor(color.r, color.g, color.b)
-            self:SetValue(0, 0, 1)
+            self:SetValues()
             self:SetText('')
-
             return
         end
 
@@ -47,15 +44,11 @@ do
         local color = FACTION_BAR_COLORS[reaction]
 
         self:SetColor(color.r, color.g, color.b)
-        self:SetValue(value, 0, max)
+        self:SetValues(value, max)
         self:SetText('%s: %s / %s (%s)', name, BreakUpLargeNumbers(value), BreakUpLargeNumbers(max), friendTextLevel)
-    end
-
-    -- the one time i get to use my favorite feature of lua
-    function ReputationBar:SetToNextType()
-        Addon.ArtifactBar:Bind(self)
-        self:Init()
     end
 end
 
-Addon.ReputationBar = ReputationBar
+-- register this as a possible progress bar mode
+Addon.progressBarModes = Addon.progressBarModes or {}
+Addon.progressBarModes['reputation'] = ReputationBar

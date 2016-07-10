@@ -1,38 +1,28 @@
 local AddonName, Addon = ...
-local XPBar = Dominos:CreateClass('Frame', Dominos.ProgressBar)
+local Dominos = _G.Dominos
+local ExperienceBar = Dominos:CreateClass('Frame', Addon.ProgressBar)
 
-do
-	XPBar.type = 'xp'
+function ExperienceBar:Init()
+	self:SetColor(0.58, 0.0, 0.55, 1)
+	-- self:SetBonusColor(0.25, 0, 0.22, 1)
+	self:SetBonusColor(0.47, 0, 1, 0.8)
+	self:Update()
+end
 
-	function XPBar:Init()
-		self:SetColor(0.58, 0.0, 0.55, 1)
-		self:SetRestColor(0.25, 0.25, 1, 1)
-		self:Update()
-	end
+function ExperienceBar:Update()
+	local value = UnitXP('player')
+	local max = UnitXPMax('player')
+	local rest = GetXPExhaustion()
 
-	function XPBar:Update()
-		local value = UnitXP('player')
-		local max = UnitXPMax('player')
-		local rest = GetXPExhaustion()
+	self:SetValues(value, max, rest)
 
-		self:SetValue(value, 0, max)
-		self:SetRestValue(rest)
-		self:UpdateText(value, max, rest)
-	end
-
-	function XPBar:UpdateText(value, max, rest)
-		if rest and rest > 0 then
-			self:SetText('%s / %s (+%s)', BreakUpLargeNumbers(value), BreakUpLargeNumbers(max), BreakUpLargeNumbers(rest))
-		else
-			self:SetText('%s / %s', BreakUpLargeNumbers(value), BreakUpLargeNumbers(max))
-		end
-	end
-
-	-- the one time i get to use my favorite feature of lua
-	function XPBar:SetToNextType()
-		Addon.ReputationBar:Bind(self)
-		self:Init()
+	if rest and rest > 0 then
+		self:SetText('%s: %s / %s (+%s)', XP, BreakUpLargeNumbers(value), BreakUpLargeNumbers(max), BreakUpLargeNumbers(rest))
+	else
+		self:SetText('%s: %s / %s', XP, BreakUpLargeNumbers(value), BreakUpLargeNumbers(max))
 	end
 end
 
-Addon.XPBar = XPBar
+-- register this as a possible progress bar mode
+Addon.progressBarModes = Addon.progressBarModes or {}
+Addon.progressBarModes['xp'] = ExperienceBar

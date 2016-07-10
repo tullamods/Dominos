@@ -1,5 +1,17 @@
+local AddonName, Addon = ...
 local Dominos = LibStub('AceAddon-3.0'):GetAddon('Dominos')
-local ProgressBar = Dominos:CreateClass('Frame', Dominos.ButtonBar); Dominos.ProgressBar = ProgressBar
+local ProgressBar = Dominos:CreateClass('Frame', Dominos.ButtonBar)
+
+function ProgressBar:New(id, modes, ...)
+	local bar = ProgressBar.proto.New(self, id, ...)
+
+	bar.modes = modes
+	bar:UpdateFont()
+	bar:UpdateAlwaysShowText()
+	bar:UpdateMode()
+
+	return bar
+end
 
 function ProgressBar:Create(...)
 	local bar = ProgressBar.proto.Create(self, ...)
@@ -8,7 +20,7 @@ function ProgressBar:Create(...)
 
 	bar.colors = {
 		base = {0, 0, 0},
-		rest = {0, 0, 0, 0},
+		bonus = {0, 0, 0, 0},
 		bg = {0, 0, 0, 1}
 	}
 
@@ -60,11 +72,137 @@ function ProgressBar:OnLeave()
 end
 
 function ProgressBar:OnClick()
-	self:SetToNextType()
+	self:NextMode()
 end
 
 
---[[ config ]]--
+--[[ mode ]]--
+
+function ProgressBar:SetMode(mode)
+	if self:GetMode() ~= mode then
+		self.sets.mode = mode
+		self:UpdateMode()
+	end
+end
+
+function ProgressBar:GetMode()
+	return self.sets.mode or self.modes[1]
+end
+
+function ProgressBar:UpdateMode()
+	local newType = Addon.progressBarModes and Addon.progressBarModes[self:GetMode()]
+	if newType then
+		newType:Bind(self)
+		self:Init()
+	end
+end
+
+function ProgressBar:GetModeIndex()
+	local mode = self:GetMode()
+
+	for i, availableMode in ipairs(self.modes) do
+		if availableMode == mode then
+			return i
+		end
+	end
+
+	return 1
+end
+
+function ProgressBar:NextMode()
+	local nextIndex = self:GetModeIndex() + 1
+	if nextIndex > #self.modes then
+		nextIndex = 1
+	end
+
+	self:SetMode(self.modes[nextIndex])
+end
+
+function ProgressBar:GetCurrentModeIndex()
+	return self.modeIndex or 1
+end
+
+
+--[[ value display ]]--
+
+function ProgressBar:SetValues(value, max, bonus)
+	local valueChanged = false
+	local value = math.min(math.max(tonumber(value) or 0, 0), max)
+	if self.value ~= value then
+		self.value = value
+		valueChanged = true
+	end
+
+	local maxChanged = false
+	local max = math.max(tonumber(max) or 0, 1)
+	if self.max ~= max then
+		self.max = max
+		maxChanged = true
+	end
+
+	local bonusChanged = false
+	local bonus = tonumber(bonus) or 0
+	if self.bonus ~= bonus then
+		self.bonus = bonus
+		bonusChanged = true
+	end
+
+	if valueChanged or maxChanged then
+		self:UpdateValue()
+	end
+
+	if valueChanged or bonusChanged or maxChanged then
+		self:UpdateBonusValue()
+	end
+
+	return self
+end
+
+function ProgressBar:GetValues()
+	return self.value or 0, self.max or 0, self.bonus or 0
+end
+
+function ProgressBar:UpdateValue()
+	local value, max = self:GetValues()
+	value = math.min(value, max)
+
+	local segmentValue = max / self:GetSegmentCount()
+	local lastFilledIndex = floor(value / segmentValue)
+	local remainder = floor(100 * (value % segmentValue) / (segmentValue * 1.0) + 0.5)
+
+	for i, segment in pairs(self.buttons) do
+		if i <= lastFilledIndex then
+			segment.value:SetValue(100)
+		elseif i == lastFilledIndex + 1 then
+			segment.value:SetValue(remainder)
+		else
+			segment.value:SetValue(0)
+		end
+	end
+end
+
+function ProgressBar:UpdateBonusValue()
+	local value, max, bonus = self:GetValues()
+	local bonus = bonus > 0 and math.min(value + bonus, max) or bonus
+
+	local segmentValue = max / self:GetSegmentCount()
+	local lastFilledIndex = floor(bonus / segmentValue)
+	local remainder = floor(100 * (bonus % segmentValue) / (segmentValue * 1.0) + 0.5)
+
+	for i, segment in pairs(self.buttons) do
+		if i <= lastFilledIndex then
+			segment.bonus:SetValue(100)
+		elseif i == lastFilledIndex + 1 then
+			segment.bonus:SetValue(remainder)
+		else
+			segment.bonus:SetValue(0)
+		end
+	end
+end
+
+
+
+--[[ text display ]]--
 
 function ProgressBar:SetText(text, ...)
 	if select('#', ...) > 0 then
@@ -80,57 +218,8 @@ function ProgressBar:GetText()
 	return self.text:GetText()
 end
 
-function ProgressBar:SetValue(value, min, max)
-	local changed = false
 
-	local min = math.max(tonumber(min) or 0, 0)
-	if self.min ~= min then
-		self.min = min
-		changed = true
-	end
-
-	local max = math.max(tonumber(max) or 0, 1)
-	if self.max ~= max then
-		self.max = max
-		changed = true
-	end
-
-	local value = math.min(math.max(tonumber(value) or 0, min), max)
-	if self.value ~= value then
-		self.value = value
-		changed = true
-	end
-
-	if changed then
-	   self:UpdateValue()
-	end
-
-	return self
-end
-
-function ProgressBar:GetValue()
-	return self.value or 0, self.min or 0, self.max or 1
-end
-
-function ProgressBar:SetRestValue(rest)
-	local changed = false
-
-	local rest = tonumber(rest) or 0
-	if self.rest ~= rest then
-		self.rest = rest
-		changed = true
-	end
-
-	if changed then
-	   self:UpdateRest()
-	end
-
-	return self
-end
-
-function ProgressBar:GetRestValue()
-	return self.rest or 0
-end
+--[[ coloring ]]--
 
 function ProgressBar:SetColor(r, g, b, a)
 	local colors = self.colors.base
@@ -155,24 +244,24 @@ function ProgressBar:GetColor()
 	return r or 0, g or 0, b or 0, a or 1
 end
 
-function ProgressBar:SetRestColor(r, g, b, a)
-	local colors = self.colors.rest
+function ProgressBar:SetBonusColor(r, g, b, a)
+	local colors = self.colors.bonus
 
 	colors[1] = tonumber(r) or 0
 	colors[2] = tonumber(g) or 0
 	colors[3] = tonumber(b) or 0
 	colors[4] = tonumber(a) or 1
 
-	local r, g, b, a = self:GetRestColor()
+	local r, g, b, a = self:GetBonusColor()
 	for i, bar in pairs(self.buttons) do
-		bar.rest:SetStatusBarColor(r, g, b, a)
+		bar.bonus:SetStatusBarColor(r, g, b, a)
 	end
 
 	return self
 end
 
-function ProgressBar:GetRestColor()
-	local r, g, b, a = unpack(self.colors.rest)
+function ProgressBar:GetBonusColor()
+	local r, g, b, a = unpack(self.colors.bonus)
 
 	return r or 0, g or 0, b or 0, a or 1
 end
@@ -197,6 +286,8 @@ function ProgressBar:GetBackgroundColor()
 end
 
 
+--[[ sizing ]]--
+
 function ProgressBar:SetDesiredWidth(width)
 	self.sets.width = width
 	self:Layout()
@@ -215,10 +306,6 @@ function ProgressBar:GetDesiredHeight()
 	return self.sets.height or 12
 end
 
-function ProgressBar:NumColumns()
-	return self:GetSegmentCount()
-end
-
 
 --[[ segments ]]--
 
@@ -228,7 +315,7 @@ function ProgressBar:SetSegmentCount(count)
 	if count ~= self:GetSegmentCount() then
 		self:SetNumButtons(count)
 		self:UpdateValue()
-		self:UpdateRest()
+		self:UpdateBonusValue()
 	end
 end
 
@@ -236,6 +323,9 @@ function ProgressBar:GetSegmentCount()
 	return self:NumButtons()
 end
 
+function ProgressBar:NumColumns()
+	return self:GetSegmentCount()
+end
 
 function ProgressBar:GetSegmentSize()
 	local width = self:GetDesiredWidth()
@@ -261,11 +351,11 @@ function ProgressBar:GetSegmentSize()
 end
 
 
---[[ texture selection ]]---
+--[[ status bar texture ]]---
 
-function ProgressBar:SetTextureID(id)
-	if self.sets.texture ~= id then
-		self.sets.texture = id
+function ProgressBar:SetTextureID(textureID)
+	if self.sets.texture ~= textureID then
+		self.sets.texture = textureID
 		self:UpdateTexture()
 	end
 
@@ -286,16 +376,16 @@ function ProgressBar:UpdateTexture()
 	for i, segment in pairs(self.buttons) do
 		segment.bg:SetTexture(texture)
 		segment.value:SetStatusBarTexture(texture)
-		segment.rest:SetStatusBarTexture(texture)
+		segment.bonus:SetStatusBarTexture(texture)
 	end
 end
 
 
---[[ font selection ]]--
+--[[ text font ]]--
 
-function ProgressBar:SetFontID(id)
-	if self.sets.font ~= id then
-		self.sets.font = id
+function ProgressBar:SetFontID(fontID)
+	if self.sets.font ~= fontID then
+		self.sets.font = fontID
 		self:UpdateFont()
 	end
 
@@ -316,7 +406,7 @@ function ProgressBar:UpdateFont()
 end
 
 
---[[ always show text ]]--
+--[[ text display ]]--
 
 function ProgressBar:SetAlwaysShowText(enable)
 	if self.sets.alwaysShowText ~= enable then
@@ -337,13 +427,10 @@ function ProgressBar:UpdateAlwaysShowText()
 	end
 end
 
---[[ actions ]]--
+
+--[[ rendering ]]--
 
 function ProgressBar:Layout()
-	self:Init()
-	self:UpdateFont()
-	self:UpdateAlwaysShowText()
-
 	local width, height = self:GetSegmentSize()
 
 	for i, segment in pairs(self.buttons) do
@@ -351,48 +438,6 @@ function ProgressBar:Layout()
 	end
 
 	Dominos.ButtonBar.Layout(self)
-end
-
-function ProgressBar:UpdateValue()
-	local value, min, max = self:GetValue()
-	value = math.min(value, max)
-
-	local segmentValue = max / self:GetSegmentCount()
-	local lastFilledIndex = floor(value / segmentValue)
-	local remainder = floor(100 * (value % segmentValue) / (segmentValue * 1.0) + 0.5)
-
-	for i, segment in pairs(self.buttons) do
-		if i <= lastFilledIndex then
-			segment.value:SetValue(100)
-		elseif i == lastFilledIndex + 1 then
-			segment.value:SetValue(remainder)
-		else
-			segment.value:SetValue(0)
-		end
-	end
-end
-
-function ProgressBar:UpdateRest()
-	local value, min, max = self:GetValue()
-	local rest = math.min(value + self:GetRestValue(), max)
-
-	local segmentValue = max / self:GetSegmentCount()
-	local lastFilledIndex = floor(rest / segmentValue)
-	local remainder = floor(100 * (rest % segmentValue) / (segmentValue * 1.0) + 0.5)
-
-	for i, segment in pairs(self.buttons) do
-		if i <= lastFilledIndex then
-			segment.rest:SetValue(100)
-		elseif i == lastFilledIndex + 1 then
-			segment.rest:SetValue(remainder)
-		else
-			segment.rest:SetValue(0)
-		end
-	end
-end
-
-function ProgressBar:UpdateText()
-	self.text:SetText()
 end
 
 do
@@ -406,19 +451,19 @@ do
 			bg:SetAllPoints(segment)
 			segment.bg = bg
 
-			local rest = CreateFrame('StatusBar', nil, segment)
-			rest:SetMinMaxValues(0, 100)
-			rest:SetValue(0)
-			rest:EnableMouse(false)
-			rest:SetAllPoints(segment)
+			local bonus = CreateFrame('StatusBar', nil, segment)
+			bonus:SetMinMaxValues(0, 100)
+			bonus:SetValue(0)
+			bonus:EnableMouse(false)
+			bonus:SetAllPoints(segment)
 
-			segment.rest = rest
+			segment.bonus = bonus
 
-			local value = CreateFrame('StatusBar', nil, rest)
+			local value = CreateFrame('StatusBar', nil, bonus)
 			value:SetMinMaxValues(0, 100)
 			value:SetValue(0)
 			value:EnableMouse(false)
-			value:SetAllPoints(rest)
+			value:SetAllPoints(bonus)
 
 			segment.value = value
 		end
@@ -432,8 +477,8 @@ do
 		segment.value:SetStatusBarTexture(self:GetSegmentTexture())
 		segment.value:SetStatusBarColor(self:GetColor())
 
-		segment.rest:SetStatusBarTexture(self:GetSegmentTexture())
-		segment.rest:SetStatusBarColor(self:GetRestColor())
+		segment.bonus:SetStatusBarTexture(self:GetSegmentTexture())
+		segment.bonus:SetStatusBarColor(self:GetBonusColor())
 
 		return segment
 	end
@@ -446,13 +491,9 @@ do
 	function ProgressBar:CreateMenu()
 		local menu = Dominos:NewMenu(self.id)
 
-		-- things we need to configure:
-
 		self:AddLayoutPanel(menu)
 		self:AddTexturePanel(menu)
 		self:AddFontPanel(menu)
-
-		-- menu:AddAdvancedPanel()
 
 		ProgressBar.menu = menu
 	end
@@ -564,3 +605,6 @@ do
 		}
 	end
 end
+
+Addon.ProgressBar = ProgressBar
+Addon.progressBarModes = Addon.progressBarModes or {}
