@@ -127,17 +127,18 @@ end
 
 function ProgressBar:SetValues(value, max, bonus)
 	local valueChanged = false
-	local value = math.min(math.max(tonumber(value) or 0, 0), max)
-	if self.value ~= value then
-		self.value = value
-		valueChanged = true
-	end
 
 	local maxChanged = false
 	local max = math.max(tonumber(max) or 0, 1)
 	if self.max ~= max then
 		self.max = max
 		maxChanged = true
+	end
+
+	local value = math.min(math.max(tonumber(value) or 0, 0), max)
+	if self.value ~= value then
+		self.value = value
+		valueChanged = true
 	end
 
 	local bonusChanged = false
