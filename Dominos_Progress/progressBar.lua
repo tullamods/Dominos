@@ -39,9 +39,9 @@ function ProgressBar:GetDefaults()
 		y = 0,
 		columns = 20,
 		numButtons = 20,
-		segmentWidth = 32,
-		segmentHeight = 8,
-		enableMouse = false,
+		padW = 2,
+		padH = 2,
+		spacing = 1,
 		texture = 'blizzard',
 		font = 'Friz Quadrata TT'
 	}
@@ -212,7 +212,7 @@ function ProgressBar:SetDesiredHeight(height)
 end
 
 function ProgressBar:GetDesiredHeight()
-	return self.sets.height or 18
+	return self.sets.height or 12
 end
 
 function ProgressBar:NumColumns()
