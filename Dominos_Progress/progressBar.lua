@@ -12,18 +12,22 @@ function ProgressBar:Create(...)
 		bg = {0, 0, 0, 1}
 	}
 
-	local textArea = CreateFrame('Frame', nil, bar.header)
-	textArea:SetFrameLevel(20)
-	textArea:SetAllPoints(bar)
-
-	local text = textArea:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
-	text:SetPoint('CENTER')
-	bar.text = text
-
 	local bg = bar.header:CreateTexture(nil, 'BACKGROUND')
 	bg:SetColorTexture(0, 0, 0, 1)
 	bg:SetAllPoints(bar)
 	bar.bg = bg
+
+	local click = CreateFrame('Button', nil, bar)
+	click:SetScript('OnClick', function(_, ...) bar:OnClick(...) end)
+	click:SetScript('OnEnter', function(_, ...) bar:OnEnter(...) end)
+	click:SetScript('OnLeave', function(_, ...) bar:OnLeave(...) end)
+	click:RegisterForClicks('anyUp')
+	click:SetAllPoints(bar)
+	click:SetFrameStrata('HIGH')
+
+	local text = click:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
+	text:SetPoint('CENTER')
+	bar.text = text
 
 	return bar
 end
@@ -37,8 +41,26 @@ function ProgressBar:GetDefaults()
 		numButtons = 20,
 		segmentWidth = 32,
 		segmentHeight = 8,
-		texture = 'blizzard'
+		enableMouse = false,
+		texture = 'blizzard',
+		font = 'Friz Quadrata TT'
 	}
+end
+
+--[[ events ]]--
+
+function ProgressBar:OnEnter()
+	self.text:Show()
+end
+
+function ProgressBar:OnLeave()
+	if not self:GetAlwaysShowText() then
+		self.text:Hide()
+	end
+end
+
+function ProgressBar:OnClick()
+	self:SetToNextType()
 end
 
 
@@ -194,11 +216,12 @@ function ProgressBar:GetDesiredHeight()
 end
 
 function ProgressBar:NumColumns()
-	return self:NumButtons()
+	return self:GetSegmentCount()
 end
 
 
--- segment stuff
+--[[ segments ]]--
+
 function ProgressBar:SetSegmentCount(count)
 	local count = tonumber(count) or 1
 
@@ -209,33 +232,10 @@ function ProgressBar:SetSegmentCount(count)
 	end
 end
 
-ProgressBar.GetSegmentCount = ProgressBar.NumButtons
-
-function ProgressBar:SetSegmentTextureID(id)
-	self.sets.texture = id
-	self:UpdateSegmentTexture()
-	return self
+function ProgressBar:GetSegmentCount()
+	return self:NumButtons()
 end
 
-function ProgressBar:GetSegmentTextureID()
-	return self.sets.texture
-end
-
-function ProgressBar:GetSegmentTexture()
-	return LibStub('LibSharedMedia-3.0'):Fetch('statusbar', self:GetSegmentTextureID())
-end
-
-function ProgressBar:UpdateSegmentTexture()
-	local texture = self:GetSegmentTexture()
-
-	for i, segment in pairs(self.buttons) do
-		segment.bg:SetTexture(texture)
-		segment.value:SetStatusBarTexture(texture)
-		segment.rest:SetStatusBarTexture(texture)
-	end
-end
-
---[[ actions ]]--
 
 function ProgressBar:GetSegmentSize()
 	local width = self:GetDesiredWidth()
@@ -260,7 +260,90 @@ function ProgressBar:GetSegmentSize()
 	return width, height
 end
 
+
+--[[ texture selection ]]---
+
+function ProgressBar:SetTextureID(id)
+	if self.sets.texture ~= id then
+		self.sets.texture = id
+		self:UpdateTexture()
+	end
+
+	return self
+end
+
+function ProgressBar:GetTextureID()
+	return self.sets.texture
+end
+
+function ProgressBar:GetSegmentTexture()
+	return LibStub('LibSharedMedia-3.0'):Fetch('statusbar', self:GetTextureID())
+end
+
+function ProgressBar:UpdateTexture()
+	local texture = LibStub('LibSharedMedia-3.0'):Fetch('statusbar', self:GetTextureID())
+
+	for i, segment in pairs(self.buttons) do
+		segment.bg:SetTexture(texture)
+		segment.value:SetStatusBarTexture(texture)
+		segment.rest:SetStatusBarTexture(texture)
+	end
+end
+
+
+--[[ font selection ]]--
+
+function ProgressBar:SetFontID(id)
+	if self.sets.font ~= id then
+		self.sets.font = id
+		self:UpdateFont()
+	end
+
+	return self
+end
+
+function ProgressBar:GetFontID()
+	return self.sets.font or 'Friz Quadrata TT'
+end
+
+function ProgressBar:UpdateFont()
+	local newFont = LibStub('LibSharedMedia-3.0'):Fetch('font', self:GetFontID())
+	local oldFont, fontSize, fontFlags = self.text:GetFont()
+
+	if newFont and newFont ~= oldFont then
+		self.text:SetFont(newFont, fontSize, fontFlags)
+	end
+end
+
+
+--[[ always show text ]]--
+
+function ProgressBar:SetAlwaysShowText(enable)
+	if self.sets.alwaysShowText ~= enable then
+		self.sets.alwaysShowText = enable
+		self:UpdateAlwaysShowText()
+	end
+end
+
+function ProgressBar:GetAlwaysShowText()
+	return self.sets.alwaysShowText
+end
+
+function ProgressBar:UpdateAlwaysShowText()
+	if self:IsMouseOver() or self:GetAlwaysShowText() then
+		self.text:Show()
+	else
+		self.text:Hide()
+	end
+end
+
+--[[ actions ]]--
+
 function ProgressBar:Layout()
+	self:Init()
+	self:UpdateFont()
+	self:UpdateAlwaysShowText()
+
 	local width, height = self:GetSegmentSize()
 
 	for i, segment in pairs(self.buttons) do
@@ -308,8 +391,9 @@ function ProgressBar:UpdateRest()
 	end
 end
 
-
---[[ overrides ]]--
+function ProgressBar:UpdateText()
+	self.text:SetText()
+end
 
 do
 	local segmentPool = CreateFramePool('Frame')
@@ -368,18 +452,30 @@ do
 		self:AddTexturePanel(menu)
 		self:AddFontPanel(menu)
 
-		menu:AddAdvancedPanel()
+		-- menu:AddAdvancedPanel()
 
 		ProgressBar.menu = menu
 	end
 
 	function ProgressBar:AddLayoutPanel(menu)
-		local l = LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')
+		local panel = menu:NewPanel(LibStub('AceLocale-3.0'):GetLocale('Dominos-Config').Layout)
 
-		local panel = menu:NewPanel(l.Layout)
+		local l = LibStub('AceLocale-3.0'):GetLocale('Dominos-Progress')
+
+		panel.alwaysShowTextCheckbox = panel:NewCheckButton{
+			name = l.AlwaysShowText,
+
+			get = function()
+				return panel.owner:GetAlwaysShowText()
+			end,
+
+			set = function(_, enable)
+				panel.owner:SetAlwaysShowText(enable)
+			end
+		}
 
 		panel.segmentedCheckbox = panel:NewCheckButton{
-			name = 'Segmented',
+			name = l.Segmented,
 
 			get = function()
 				return panel.owner:GetSegmentCount() > 1
@@ -392,7 +488,7 @@ do
 		}
 
 		panel.widthSlider = panel:NewSlider{
-			name = 'Width',
+			name = l.Width,
 
 			min = 1,
 
@@ -410,7 +506,7 @@ do
 		}
 
 		panel.heightSlider = panel:NewSlider{
-			name = 'Height',
+			name = l.Height,
 
 			min = 1,
 
@@ -435,25 +531,35 @@ do
 	end
 
 	function ProgressBar:AddFontPanel(menu)
-		local l = LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')
+		local l = LibStub('AceLocale-3.0'):GetLocale('Dominos-Progress')
+		local panel = menu:NewPanel(l.Font)
 
-		local panel = menu:NewPanel('Font')
+		panel.fontSelector = Dominos.Options.FontSelector:New{
+			parent = panel,
+
+			get = function()
+				return panel.owner:GetFontID()
+			end,
+
+			set = function(_, value)
+				panel.owner:SetFontID(value)
+			end,
+		}
 	end
 
 	function ProgressBar:AddTexturePanel(menu)
-		local l = LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')
-
-		local panel = menu:NewPanel('Texture')
+		local l = LibStub('AceLocale-3.0'):GetLocale('Dominos-Progress')
+		local panel = menu:NewPanel(l.Texture)
 
 		panel.textureSelector = Dominos.Options.TextureSelector:New{
 			parent = panel,
 
 			get = function()
-				return panel.owner:GetSegmentTextureID()
+				return panel.owner:GetTextureID()
 			end,
 
 			set = function(_, value)
-				panel.owner:SetSegmentTextureID(value)
+				panel.owner:SetTextureID(value)
 			end,
 		}
 	end

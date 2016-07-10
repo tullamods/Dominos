@@ -8,3 +8,7 @@ embeds.xml
 localization.xml
 main.lua
 progressBar.lua
+xpBar.lua
+reputationBar.lua
+artifactBar.lua
+honorBar.lua
