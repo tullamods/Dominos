@@ -51,7 +51,6 @@ do
             sum = sum + cost
         until cost == 0
 
-        t[k] = sum
         return sum
     end
 
