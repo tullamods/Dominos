@@ -11,14 +11,8 @@ local round = function(v) return math.floor(v + 0.5) end
 Panel.width = 0
 Panel.height = 0
 
-function Panel:New(parent)
-	local frame = self:Bind(CreateFrame('Frame', nil, parent))
-
-	frame.bg = frame:CreateTexture(nil, 'BACKGROUND')
-	frame.bg:SetAllPoints(bg)
-	frame.bg:SetColorTexture(0, 0, 0, 0.3)
-
-	return frame
+function Panel:New(parent, manualLayout)
+	return self:Bind(CreateFrame('Frame', nil, parent))
 end
 
 function Panel:SetOwner(owner)
@@ -38,6 +32,14 @@ function Panel:OnRender()
 end
 
 --[[ generic widgets ]]--
+
+function Panel:Add(widget, options)
+	local options = options or {}
+
+	options.parent = self
+
+	return Addon[widget]:New(options)
+end
 
 function Panel:NewHeader(name)
 	local frame = CreateFrame('Frame', nil, self)

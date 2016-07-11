@@ -1,67 +1,94 @@
 local AddonName, Addon = ...
+local ParentAddonName, ParentAddon = GetAddOnDependencies(AddonName), _G[ParentAddonName]
 
-local AddonOptionsPanel = CreateFrame('Frame', 'DominosAddonOptions')
+local AddonOptionsPanel = Addon:CreateClass('Frame')
 do
-	local nextName = Addon:CreateNameGenerator('AddonOptionsPanel')
+	function AddonOptionsPanel:New(owner, parent)
+		local frame = self:Bind(CreateFrame('Frame', nil, parent or owner))
 
-	do
-		AddonOptionsPanel.panels = {}
-		AddonOptionsPanel.name = 'Dominos'
-		AddonOptionsPanel:Hide()
+		frame:SetAllPoints(frame:GetParent())
+		frame:Hide()
 
-		AddonOptionsPanel:SetScript('OnShow', function(self)
-			InterfaceOptionsFrame_OpenToCategory(self.panels[1])
-		end)
-
-		InterfaceOptions_AddCategory(AddonOptionsPanel)
+		return frame
 	end
 
-	function AddonOptionsPanel:New(settings)
-		local f = CreateFrame('Frame', nextName())
-		f:Hide()
-		
-		f.name = settings.name
-		f.parent = settings.parent or self
-		f.Add = self.Add
-
-
-		local titleText = f:CreateFontString(nil, 'ARTWORK', 'GameFontNormalLarge')
-		titleText:SetPoint('TOPLEFT', 16, -16)
-		if icon then
-			titleText:SetFormattedText('|T%s:%d|t %s', settings.icon, 32, settings.name)
-		else
-			titleText:SetText(settings.name)
-		end
-
-		if settings.description then
-			local descriptionText = f:CreateFontString(nil, 'ARTWORK', 'GameFontHighlightSmall')
-			descriptionText:SetHeight(32)
-			descriptionText:SetPoint('TOPLEFT', text, 'BOTTOMLEFT', 0, -8)
-			descriptionText:SetPoint('RIGHT', f, -32, 0)
-			descriptionText:SetNonSpaceWrap(true)
-			descriptionText:SetJustifyH('LEFT')
-			descriptionText:SetJustifyV('TOP')
-			descriptionText:SetText(settings.description)
-		end
-
-		InterfaceOptions_AddCategory(f)
-
-		table.insert(self.panels, f)
-		return f
-	end
-
-	function AddonOptionsPanel:Add(type, options)
-		local options = options or {}
-
+	function AddonOptionsPanel:Add(widget, options)
 		options.parent = self
 
-		return Addon[type]:New(options)
+		return Addon[widget]:New(options)
 	end
 end
 
-Addon.AddonOptionsPanel = AddonOptionsPanel
+local AddonOptions = CreateFrame('Frame', ('%sOptions'):format(ParentAddonName), _G.UIParent)
+do
+	AddonOptions.insets = 16
+
+	function AddonOptions:Initialize()
+		self.panels = {}
+		self.name = ParentAddonName
+
+		local title, description = select(2, GetAddOnInfo(ParentAddonName))
+
+		local titleText = self:CreateFontString(nil, 'ARTWORK', 'GameFontNormalLarge')
+		titleText:SetPoint('TOPLEFT', self.insets, -self.insets)
+		titleText:SetText(title)
+
+		local descriptionText = self:CreateFontString(nil, 'ARTWORK', 'GameFontHighlightSmall')
+		descriptionText:SetPoint('TOPLEFT', titleText, 'BOTTOMLEFT', 0, -8)
+		descriptionText:SetText(description)
+
+		-- panel selector
+		local panelSelector = Addon.PanelSelector:New(self)
+		panelSelector:SetPoint('TOPLEFT', descriptionText, 'BOTTOMLEFT', 0, -4)
+		panelSelector:SetPoint('RIGHT', -self.insets, 0)
+		panelSelector:SetHeight(20)
+		panelSelector.OnSelect = function(_, id) self:ShowPanel(id) end
+		self.panelSelector = panelSelector
+
+		-- panel container
+		local panelContainer = CreateFrame('Frame', nil, self)
+		panelContainer:SetPoint('TOPLEFT', panelSelector, 'BOTTOMLEFT', 0, -4)
+		panelContainer:SetPoint('BOTTOMRIGHT', -self.insets, self.insets)
+
+		self.panelContainer = panelContainer
+
+		self:SetScript('OnShow', self.OnShow)
+		self:Hide()
+
+		InterfaceOptions_AddCategory(self)
+	end
+
+	function AddonOptions:OnShow()
+		self.panelSelector:Select(next(self.panels))
+	end
+
+	function AddonOptions:NewPanel(id)
+		self.panelSelector:AddPanel(id)
+
+		local panel = AddonOptionsPanel:New(self, self.panelContainer)
+		self.panels[id] = panel
+
+		return panel
+	end
+
+	function AddonOptions:ShowPanel(id)
+		if self.panels then
+			for i, panel in pairs(self.panels) do
+				if i == id then
+					panel:Show()
+				else
+					panel:Hide()
+				end
+			end
+		end
+	end
+
+	AddonOptions:Initialize()
+end
+
+Addon.AddonOptions = AddonOptions
 
 function Addon:ShowAddonPanel()
 	InterfaceOptionsFrame_Show()
-	InterfaceOptionsFrame_OpenToCategory(AddonOptionsPanel)
+	InterfaceOptionsFrame_OpenToCategory(ParentAddonName)
 end

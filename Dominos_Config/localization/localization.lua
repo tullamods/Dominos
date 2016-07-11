@@ -75,3 +75,14 @@ L.ShowTotemRecall = 'Show Recall'
 
 --extra bar
 L.ExtraBarShowBlizzardTexture = 'Show Blizzard Texture'
+
+--general settings panel
+L.General = 'General'
+
+--profile settings panel
+L.CreateProfile = 'Create Profile...'
+L.ResetProfile = 'Reset Profile...'
+L.CopyProfile = 'Copy Profile...'
+L.ConfirmResetProfile = 'Are you sure you want to reset your profile?'
+L.ConfirmCopyProfile = 'Copy contents from %s into the current profile?'
+L.ConfirmDeleteProfile = 'Delete profile %s?'

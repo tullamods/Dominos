@@ -1,30 +1,32 @@
 ﻿--[[
 	general.lua
-		The general GeneralPanel of the Dominos options menu
+		A gui for general addon configuration settings
 --]]
-local AddonName, Addon = ...
-local Dominos = _G.Dominos
-local L = LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')
 
-local GeneralPanel = Addon.AddonOptionsPanel:New{ name = 'General' }
+local AddonName, Addon = ...
+local ParentAddonName, ParentAddon = GetAddOnDependencies(AddonName)
+local ParentAddon = _G[ParentAddonName]
+local L = LibStub('AceLocale-3.0'):GetLocale(ParentAddonName .. '-Config')
+
+local GeneralPanel = Addon.AddonOptions:NewPanel(L.General)
 do
 	local lockButton = GeneralPanel:Add('Button', {
 		name = L.EnterConfigMode,
 		width = 136,
 		height = 22,
 		click = function()
-			Dominos:ToggleLockedFrames()
+			ParentAddon:ToggleLockedFrames()
 			HideUIPanel(InterfaceOptionsFrame)
 		end
 	})
-	lockButton:SetPoint('TOPLEFT', 12, -72)
+	lockButton:SetPoint('TOPLEFT', 0, -2)
 
 	local bindButton = GeneralPanel:Add('Button', {
 		name = L.EnterBindingMode,
 		width = 136,
 		height = 22,
 		click = function()
-			Dominos:ToggleBindingMode()
+			ParentAddon:ToggleBindingMode()
 			HideUIPanel(InterfaceOptionsFrame)
 		end
 	})
@@ -35,23 +37,23 @@ do
 
 	local stickyBarsToggle = GeneralPanel:Add('CheckButton', {
 		name = L.StickyBars,
-		get = function() return Dominos:Sticky() end,
-		set = function(enable) Dominos:SetSticky(enable) end
+		get = function() return ParentAddon:Sticky() end,
+		set = function(enable) ParentAddon:SetSticky(enable) end
 	})
-	stickyBarsToggle:SetPoint('TOPLEFT', lockButton, 'BOTTOMLEFT', 0, -24)
+	stickyBarsToggle:SetPoint('TOPLEFT', lockButton, 'BOTTOMLEFT', 0, -10)
 
 	local linkedOpacityToggle = GeneralPanel:Add('CheckButton',{
 		name = L.LinkedOpacity,
 		small = true,
-		get = function() return Dominos:IsLinkedOpacityEnabled() end,
-		set = function(enable) Dominos:SetLinkedOpacity(enable) end
+		get = function() return ParentAddon:IsLinkedOpacityEnabled() end,
+		set = function(enable) ParentAddon:SetLinkedOpacity(enable) end
 	})
 	linkedOpacityToggle:SetPoint('TOP', stickyBarsToggle, 'BOTTOM', 8, -2)
 
 	local showMinimapButtonToggle = GeneralPanel:Add('CheckButton', {
 		name = L.ShowMinimapButton,
-		get = function() return Dominos:ShowingMinimap() end,
-		set = function(enable) Dominos:SetShowMinimap(enable) end
+		get = function() return ParentAddon:ShowingMinimap() end,
+		set = function(enable) ParentAddon:SetShowMinimap(enable) end
 	})
 	showMinimapButtonToggle:SetPoint('TOP', linkedOpacityToggle, 'BOTTOM', -8, -10)
 
@@ -69,32 +71,32 @@ do
 	--show empty buttons
 	local showEmptyButtonsToggle = GeneralPanel:Add('CheckButton', {
 		name = L.ShowEmptyButtons,
-		get = function() return Dominos:ShowGrid() end,
-		set = function(enable) Dominos:SetShowGrid(enable) end
+		get = function() return ParentAddon:ShowGrid() end,
+		set = function(enable) ParentAddon:SetShowGrid(enable) end
 	})
 	showEmptyButtonsToggle:SetPoint('TOP', lockButtonsToggle, 'BOTTOM', 0, -10)
 
 	--show keybinding text
 	local showBindingsButtonToggle = GeneralPanel:Add('CheckButton', {
 		name = L.ShowBindingText,
-		get = function() return Dominos:ShowBindingText() end,
-		set = function(enable) Dominos:SetShowBindingText(enable) end
+		get = function() return ParentAddon:ShowBindingText() end,
+		set = function(enable) ParentAddon:SetShowBindingText(enable) end
 	})
 	showBindingsButtonToggle:SetPoint('TOP', showEmptyButtonsToggle, 'BOTTOM', 0, -10)
 
 	--show macro text
 	local showMacroTextToggle = GeneralPanel:Add('CheckButton', {
 		name = L.ShowMacroText,
-		get = function() return Dominos:ShowMacroText() end,
-		set = function(enable) Dominos:SetShowMacroText(enable) end
+		get = function() return ParentAddon:ShowMacroText() end,
+		set = function(enable) ParentAddon:SetShowMacroText(enable) end
 	})
 	showMacroTextToggle:SetPoint('TOP', showBindingsButtonToggle, 'BOTTOM', 0, -10)
 
 	--show tooltips
 	local showTooltipsToggle = GeneralPanel:Add('CheckButton', {
 		name = L.ShowTooltips,
-		get = function() return Dominos:ShowTooltips() end,
-		set = function(enable) Dominos:SetShowTooltips(enable) end
+		get = function() return ParentAddon:ShowTooltips() end,
+		set = function(enable) ParentAddon:SetShowTooltips(enable) end
 	})
 	showTooltipsToggle:SetPoint('TOP', showMacroTextToggle, 'BOTTOM', 0, -10)
 
@@ -102,16 +104,16 @@ do
 	local showTooltipsInCombatToggle = GeneralPanel:Add('CheckButton', {
 		name = L.ShowTooltipsCombat,
 		small = true,
-		get = function() return Dominos:ShowCombatTooltips() end,
-		set = function(enable) Dominos:SetShowCombatTooltips(enable) end
+		get = function() return ParentAddon:ShowCombatTooltips() end,
+		set = function(enable) ParentAddon:SetShowCombatTooltips(enable) end
 	})
 	showTooltipsInCombatToggle:SetPoint('TOP', showTooltipsToggle, 'BOTTOM', 8, -2)
 
 	--show override ui
 	local useBlizzardOverrideUIToggle = GeneralPanel:Add('CheckButton', {
 		name = L.ShowOverrideUI,
-		get = function() return Dominos:UsingOverrideUI() end,
-		set = function(enable) Dominos:SetUseOverrideUI(enable) end
+		get = function() return ParentAddon:UsingOverrideUI() end,
+		set = function(enable) ParentAddon:SetUseOverrideUI(enable) end
 	})
 	useBlizzardOverrideUIToggle:SetPoint('TOP', showTooltipsInCombatToggle, 'BOTTOM', -8, -10)
 
@@ -119,12 +121,13 @@ do
 	--right click unit
 	local rightClickUnitSelector = GeneralPanel:Add('Dropdown', {
 		name = L.RightClickUnit,
+
 		get = function()
-			return Dominos:GetRightClickUnit() or 'NONE'
+			return ParentAddon:GetRightClickUnit() or 'NONE'
 		end,
 
 		set = function(_, value)
-			Dominos:SetRightClickUnit(value ~= 'NONE' and value or nil)
+			ParentAddon:SetRightClickUnit(value ~= 'NONE' and value or nil)
 		end,
 
 		items = {
@@ -135,27 +138,27 @@ do
 		}
 	})
 
-	rightClickUnitSelector:SetPoint('TOPRIGHT', -10, -120)
-
+	rightClickUnitSelector:SetPoint('TOP', lockButton, 'BOTTOM', 0, -10)
+	rightClickUnitSelector:SetPoint('RIGHT')
 
 	--right click unit
 	local possessBarSelector = GeneralPanel:Add('Dropdown', {
 		name = L.PossessBar,
 
 		get = function()
-			local bar = Dominos:GetOverrideBar()
+			local bar = ParentAddon:GetOverrideBar()
 
 			return bar and bar.id or 1
 		end,
 
 		set = function(_, value)
-			Dominos:SetOverrideBar(value)
+			ParentAddon:SetOverrideBar(value)
 		end,
 
 		items = function()
 			local items = {}
 
-			for i = 1, Dominos:NumBars() do
+			for i = 1, ParentAddon:NumBars() do
 				table.insert(items, { text = ('Action Bar %d'):format(i), value = i })
 			end
 
@@ -163,30 +166,30 @@ do
 		end
 	})
 
-	possessBarSelector:SetPoint('TOP', rightClickUnitSelector, 'BOTTOM', 0, -2)
+	possessBarSelector:SetPoint('TOP', rightClickUnitSelector, 'BOTTOM', 0, -10)
 
 	-- profile selector
-	local profileSelector = GeneralPanel:Add('Dropdown', {
-		name = 'Profile',
+	-- local profileSelector = GeneralPanel:Add('Dropdown', {
+	-- 	name = 'Profile',
 
-		get = function()
-			return Dominos.db:GetCurrentProfile()
-		end,
+	-- 	get = function()
+	-- 		return ParentAddon.db:GetCurrentProfile()
+	-- 	end,
 
-		set = function(_, value)
-			Dominos:SetProfile(value)
-			GeneralPanel:Hide()
-			GeneralPanel:Show()
-		end,
+	-- 	set = function(_, value)
+	-- 		ParentAddon:SetProfile(value)
+	-- 		GeneralPanel:Hide()
+	-- 		GeneralPanel:Show()
+	-- 	end,
 
-		items = function()
-			local profiles = Dominos.db:GetProfiles()
+	-- 	items = function()
+	-- 		local profiles = ParentAddon.db:GetProfiles()
 
-			table.sort(profiles)
+	-- 		table.sort(profiles)
 
-			return profiles
-		end
-	})
+	-- 		return profiles
+	-- 	end
+	-- })
 
-	profileSelector:SetPoint('TOP', possessBarSelector, 'BOTTOM', 0, -2)
+	-- profileSelector:SetPoint('TOP', possessBarSelector, 'BOTTOM', 0, -2)
 end
