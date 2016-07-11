@@ -268,7 +268,7 @@ function Panel:NewLeftToRightCheckbox()
 	return self:NewCheckButton{
 		name = L.LeftToRight,
 		get = function() return self.owner:GetLeftToRight() end,
-		set = function(enable) self.owner:SetLeftToRight(enable) end
+		set = function(_, enable) self.owner:SetLeftToRight(enable) end
 	}
 end
 
@@ -276,7 +276,7 @@ function Panel:NewTopToBottomCheckbox()
 	return self:NewCheckButton{
 		name = L.TopToBottom,
 		get = function() return self.owner:GetTopToBottom() end,
-		set = function(enable) self.owner:SetTopToBottom(enable) end
+		set = function(_, enable) self.owner:SetTopToBottom(enable) end
 	}
 end
 
@@ -284,7 +284,7 @@ function Panel:NewClickThroughCheckbox()
 	return self:NewCheckButton{
 		name = L.ClickThrough,
 		get = function() return self.owner:GetClickThrough() end,
-		set = function(enable) self.owner:SetClickThrough(enable) end
+		set = function(_, enable) self.owner:SetClickThrough(enable) end
 	}
 end
 
@@ -292,7 +292,7 @@ function Panel:NewShowInOverrideUICheckbox()
 	return self:NewCheckButton{
 		name = L.ShowInOverrideUI,
 		get = function() return self.owner:ShowingInOverrideUI() end,
-		set = function(enable) self.owner:ShowInOverrideUI(enable) end
+		set = function(_, enable) self.owner:ShowInOverrideUI(enable) end
 	}
 end
 
@@ -300,7 +300,7 @@ function Panel:NewShowInPetBattleUICheckbox()
 	return self:NewCheckButton{
 		name = L.ShowInPetBattleUI,
 		get = function() return self.owner:ShowingInPetBattleUI() end,
-		set = function(enable) self.owner:ShowInPetBattleUI(enable) end
+		set = function(_, enable) self.owner:ShowInPetBattleUI(enable) end
 	}
 end
 

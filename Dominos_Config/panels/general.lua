@@ -38,7 +38,7 @@ do
 	local stickyBarsToggle = GeneralPanel:Add('CheckButton', {
 		name = L.StickyBars,
 		get = function() return ParentAddon:Sticky() end,
-		set = function(enable) ParentAddon:SetSticky(enable) end
+		set = function(_, enable) ParentAddon:SetSticky(enable) end
 	})
 	stickyBarsToggle:SetPoint('TOPLEFT', lockButton, 'BOTTOMLEFT', 0, -10)
 
@@ -46,14 +46,14 @@ do
 		name = L.LinkedOpacity,
 		small = true,
 		get = function() return ParentAddon:IsLinkedOpacityEnabled() end,
-		set = function(enable) ParentAddon:SetLinkedOpacity(enable) end
+		set = function(_, enable) ParentAddon:SetLinkedOpacity(enable) end
 	})
 	linkedOpacityToggle:SetPoint('TOP', stickyBarsToggle, 'BOTTOM', 8, -2)
 
 	local showMinimapButtonToggle = GeneralPanel:Add('CheckButton', {
 		name = L.ShowMinimapButton,
 		get = function() return ParentAddon:ShowingMinimap() end,
-		set = function(enable) ParentAddon:SetShowMinimap(enable) end
+		set = function(_, enable) ParentAddon:SetShowMinimap(enable) end
 	})
 	showMinimapButtonToggle:SetPoint('TOP', linkedOpacityToggle, 'BOTTOM', -8, -10)
 
@@ -72,7 +72,7 @@ do
 	local showEmptyButtonsToggle = GeneralPanel:Add('CheckButton', {
 		name = L.ShowEmptyButtons,
 		get = function() return ParentAddon:ShowGrid() end,
-		set = function(enable) ParentAddon:SetShowGrid(enable) end
+		set = function(_, enable) ParentAddon:SetShowGrid(enable) end
 	})
 	showEmptyButtonsToggle:SetPoint('TOP', lockButtonsToggle, 'BOTTOM', 0, -10)
 
@@ -80,7 +80,7 @@ do
 	local showBindingsButtonToggle = GeneralPanel:Add('CheckButton', {
 		name = L.ShowBindingText,
 		get = function() return ParentAddon:ShowBindingText() end,
-		set = function(enable) ParentAddon:SetShowBindingText(enable) end
+		set = function(_, enable) ParentAddon:SetShowBindingText(enable) end
 	})
 	showBindingsButtonToggle:SetPoint('TOP', showEmptyButtonsToggle, 'BOTTOM', 0, -10)
 
@@ -88,7 +88,7 @@ do
 	local showMacroTextToggle = GeneralPanel:Add('CheckButton', {
 		name = L.ShowMacroText,
 		get = function() return ParentAddon:ShowMacroText() end,
-		set = function(enable) ParentAddon:SetShowMacroText(enable) end
+		set = function(_, enable) ParentAddon:SetShowMacroText(enable) end
 	})
 	showMacroTextToggle:SetPoint('TOP', showBindingsButtonToggle, 'BOTTOM', 0, -10)
 
@@ -96,7 +96,7 @@ do
 	local showTooltipsToggle = GeneralPanel:Add('CheckButton', {
 		name = L.ShowTooltips,
 		get = function() return ParentAddon:ShowTooltips() end,
-		set = function(enable) ParentAddon:SetShowTooltips(enable) end
+		set = function(_, enable) ParentAddon:SetShowTooltips(enable) end
 	})
 	showTooltipsToggle:SetPoint('TOP', showMacroTextToggle, 'BOTTOM', 0, -10)
 
@@ -105,7 +105,7 @@ do
 		name = L.ShowTooltipsCombat,
 		small = true,
 		get = function() return ParentAddon:ShowCombatTooltips() end,
-		set = function(enable) ParentAddon:SetShowCombatTooltips(enable) end
+		set = function(_, enable) ParentAddon:SetShowCombatTooltips(enable) end
 	})
 	showTooltipsInCombatToggle:SetPoint('TOP', showTooltipsToggle, 'BOTTOM', 8, -2)
 
@@ -113,7 +113,7 @@ do
 	local useBlizzardOverrideUIToggle = GeneralPanel:Add('CheckButton', {
 		name = L.ShowOverrideUI,
 		get = function() return ParentAddon:UsingOverrideUI() end,
-		set = function(enable) ParentAddon:SetUseOverrideUI(enable) end
+		set = function(_, enable) ParentAddon:SetUseOverrideUI(enable) end
 	})
 	useBlizzardOverrideUIToggle:SetPoint('TOP', showTooltipsInCombatToggle, 'BOTTOM', -8, -10)
 
