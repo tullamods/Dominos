@@ -167,29 +167,4 @@ do
 	})
 
 	possessBarSelector:SetPoint('TOP', rightClickUnitSelector, 'BOTTOM', 0, -10)
-
-	-- profile selector
-	-- local profileSelector = GeneralPanel:Add('Dropdown', {
-	-- 	name = 'Profile',
-
-	-- 	get = function()
-	-- 		return ParentAddon.db:GetCurrentProfile()
-	-- 	end,
-
-	-- 	set = function(_, value)
-	-- 		ParentAddon:SetProfile(value)
-	-- 		GeneralPanel:Hide()
-	-- 		GeneralPanel:Show()
-	-- 	end,
-
-	-- 	items = function()
-	-- 		local profiles = ParentAddon.db:GetProfiles()
-
-	-- 		table.sort(profiles)
-
-	-- 		return profiles
-	-- 	end
-	-- })
-
-	-- profileSelector:SetPoint('TOP', possessBarSelector, 'BOTTOM', 0, -2)
 end
