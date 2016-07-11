@@ -22,7 +22,7 @@ do
 	function ArtifactBar:Update()
         if not HasArtifactEquipped() then
             self:SetValues()
-            self:SetText('')
+            self:SetText(_G.ARTIFACT_POWER)
             return
         end
 

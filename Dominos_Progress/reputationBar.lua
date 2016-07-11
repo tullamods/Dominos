@@ -16,11 +16,10 @@ do
     function ReputationBar:Update()
         local name, reaction, min, max, value, factionID = GetWatchedFactionInfo()
         if not name then
-            local color = FACTION_BAR_COLORS[0]
-
+            local color = FACTION_BAR_COLORS[1]
             self:SetColor(color.r, color.g, color.b)
             self:SetValues()
-            self:SetText('')
+            self:SetText(_G.REPUTATION)
             return
         end
 
