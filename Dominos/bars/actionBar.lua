@@ -103,6 +103,12 @@ function ActionBar:GetDefaults()
 	return defaults
 end
 
+function ActionBar:GetDisplayName()
+	local L = LibStub('AceLocale-3.0'):GetLocale('Dominos')
+
+	return L.ActionBarDisplayName:format(self.id)
+end
+
 function ActionBar:Free()
 	active[self.id] = nil
 
@@ -113,7 +119,6 @@ end
 function ActionBar:MaxLength()
 	return floor(MAX_BUTTONS / Dominos:NumBars())
 end
-
 
 --[[ button stuff]]--
 
