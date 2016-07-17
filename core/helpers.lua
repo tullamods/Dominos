@@ -29,3 +29,13 @@ function Addon:CreateClass(frameType, prototype)
 
     return class
 end
+
+-- returns a function that generates unique names for frames
+-- in the format <AddonName>_<Prefix>[1, 2, ...]
+function Addon:CreateNameGenerator(prefix)
+	local id = 0
+	return function()
+		id = id + 1
+		return ('%s_%s_%d'):format(AddonName, prefix, id)
+	end
+end

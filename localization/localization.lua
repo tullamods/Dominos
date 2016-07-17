@@ -69,3 +69,6 @@ L.TipRollBar = 'Displays frames for rolling on items, when in a group.'
 L.TipVehicleBar = [[
 Displays controls to aim and exit a vehicle.
 All other vehicle actions are displayed on the possess bar.]]
+
+L.BarDisplayName = "%s Bar"
+L.ActionBarDisplayName = "Action Bar %s"
