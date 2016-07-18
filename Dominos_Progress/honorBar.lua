@@ -14,12 +14,11 @@ function HonorBar:Update()
 	local bonus = GetHonorExhaustion()
 
 	self:SetValues(value, max, bonus)
+	self:UpdateText(_G.HONOR, value, max, bonus)
+end
 
-	if bonus and bonus > 0 then
-		self:SetText('%s: %s / %s (+%s)', HONOR, BreakUpLargeNumbers(value), BreakUpLargeNumbers(max), BreakUpLargeNumbers(bonus))
-	else
-		self:SetText('%s: %s / %s', HONOR, BreakUpLargeNumbers(value), BreakUpLargeNumbers(max))
-	end
+function HonorBar:IsModeActive()
+	return IsWatchingHonorAsXP() or InActiveBattlefield()
 end
 
 -- register this as a possible progress bar mode

@@ -10,3 +10,6 @@ L.Height = 'Height'
 L.AlwaysShowText = 'Always Show Text'
 L.Segmented = 'Segmented'
 L.Font = 'Font'
+L.LockDisplayMode = ('%s %s %s'):format(_G.LOCK, _G.DISPLAY, _G.MODE)
+L.ShowLabels = 'Show Labels'
+L.CompressValues = 'Compress Values'

@@ -2,50 +2,58 @@ local AddonName, Addon = ...
 local Dominos = _G.Dominos
 local ReputationBar = Dominos:CreateClass('Frame', Addon.ProgressBar)
 
-do
-    local FRIEND_ID_FACTION_COLOR_INDEX = 5
+local FRIEND_ID_FACTION_COLOR_INDEX = 5
 
-    function ReputationBar:Init()
-        if not GetWatchedFactionInfo() then
-            self:NextMode()
-        else
-            self:Update()
-        end
-    end
+function ReputationBar:Init()
+    self:Update()
+end
 
-    function ReputationBar:Update()
-        local name, reaction, min, max, value, factionID = GetWatchedFactionInfo()
-        if not name then
-            local color = FACTION_BAR_COLORS[1]
-            self:SetColor(color.r, color.g, color.b)
-            self:SetValues()
-            self:SetText(_G.REPUTATION)
-            return
-        end
-
-        local friendID, friendRep, friendMaxRep, friendName, friendText, friendTexture, friendTextLevel, friendThreshold, nextFriendThreshold = GetFriendshipReputation(factionID)
-        if friendID then
-            if nextFriendThreshold then
-                min, max, value = friendThreshold, nextFriendThreshold, friendRep
-            else
-                -- max rank, make it look like a full bar
-                min, max, value = 0, 1, 1;
-            end
-
-            reaction = FRIEND_ID_FACTION_COLOR_INDEX
-        else
-            friendTextLevel = _G['FACTION_STANDING_LABEL' .. reaction]
-        end
-
-        max = max - min
-        value = value - min
-
-        local color = FACTION_BAR_COLORS[reaction]
-
+function ReputationBar:Update()
+    local name, reaction, min, max, value, factionID = GetWatchedFactionInfo()
+    if not name then
+        local color = FACTION_BAR_COLORS[1]
         self:SetColor(color.r, color.g, color.b)
-        self:SetValues(value, max)
-        self:SetText('%s: %s / %s (%s)', name, BreakUpLargeNumbers(value), BreakUpLargeNumbers(max), friendTextLevel)
+        self:SetValues()
+        self:SetText(_G.REPUTATION)
+        return
     end
+
+    local friendID, friendRep, friendMaxRep, friendName, friendText, friendTexture, friendTextLevel, friendThreshold, nextFriendThreshold = GetFriendshipReputation(factionID)
+    if friendID then
+        if nextFriendThreshold then
+            min, max, value = friendThreshold, nextFriendThreshold, friendRep
+        else
+            -- max rank, make it look like a full bar
+            min, max, value = 0, 1, 1;
+        end
+
+        reaction = FRIEND_ID_FACTION_COLOR_INDEX
+    else
+        friendTextLevel = _G['FACTION_STANDING_LABEL' .. reaction]
+    end
+
+    max = max - min
+    value = value - min
+
+    local color = FACTION_BAR_COLORS[reaction]
+
+    self:SetColor(color.r, color.g, color.b)
+    self:SetValues(value, max)
+    self:UpdateText(name, value, max, friendTextLevel)
+end
+
+function ReputationBar:UpdateText(label, value, max, level)
+	local fn = self:CompressValues() and _G.AbbreviateLargeNumbers or _G.BreakUpLargeNumbers
+
+	if self:ShowLabels() then
+		self:SetText('%s: %s / %s (+%s)', label, fn(value), fn(max), level)
+	else
+		self:SetText('%s / %s', fn(value), fn(max))
+	end
+end
+
+function ReputationBar:IsModeActive()
+    return GetWatchedFactionInfo() ~= nil
 end
 
 -- register this as a possible progress bar mode

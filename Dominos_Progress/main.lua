@@ -34,15 +34,8 @@ end
 
 function ProgressBarModule:UpdateAllBars()
 	for _, bar in pairs(self.bars) do
+		bar:UpdateMode()
 		bar:Update()
-	end
-end
-
-function ProgressBarModule:UpdateAllBarsInMode(mode)
-	for _, bar in pairs(self.bars) do
-		if bar:GetMode() == mode then
-			bar:Update()
-		end
 	end
 end
 
@@ -67,23 +60,30 @@ function ProgressBarModule:PLAYER_UPDATE_RESTING()
 end
 
 function ProgressBarModule:PLAYER_XP_UPDATE()
-	self:UpdateAllBarsInMode('xp')
+	self:UpdateAllBars()
 end
 
 function ProgressBarModule:UPDATE_FACTION(event, unit)
 	if unit ~= 'player' then return end
 
-	self:UpdateAllBarsInMode('reputation')
+	self:UpdateAllBars()
 end
 
 function ProgressBarModule:ARTIFACT_XP_UPDATE()
-	self:UpdateAllBarsInMode('artifact')
+	self:UpdateAllBars()
 end
 
-function ProgressBarModule:UNIT_INVENTORY_CHANGED(event, unit)
-	if unit ~= 'player' then return end
+do
+	local artifactEquipped = false
 
-	self:UpdateAllBarsInMode('artifact')
+	function ProgressBarModule:UNIT_INVENTORY_CHANGED(event, unit)
+		if unit ~= 'player' then return end
+
+		local hasArtifactEquipped = HasArtifactEquipped()
+		if artifactEquipped ~= hasArtifactEquipped then
+			self:UpdateAllBars()
+		end
+	end
 end
 
 function ProgressBarModule:HONOR_XP_UPDATE()

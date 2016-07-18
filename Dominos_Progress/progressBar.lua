@@ -8,7 +8,7 @@ function ProgressBar:New(id, modes, ...)
 	bar.modes = modes
 	bar:UpdateFont()
 	bar:UpdateAlwaysShowText()
-	bar:UpdateMode()
+	bar:UpdateMode(true)
 
 	return bar
 end
@@ -55,7 +55,9 @@ function ProgressBar:GetDefaults()
 		padH = 2,
 		spacing = 1,
 		texture = 'blizzard',
-		font = 'Friz Quadrata TT'
+		font = 'Friz Quadrata TT',
+		showLabels = true,
+		lockMode = false
 	}
 end
 
@@ -72,16 +74,40 @@ function ProgressBar:OnLeave()
 end
 
 function ProgressBar:OnClick()
-	self:NextMode()
+	if self:IsModeLocked() then
+		self:NextMode()
+	end
 end
 
+--[[ actions ]]--
+
+function ProgressBar:Update()
+end
+
+function ProgressBar:UpdateText(label, value, max, bonus)
+	local fn = self:CompressValues() and _G.AbbreviateLargeNumbers or _G.BreakUpLargeNumbers
+
+	if self:ShowLabels() then
+		if bonus and bonus > 0 then
+			self:SetText('%s: %s / %s (+%s)', label, fn(value), fn(max), fn(bonus))
+		else
+			self:SetText('%s: %s / %s', label, fn(value), fn(max))
+		end
+	else
+		if bonus and bonus > 0 then
+			self:SetText('%s / %s (+%s)', fn(value), fn(max), fn(bonus))
+		else
+			self:SetText('%s / %s', fn(value), fn(max))
+		end
+	end
+end
 
 --[[ mode ]]--
 
-function ProgressBar:SetMode(mode)
-	if self:GetMode() ~= mode then
+function ProgressBar:SetMode(mode, force)
+	if self:GetMode() ~= mode or force then
 		self.sets.mode = mode
-		self:UpdateMode()
+		self:OnModeChanged(self:GetMode())
 	end
 end
 
@@ -89,12 +115,33 @@ function ProgressBar:GetMode()
 	return self.sets.mode or self.modes[1]
 end
 
-function ProgressBar:UpdateMode()
-	local newType = Addon.progressBarModes and Addon.progressBarModes[self:GetMode()]
+function ProgressBar:OnModeChanged(mode)
+	local newType = Addon.progressBarModes and Addon.progressBarModes[mode]
 	if newType then
 		newType:Bind(self)
 		self:Init()
 	end
+end
+
+function ProgressBar:UpdateMode(force)
+	if self:IsModeLocked() then
+		self:SetMode(self:GetMode(), force)
+	else
+		local newModeId = nil
+
+		for i = #self.modes, 1, -1 do
+			newModeId = self.modes[i]
+			if Addon.progressBarModes[newModeId]:IsModeActive() then
+				break
+			end
+		end
+
+		self:SetMode(newModeId, force)
+	end
+end
+
+function ProgressBar:IsModeActive()
+	return false
 end
 
 function ProgressBar:GetModeIndex()
@@ -120,6 +167,21 @@ end
 
 function ProgressBar:GetCurrentModeIndex()
 	return self.modeIndex or 1
+end
+
+function ProgressBar:SetLockMode(lock)
+	if self:IsModeLocked() ~= lock then
+		self.sets.lockMode = lock
+		self:UpdateLockMode()
+	end
+end
+
+function ProgressBar:IsModeLocked()
+	return self.sets.lockMode or #self.modes <= 1
+end
+
+function ProgressBar:UpdateLockMode()
+	self:Update()
 end
 
 
@@ -409,6 +471,7 @@ end
 
 --[[ text display ]]--
 
+-- always show text
 function ProgressBar:SetAlwaysShowText(enable)
 	if self.sets.alwaysShowText ~= enable then
 		self.sets.alwaysShowText = enable
@@ -426,6 +489,39 @@ function ProgressBar:UpdateAlwaysShowText()
 	else
 		self.text:Hide()
 	end
+end
+
+-- show labels
+function ProgressBar:SetShowLabels(enable)
+	if self.sets.showLabels ~= enable then
+		self.sets.showLabels = enable
+		self:UpdateShowLabels(enable)
+	end
+end
+
+function ProgressBar:ShowLabels()
+	return self.sets.showLabels
+end
+
+function ProgressBar:UpdateShowLabels(enable)
+	self:Update()
+end
+
+
+-- compress values
+function ProgressBar:SetCompressValues(enable)
+	if self.sets.compressValues ~= enable then
+		self.sets.compressValues = enable
+		self:UpdateCompressValues()
+	end
+end
+
+function ProgressBar:CompressValues()
+	return self.sets.compressValues
+end
+
+function ProgressBar:UpdateCompressValues(enable)
+	self:Update()
 end
 
 
@@ -493,28 +589,19 @@ do
 		local menu = Dominos:NewMenu(self.id)
 
 		self:AddLayoutPanel(menu)
+		self:AddTextPanel(menu)
 		self:AddTexturePanel(menu)
 		self:AddFontPanel(menu)
 
-		ProgressBar.menu = menu
+		self.menu = menu
+
+		return menu
 	end
 
 	function ProgressBar:AddLayoutPanel(menu)
 		local panel = menu:NewPanel(LibStub('AceLocale-3.0'):GetLocale('Dominos-Config').Layout)
 
 		local l = LibStub('AceLocale-3.0'):GetLocale('Dominos-Progress')
-
-		panel.alwaysShowTextCheckbox = panel:NewCheckButton{
-			name = l.AlwaysShowText,
-
-			get = function()
-				return panel.owner:GetAlwaysShowText()
-			end,
-
-			set = function(_, enable)
-				panel.owner:SetAlwaysShowText(enable)
-			end
-		}
 
 		panel.segmentedCheckbox = panel:NewCheckButton{
 			name = l.Segmented,
@@ -570,6 +657,63 @@ do
 		panel.scaleSlider = panel:NewScaleSlider()
 		panel.opacitySlider = panel:NewOpacitySlider()
 		panel.fadeSlider = panel:NewFadeSlider()
+	end
+
+	function ProgressBar:AddTextPanel(menu)
+		local l = LibStub('AceLocale-3.0'):GetLocale('Dominos-Progress')
+		local panel = menu:NewPanel(_G.DISPLAY)
+
+		if #self.modes > 1 then
+			panel.lockDisplayMode = panel:NewCheckButton{
+				name = l.LockDisplayMode,
+
+				get = function()
+					return panel.owner:IsModeLocked()
+				end,
+
+				set = function(_, enable)
+					panel.owner:SetLockMode(enable)
+				end
+			}
+		end
+
+		panel.alwaysShowTextCheckbox = panel:NewCheckButton{
+			name = l.AlwaysShowText,
+
+			get = function()
+				return panel.owner:GetAlwaysShowText()
+			end,
+
+			set = function(_, enable)
+				panel.owner:SetAlwaysShowText(enable)
+			end
+		}
+
+		panel.showLabelsCheckbox = panel:NewCheckButton{
+			name = l.ShowLabels,
+
+			get = function()
+				return panel.owner:ShowLabels()
+			end,
+
+			set = function(_, enable)
+				panel.owner:SetShowLabels(enable)
+			end
+		}
+
+		panel.compressValues = panel:NewCheckButton{
+			name = l.CompressValues,
+
+			get = function()
+				return panel.owner:CompressValues()
+			end,
+
+			set = function(_, enable)
+				panel.owner:SetCompressValues(enable)
+			end
+		}
+
+		return panel
 	end
 
 	function ProgressBar:AddFontPanel(menu)

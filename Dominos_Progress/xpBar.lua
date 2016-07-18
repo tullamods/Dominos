@@ -11,15 +11,10 @@ end
 function ExperienceBar:Update()
 	local value = UnitXP('player')
 	local max = UnitXPMax('player')
-	local rest = GetXPExhaustion()
+	local rest = GetXPExhaustion() or 0
 
 	self:SetValues(value, max, rest)
-
-	if rest and rest > 0 then
-		self:SetText('%s: %s / %s (+%s)', XP, BreakUpLargeNumbers(value), BreakUpLargeNumbers(max), BreakUpLargeNumbers(rest))
-	else
-		self:SetText('%s: %s / %s', XP, BreakUpLargeNumbers(value), BreakUpLargeNumbers(max))
-	end
+	self:UpdateText(_G.XP, value, max, rest)
 end
 
 -- register this as a possible progress bar mode
