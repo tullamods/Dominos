@@ -470,7 +470,7 @@ do
 		self:AddPagingPanel(menu)
 		menu:AddAdvancedPanel()
 
-		ActionBar.menu = menu
+		self.menu = menu
 	end
 
 	function ActionBar:AddLayoutPanel(menu)
