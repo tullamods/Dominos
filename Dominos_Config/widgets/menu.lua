@@ -79,12 +79,7 @@ function Menu:SetOwner(owner)
 		end
 	end
 
-	if tonumber(owner.id) then
-		self.text:SetFormattedText(L.ActionBarSettings, owner.id)
-	else
-		self.text:SetFormattedText(L.BarSettings, tostring(owner.id):gsub('^%l', string.upper))
-	end
-
+	self.text:SetFormattedText(L.BarSettings, owner:GetDisplayName())
 	self:Anchor(owner)
 end
 
