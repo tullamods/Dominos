@@ -166,6 +166,36 @@ function Panel:NewTextureSelector(options)
 	return dropdown
 end
 
+function Panel:NewTextInput(options)
+	options.parent = self
+
+	local textInput = Addon.TextInput:New(options)
+
+	local prev = self.lastWidget
+	if prev then
+		textInput:SetPoint('TOPLEFT', self.lastWidget, 'BOTTOMLEFT', 0, -2)
+	else
+		textInput:SetPoint('TOPLEFT', 0, -2)
+	end
+
+	if options.width then
+		textInput:SetWidth(options.width)
+	else
+		textInput:SetPoint('RIGHT')
+	end
+
+	textInput:SetHeight(options.height)
+
+	local width, height = textInput:GetEffectiveSize()
+	self.height = self.height + (height + 4)
+	self.width = math.max(self.width, width)
+	self.lastWidget = textInput
+
+	self:Render()
+
+	return textInput
+end
+
 --[[ specialized widgets ]]--
 
 function Panel:NewScaleSlider()
@@ -319,6 +349,15 @@ function Panel:AddAdvancedOptions()
 	self:NewClickThroughCheckbox()
 	self:NewShowInOverrideUICheckbox()
 	self:NewShowInPetBattleUICheckbox()
+
+	self.showStatesEditBox = self:NewTextInput{
+		name = L.ShowStates,
+		multiline = true,
+		width = 290,
+		height = 64,
+		get = function() return self.owner:GetShowStates() end,
+		set = function(_, value) self.owner:SetShowStates(value) end
+	}
 end
 
 Addon.Panel = Panel
