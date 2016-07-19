@@ -81,6 +81,7 @@ do
 
 		local hasArtifactEquipped = HasArtifactEquipped()
 		if artifactEquipped ~= hasArtifactEquipped then
+			artifactEquipped = hasArtifactEquipped
 			self:UpdateAllBars()
 		end
 	end

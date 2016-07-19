@@ -56,6 +56,7 @@ function ProgressBar:GetDefaults()
 		spacing = 1,
 		texture = 'blizzard',
 		font = 'Friz Quadrata TT',
+		alwaysShowText = true,
 		showLabels = true,
 		lockMode = false
 	}
@@ -181,7 +182,7 @@ function ProgressBar:IsModeLocked()
 end
 
 function ProgressBar:UpdateLockMode()
-	self:Update()
+	self:UpdateMode()
 end
 
 
