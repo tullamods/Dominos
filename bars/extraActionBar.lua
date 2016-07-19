@@ -124,25 +124,27 @@ do
 		end
 	end
 
-	function ExtraBar:CreateMenu()
-		local bar = self
-		local menu = Addon:NewMenu(bar.id)
-		local panel = menu:AddLayoutPanel()
-
-		local L = LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')
-		local showTextureButton = panel:NewCheckButton(L.ExtraBarShowBlizzardTexture)
-
-		showTextureButton:SetScript('OnShow', function(self)
-			self:SetChecked(bar:ShowingBlizzardTexture())
-		end)
-
-		showTextureButton:SetScript('OnClick', function(self)
-			bar:ShowBlizzardTexture(self:GetChecked())
-		end)
-
+	function ExtraBar:CreateMenu()		
+		local menu = Addon:NewMenu()
+		
+		self:AddLayoutPanel(menu)
 		menu:AddAdvancedPanel()
+		
 		self.menu = menu
 	end
+	
+	function ExtraBar:AddLayoutPanel(menu)
+		local l = LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')
+		local panel = menu:NewPanel(l.Layout)		
+		
+		panel:NewCheckButton{
+			name = l.ExtraBarShowBlizzardTexture,
+			get = function() return panel.owner:ShowingBlizzardTexture() end,
+			set = function(_, enable) panel.owner:ShowBlizzardTexture(enable) end
+		}
+		
+		panel:AddLayoutOptions()
+	end	
 end
 
 --[[ module ]]--

@@ -6,11 +6,6 @@ local AddonName, Addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(AddonName)
 local KEYBOARD_MOVEMENT_INCREMENT = 1
 
--- a table for storing all overlays that have been created
-local frameOverlays = {}
-
---a table for storing frames the mouse is currently over
-local overlaysUnderMouse = {}
 
 local round = function(x)
 	if x > 0 then
@@ -124,7 +119,6 @@ local function colorFader_Create(parent, saveColor, loadColor)
 	--start the animation as completely transparent
 	local animator = fader:CreateAnimation('Animation')
 	animator:SetDuration(0.2)
-	animator:SetOrder(0)
 	fader.animator = animator
 
 	fader.SetColor = colorFader_SetColor
@@ -137,61 +131,77 @@ end
 
 -- [[ overlay that goes on each bar for configuration ]]--
 
-local FrameOverlay
+local FrameOverlay = Dominos:CreateClass('Button')
 do
-	FrameOverlay = Dominos:CreateClass('Button'); FrameOverlay:Hide()
-
 	local FRAME_COLOR = { h = 213, s = 0.76, l = 0.27 }
 
-	local BACKDROP = {
+	local OverlayBackdrop = {
 		bgFile   = 	[[Interface\ChatFrame\ChatFrameBackground]],
 		edgeFile = 	[[Interface\ChatFrame\ChatFrameBackground]],
 		edgeSize = 	2,
 		insets   = 	{ left = 2, right = 2, top = 2, bottom = 2 },
 	}
 
-	local getNextOverlayFrameName
+	local nextName = Dominos:CreateNameGenerator('Overlay')
+	local active = {}
+	local unused = {}
 
-	do
-		local overlayFrameId = 0
+	--[[ constructor ]]--
 
-		getNextOverlayFrameName = function()
-			overlayFrameId = overlayFrameId + 1
+	local function createOverlay(parent)
+		local overlay = CreateFrame('Button', nextName(), parent)
 
-			return ('%sOverlayFrame%d'):format(AddonName, overlayFrameId)
+		overlay:EnableMouseWheel(true)
+		overlay:SetClampedToScreen(true)
+		overlay:SetBackdrop(OverlayBackdrop)
+
+		overlay:SetNormalFontObject('GameFontNormalLarge')
+		overlay:RegisterForClicks('AnyUp')
+		overlay:RegisterForDrag('LeftButton')
+		overlay:EnableKeyboard(true)
+
+		return overlay
+	end
+
+	function FrameOverlay:New(parent, owner)
+		local overlay = table.remove(unused)
+
+		if overlay then
+			overlay:SetParent(parent)
+		else
+			overlay = self:Bind(createOverlay(parent))
+			overlay:SetScript('OnMouseDown', self.StartMoving)
+			overlay:SetScript('OnMouseUp', self.StopMoving)
+			overlay:SetScript('OnMouseWheel', self.OnMouseWheel)
+			overlay:SetScript('OnClick', self.OnClick)
+			overlay:SetScript('OnEnter', self.OnEnter)
+			overlay:SetScript('OnLeave', self.OnLeave)
+			overlay:SetScript('OnKeyUp', self.OnKeyUp)
+			overlay:SetScript('OnKeyDown', self.OnKeyDown)
 		end
+
+		overlay.owner = owner
+		overlay:SetText(owner.id)
+		overlay:SetAllPoints(owner)
+		overlay:SetFrameLevel(owner:GetFrameLevel() + 5)
+		overlay:UpdateColor(true)
+		overlay:UpdateBorderColor(true)
+		overlay:Show()
+
+		active[overlay] = true
+		return owner
 	end
 
-	function FrameOverlay:New(owner, parent)
-		local f = self:Bind(CreateFrame('Button', getNextOverlayFrameName(), parent))
-		f.owner = owner
+	function FrameOverlay:Free()
+		self:ClearAllPoints()
+		self:SetParent(nil)
+		self:Hide()
 
-		f:EnableMouseWheel(true)
-		f:SetClampedToScreen(true)
-		f:SetAllPoints(owner)
-		f:SetFrameLevel(owner:GetFrameLevel() + 5)
-		f:SetBackdrop(BACKDROP)
-
-		f:SetNormalFontObject('GameFontNormalLarge')
-		f:SetText(owner.id)
-
-		f:RegisterForClicks('AnyUp')
-		f:RegisterForDrag('LeftButton')
-		f:SetScript('OnMouseDown', self.StartMoving)
-		f:SetScript('OnMouseUp', self.StopMoving)
-		f:SetScript('OnMouseWheel', self.OnMouseWheel)
-		f:SetScript('OnClick', self.OnClick)
-		f:SetScript('OnEnter', self.OnEnter)
-		f:SetScript('OnLeave', self.OnLeave)
-		f:SetScript('OnKeyUp', f.OnKeyUp)
-		f:SetScript('OnKeyDown', f.OnKeyDown)
-
-		f:UpdateColor(true)
-		f:UpdateBorderColor(true)
-		f:EnableKeyboard(true)
-
-		return f
+		active[self] = nil
+		table.insert(unused, self)
 	end
+
+	--[[ frame events ]]--
 
 	function FrameOverlay:OnKeyDown(key)
 		local handled = false
@@ -213,16 +223,6 @@ do
 		end
 
 		self:SetPropagateKeyboardInput(not handled)
-	end
-
-	function FrameOverlay:EnableArrowKeyMovement()
-		self.watchingKeyboardMovement = true
-		self:EnableKeyboard(true)
-	end
-
-	function FrameOverlay:DisableArrowKeyMovement()
-		self.watchingKeyboardMovement = nil
-		self:EnableKeyboard(false)
 	end
 
 	function FrameOverlay:OnEnter()
@@ -291,6 +291,19 @@ do
 		self:UpdateBorderColor()
 	end
 
+
+	--[[ actions ]]--
+
+	function FrameOverlay:EnableArrowKeyMovement()
+		self.watchingKeyboardMovement = true
+		self:EnableKeyboard(true)
+	end
+
+	function FrameOverlay:DisableArrowKeyMovement()
+		self.watchingKeyboardMovement = nil
+		self:EnableKeyboard(false)
+	end
+
 	function FrameOverlay:NudgeFrame(dx, dy)
 		local point, x, y = self.owner:GetRelativeFramePosition()
 
@@ -304,7 +317,7 @@ do
 
 	function FrameOverlay:UpdateTooltip()
 		GameTooltip:SetOwner(self, 'ANCHOR_BOTTOMLEFT')
-		GameTooltip:SetText(format('Bar: %s', self:GetText():gsub('^%l', string.upper)), 1, 1, 1)
+		GameTooltip:SetText(self.owner:GetDisplayName(), 1, 1, 1)
 
 		local tooltipText = self.owner:GetTooltipText()
 		if tooltipText then
@@ -325,41 +338,43 @@ do
 		GameTooltip:Show()
 	end
 
-	function FrameOverlay:CycleFocus(delta)
-		table.wipe(overlaysUnderMouse)
-		local currentIndex = 1
-		local count = 0
+	do
+		local overlaysUnderMouse = {}
 
-		-- grab all frames under the mouse
-		for _, frame in Dominos.Frame:GetAll() do
-			if frame:IsMouseOver() then
-				count = count + 1
+		function FrameOverlay:CycleFocus(delta)
+			table.wipe(overlaysUnderMouse)
+			local currentIndex = 1
+			local count = 0
 
-				local overlay = frameOverlays[frame]
+			-- grab all frames under the mouse
+			for i, overlay in ipairs(active) do
+				if overlay:IsMouseOver() then
+					count = count + 1
 
-				if GetMouseFocus() == overlay then
-					currentIndex = count
+					if GetMouseFocus() == overlay then
+						currentIndex = count
+					end
+
+					tinsert(overlaysUnderMouse, overlay)
 				end
-
-				tinsert(overlaysUnderMouse, overlay)
 			end
+
+			-- need at least two frames to cycle through
+			if #overlaysUnderMouse < 2 then
+				return
+			end
+
+			local nextIndex = currentIndex + delta
+
+			if nextIndex > #overlaysUnderMouse then
+				nextIndex = nextIndex % #overlaysUnderMouse
+			elseif nextIndex <= 0 then
+				nextIndex = #overlaysUnderMouse - nextIndex
+			end
+
+			overlaysUnderMouse[currentIndex]:SetFrameLevel(1)
+			overlaysUnderMouse[nextIndex]:SetFrameLevel(100)
 		end
-
-		-- need at least two frames to cycle through
-		if #overlaysUnderMouse < 2 then
-			return
-		end
-
-		local nextIndex = currentIndex + delta
-
-		if nextIndex > #overlaysUnderMouse then
-			nextIndex = nextIndex % #overlaysUnderMouse
-		elseif nextIndex <= 0 then
-			nextIndex = #overlaysUnderMouse - nextIndex
-		end
-
-		overlaysUnderMouse[currentIndex]:SetFrameLevel(1)
-		overlaysUnderMouse[nextIndex]:SetFrameLevel(100)
 	end
 
 	function FrameOverlay:IncrementOpacity(delta)
@@ -377,7 +392,8 @@ do
 		end
 	end
 
-	--updates the drag button color of a given bar if its attached to another bar
+	--[[ coloring ]]--
+
 	function FrameOverlay:UpdateColor(isImmediate)
 		local r, g, b, a = self:GetColor()
 
@@ -477,6 +493,15 @@ do
 		local r, g, b = hslToRGB(h, s, l)
 		return r, g, b, a
 	end
+
+
+	--[[ overlays ]]--
+
+	function FrameOverlay:FreeAll()
+		for overlay in pairs(active) do
+			overlay:Free()
+		end
+	end
 end
 
 
@@ -489,7 +514,7 @@ do
 		-- create overlay background
 		local overlay = CreateFrame('Frame', nil, _G['UIParent'], 'SecureHandlerStateTemplate')
 
-		overlay:SetFrameStrata('DIALOG')
+		overlay:SetFrameStrata('HIGH')
 		overlay:Hide()
 		overlay:EnableMouse(false)
 		overlay:SetAllPoints(overlay:GetParent())
@@ -498,15 +523,13 @@ do
 
 		--add a texture for the  background
 		local overlayBG = overlay:CreateTexture(nil, 'BACKGROUND')
-		overlayBG:SetTexture(0, 0, 0, 0.5)
+		overlayBG:SetColorTexture(0, 0, 0, 0.3)
 		overlayBG:SetAllPoints(overlay)
 
 		--add a fade effect for when showing
 		local fadeInGroup = overlay:CreateAnimationGroup()
 
 		local fadeIn = fadeInGroup:CreateAnimation('Alpha')
-
-		fadeIn:SetOrder(0)
 		fadeIn:SetFromAlpha(0)
 		fadeIn:SetToAlpha(1)
 		fadeIn:SetSmoothing('IN')
@@ -524,8 +547,6 @@ do
 		local fadeOutGroup = overlay:CreateAnimationGroup()
 
 		local fadeOut = fadeOutGroup:CreateAnimation('Alpha')
-
-		fadeOut:SetOrder(0)
 		fadeOut:SetFromAlpha(1)
 		fadeOut:SetToAlpha(0)
 		fadeOut:SetSmoothing('OUT')
@@ -546,6 +567,8 @@ do
 
 	function ConfigOverlay:Hide()
 		self.overlay.fadeOutGroup:Play()
+
+		FrameOverlay:FreeAll()
 	end
 
 	function ConfigOverlay:CreateFrameOverlays()
@@ -554,25 +577,19 @@ do
 		end
 
 		for _, frame in Dominos.Frame:GetAll() do
-			local frameOverlay = frameOverlays[frame]
-
-			if not frameOverlay then
-				frameOverlay = FrameOverlay:New(frame, self.overlay)
-				frameOverlays[frame] = frameOverlay
-				frame.frameOverlay = frameOverlay
-			end
+			FrameOverlay:New(self.overlay, frame)
 		end
 	end
 
 	function ConfigOverlay:CreateHelpDialog()
-		local f = CreateFrame('Frame', 'DominosConfigHelperDialog', self.overlay)
+		local dialog = CreateFrame('Frame', 'DominosConfigHelperDialog', self.overlay)
 
-		f:SetToplevel(true)
-		f:EnableMouse(true)
-		f:SetClampedToScreen(true)
-		f:SetSize(360, 120)
+		dialog:SetToplevel(true)
+		dialog:EnableMouse(true)
+		dialog:SetClampedToScreen(true)
+		dialog:SetSize(360, 120)
 
-		f:SetBackdrop{
+		dialog:SetBackdrop{
 			bgFile='Interface\\DialogFrame\\UI-DialogBox-Background',
 			edgeFile='Interface\\DialogFrame\\UI-DialogBox-Border',
 			tile = true,
@@ -581,30 +598,30 @@ do
 			edgeSize = 32,
 		}
 
-		f:SetPoint('TOP', 0, -24)
+		dialog:SetPoint('TOP', 0, -24)
 
-		f:SetScript('OnShow', function()
+		dialog:SetScript('OnShow', function()
 			PlaySound('igMainMenuOption')
 		end)
 
-		f:SetScript('OnHide', function()
+		dialog:SetScript('OnHide', function()
 			PlaySound('gsTitleOptionExit')
 		end)
 
-		local tr = f:CreateTitleRegion()
-		tr:SetAllPoints(f)
+		local tr = dialog:CreateTitleRegion()
+		tr:SetAllPoints(dialog)
 
-		local header = f:CreateTexture(nil, 'ARTWORK')
+		local header = dialog:CreateTexture(nil, 'ARTWORK')
 		header:SetTexture('Interface\\DialogFrame\\UI-DialogBox-Header')
 		header:SetWidth(326); header:SetHeight(64)
 		header:SetPoint('TOP', 0, 12)
 
-		local title = f:CreateFontString('ARTWORK')
+		local title = dialog:CreateFontString('ARTWORK')
 		title:SetFontObject('GameFontNormal')
 		title:SetPoint('TOP', header, 'TOP', 0, -14)
 		title:SetText(L.ConfigMode)
 
-		local desc = f:CreateFontString('ARTWORK')
+		local desc = dialog:CreateFontString('ARTWORK')
 		desc:SetFontObject('GameFontHighlight')
 		desc:SetJustifyV('TOP')
 		desc:SetJustifyH('LEFT')
@@ -612,7 +629,7 @@ do
 		desc:SetPoint('BOTTOMRIGHT', -18, 48)
 		desc:SetText(L.ConfigModeHelp)
 
-		local exitConfig = CreateFrame('CheckButton', f:GetName() .. 'ExitConfig', f, 'OptionsButtonTemplate')
+		local exitConfig = CreateFrame('CheckButton', dialog:GetName() .. 'ExitConfig', dialog, 'OptionsButtonTemplate')
 		_G[exitConfig:GetName() .. 'Text']:SetText(EXIT)
 
 		exitConfig:SetScript('OnClick', function()
@@ -621,6 +638,6 @@ do
 
 		exitConfig:SetPoint('BOTTOMRIGHT', -14, 14)
 
-		return f
+		return dialog
 	end
 end
