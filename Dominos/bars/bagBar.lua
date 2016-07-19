@@ -61,20 +61,18 @@ function BagBar:CreateMenu()
 	local menu = Addon:NewMenu(self.id)
 	local L = LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')
 
-	local panel = menu:AddLayoutPanel()
-
-	-- add option to show only one bag
-	local oneBag = panel:NewCheckButton(L.OneBag)
-	oneBag:SetScript('OnShow', function()
-		oneBag:SetChecked(self:OneBag())
-	end)
-
-	oneBag:SetScript('OnClick', function()
-		self:SetOneBag(oneBag:GetChecked())
-		_G[panel:GetName() .. L.Columns]:OnShow()
-	end)
+	local layoutPanel = menu:NewPanel(L.Layout)
+	
+	layoutPanel:NewCheckButton{
+		name = L.OneBag,
+		get = function() return layoutPanel.owner:OneBag() end,
+		set = function(_, enable) return layoutPanel.owner:SetOneBag(enable) end,
+	}
+	
+	layoutPanel:AddLayoutOptions()
 
 	menu:AddAdvancedPanel()
+	
 	self.menu = menu
 end
 

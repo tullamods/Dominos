@@ -5,7 +5,7 @@
 
 local AddonName, Addon = ...
 local Frame = Dominos:CreateClass('Frame'); Dominos.Frame = Frame
-local Events = Dominos.Events
+local L = LibStub('AceLocale-3.0'):GetLocale(AddonName)
 local active = {}
 local unused = {}
 
@@ -21,7 +21,6 @@ function Frame:New(id, tooltipText)
 
 	active[id] = frame
 
-	Events:Fire('Frame_OnCreate', frame)
 	return frame
 end
 
@@ -96,7 +95,6 @@ function Frame:Create(id)
 
 	frame.header:SetAllPoints(frame)
 
-	Events:Fire('Frame_OnCreate', frame)
 	return frame
 end
 
@@ -106,15 +104,12 @@ function Frame:Restore(id)
 	if frame then
 		unused[id] = nil
 
-		Events:Fire('Frame_OnRestore', frame)
 		return frame
 	end
 end
 
 --destructor
 function Frame:Free()
-	Events:Fire('Frame_OnFree', self)
-
 	active[self.id] = nil
 
 	UnregisterStateDriver(self.header, 'display', 'show')
@@ -131,14 +126,13 @@ function Frame:Free()
 end
 
 function Frame:Delete()
-	Events:Fire('Frame_OnDelete', self)
-
 	self:Free()
 	Dominos:SetFrameSets(self.id, nil)
 end
 
 function Frame:LoadSettings()
-	self.sets = Dominos:GetFrameSets(self.id) or Dominos:SetFrameSets(self.id, self:GetDefaults()) --get defaults must be provided by anything implementing the Frame type
+	--get defaults must be provided by anything implementing the Frame type
+	self.sets = Dominos:GetFrameSets(self.id) or Dominos:SetFrameSets(self.id, self:GetDefaults())
 	self:Reposition()
 
 	if self.sets.hidden then
@@ -151,10 +145,11 @@ function Frame:LoadSettings()
 
 	self:ShowInOverrideUI(self:ShowingInOverrideUI())
 	self:ShowInPetBattleUI(self:ShowingInPetBattleUI())
-
-	Events:Fire('Frame_OnLoadSettings', self)
 end
 
+function Frame:GetDisplayName()
+	return L.BarDisplayName:format(tostring(self.id):gsub('^%l', string.upper))
+end
 
 --[[ Layout ]]--
 
@@ -165,7 +160,6 @@ function Frame:SetPadding(width, height)
 	self.sets.padW = width ~= 0 and width or nil
 	self.sets.padH = height ~= 0 and height or nil
 
-	Events:Fire('Frame_OnSetPadding', self, width, height)
 	self:Layout()
 end
 
@@ -177,8 +171,6 @@ function Frame:GetPadding()
 end
 
 function Frame:Layout()
-	Events:Fire('Frame_OnLayout', self, width, height)
-
 	local width, height = 32, 32
 	local paddingW, paddingH = self:GetPadding()
 
@@ -195,8 +187,6 @@ end
 --[[ Scaling ]]--
 
 hooksecurefunc(Frame, 'SetScale', function(self, scale)
-	Events:Fire('Frame_OnSetScale', self, width, height)
-
 	self:OnSetScale(scale)
 end)
 
@@ -237,8 +227,6 @@ end
 --[[ Opacity ]]--
 
 hooksecurefunc(Frame, 'SetAlpha', function(self, alpha)
-	Events:Fire('Frame_OnSetAlpha', self, alpha)
-
 	self:OnSetAlpha(alpha)
 end)
 
@@ -384,7 +372,7 @@ local function fader_Create(parent)
 
 	local fade = fadeGroup:CreateAnimation('Alpha')
 	fade:SetSmoothing('IN_OUT')
-	fade:SetOrder(1)
+	-- fade:SetOrder(1)
 
 	return function(targetAlpha, duration)
 		if fadeGroup:IsPlaying() then
