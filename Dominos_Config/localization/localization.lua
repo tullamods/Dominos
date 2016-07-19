@@ -41,8 +41,7 @@ L.ShowEmptyButtons = 'Show Empty Buttons'
 L.LockActionButtons = 'Lock Action Button Positions'
 L.EnterBindingMode = 'Bind Keys...'
 L.EnterConfigMode = 'Configure Bars...'
-L.ActionBarSettings = 'ActionBar %d Settings'
-L.BarSettings = '%s Bar Settings'
+L.BarSettings = '%s Settings'
 L.ShowTooltips = 'Show Tooltips'
 L.ShowTooltipsCombat = 'Show Tooltips in Combat'
 L.OneBag = 'One Bag'
@@ -75,3 +74,14 @@ L.ShowTotemRecall = 'Show Recall'
 
 --extra bar
 L.ExtraBarShowBlizzardTexture = 'Show Blizzard Texture'
+
+--general settings panel
+L.General = 'General'
+
+--profile settings panel
+L.CreateProfile = 'Create Profile...'
+L.ResetProfile = 'Reset Profile...'
+L.CopyProfile = 'Copy Profile...'
+L.ConfirmResetProfile = 'Are you sure you want to reset your profile?'
+L.ConfirmCopyProfile = 'Copy contents from %s into the current profile?'
+L.ConfirmDeleteProfile = 'Delete profile %s?'

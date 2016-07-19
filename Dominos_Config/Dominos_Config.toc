@@ -1,4 +1,4 @@
-## Interface: 60200
+## Interface: 70000
 ## Title: Dominos Config
 ## Title-zhCN: Dominos 设置
 ## Title-zhTW: Dominos 設置
@@ -7,7 +7,6 @@
 ## Dependencies: Dominos
 ## LoadOnDemand: 1
 localization.xml
-menu.lua
-panel.lua
-general.lua
-profiles.lua
+embeds.xml
+widgets\include.xml
+panels\include.xml
