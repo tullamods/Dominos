@@ -14,12 +14,16 @@ do
 		editBox:SetJustifyH('LEFT')
 		editBox:SetJustifyV('TOP')
 
+		editBox.Save = Addon:Debounce(function(self) self.owner:Save(self:GetText()) end, 300)
+		editBox.OnSizeChanged = Addon:Debounce(function(self) self.owner:OnSizeChanged() end, 100)
+
 		editBox:SetScript('OnShow', self.OnShow)
 		editBox:SetScript('OnEscapePressed', self.OnEscapePressed)
 		editBox:SetScript('OnEnterPressed', self.OnEnterPressed)
+		editBox:SetScript('OnTextChanged', self.OnTextChanged)
 		editBox:SetScript('OnEditFocusGained', self.OnEditFocusGained)
 		editBox:SetScript('OnEditFocusLost', self.OnEditFocusLost)
-		editBox:SetScript('OnSizeChanged', self.OnSizeChanged)
+		editBox:SetScript('OnSizeChanged', editBox.OnSizeChanged)
 
 		return editBox
 	end
@@ -29,7 +33,11 @@ do
 	end
 
 	function EditBox:OnEnterPressed()
-		self.owner:Save(self:GetText())
+		self:Save()
+	end
+
+	function EditBox:OnTextChanged()
+		self:Save()
 	end
 
 	function EditBox:OnEscapePressed()
@@ -43,11 +51,7 @@ do
 
 	function EditBox:OnEditFocusLost()
 		self:HighlightText(0, 0)
-		self.owner:Save(self:GetText())
-	end
-
-	function EditBox:OnSizeChanged()
-		self.owner:OnSizeChanged()
+		self:Save()
 	end
 end
 
@@ -75,7 +79,8 @@ do
 		local viewport = CreateFrame('ScrollFrame', nil, panel)
 		viewport:SetScrollChild(panel.editBox)
 		viewport:SetPoint('TOPLEFT', label, 'BOTTOMLEFT', 0, -2)
-		viewport:EnableMouseWheel(true)
+		viewport:EnableMouse(true)
+		viewport:SetScript('OnMouseUp', function() editBox:SetFocus() end)
 		viewport:SetScript('OnMouseWheel', function(self, delta)
 			local scrollBar = panel.vScrollBar
 			if scrollBar:IsShown() then
