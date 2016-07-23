@@ -86,7 +86,7 @@ do
 		frame:SetToplevel(true)
 		frame:SetMovable(true)
 		frame:SetClampedToScreen(true)
-		frame:SetFrameStrata('DIALOG')
+		frame:SetFrameStrata('FULLSCREEN_DIALOG')
 		frame:Hide()
 		frame:SetScript('OnShow', self.OnShow)
 		frame:SetScript('OnHide', self.OnHide)
