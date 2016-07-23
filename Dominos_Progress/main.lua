@@ -63,9 +63,7 @@ function ProgressBarModule:PLAYER_XP_UPDATE()
 	self:UpdateAllBars()
 end
 
-function ProgressBarModule:UPDATE_FACTION(event, unit)
-	if unit ~= 'player' then return end
-
+function ProgressBarModule:UPDATE_FACTION(event)
 	self:UpdateAllBars()
 end
 
