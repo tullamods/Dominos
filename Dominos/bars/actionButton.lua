@@ -56,7 +56,7 @@ function ActionButton:New(id)
 			local newActionID
 
 			if state == 'override' then
-				newActionID = self:GetAttribute('button--index') + (overridePage - 1) * 12
+				newActionID = (self:GetAttribute('button--index') or 1) + (overridePage - 1) * 12
 			else
 				newActionID = state and self:GetAttribute('action--' .. state) or self:GetAttribute('action--base')
 			end
