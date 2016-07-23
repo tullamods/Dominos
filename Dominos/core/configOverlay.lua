@@ -183,12 +183,13 @@ do
 		overlay.owner = owner
 		overlay:SetText(owner.id)
 		overlay:SetAllPoints(owner)
-		overlay:SetFrameLevel(owner:GetFrameLevel() + 5)
+		-- overlay:SetFrameLevel(owner:GetFrameLevel() + 5)
 		overlay:UpdateColor(true)
 		overlay:UpdateBorderColor(true)
+		overlay:SetFrameStrata('DIALOG')
 		overlay:Show()
 
-		active[overlay] = true
+		table.insert(active, overlay)
 		return owner
 	end
 
@@ -197,7 +198,13 @@ do
 		self:SetParent(nil)
 		self:Hide()
 
-		active[self] = nil
+		for i, overlay in pairs(active) do
+			if overlay == self then
+				table.remove(active, i)
+				break
+			end
+		end
+
 		table.insert(unused, self)
 	end
 
@@ -498,8 +505,8 @@ do
 	--[[ overlays ]]--
 
 	function FrameOverlay:FreeAll()
-		for overlay in pairs(active) do
-			overlay:Free()
+		while next(active) do
+			active[#active]:Free()
 		end
 	end
 end
@@ -514,7 +521,7 @@ do
 		-- create overlay background
 		local overlay = CreateFrame('Frame', nil, _G['UIParent'], 'SecureHandlerStateTemplate')
 
-		overlay:SetFrameStrata('HIGH')
+		overlay:SetFrameStrata('BACKGROUND')
 		overlay:Hide()
 		overlay:EnableMouse(false)
 		overlay:SetAllPoints(overlay:GetParent())
@@ -584,10 +591,10 @@ do
 	function ConfigOverlay:CreateHelpDialog()
 		local dialog = CreateFrame('Frame', 'DominosConfigHelperDialog', self.overlay)
 
-		dialog:SetToplevel(true)
 		dialog:EnableMouse(true)
 		dialog:SetClampedToScreen(true)
 		dialog:SetSize(360, 120)
+		dialog:SetFrameStrata('FULLSCREEN_DIALOG')
 
 		dialog:SetBackdrop{
 			bgFile='Interface\\DialogFrame\\UI-DialogBox-Background',
