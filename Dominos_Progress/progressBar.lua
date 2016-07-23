@@ -35,7 +35,7 @@ function ProgressBar:Create(...)
 	click:SetScript('OnLeave', function(_, ...) bar:OnLeave(...) end)
 	click:RegisterForClicks('anyUp')
 	click:SetAllPoints(bar)
-	click:SetFrameStrata('HIGH')
+	click:SetFrameStrata('LOW')
 
 	local text = click:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
 	text:SetPoint('CENTER')
