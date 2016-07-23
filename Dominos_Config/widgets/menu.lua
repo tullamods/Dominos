@@ -56,7 +56,7 @@ function Menu:New(parent)
 	panelSelector:SetPoint('TOPRIGHT', tr, 'BOTTOMRIGHT', 0, 0)
 	panelSelector:SetHeight(20)
 	panelSelector.OnSelect = function(self, id)
-		f:ShowPanel(id)
+		f:OnShowPanel(id)
 	end
 	f.panelSelector = panelSelector
 
@@ -105,6 +105,10 @@ function Menu:NewPanel(id)
 end
 
 function Menu:ShowPanel(id)
+	return self.panelSelector:Select(id)
+end
+
+function Menu:OnShowPanel(id)
 	if self.panels then
 		for i, panel in pairs(self.panels) do
 			if i == id then
