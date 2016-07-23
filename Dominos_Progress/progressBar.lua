@@ -58,7 +58,7 @@ function ProgressBar:GetDefaults()
 		font = 'Friz Quadrata TT',
 		alwaysShowText = true,
 		showLabels = true,
-		lockMode = false
+		lockMode = true
 	}
 end
 

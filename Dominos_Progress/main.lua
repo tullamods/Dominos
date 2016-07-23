@@ -8,8 +8,8 @@ local ProgressBarModule = Dominos:NewModule('ProgressBars', 'AceEvent-3.0')
 
 function ProgressBarModule:Load()
 	self.bars = {
-		Addon.ProgressBar:New('exp', { 'xp', 'reputation', 'honor' }),
-		Addon.ProgressBar:New('artifact', { 'artifact' })
+		Addon.ExperienceBar:New('exp', { 'xp', 'reputation', 'honor' }),
+		Addon.ArtifactBar:New('artifact', { 'artifact' })
 	}
 
 	-- common events

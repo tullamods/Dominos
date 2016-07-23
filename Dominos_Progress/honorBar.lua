@@ -24,3 +24,4 @@ end
 -- register this as a possible progress bar mode
 Addon.progressBarModes = Addon.progressBarModes or {}
 Addon.progressBarModes['honor'] = HonorBar
+Addon.HonorBar = HonorBar

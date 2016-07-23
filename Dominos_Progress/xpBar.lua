@@ -20,3 +20,4 @@ end
 -- register this as a possible progress bar mode
 Addon.progressBarModes = Addon.progressBarModes or {}
 Addon.progressBarModes['xp'] = ExperienceBar
+Addon.ExperienceBar = ExperienceBar
