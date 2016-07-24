@@ -29,7 +29,7 @@ function ProgressBar:Create(...)
 	bg:SetAllPoints(bar)
 	bar.bg = bg
 
-	local click = CreateFrame('Button', nil, bar)
+	local click = CreateFrame('Button', nil, bar.header)
 	click:SetScript('OnClick', function(_, ...) bar:OnClick(...) end)
 	click:SetScript('OnEnter', function(_, ...) bar:OnEnter(...) end)
 	click:SetScript('OnLeave', function(_, ...) bar:OnLeave(...) end)
