@@ -28,16 +28,12 @@ function RollBar:GetDefaults()
 end
 
 function RollBar:Layout()
-	local container = self:GetGroupLootContainer()
+	local container = _G.AlertFrame
 	container:ClearAllPoints()
-	container:SetPoint('TOP', self.header)
+	container:SetPoint('BOTTOM', self.header)
 
 	local pW, pH = self:GetPadding()
-	self:SetSize(container:GetWidth() + pW, (container.reservedSize * 4.5) + pH)
-end
-
-function RollBar:GetGroupLootContainer()
-	return _G['GroupLootContainer']
+	self:SetSize(317 + pW, 119 + pH)
 end
 
 function RollBar:CreateMenu()
@@ -59,14 +55,17 @@ end
 
 local RollBarController = Dominos:NewModule('RollBar')
 
-function RollBarController:OnInitialize()
-	_G['GroupLootContainer'].ignoreFramePositionManager = true
-end
-
 function RollBarController:Load()
 	self.frame = RollBar:New()
+	self:Debug()
 end
 
 function RollBarController:Unload()
 	self.frame:Free()
+end
+
+function RollBarController:Debug()
+	local t = _G.GroupLootContainer:CreateTexture(nil, 'BACKGROUND')
+	t:SetAllPoints(t:GetParent())
+	t:SetColorTexture(0, 1, 0, 0.5)
 end
