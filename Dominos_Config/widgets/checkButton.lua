@@ -10,8 +10,8 @@ do
 			template = 'InterfaceOptionsSmallCheckButtonTemplate'
 		else
 			template = 'InterfaceOptionsCheckButtonTemplate'
-		end		
-		
+		end
+
 		local b = self:Bind(CreateFrame('CheckButton', nextName(), options.parent, template))
 
 		b:SetScript('OnClick', b.OnClick)
@@ -30,6 +30,8 @@ do
 			b.text:SetText(options.name)
 		end
 
+		b.tooltipText = options.tooltip
+
 		return b
 	end
 
@@ -40,13 +42,13 @@ do
 	function CheckButton:OnShow()
 		self:SetChecked(self.GetSavedValue())
 	end
-	
+
 	function CheckButton:GetEffectiveSize()
 		local width, height = 0, 0
-		
+
 		width = self:GetWidth() + self.text:GetWidth() + 4
 		height = max(self:GetHeight(), self.text:GetHeight())
-		
+
 		return width, height
 	end
 
