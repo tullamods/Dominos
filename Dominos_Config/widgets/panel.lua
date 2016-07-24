@@ -202,7 +202,7 @@ function Panel:NewScaleSlider()
 	return self:NewSlider{
 		name = L.Scale,
 		min = 50,
-		max = 150,
+		max = 200,
 
 		get = function()
 			return round(self.owner:GetFrameScale() * 100)
