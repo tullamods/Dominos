@@ -5,16 +5,16 @@
 	French
 --]]
 -- French version (by Kubik of Vol'Jin) 2009-10-23
--- à = \195\160
--- â = \195\162
--- ç = \195\167
--- è = \195\168
--- é = \195\169
--- ê = \195\170
--- î = \195\174
--- ï = \195\175
--- ô = \195\180
--- û = \195\187
+-- ï¿½ = \195\160
+-- ï¿½ = \195\162
+-- ï¿½ = \195\167
+-- ï¿½ = \195\168
+-- ï¿½ = \195\169
+-- ï¿½ = \195\170
+-- ï¿½ = \195\174
+-- ï¿½ = \195\175
+-- ï¿½ = \195\180
+-- ï¿½ = \195\187
 
 local L = LibStub('AceLocale-3.0'):NewLocale('Dominos-Config', 'frFR')
 if not L then return end
@@ -25,7 +25,7 @@ L.FadedOpacity = 'Opacit\195\169 hors survol souris'
 L.Visibility = 'Visibilit\195\169'
 L.Spacing = 'Espacement'
 L.Padding = 'Remplissage'
-L.Layout = 'Affichage'
+L.Layout = 'Disposition'
 L.Columns = 'Colonnes'
 L.Size = 'Taille'
 L.Modifiers = 'Modificateurs'
