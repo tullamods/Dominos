@@ -513,7 +513,7 @@ end
 function Frame:UpdateShowStates()
 	local showstates = self:GetShowStates()
 
-	if showstates then
+	if showstates and showstates ~= '' then
 		RegisterStateDriver(self.header, 'display', showstates)
 	else
 		UnregisterStateDriver(self.header, 'display')
