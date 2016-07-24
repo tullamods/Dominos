@@ -85,7 +85,7 @@ do
 		--todo: add edit option
 		local editBox = CreateFrame('EditBox', nil, f)
 		editBox:SetPoint('BOTTOMRIGHT', f, 'TOPRIGHT')
-		editBox:SetNumeric(true)
+		editBox:SetNumeric(false)
 		editBox:SetAutoFocus(false)
 		editBox:SetFontObject('GameFontHighlightRight')
 		editBox:SetHeight(f.text:GetHeight())
