@@ -372,12 +372,10 @@ local function fader_Create(parent)
 
 	local fade = fadeGroup:CreateAnimation('Alpha')
 	fade:SetSmoothing('IN_OUT')
-	-- fade:SetOrder(1)
 
 	return function(targetAlpha, duration)
 		if fadeGroup:IsPlaying() then
 			fadeGroup:Pause()
-			parent:SetAlpha(parent:GetAlpha() + (fade:GetChange() * fade:GetProgress()))
 		end
 
 		fadeGroup.targetAlpha = targetAlpha
