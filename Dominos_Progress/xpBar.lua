@@ -3,8 +3,8 @@ local Dominos = _G.Dominos
 local ExperienceBar = Dominos:CreateClass('Frame', Addon.ProgressBar)
 
 function ExperienceBar:Init()
-	self:SetColor(0.58, 0.0, 0.55, 1)
-	self:SetBonusColor(0.47, 0, 1, 0.8)
+	self:SetColor(0.58, 0, 0.55, 1)
+	self:SetBonusColor(0, 0.39, 0.88)
 	self:Update()
 end
 
