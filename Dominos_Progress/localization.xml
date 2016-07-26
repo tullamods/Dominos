@@ -8,4 +8,5 @@
 	<Script file="localization\localization.es.lua"/>
 	<Script file="localization\localization.it.lua"/>
 	<Script file="localization\localization.pt.lua"/>
+	<Script file="localization\localization.tw.lua"/>
 </Ui>
