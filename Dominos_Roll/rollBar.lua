@@ -57,15 +57,8 @@ local RollBarController = Dominos:NewModule('RollBar')
 
 function RollBarController:Load()
 	self.frame = RollBar:New()
-	self:Debug()
 end
 
 function RollBarController:Unload()
 	self.frame:Free()
-end
-
-function RollBarController:Debug()
-	local t = _G.GroupLootContainer:CreateTexture(nil, 'BACKGROUND')
-	t:SetAllPoints(t:GetParent())
-	t:SetColorTexture(0, 1, 0, 0.5)
 end
