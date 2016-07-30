@@ -3,7 +3,8 @@
 		Handle showing/hiding frame tooltips in a secure manner
 --]]
 
-local TooltipController = Dominos:NewModule('Tooltips')
+local AddonName, Addon = ...
+local TooltipController = Addon:NewModule('Tooltips')
 
 function TooltipController:OnInitialize()
 	local header = CreateFrame('Frame', nil, nil, 'SecureHandlerStateTemplate')
@@ -26,12 +27,12 @@ function TooltipController:OnInitialize()
 end
 
 function TooltipController:OnEnable()
-	self:SetShowTooltips(Dominos:ShowTooltips())
-	self:SetShowTooltipsInCombat(Dominos:ShowCombatTooltips())	
+	self:SetShowTooltips(Addon:ShowTooltips())
+	self:SetShowTooltipsInCombat(Addon:ShowCombatTooltips())
 end
 
 function TooltipController:Register(frame)
-	self.header:WrapScript(frame, 'OnEnter', [[ 
+	self.header:WrapScript(frame, 'OnEnter', [[
 		if control:GetAttribute('keybound-enabled') then
 			return true
 		end

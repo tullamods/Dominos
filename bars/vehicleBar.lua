@@ -1,5 +1,6 @@
-local Addon = _G[...]
+local AddonName, Addon = ...
 local VehicleLeaveButton = _G.MainMenuBarVehicleLeaveButton
+if not VehicleLeaveButton then return end
 
 --[[ The Bar ]]--
 

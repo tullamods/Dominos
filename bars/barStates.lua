@@ -3,6 +3,7 @@
 		A thingy for mapping stateIds to macro states
 --]]
 
+local AddonName, Addon = ...
 local states = {}
 
 local getStateIterator = function(type, i)
@@ -44,7 +45,7 @@ local BarStates = {
 		return results
 	end,
 }
-Dominos.BarStates = BarStates
+Addon.BarStates = BarStates
 
 local addState = function(stateType, stateId, stateValue, stateText)
 	return BarStates:add{
@@ -73,7 +74,7 @@ end
 --class
 do
 	local class = select(2, UnitClass('player'))
-	
+
 	if class == 'DRUID' then
 		addState('class', 'moonkin', '[bonusbar:4]', GetSpellInfo(24858))
 		addState('class', 'bear', '[bonusbar:3]', GetSpellInfo(5487))
@@ -81,7 +82,7 @@ do
 		addState('class', 'prowl', '[bonusbar:1,stealth]', GetSpellInfo(5215))
 		addState('class', 'cat', '[bonusbar:1]', GetSpellInfo(768))
 	elseif class == 'ROGUE' then
-		addState('class', 'stealth', '[bonusbar:1]', GetSpellInfo(1784))		
+		addState('class', 'stealth', '[bonusbar:1]', GetSpellInfo(1784))
 		addState('class', 'shadowdance', '[form:2]', GetSpellInfo(1856))
 	end
 
@@ -102,7 +103,7 @@ do
 	local f = CreateFrame('Frame'); f:Hide()
 	f:SetScript('OnEvent', function()
 		if not InCombatLockdown() then
-			Dominos.ActionBar:ForAll('UpdateStateDriver')
+			Addon.ActionBar:ForAll('UpdateStateDriver')
 		end
 	end)
 	f:RegisterEvent('UPDATE_SHAPESHIFT_FORMS')
