@@ -131,7 +131,7 @@ end
 
 -- [[ overlay that goes on each bar for configuration ]]--
 
-local FrameOverlay = Dominos:CreateClass('Button')
+local FrameOverlay = Addon:CreateClass('Button')
 do
 	local FRAME_COLOR = { h = 213, s = 0.76, l = 0.27 }
 
@@ -142,7 +142,7 @@ do
 		insets   = 	{ left = 2, right = 2, top = 2, bottom = 2 },
 	}
 
-	local nextName = Dominos:CreateNameGenerator('Overlay')
+	local nextName = Addon:CreateNameGenerator('Overlay')
 	local active = {}
 	local unused = {}
 
@@ -515,7 +515,7 @@ end
 -- [[ the main overlay frame controller ]]--
 
 do
-	local ConfigOverlay = Dominos:NewModule('ConfigOverlay')
+	local ConfigOverlay = Addon:NewModule('ConfigOverlay')
 
 	function ConfigOverlay:OnInitialize()
 		-- create overlay background
@@ -583,13 +583,13 @@ do
 			self.helpDialog = self:CreateHelpDialog()
 		end
 
-		for _, frame in Dominos.Frame:GetAll() do
+		for _, frame in Addon.Frame:GetAll() do
 			FrameOverlay:New(self.overlay, frame)
 		end
 	end
 
 	function ConfigOverlay:CreateHelpDialog()
-		local dialog = CreateFrame('Frame', 'DominosConfigHelperDialog', self.overlay)
+		local dialog = CreateFrame('Frame', AddonName .. 'ConfigHelperDialog', self.overlay)
 
 		dialog:EnableMouse(true)
 		dialog:SetClampedToScreen(true)
@@ -640,7 +640,7 @@ do
 		_G[exitConfig:GetName() .. 'Text']:SetText(EXIT)
 
 		exitConfig:SetScript('OnClick', function()
-			Dominos:SetLock(true)
+			Addon:SetLock(true)
 		end)
 
 		exitConfig:SetPoint('BOTTOMRIGHT', -14, 14)

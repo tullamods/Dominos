@@ -9,7 +9,7 @@ end
 
 --[[ Globals ]]--
 
-local Addon = _G[...]
+local AddonName, Addon = ...
 local KeyBound = LibStub('LibKeyBound-1.0')
 
 

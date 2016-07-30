@@ -1,8 +1,10 @@
--- buttonBar.lua
--- a dominos frame that contains buttons
+--[[
+	buttonBar.lua
+		a frame that contains buttons
+--]]
 
-local ButtonBar = Dominos:CreateClass('Frame', Dominos.Frame)
-Dominos.ButtonBar = ButtonBar
+local AddonName, Addon = ...
+local ButtonBar = Addon:CreateClass('Frame', Addon.Frame)
 
 function ButtonBar:New(...)
 	local bar = ButtonBar.proto.New(self, ...)
@@ -236,3 +238,7 @@ function ButtonBar:UpdateClickThrough()
 		end
 	end
 end
+
+--[[ exports ]]--
+
+Addon.ButtonBar = ButtonBar

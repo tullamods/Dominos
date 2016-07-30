@@ -3,7 +3,8 @@
 	This code works around this behavior
 --]]
 
-local MultiActionBarGridFixer = CreateFrame('Frame', nil, nil, 'SecureHandlerStateTemplate'); MultiActionBarGridFixer:Hide()
+local AddonName, Addon = ...
+local MultiActionBarGridFixer = Addon:CreateHiddenFrame('Frame', nil, nil, 'SecureHandlerStateTemplate')
 
 function MultiActionBarGridFixer:Load()
 	--[[ load buttons ]]--
@@ -15,7 +16,7 @@ function MultiActionBarGridFixer:Load()
 				local button = _G[string.format('%sButton%d', barName, j)]
 
 				self:SetFrameRef('addButton', button)
-				self:Execute([[ table.insert(MY_BUTTONS, self:GetFrameRef('addButton')) ]])	
+				self:Execute([[ table.insert(MY_BUTTONS, self:GetFrameRef('addButton')) ]])
 			end
 		end
 	end
@@ -26,14 +27,14 @@ function MultiActionBarGridFixer:Load()
 	local setAttribute = function(attributeName, value)
 		if not InCombatLockdown() then
 			self:SetAttribute(attributeName, value)
-		end	
+		end
 	end
 
 	local forceUpdate = function()
 		setAttribute('state-update', true)
 	end
 
-	self:SetScript('OnEvent', function(self, event) 
+	self:SetScript('OnEvent', function(self, event)
 		if event == 'ACTIONBAR_SHOWGRID' then
 			setAttribute('state-showGrid', true)
 		elseif event == 'ACTIONBAR_HIDEGRID' then
@@ -45,7 +46,7 @@ function MultiActionBarGridFixer:Load()
 
 	self:RegisterEvent('ACTIONBAR_SHOWGRID')
 	self:RegisterEvent('ACTIONBAR_HIDEGRID')
-	self:RegisterEvent('PLAYER_ENTERING_WORLD')	
+	self:RegisterEvent('PLAYER_ENTERING_WORLD')
 	self:RegisterEvent('PLAYER_REGEN_ENABLED')
 	self:RegisterEvent('PLAYER_REGEN_DISABLED')
 
@@ -62,14 +63,14 @@ function MultiActionBarGridFixer:Load()
 
 	--[[ handle events ]]--
 
-	self:SetAttribute('_onstate-update', [[ self:RunAttribute('updateGrid') ]])	
-	self:SetAttribute('_onstate-alwaysShow', [[ self:RunAttribute('updateGrid') ]])	
-	self:SetAttribute('_onstate-showGrid', [[ self:RunAttribute('updateGrid') ]])	
+	self:SetAttribute('_onstate-update', [[ self:RunAttribute('updateGrid') ]])
+	self:SetAttribute('_onstate-alwaysShow', [[ self:RunAttribute('updateGrid') ]])
+	self:SetAttribute('_onstate-showGrid', [[ self:RunAttribute('updateGrid') ]])
 
 	self:SetAttribute('updateGrid', [[
 		local showgrid = (self:GetAttribute('state-alwaysShow') or self:GetAttribute('state-showGrid')) and 1 or 0
 
-		for i, button in pairs(MY_BUTTONS) do				
+		for i, button in pairs(MY_BUTTONS) do
 			button:SetAttribute('showgrid', showgrid)
 
 			local actionId = button:GetAttribute('action')
@@ -81,11 +82,11 @@ function MultiActionBarGridFixer:Load()
 				button:Show(true)
 			else
 				button:Hide(true)
-			end			
+			end
 		end
 	]])
 
-	Dominos.MultiActionBarGridFixer = self
+	Addon.MultiActionBarGridFixer = self
 end
 
 function MultiActionBarGridFixer:SetShowGrid(enable)

@@ -3,21 +3,18 @@
 		Driver for Dominos Frames
 --]]
 
-local AddonName = ...
-local Dominos = LibStub('AceAddon-3.0'):NewAddon(AddonName, 'AceEvent-3.0', 'AceConsole-3.0')
-_G[AddonName] = Dominos
-
+local AddonName, AddonTable = ...
+local Addon = LibStub('AceAddon-3.0'):NewAddon(AddonTable, AddonName, 'AceEvent-3.0', 'AceConsole-3.0')
 local L = LibStub('AceLocale-3.0'):GetLocale(AddonName)
 
 local CURRENT_VERSION = GetAddOnMetadata(AddonName, 'Version')
 local CONFIG_ADDON_NAME = AddonName .. '_Config'
 
-
 --[[ Startup ]]--
 
-function Dominos:OnInitialize()
+function Addon:OnInitialize()
 	--register database events
-	self.db = LibStub('AceDB-3.0'):New('DominosDB', self:GetDefaults(), UnitClass('player'))
+	self.db = LibStub('AceDB-3.0'):New(AddonName .. 'DB', self:GetDefaults(), UnitClass('player'))
 	self.db.RegisterCallback(self, 'OnNewProfile')
 	self.db.RegisterCallback(self, 'OnProfileChanged')
 	self.db.RegisterCallback(self, 'OnProfileCopied')
@@ -25,14 +22,14 @@ function Dominos:OnInitialize()
 	self.db.RegisterCallback(self, 'OnProfileDeleted')
 
 	--version update
-	if DominosVersion then
-		if DominosVersion ~= CURRENT_VERSION then
-			self:UpdateSettings(DominosVersion:match('(%w+)%.(%w+)%.(%w+)'))
+	if _G[AddonName .. 'Version'] then
+		if _G[AddonName .. 'Version'] ~= CURRENT_VERSION then
+			self:UpdateSettings(_G[AddonName .. 'Version']:match('(%w+)%.(%w+)%.(%w+)'))
 			self:UpdateVersion()
 		end
 	--new user
 	else
-		DominosVersion = CURRENT_VERSION
+		_G[AddonName .. 'Version'] = CURRENT_VERSION
 	end
 
 	--create a loader for the options menu
@@ -48,7 +45,7 @@ function Dominos:OnInitialize()
 	kb.RegisterCallback(self, 'LIBKEYBOUND_DISABLED')
 end
 
-function Dominos:OnEnable()
+function Addon:OnEnable()
 	self:UpdateUseOverrideUI()
 	self:Load()
 
@@ -57,7 +54,7 @@ end
 
 --[[ Version Updating ]]--
 
-function Dominos:GetDefaults()
+function Addon:GetDefaults()
 	return {
 		profile = {
 			possessBar = 1,
@@ -84,7 +81,7 @@ function Dominos:GetDefaults()
 	}
 end
 
-function Dominos:UpdateSettings(major, minor, bugfix)
+function Addon:UpdateSettings(major, minor, bugfix)
 	--inject new roll bar defaults
 	if major == '5' and minor == '0' and bugfix < '14' then
 		for profile, sets in pairs(self.db.sv.profiles) do
@@ -99,19 +96,19 @@ function Dominos:UpdateSettings(major, minor, bugfix)
 	end
 end
 
-function Dominos:UpdateVersion()
-	DominosVersion = CURRENT_VERSION
+function Addon:UpdateVersion()
+	_G[AddonName .. 'Version'] = CURRENT_VERSION
 
-	self:Printf(L.Updated, DominosVersion)
+	self:Printf(L.Updated, _G[AddonName .. 'Version'])
 end
 
-function Dominos:PrintVersion()
-	self:Print(DominosVersion)
+function Addon:PrintVersion()
+	self:Print(_G[AddonName .. 'Version'])
 end
 
 
 --Load is called  when the addon is first enabled, and also whenever a profile is loaded
-function Dominos:Load()
+function Addon:Load()
 	for i, module in self:IterateModules() do
 		if module.Load then
 			module:Load()
@@ -122,7 +119,7 @@ function Dominos:Load()
 end
 
 --unload is called when we're switching profiles
-function Dominos:Unload()
+function Addon:Unload()
 	--unload any module stuff
 	for i, module in self:IterateModules() do
 		if module.Unload then
@@ -135,16 +132,16 @@ end
 	 Configuration
 --]]
 
-function Dominos:SetUseOverrideUI(enable)
+function Addon:SetUseOverrideUI(enable)
 	self.db.profile.useOverrideUI = enable and true or false
 	self:UpdateUseOverrideUI()
 end
 
-function Dominos:UsingOverrideUI()
+function Addon:UsingOverrideUI()
 	return self.db.profile.useOverrideUI
 end
 
-function Dominos:UpdateUseOverrideUI()
+function Addon:UpdateUseOverrideUI()
 	local usingOverrideUI = self:UsingOverrideUI()
 
 	self.OverrideController:SetAttribute('state-useoverrideui', usingOverrideUI)
@@ -161,7 +158,7 @@ end
 
 --[[ Keybound Events ]]--
 
-function Dominos:LIBKEYBOUND_ENABLED()
+function Addon:LIBKEYBOUND_ENABLED()
 	for _,frame in self.Frame:GetAll() do
 		if frame.KEYBOUND_ENABLED then
 			frame:KEYBOUND_ENABLED()
@@ -169,7 +166,7 @@ function Dominos:LIBKEYBOUND_ENABLED()
 	end
 end
 
-function Dominos:LIBKEYBOUND_DISABLED()
+function Addon:LIBKEYBOUND_DISABLED()
 	for _,frame in self.Frame:GetAll() do
 		if frame.KEYBOUND_DISABLED then
 			frame:KEYBOUND_DISABLED()
@@ -180,7 +177,7 @@ end
 
 --[[ Profile Functions ]]--
 
-function Dominos:SaveProfile(name)
+function Addon:SaveProfile(name)
 	local toCopy = self.db:GetCurrentProfile()
 	if name and name ~= toCopy then
 		self:Unload()
@@ -191,7 +188,7 @@ function Dominos:SaveProfile(name)
 	end
 end
 
-function Dominos:SetProfile(name)
+function Addon:SetProfile(name)
 	local profile = self:MatchProfile(name)
 	if profile and profile ~= self.db:GetCurrentProfile() then
 		self:Unload()
@@ -203,7 +200,7 @@ function Dominos:SetProfile(name)
 	end
 end
 
-function Dominos:DeleteProfile(name)
+function Addon:DeleteProfile(name)
 	local profile = self:MatchProfile(name)
 	if profile and profile ~= self.db:GetCurrentProfile() then
 		self.db:DeleteProfile(profile)
@@ -212,7 +209,7 @@ function Dominos:DeleteProfile(name)
 	end
 end
 
-function Dominos:CopyProfile(name)
+function Addon:CopyProfile(name)
 	if name and name ~= self.db:GetCurrentProfile() then
 		self:Unload()
 		self.db:CopyProfile(name)
@@ -221,14 +218,14 @@ function Dominos:CopyProfile(name)
 	end
 end
 
-function Dominos:ResetProfile()
+function Addon:ResetProfile()
 	self:Unload()
 	self.db:ResetProfile()
 	self.isNewProfile = true
 	self:Load()
 end
 
-function Dominos:ListProfiles()
+function Addon:ListProfiles()
 	self:Print(L.AvailableProfiles)
 
 	local current = self.db:GetCurrentProfile()
@@ -241,7 +238,7 @@ function Dominos:ListProfiles()
 	end
 end
 
-function Dominos:MatchProfile(name)
+function Addon:MatchProfile(name)
 	local name = name:lower()
 	local nameRealm = name .. ' - ' .. GetRealmName():lower()
 	local match
@@ -260,85 +257,85 @@ end
 
 --[[ Profile Events ]]--
 
-function Dominos:OnNewProfile(msg, db, name)
+function Addon:OnNewProfile(msg, db, name)
 	self.isNewProfile = true
 	self:Print(format(L.ProfileCreated, name))
 end
 
-function Dominos:OnProfileDeleted(msg, db, name)
+function Addon:OnProfileDeleted(msg, db, name)
 	self:Print(format(L.ProfileDeleted, name))
 end
 
-function Dominos:OnProfileChanged(msg, db, name)
+function Addon:OnProfileChanged(msg, db, name)
 	self:Print(format(L.ProfileLoaded, name))
 end
 
-function Dominos:OnProfileCopied(msg, db, name)
+function Addon:OnProfileCopied(msg, db, name)
 	self:Print(format(L.ProfileCopied, name))
 end
 
-function Dominos:OnProfileReset(msg, db)
+function Addon:OnProfileReset(msg, db)
 	self:Print(format(L.ProfileReset, db:GetCurrentProfile()))
 end
 
 
 --[[ Settings...Setting ]]--
 
-function Dominos:SetFrameSets(id, sets)
+function Addon:SetFrameSets(id, sets)
 	local id = tonumber(id) or id
 	self.db.profile.frames[id] = sets
 
 	return self.db.profile.frames[id]
 end
 
-function Dominos:GetFrameSets(id)
+function Addon:GetFrameSets(id)
 	return self.db.profile.frames[tonumber(id) or id]
 end
 
 
 --[[ Options Menu Display ]]--
 
-function Dominos:GetOptions()
+function Addon:GetOptions()
 	local options = self.Options
-	
-	if (not options) and LoadAddOn('Dominos_Config') then
+
+	if (not options) and LoadAddOn(CONFIG_ADDON_NAME) then
 		options = self.Options
 	end
-	
+
 	return options
 end
 
-function Dominos:ShowOptions()
+function Addon:ShowOptions()
 	if InCombatLockdown() then return end
-		
-	local options = self:GetOptions()	
+
+	local options = self:GetOptions()
 	if options then
 		options:ShowAddonPanel()
 		return true
 	end
-	
+
 	return false
 end
 
-function Dominos:NewMenu()
-	local options = self:GetOptions()	
+function Addon:NewMenu()
+	local options = self:GetOptions()
 	if options then
 		return options.Menu:New()
-	end	
+	end
 	return nil
 end
 
-function Dominos:IsConfigAddonEnabled()
-	return GetAddOnEnableState(UnitName('player'), AddonName .. '_Config') >= 1
+function Addon:IsConfigAddonEnabled()
+	return GetAddOnEnableState(UnitName('player'), CONFIG_ADDON_NAME) >= 1
 end
 
 
 --[[ Configuration Functions ]]--
 
 --moving
-Dominos.locked = true
+Addon.locked = true
 
-function Dominos:SetLock(enable)
+function Addon:SetLock(enable)
 	if InCombatLockdown() and (not enable) then
 		return
 	end
@@ -353,25 +350,25 @@ function Dominos:SetLock(enable)
 	end
 end
 
-function Dominos:Locked()
+function Addon:Locked()
 	return self.locked
 end
 
-function Dominos:ToggleLockedFrames()
+function Addon:ToggleLockedFrames()
 	self:SetLock(not self:Locked())
 end
 
-function Dominos:ToggleBindingMode()
+function Addon:ToggleBindingMode()
 	self:SetLock(true)
 	LibStub('LibKeyBound-1.0'):Toggle()
 end
 
-function Dominos:IsBindingModeEnabled()
+function Addon:IsBindingModeEnabled()
 	return LibStub('LibKeyBound-1.0'):IsShown()
 end
 
 --scale
-function Dominos:ScaleFrames(...)
+function Addon:ScaleFrames(...)
 	local numArgs = select('#', ...)
 	local scale = tonumber(select(numArgs, ...))
 
@@ -383,7 +380,7 @@ function Dominos:ScaleFrames(...)
 end
 
 --opacity
-function Dominos:SetOpacityForFrames(...)
+function Addon:SetOpacityForFrames(...)
 	local numArgs = select('#', ...)
 	local alpha = tonumber(select(numArgs, ...))
 
@@ -395,7 +392,7 @@ function Dominos:SetOpacityForFrames(...)
 end
 
 --faded opacity
-function Dominos:SetFadeForFrames(...)
+function Addon:SetFadeForFrames(...)
 	local numArgs = select('#', ...)
 	local alpha = tonumber(select(numArgs, ...))
 
@@ -407,7 +404,7 @@ function Dominos:SetFadeForFrames(...)
 end
 
 --columns
-function Dominos:SetColumnsForFrames(...)
+function Addon:SetColumnsForFrames(...)
 	local numArgs = select('#', ...)
 	local cols = tonumber(select(numArgs, ...))
 
@@ -419,7 +416,7 @@ function Dominos:SetColumnsForFrames(...)
 end
 
 --spacing
-function Dominos:SetSpacingForFrame(...)
+function Addon:SetSpacingForFrame(...)
 	local numArgs = select('#', ...)
 	local spacing = tonumber(select(numArgs, ...))
 
@@ -431,7 +428,7 @@ function Dominos:SetSpacingForFrame(...)
 end
 
 --padding
-function Dominos:SetPaddingForFrames(...)
+function Addon:SetPaddingForFrames(...)
 	local numArgs = select('#', ...)
 	local pW, pH = select(numArgs - 1, ...)
 
@@ -443,26 +440,26 @@ function Dominos:SetPaddingForFrames(...)
 end
 
 --visibility
-function Dominos:ShowFrames(...)
+function Addon:ShowFrames(...)
 	for i = 1, select('#', ...) do
 		self.Frame:ForFrame(select(i, ...), 'ShowFrame')
 	end
 end
 
-function Dominos:HideFrames(...)
+function Addon:HideFrames(...)
 	for i = 1, select('#', ...) do
 		self.Frame:ForFrame(select(i, ...), 'HideFrame')
 	end
 end
 
-function Dominos:ToggleFrames(...)
+function Addon:ToggleFrames(...)
 	for i = 1, select('#', ...) do
 		self.Frame:ForFrame(select(i, ...), 'ToggleFrame')
 	end
 end
 
 --clickthrough
-function Dominos:SetClickThroughForFrames(...)
+function Addon:SetClickThroughForFrames(...)
 	local numArgs = select('#', ...)
 	local enable = select(numArgs - 1, ...)
 
@@ -472,32 +469,32 @@ function Dominos:SetClickThroughForFrames(...)
 end
 
 --empty button display
-function Dominos:ToggleGrid()
+function Addon:ToggleGrid()
 	self:SetShowGrid(not self:ShowGrid())
 end
 
-function Dominos:SetShowGrid(enable)
+function Addon:SetShowGrid(enable)
 	self.db.profile.showgrid = enable or false
 	self.ActionBar:ForAll('UpdateGrid')
 	self.MultiActionBarGridFixer:SetShowGrid(enable)
 end
 
-function Dominos:ShowGrid()
+function Addon:ShowGrid()
 	return self.db.profile.showgrid
 end
 
 --right click selfcast
-function Dominos:SetRightClickUnit(unit)
+function Addon:SetRightClickUnit(unit)
 	self.db.profile.ab.rightClickUnit = unit
 	self.ActionBar:ForAll('UpdateRightClickUnit')
 end
 
-function Dominos:GetRightClickUnit()
+function Addon:GetRightClickUnit()
 	return self.db.profile.ab.rightClickUnit
 end
 
 --binding text
-function Dominos:SetShowBindingText(enable)
+function Addon:SetShowBindingText(enable)
 	self.db.profile.showBindingText = enable or false
 
 	for _,f in self.Frame:GetAll() do
@@ -511,12 +508,12 @@ function Dominos:SetShowBindingText(enable)
 	end
 end
 
-function Dominos:ShowBindingText()
+function Addon:ShowBindingText()
 	return self.db.profile.showBindingText
 end
 
 --macro text
-function Dominos:SetShowMacroText(enable)
+function Addon:SetShowMacroText(enable)
 	self.db.profile.showMacroText = enable or false
 
 	for _,f in self.Frame:GetAll() do
@@ -530,12 +527,12 @@ function Dominos:SetShowMacroText(enable)
 	end
 end
 
-function Dominos:ShowMacroText()
+function Addon:ShowMacroText()
 	return self.db.profile.showMacroText
 end
 
 --possess bar settings
-function Dominos:SetOverrideBar(id)
+function Addon:SetOverrideBar(id)
 	local prevBar = self:GetOverrideBar()
 	self.db.profile.possessBar = id
 	local newBar = self:GetOverrideBar()
@@ -544,12 +541,12 @@ function Dominos:SetOverrideBar(id)
 	newBar:UpdateOverrideBar()
 end
 
-function Dominos:GetOverrideBar()
+function Addon:GetOverrideBar()
 	return self.Frame:Get(self.db.profile.possessBar)
 end
 
 --action bar numbers
-function Dominos:SetNumBars(count)
+function Addon:SetNumBars(count)
 	count = max(min(count, 120), 1) --sometimes, I do entertaininig things
 
 	if count ~= self:NumBars() then
@@ -562,47 +559,47 @@ function Dominos:SetNumBars(count)
 	end
 end
 
-function Dominos:SetNumButtons(count)
+function Addon:SetNumButtons(count)
 	self:SetNumBars(120 / count)
 end
 
-function Dominos:NumBars()
+function Addon:NumBars()
 	return self.db.profile.ab.count
 end
 
 
 --tooltips
-function Dominos:ShowTooltips()
+function Addon:ShowTooltips()
 	return self.db.profile.showTooltips
 end
 
-function Dominos:SetShowTooltips(enable)
+function Addon:SetShowTooltips(enable)
 	self.db.profile.showTooltips = enable or false
 	self:GetModule('Tooltips'):SetShowTooltips(enable)
 end
 
-function Dominos:SetShowCombatTooltips(enable)
+function Addon:SetShowCombatTooltips(enable)
 	self.db.profile.showTooltipsCombat = enable or false
 	self:GetModule('Tooltips'):SetShowTooltipsInCombat(enable)
 end
 
-function Dominos:ShowCombatTooltips()
+function Addon:ShowCombatTooltips()
 	return self.db.profile.showTooltipsCombat
 end
 
 
 --minimap button
-function Dominos:SetShowMinimap(enable)
+function Addon:SetShowMinimap(enable)
 	self.db.profile.minimap.hide = not enable
 	self:GetModule('Launcher'):Update()
 end
 
-function Dominos:ShowingMinimap()
+function Addon:ShowingMinimap()
 	return not self.db.profile.minimap.hide
 end
 
 --sticky bars
-function Dominos:SetSticky(enable)
+function Addon:SetSticky(enable)
 	self.db.profile.sticky = enable or false
 
 	if not enable then
@@ -611,18 +608,22 @@ function Dominos:SetSticky(enable)
 	end
 end
 
-function Dominos:Sticky()
+function Addon:Sticky()
 	return self.db.profile.sticky
 end
 
 --linked opacity
-function Dominos:SetLinkedOpacity(enable)
+function Addon:SetLinkedOpacity(enable)
 	self.db.profile.linkedOpacity = enable or false
 
 	self.Frame:ForAll('UpdateWatched')
 	self.Frame:ForAll('UpdateAlpha')
 end
 
-function Dominos:IsLinkedOpacityEnabled()
+function Addon:IsLinkedOpacityEnabled()
 	return self.db.profile.linkedOpacity
 end
+
+--[[ exports ]]--
+
+_G[AddonName] = Addon
