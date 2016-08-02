@@ -42,16 +42,6 @@ function ReputationBar:Update()
     self:UpdateText(name, value, max, friendTextLevel)
 end
 
-function ReputationBar:UpdateText(label, value, max, level)
-	local fn = self:CompressValues() and _G.AbbreviateLargeNumbers or _G.BreakUpLargeNumbers
-
-	if self:ShowLabels() then
-		self:SetText('%s: %s / %s (+%s)', label, fn(value), fn(max), level)
-	else
-		self:SetText('%s / %s', fn(value), fn(max))
-	end
-end
-
 function ReputationBar:IsModeActive()
     return GetWatchedFactionInfo() ~= nil
 end

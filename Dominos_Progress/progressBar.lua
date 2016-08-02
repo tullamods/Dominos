@@ -5,6 +5,16 @@ local ProgressBar = Dominos:CreateClass('Frame', Dominos.ButtonBar)
 function ProgressBar:New(id, modes, ...)
 	local bar = ProgressBar.proto.New(self, id, ...)
 
+	if not bar.sets.display then
+		bar.sets.display = {
+			label = true,
+			value = true,
+			max = true,
+			bonus = true
+		}
+	end
+
+
 	bar.modes = modes
 	bar:UpdateFont()
 	bar:UpdateAlwaysShowText()
@@ -56,8 +66,13 @@ function ProgressBar:GetDefaults()
 		spacing = 1,
 		texture = 'blizzard',
 		font = 'Friz Quadrata TT',
+		display = {
+			label = true,
+			value = true,
+			max = true,
+			bonus = true
+		},
 		alwaysShowText = true,
-		showLabels = true,
 		lockMode = true
 	}
 end
@@ -77,6 +92,9 @@ end
 function ProgressBar:OnClick()
 	if self:IsModeLocked() then
 		self:NextMode()
+	else
+		self:SetLockMode(false)
+		self:NextMode()
 	end
 end
 
@@ -85,21 +103,49 @@ end
 function ProgressBar:Update()
 end
 
-function ProgressBar:UpdateText(label, value, max, bonus)
-	local fn = self:CompressValues() and _G.AbbreviateLargeNumbers or _G.BreakUpLargeNumbers
+do
+	local buffer = nil
+	local twipe = table.wipe
+	local tinsert = table.insert
+	local tconcat = table.concat
+	local round = function(x) return math.floor(x + 0.5) end
 
-	if self:ShowLabels() then
-		if bonus and bonus > 0 then
-			self:SetText('%s: %s / %s (+%s)', label, fn(value), fn(max), fn(bonus))
-		else
-			self:SetText('%s: %s / %s', label, fn(value), fn(max))
+	function ProgressBar:UpdateText(label, value, max, bonus)
+		buffer = buffer or {}
+		twipe(buffer)
+
+		local fn = self:CompressValues() and _G.AbbreviateLargeNumbers or _G.BreakUpLargeNumbers
+
+		if label and self:Displaying('label') then
+			tinsert(buffer, ('%s:'):format(label))
 		end
-	else
-		if bonus and bonus > 0 then
-			self:SetText('%s / %s (+%s)', fn(value), fn(max), fn(bonus))
-		else
-			self:SetText('%s / %s', fn(value), fn(max))
+
+		if self:Displaying('value') then
+			if self:Displaying('max') then
+				tinsert(buffer, ('%s / %s'):format(fn(value), fn(max)))
+			else
+				tinsert(buffer, fn(value))
+			end
 		end
+
+		if value < max and self:Displaying('remaining') then
+			tinsert(buffer, fn(value - max))
+		end
+
+		if tonumber(bonus) then
+			if bonus > 0 and self:Displaying('bonus') then
+				tinsert(buffer, ('(+%s)'):format(fn(bonus)))
+			end
+		elseif tostring(bonus) and self:Displaying('label') then
+			tinsert(buffer, ('(%s)'):format(bonus))
+		end
+
+		if self:Displaying('percent') and max ~= 0 then
+			local pct = round(value / max * 100)
+			tinsert(buffer, ('%.1f%%'):format(pct))
+		end
+
+		self:SetText(tconcat(buffer, ' '))
 	end
 end
 
@@ -492,37 +538,27 @@ function ProgressBar:UpdateAlwaysShowText()
 	end
 end
 
--- show labels
-function ProgressBar:SetShowLabels(enable)
-	if self.sets.showLabels ~= enable then
-		self.sets.showLabels = enable
-		self:UpdateShowLabels(enable)
+function ProgressBar:SetDisplay(part, enable)
+	if self.sets.display[part] ~= enable then
+		self.sets.display[part] = enable or nil
+		self:Update()
 	end
 end
 
-function ProgressBar:ShowLabels()
-	return self.sets.showLabels
+function ProgressBar:Displaying(part)
+	return self.sets.display[part]
 end
-
-function ProgressBar:UpdateShowLabels(enable)
-	self:Update()
-end
-
 
 -- compress values
 function ProgressBar:SetCompressValues(enable)
 	if self.sets.compressValues ~= enable then
 		self.sets.compressValues = enable
-		self:UpdateCompressValues()
+		self:Update()
 	end
 end
 
 function ProgressBar:CompressValues()
 	return self.sets.compressValues
-end
-
-function ProgressBar:UpdateCompressValues(enable)
-	self:Update()
 end
 
 
@@ -665,20 +701,20 @@ do
 		local panel = menu:NewPanel(_G.DISPLAY)
 
 		if #self.modes > 1 then
-			panel.lockDisplayMode = panel:NewCheckButton{
-				name = l.LockDisplayMode,
+			panel:NewCheckButton{
+				name = l.AutoSwitchModes,
 
 				get = function()
-					return panel.owner:IsModeLocked()
+					return not panel.owner:IsModeLocked()
 				end,
 
 				set = function(_, enable)
-					panel.owner:SetLockMode(enable)
+					panel.owner:SetLockMode(not enable)
 				end
 			}
 		end
 
-		panel.alwaysShowTextCheckbox = panel:NewCheckButton{
+		panel:NewCheckButton{
 			name = l.AlwaysShowText,
 
 			get = function()
@@ -690,19 +726,7 @@ do
 			end
 		}
 
-		panel.showLabelsCheckbox = panel:NewCheckButton{
-			name = l.ShowLabels,
-
-			get = function()
-				return panel.owner:ShowLabels()
-			end,
-
-			set = function(_, enable)
-				panel.owner:SetShowLabels(enable)
-			end
-		}
-
-		panel.compressValues = panel:NewCheckButton{
+		panel:NewCheckButton{
 			name = l.CompressValues,
 
 			get = function()
@@ -713,6 +737,16 @@ do
 				panel.owner:SetCompressValues(enable)
 			end
 		}
+
+		for _, part in ipairs{'label', 'value', 'max', 'bonus', 'remaining', 'percent'} do
+			panel:NewCheckButton{
+				name = l['Display_' .. part],
+
+				get = function() return panel.owner:Displaying(part) end,
+
+				set = function(_, enable) panel.owner:SetDisplay(part, enable) end
+			}
+		end
 
 		return panel
 	end
