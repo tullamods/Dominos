@@ -108,7 +108,6 @@ do
 	local twipe = table.wipe
 	local tinsert = table.insert
 	local tconcat = table.concat
-	local round = function(x) return math.floor(x + 0.5) end
 
 	function ProgressBar:UpdateText(label, value, max, bonus)
 		buffer = buffer or {}
@@ -129,7 +128,7 @@ do
 		end
 
 		if value < max and self:Displaying('remaining') then
-			tinsert(buffer, fn(value - max))
+			tinsert(buffer, ('-%s'):format(fn(max - value)))
 		end
 
 		if tonumber(bonus) then
@@ -141,8 +140,7 @@ do
 		end
 
 		if self:Displaying('percent') and max ~= 0 then
-			local pct = round(value / max * 100)
-			tinsert(buffer, ('%.1f%%'):format(pct))
+			tinsert(buffer, ('%.1f%%'):format(value / max * 100))
 		end
 
 		self:SetText(tconcat(buffer, ' '))
