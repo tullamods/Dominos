@@ -9,8 +9,7 @@
 
 --[[ globals ]]--
 
-local AddonName = ...
-local Addon = _G[AddonName]
+local AddonName, Addon = ...
 local Timer_After = _G.C_Timer.After
 
 
@@ -33,18 +32,10 @@ function SurrogateButton:Get()
 end
 
 do
-	local id = 1
-
-	local function getNextName()
-		local name = string.format('%sVirtualBindingButton%d', AddonName, id)
-
-		id = id + 1
-
-		return name
-	end
+	local nextName = Addon:CreateNameGenerator('VirtualButton')
 
 	function SurrogateButton:Create()
-		local button = self:Bind(CreateFrame('Button', getNextName(), nil, 'SecureActionButtonTemplate'))
+		local button = self:Bind(CreateFrame('Button', nextName(), nil, 'SecureActionButtonTemplate'))
 
 		button:Hide()
 		button:SetAttribute('type', 'click')
@@ -106,7 +97,6 @@ end
 --[[ controller ]]--
 
 local BindingsController = Addon:CreateHiddenFrame('Frame', nil, UIParent, 'SecureHandlerStateTemplate')
-Addon.BindingsController = BindingsController
 
 function BindingsController:Load()
 	self.frames = {}
@@ -360,3 +350,8 @@ function BindingsController:CastingOnKeyPress()
 end
 
 BindingsController:Load()
+
+
+--[[ exports ]]--
+
+Addon.BindingsController = BindingsController

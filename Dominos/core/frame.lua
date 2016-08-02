@@ -4,7 +4,7 @@
 --]]
 
 local AddonName, Addon = ...
-local Frame = Dominos:CreateClass('Frame'); Dominos.Frame = Frame
+local Frame = Addon:CreateClass('Frame')
 local L = LibStub('AceLocale-3.0'):GetLocale(AddonName)
 local active = {}
 local unused = {}
@@ -17,7 +17,7 @@ function Frame:New(id, tooltipText)
 	frame:LoadSettings()
 	frame:SetTooltipText(tooltipText)
 
-	Dominos.OverrideController:Add(frame.header)
+	Addon.OverrideController:Add(frame.header)
 
 	active[id] = frame
 
@@ -113,8 +113,8 @@ function Frame:Free()
 	active[self.id] = nil
 
 	UnregisterStateDriver(self.header, 'display', 'show')
-	Dominos.MouseOverWatcher:Remove(self)
-	Dominos.OverrideController:Remove(self.header)
+	Addon.MouseOverWatcher:Remove(self)
+	Addon.OverrideController:Remove(self.header)
 
 	self.docked = nil
 
@@ -127,12 +127,12 @@ end
 
 function Frame:Delete()
 	self:Free()
-	Dominos:SetFrameSets(self.id, nil)
+	Addon:SetFrameSets(self.id, nil)
 end
 
 function Frame:LoadSettings()
 	--get defaults must be provided by anything implementing the Frame type
-	self.sets = Dominos:GetFrameSets(self.id) or Dominos:SetFrameSets(self.id, self:GetDefaults())
+	self.sets = Addon:GetFrameSets(self.id) or Addon:SetFrameSets(self.id, self:GetDefaults())
 	self:Reposition()
 
 	if self.sets.hidden then
@@ -268,7 +268,7 @@ end
 function Frame:UpdateAlpha()
 	self:SetAlpha(self:GetExpectedAlpha())
 
-	if Dominos:IsLinkedOpacityEnabled() then
+	if Addon:IsLinkedOpacityEnabled() then
 		self:ForDocked('UpdateAlpha')
 	end
 end
@@ -277,7 +277,7 @@ end
 function Frame:GetExpectedAlpha()
 	--if this is a docked frame and linked opacity is enabled
 	--then return the expected opacity of the parent frame
-	if Dominos:IsLinkedOpacityEnabled() then
+	if Addon:IsLinkedOpacityEnabled() then
 		local anchor = (self:GetAnchor())
 		if anchor and anchor:FrameIsShown() then
 			return anchor:GetExpectedAlpha()
@@ -347,7 +347,7 @@ function Frame:IsFocus()
 		return true
 	end
 
-	return Dominos:IsLinkedOpacityEnabled() and self:IsDockedFocus()
+	return Addon:IsLinkedOpacityEnabled() and self:IsDockedFocus()
 end
 
 function Frame:IsDockedFocus()
@@ -406,7 +406,7 @@ function Frame:Fade()
 
 	Fade[self](self:GetExpectedAlpha(), 0.1)
 
-	if Dominos:IsLinkedOpacityEnabled() then
+	if Addon:IsLinkedOpacityEnabled() then
 		self:ForDocked('Fade')
 	end
 end
@@ -421,7 +421,7 @@ function Frame:ShowFrame()
 	self:UpdateWatched()
 	self:UpdateAlpha()
 
-	if Dominos:IsLinkedOpacityEnabled() then
+	if Addon:IsLinkedOpacityEnabled() then
 		self:ForDocked('ShowFrame')
 	end
 end
@@ -433,7 +433,7 @@ function Frame:HideFrame()
 	self:UpdateWatched()
 	self:UpdateAlpha()
 
-	if Dominos:IsLinkedOpacityEnabled() then
+	if Addon:IsLinkedOpacityEnabled() then
 		self:ForDocked('HideFrame')
 	end
 end
@@ -554,7 +554,7 @@ function Frame:Stick()
 	self:ClearAnchor()
 
 	--only do sticky code if the alt key is not currently down
-	if Dominos:Sticky() and not IsAltKeyDown() then
+	if Addon:Sticky() and not IsAltKeyDown() then
 		--try to stick to a bar, then try to stick to a screen edge
 		for _, f in self:GetAll() do
 			if f ~= self then
@@ -745,13 +745,13 @@ end
 --[[ Menus ]]--
 
 function Frame:CreateMenu()
-	self.menu = Dominos:NewMenu(self.id)
+	self.menu = Addon:NewMenu(self.id)
 	self.menu:AddLayoutPanel()
 	self.menu:AddAdvancedPanel()
 end
 
 function Frame:ShowMenu()
-	if not Dominos:IsConfigAddonEnabled() then return end
+	if not Addon:IsConfigAddonEnabled() then return end
 
 	if not self.menu then
 		self:CreateMenu()
@@ -781,10 +781,10 @@ end
 --[[ Mouseover Watching ]]--
 
 function Frame:UpdateWatched()
-	if self:FrameIsShown() and self:GetFadeMultiplier() < 1 and not(Dominos:IsLinkedOpacityEnabled() and self:GetAnchor()) then
-		Dominos.MouseOverWatcher:Add(self)
+	if self:FrameIsShown() and self:GetFadeMultiplier() < 1 and not(Addon:IsLinkedOpacityEnabled() and self:GetAnchor()) then
+		Addon.MouseOverWatcher:Add(self)
 	else
-		Dominos.MouseOverWatcher:Remove(self)
+		Addon.MouseOverWatcher:Remove(self)
 	end
 end
 
@@ -856,3 +856,7 @@ function Frame:ForFrame(id, method, ...)
 		end
 	end
 end
+
+--[[ exports ]]--
+
+Addon.Frame = Frame

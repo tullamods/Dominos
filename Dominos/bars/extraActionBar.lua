@@ -2,7 +2,7 @@ if not _G['ExtraActionBarFrame'] then return end
 
 --[[ Globals ]]--
 
-local Addon = _G[...]
+local AddonName, Addon = ...
 local KeyBound = LibStub('LibKeyBound-1.0')
 local Tooltips = Addon:GetModule('Tooltips')
 local Bindings = Addon.BindingsController
@@ -124,27 +124,27 @@ do
 		end
 	end
 
-	function ExtraBar:CreateMenu()		
+	function ExtraBar:CreateMenu()
 		local menu = Addon:NewMenu()
-		
+
 		self:AddLayoutPanel(menu)
 		menu:AddAdvancedPanel()
-		
+
 		self.menu = menu
 	end
-	
+
 	function ExtraBar:AddLayoutPanel(menu)
 		local l = LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')
-		local panel = menu:NewPanel(l.Layout)		
-		
+		local panel = menu:NewPanel(l.Layout)
+
 		panel:NewCheckButton{
 			name = l.ExtraBarShowBlizzardTexture,
 			get = function() return panel.owner:ShowingBlizzardTexture() end,
 			set = function(_, enable) panel.owner:ShowBlizzardTexture(enable) end
 		}
-		
+
 		panel:AddLayoutOptions()
-	end	
+	end
 end
 
 --[[ module ]]--

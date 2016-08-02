@@ -1,8 +1,7 @@
 --[[
     Slash command module for Dominos
 --]]
-local AddonName = ...
-local Addon = _G[AddonName]
+local AddonName, Addon = ...
 local SlashCommands = Addon:NewModule('SlashCommands', 'AceConsole-3.0')
 
 local L = LibStub('AceLocale-3.0'):GetLocale(AddonName)

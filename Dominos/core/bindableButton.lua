@@ -6,15 +6,14 @@
 
 --[[ Globals ]]--
 
-local _G = _G
-local Dominos = _G['Dominos']
+local AddonName, Addon = ...
 local KeyBound = LibStub('LibKeyBound-1.0')
 
 
 --[[ Class ]]--
 
-local BindableButton = Dominos:CreateClass('CheckButton')
-Dominos.BindableButton = BindableButton
+local BindableButton = Addon:CreateClass('CheckButton')
+Addon.BindableButton = BindableButton
 
 -- there's a nice assumption here: all hotkey text will use the same naming
 -- convention the call here is wacky because this functionality is actually
@@ -23,7 +22,7 @@ Dominos.BindableButton = BindableButton
 function BindableButton:UpdateHotkey(buttonType)
 	local key = BindableButton.GetHotkey(self, buttonType)
 
-	if key ~= ''  and Dominos:ShowBindingText() then
+	if key ~= ''  and Addon:ShowBindingText() then
 		self.HotKey:SetText(key)
 		self.HotKey:Show()
 	else
