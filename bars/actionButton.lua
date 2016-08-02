@@ -1,16 +1,13 @@
 --[[
 	Action Button.lua
-		A dominos action button
+		A Dominos action button
 --]]
 
-local AddonName = ...
-local Addon = LibStub('AceAddon-3.0'):GetAddon(AddonName)
+local AddonName, Addon = ...
 local KeyBound = LibStub('LibKeyBound-1.0')
-local Bindings = Addon.BindingsController
 local Tooltips = Addon:GetModule('Tooltips')
 
 local ActionButton = Addon:CreateClass('CheckButton', Addon.BindableButton)
-Addon.ActionButton = ActionButton
 
 ActionButton.unused = {}
 ActionButton.active = {}
@@ -67,8 +64,8 @@ function ActionButton:New(id)
 			end
 		]])
 
-		Bindings:Register(button, button:GetName():match(AddonName .. 'ActionButton%d'))
-		Tooltips:Register(button)
+		Addon.BindingsController:Register(button, button:GetName():match(AddonName .. 'ActionButton%d'))
+		Addon:GetModule('Tooltips'):Register(button)
 
 		--get rid of range indicator text
 		local hotkey = button.HotKey
@@ -134,8 +131,8 @@ do
 
 		self.active[id] = nil
 
-		Tooltips:Unregister(self)
-		Bindings:Unregister(self)
+		Addon:GetModule('Tooltips'):Unregister(self)
+		Addon.BindingsController:Unregister(self)
 
 		self:SetParent(HiddenActionButtonFrame)
 		self:Hide()
@@ -170,7 +167,7 @@ end
 
 --macro text
 function ActionButton:UpdateMacro()
-	if Dominos:ShowMacroText() then
+	if Addon:ShowMacroText() then
 		self.Name:Show()
 	else
 		self.Name:Hide()
@@ -195,3 +192,7 @@ function ActionButton:LoadAction()
 
 	self:SetAttribute('action', id)
 end
+
+--[[ exports ]]--
+
+Addon.ActionButton = ActionButton

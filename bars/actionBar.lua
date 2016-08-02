@@ -5,9 +5,9 @@
 
 --[[ globals ]]--
 
-local Dominos = _G['Dominos']
-local ActionButton = Dominos.ActionButton
-local HiddenFrame = CreateFrame('Frame'); HiddenFrame:Hide()
+local AddonName, Addon = ...
+local ActionButton = Addon.ActionButton
+local HiddenFrame = Addon:CreateHiddenFrame('Frame', nil, _G.UIParent)
 
 local MAX_BUTTONS = 120
 
@@ -17,8 +17,8 @@ local format = string.format
 
 --[[ Action Bar ]]--
 
-local ActionBar = Dominos:CreateClass('Frame', Dominos.ButtonBar)
-Dominos.ActionBar = ActionBar
+local ActionBar = Addon:CreateClass('Frame', Addon.ButtonBar)
+Addon.ActionBar = ActionBar
 
 -- Metatable magic.  Basically this says, 'create a new table for this index'
 -- I do this so that I only create page tables for classes the user is actually
@@ -48,19 +48,9 @@ ActionBar.mainbarOffsets = {
 			pages.bear = 8
 			pages.moonkin = 9
 			pages.tree = 7
-		-- elseif i == 'WARRIOR' then
-		-- 	pages.battle = 6
-		-- 	pages.defensive = 7
-		-- 	-- pages.berserker = 8
-		-- elseif i == 'PRIEST' then
-		-- 	pages.shadow = 6
 		elseif i == 'ROGUE' then
 			pages.stealth = 6
 			pages.shadowdance = 6
-		-- elseif i == 'MONK' then
-		-- 	pages.tiger = 6
-		-- 	pages.ox = 7
-		-- 	pages.serpent = 8
 		end
 
 		t[i] = pages
@@ -104,7 +94,7 @@ function ActionBar:GetDefaults()
 end
 
 function ActionBar:GetDisplayName()
-	local L = LibStub('AceLocale-3.0'):GetLocale('Dominos')
+	local L = LibStub('AceLocale-3.0'):GetLocale(AddonName)
 
 	return L.ActionBarDisplayName:format(self.id)
 end
@@ -117,7 +107,7 @@ end
 
 --returns the maximum possible size for a given bar
 function ActionBar:MaxLength()
-	return floor(MAX_BUTTONS / Dominos:NumBars())
+	return floor(MAX_BUTTONS / Addon:NumBars())
 end
 
 --[[ button stuff]]--
@@ -162,7 +152,7 @@ function ActionBar:UpdateStateDriver()
 	UnregisterStateDriver(self.header, 'page', 0)
 
 	local header = ''
-	for i, state in Dominos.BarStates:getAll() do
+	for i, state in Addon.BarStates:getAll() do
 		local stateId = state.id
 		local condition
 		if type(state.value) == 'function' then
@@ -196,7 +186,7 @@ do
 
 		button:SetAttribute('button--index', index)
 
-		for i, state in Dominos.BarStates:getAll() do
+		for i, state in Addon.BarStates:getAll() do
 			local offset = self:GetOffset(state.id)
 			local actionId = nil
 
@@ -257,7 +247,7 @@ end
 
 --returns true if the possess bar, false otherwise
 function ActionBar:IsOverrideBar()
-	return self == Dominos:GetOverrideBar()
+	return self == Addon:GetOverrideBar()
 end
 
 
@@ -277,7 +267,7 @@ function ActionBar:HideGrid()
 end
 
 function ActionBar:UpdateGrid()
-	if Dominos:ShowGrid() then
+	if Addon:ShowGrid() then
 		self:ShowGrid()
 	else
 		self:HideGrid()
@@ -295,7 +285,7 @@ end
 
 --right click targeting support
 function ActionBar:UpdateRightClickUnit()
-	self.header:SetAttribute('*unit2', Dominos:GetRightClickUnit())
+	self.header:SetAttribute('*unit2', Addon:GetRightClickUnit())
 end
 
 --utility functions
@@ -393,7 +383,7 @@ do
 	local lastNumBars = -1
 
 	local function getDropdownItems()
-		local numBars = Dominos:NumBars()
+		local numBars = Addon:NumBars()
 
 		if lastNumBars ~= numBars then
 			dropdownItems = {
@@ -414,7 +404,7 @@ do
 	end
 
 	local function AddStateGroup(panel, categoryName, stateType, l)
-		local states = Dominos.BarStates:map(function(s)
+		local states = Addon.BarStates:map(function(s)
 			return s.type == stateType
 		end)
 
@@ -441,7 +431,7 @@ do
 				get = function()
 					local offset = panel.owner:GetOffset(state.id) or -1
 					if offset > -1 then
-						return (panel.owner.id + offset - 1) % Dominos:NumBars() + 1
+						return (panel.owner.id + offset - 1) % Addon:NumBars() + 1
 					end
 					return offset
 				end,
@@ -452,7 +442,7 @@ do
 					if value == -1 then
 						offset = nil
 					elseif value < panel.owner.id then
-						offset = (Dominos:NumBars() - panel.owner.id) + value
+						offset = (Addon:NumBars() - panel.owner.id) + value
 					else
 						offset = value - panel.owner.id
 					end
@@ -464,7 +454,7 @@ do
 	end
 
 	function ActionBar:CreateMenu()
-		local menu = Dominos:NewMenu(self.id)
+		local menu = Addon:NewMenu(self.id)
 
 		self:AddLayoutPanel(menu)
 		self:AddPagingPanel(menu)
@@ -517,14 +507,14 @@ end
 
 --[[ Action Bar Controller ]]--
 
-local ActionBarController = Dominos:NewModule('ActionBars', 'AceEvent-3.0')
+local ActionBarController = Addon:NewModule('ActionBars', 'AceEvent-3.0')
 
 function ActionBarController:Load()
 	self:RegisterEvent('UPDATE_BONUS_ACTIONBAR', 'UpdateOverrideBar')
 	self:RegisterEvent('UPDATE_VEHICLE_ACTIONBAR', 'UpdateOverrideBar')
 	self:RegisterEvent('UPDATE_OVERRIDE_ACTIONBAR', 'UpdateOverrideBar')
 
-	for i = 1, Dominos:NumBars() do
+	for i = 1, Addon:NumBars() do
 		ActionBar:New(i)
 	end
 end
@@ -532,17 +522,17 @@ end
 function ActionBarController:Unload()
 	self:UnregisterAllEvents()
 
-	for i = 1, Dominos:NumBars() do
-		Dominos.Frame:ForFrame(i, 'Free')
+	for i = 1, Addon:NumBars() do
+		Addon.Frame:ForFrame(i, 'Free')
 	end
 end
 
 function ActionBarController:UpdateOverrideBar()
-	if InCombatLockdown() or (not Dominos.OverrideController:OverrideBarActive()) then
+	if InCombatLockdown() or (not Addon.OverrideController:OverrideBarActive()) then
 		return
 	end
 
-	local overrideBar = Dominos:GetOverrideBar()
+	local overrideBar = Addon:GetOverrideBar()
 
 	for _, button in pairs(overrideBar.buttons) do
 		ActionButton_Update(button)

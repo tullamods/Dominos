@@ -3,13 +3,8 @@
     want visible when running Dominos
 --]]
 
-local AddonName = ...
-local Addon = _G[AddonName]
-local BlizzardHider = Addon:NewModule('BlizzardHider')
-
---[[ Helpers ]]--
-
-local hiddenFrame = Addon:CreateHiddenFrame('Frame', nil, _G['UIParent'], 'SecureFrameTemplate')
+local hiddenFrame = CreateFrame('Frame', nil, _G['UIParent'], 'SecureFrameTemplate');
+hiddenFrame:Hide()
 
 local function disableFrame(frameName, unregisterEvents)
     local frame = _G[frameName]
@@ -32,13 +27,7 @@ local function disableFrameSlidingAnimation(frameName)
     animation:SetOffset(0, 0)
 end
 
---[[ Module Functionality ]]--
-
-function BlizzardHider:OnEnable()
-    self:Hide()
-end
-
-function BlizzardHider:Hide()
+do
     -- disable, but don't hide the menu bar to work around Blizzard assumptions
     _G['MainMenuBar']:EnableMouse(false)
     _G['MainMenuBar'].ignoreFramePositionManager = true

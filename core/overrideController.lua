@@ -1,5 +1,5 @@
-local OverrideController = CreateFrame('Frame', nil, UIParent, 'SecureHandlerStateTemplate'); OverrideController:Hide()
-Dominos.OverrideController = OverrideController
+local AddonName, Addon = ...
+local OverrideController = Addon:CreateHiddenFrame('Frame', nil, UIParent, 'SecureHandlerStateTemplate')
 
 local overrideBarStates = {
 	overridebar = '[overridebar]1;0',
@@ -141,7 +141,7 @@ function OverrideController:Remove(frame)
 end
 
 function OverrideController:DumpStates()
-	Dominos:Print('Active States:')
+	Addon:Print('Active States:')
 
 	print('------------------------------')
 	for state in pairs(overrideBarStates) do
@@ -162,3 +162,7 @@ function OverrideController:OverrideBarActive()
 end
 
 OverrideController:Load()
+
+--[[ exports ]]--
+
+Addon.OverrideController = OverrideController

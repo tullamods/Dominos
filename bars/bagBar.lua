@@ -2,8 +2,7 @@
 	bagBar -  A bar for holding container buttons
 --]]
 
-local AddonName = ...
-local Addon = _G[AddonName]
+local AddonName, Addon = ...
 
 -- register buttons for use later
 local bagButtons = {}
@@ -62,17 +61,17 @@ function BagBar:CreateMenu()
 	local L = LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')
 
 	local layoutPanel = menu:NewPanel(L.Layout)
-	
+
 	layoutPanel:NewCheckButton{
 		name = L.OneBag,
 		get = function() return layoutPanel.owner:OneBag() end,
 		set = function(_, enable) return layoutPanel.owner:SetOneBag(enable) end,
 	}
-	
+
 	layoutPanel:AddLayoutOptions()
 
 	menu:AddAdvancedPanel()
-	
+
 	self.menu = menu
 end
 
@@ -107,8 +106,6 @@ end
 
 function BagBarController:RegisterButton(name)
 	local button = _G[name]
-
-
 
 	table.insert(bagButtons, button)
 end
