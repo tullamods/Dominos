@@ -9,9 +9,9 @@ function HonorBar:Init()
 end
 
 function HonorBar:Update()
-	local value = UnitHonor('player')
-	local max = UnitHonorMax('player')
-	local bonus = GetHonorExhaustion()
+	local value = UnitHonor('player') or 0
+	local max = UnitHonorMax('player') or 1
+	local bonus = GetHonorExhaustion() or 0
 
 	self:SetValues(value, max, bonus)
 	self:UpdateText(_G.HONOR, value, max, bonus)
