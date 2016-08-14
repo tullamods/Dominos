@@ -284,15 +284,15 @@ function Frame:GetExpectedAlpha()
 		end
 	end
 
-	--if the frame is moused over, then return the frame's normal opacity
-	if self.focused then
-		return self:GetFrameAlpha()
-	end
-
 	--if there's a statealpha value for the frame, then use it
 	local stateAlpha = self.header:GetAttribute('state-alpha')
 	if stateAlpha then
 		return stateAlpha / 100
+	end
+
+	--if the frame is moused over, then return the frame's normal opacity
+	if self.focused then
+		return self:GetFrameAlpha()
 	end
 
 	return self:GetFrameAlpha() * self:GetFadeMultiplier()
