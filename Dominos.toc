@@ -9,7 +9,6 @@ embeds.xml
 localization.xml
 Dominos.lua
 core\helpers.lua
-core\events.lua
 core\frame.lua
 core\buttonBar.lua
 core\configOverlay.lua
