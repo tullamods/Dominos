@@ -50,5 +50,4 @@ do
     disableFrame('PossessBarFrame')
     disableFrame('PetActionBarFrame')
     disableFrame('MultiCastActionBarFrame')
-    disableFrame('MultiBarBottomLeft')
 end
