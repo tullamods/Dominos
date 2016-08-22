@@ -82,8 +82,8 @@ do
 		addState('class', 'prowl', '[bonusbar:1,stealth]', GetSpellInfo(5215))
 		addState('class', 'cat', '[bonusbar:1]', GetSpellInfo(768))
 	elseif class == 'ROGUE' then
+		addState('class', 'shadowdance', '[form:2]', GetSpellInfo(185313))
 		addState('class', 'stealth', '[bonusbar:1]', GetSpellInfo(1784))
-		addState('class', 'shadowdance', '[form:2]', GetSpellInfo(1856))
 	end
 
 	local race = select(2, UnitRace('player'))
