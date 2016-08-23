@@ -21,8 +21,12 @@ function Frame:New(id, tooltipText)
 
 	active[id] = frame
 
+	frame:OnEnable()
+
 	return frame
 end
+
+function Frame:OnEnable() end
 
 function Frame:Create(id)
 	local frameName = ('%sFrame%s'):format(AddonName, id)
@@ -95,8 +99,12 @@ function Frame:Create(id)
 
 	frame.header:SetAllPoints(frame)
 
+	frame:OnCreate()
+
 	return frame
 end
+
+function Frame:OnCreate() end
 
 function Frame:Restore(id)
 	local frame = unused[id]
@@ -104,12 +112,16 @@ function Frame:Restore(id)
 	if frame then
 		unused[id] = nil
 
+		frame:OnRestore()
+
 		return frame
 	end
 end
 
+function Frame:OnRestore() end
+
 --destructor
-function Frame:Free()
+function Frame:Free(deleteSettings)
 	active[self.id] = nil
 
 	UnregisterStateDriver(self.header, 'display', 'show')
@@ -122,13 +134,12 @@ function Frame:Free()
 	self:SetUserPlaced(nil)
 	self:Hide()
 
+	self:OnFree(deleteSettings)
+
 	unused[self.id] = self
 end
 
-function Frame:Delete()
-	self:Free()
-	Addon:SetFrameSets(self.id, nil)
-end
+function Frame:OnFree() end
 
 function Frame:LoadSettings()
 	--get defaults must be provided by anything implementing the Frame type
@@ -145,7 +156,11 @@ function Frame:LoadSettings()
 
 	self:ShowInOverrideUI(self:ShowingInOverrideUI())
 	self:ShowInPetBattleUI(self:ShowingInPetBattleUI())
+
+	self:OnLoadSettings()
 end
+
+function Frame:OnLoadSettings() end
 
 function Frame:GetDisplayName()
 	return L.BarDisplayName:format(tostring(self.id):gsub('^%l', string.upper))
