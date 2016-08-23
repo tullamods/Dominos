@@ -32,12 +32,10 @@ end
 function CastBar:OnCreate()
 	self:SetFrameStrata('HIGH')
 	self:SetScript('OnEvent', self.OnEvent)
-	self:SetScript('OnAttributeChanged', self.OnAttributeChanged)
 
-	local parent = CreateFrame('Frame', nil, self.header)
+	local parent = CreateFrame('Frame', nil, self)
 	parent:SetAllPoints(parent:GetParent())
 	parent:SetAlpha(0)
-	self.bar = parent
 
 	local fout = parent:CreateAnimationGroup()
 	fout:SetLooping('NONE')
@@ -87,15 +85,15 @@ function CastBar:OnCreate()
 	labelText:SetPoint('LEFT', 2, 0)
 	self.labelText = labelText
 
-	self.values = {}
+	self.properties = {}
 
 	return self
 end
 
 function CastBar:OnLoadSettings()
-	self:SetAttribute("font", self:GetFontID())
-	self:SetAttribute("texture", self:GetTextureID())
-	self:SetAttribute("reaction", "neutral")
+	self:SetProperty("font", self:GetFontID())
+	self:SetProperty("texture", self:GetTextureID())
+	self:SetProperty("reaction", "neutral")
 end
 
 function CastBar:GetDefaults()
@@ -121,18 +119,21 @@ function CastBar:OnEvent(event, ...)
 	end
 end
 
-function CastBar:OnAttributeChanged(id, value)
-	local oldValue = self.values[id]
+function CastBar:SetProperty(key, value)
+	local oldValue = self.properties[key]
 
 	if oldValue ~= value then
-		self.values[id] = value
+		self.properties[key] = value
 
-		local name = id .. '_update'
-		local func = self[name]
+		local func = self[key .. '_update']
 		if func then
 			func(self, value, oldValue)
 		end
 	end
+end
+
+function CastBar:GetProperty(key)
+	return self.properties[key]
 end
 
 function CastBar:OnUpdateCasting(elapsed)
@@ -144,7 +145,7 @@ function CastBar:OnUpdateCasting(elapsed)
 		sb:SetValue(v)
 	else
 		sb:SetValue(vmax)
-		self:SetAttribute("state", nil)
+		self:SetProperty("state", nil)
 	end
 end
 
@@ -157,7 +158,7 @@ function CastBar:OnUpdateChanneling(elapsed)
 		sb:SetValue(v)
 	else
 		sb:SetValue(vmin)
-		self:SetAttribute("state", nil)
+		self:SetProperty("state", nil)
 	end
 end
 
@@ -173,7 +174,7 @@ end
 
 function CastBar:PLAYER_ENTERING_WORLD()
 	if not (self:UpdateChannelling() or self:UpdateCasting()) then
-		self:SetAttribute("state", nil)
+		self:SetProperty("state", nil)
 	end
 end
 
@@ -182,29 +183,29 @@ function CastBar:UNIT_SPELLCAST_START(event, unit, ...)
 
 	self:Reset()
 	self:UpdateCasting()
-	self:SetAttribute("state", "start")
+	self:SetProperty("state", "start")
 end
 
 function CastBar:UNIT_SPELLCAST_STOP(event, unit, ...)
 	if unit ~= self.unit then return end
 
-	self:SetAttribute("state", nil)
+	self:SetProperty("state", nil)
 end
 
 function CastBar:UNIT_SPELLCAST_FAILED(event, unit, ...)
 	if unit ~= self.unit then return end
 
-	self:SetAttribute("reaction", "failed")
-	self:SetAttribute("label", _G.FAILED)
-	self:SetAttribute("state", nil)
+	self:SetProperty("reaction", "failed")
+	self:SetProperty("label", _G.FAILED)
+	self:SetProperty("state", nil)
 end
 
 function CastBar:UNIT_SPELLCAST_INTERRUPTED(event, unit, ...)
 	if unit ~= self.unit then return end
 
-	self:SetAttribute("reaction", "interrupted")
-	self:SetAttribute("label", _G.INTERRUPTED)
-	self:SetAttribute("state", nil)
+	self:SetProperty("reaction", "interrupted")
+	self:SetProperty("label", _G.INTERRUPTED)
+	self:SetProperty("state", nil)
 end
 
 function CastBar:UNIT_SPELLCAST_DELAYED(event, unit, ...)
@@ -218,7 +219,7 @@ function CastBar:UNIT_SPELLCAST_CHANNEL_START(event, unit, ...)
 
 	self:Reset()
 	self:UpdateChannelling()
-	self:SetAttribute("state", "start")
+	self:SetProperty("state", "start")
 end
 
 function CastBar:UNIT_SPELLCAST_CHANNEL_UPDATE(event, unit, ...)
@@ -230,7 +231,7 @@ end
 function CastBar:UNIT_SPELLCAST_CHANNEL_STOP(event, unit, ...)
 	if unit ~= self.unit then return end
 
-	self:SetAttribute("state", nil)
+	self:SetProperty("state", nil)
 end
 
 function CastBar:RegisterEvents()
@@ -291,11 +292,11 @@ end
 
 function CastBar:spell_update(spellID)
 	if spellID and IsHelpfulSpell(spellID) then
-		self:SetAttribute("reaction", "help")
+		self:SetProperty("reaction", "help")
 	elseif spellID and IsHarmfulSpell(spellID) then
-		self:SetAttribute("reaction", "harm")
+		self:SetProperty("reaction", "harm")
 	else
-		self:SetAttribute("reaction", "neutral")
+		self:SetProperty("reaction", "neutral")
 	end
 end
 
@@ -354,10 +355,10 @@ function CastBar:UpdateChannelling()
 	local name, nameSubtext, text, texture, startTime, endTime = UnitChannelInfo(self.unit)
 
 	if name then
-		self:SetAttribute('mode', 'channel')
-		self:SetAttribute('label', text)
-		self:SetAttribute('icon', texture)
-		self:SetAttribute('spell', GetSpellInfo(name))
+		self:SetProperty('mode', 'channel')
+		self:SetProperty('label', text)
+		self:SetProperty('icon', texture)
+		self:SetProperty('spell', GetSpellInfo(name))
 
 		local sb = self.statusBar
 		sb:SetMinMaxValues(0, (endTime - startTime) / 1000)
@@ -373,10 +374,10 @@ function CastBar:UpdateCasting()
 	local name, nameSubtext, text, texture, startTime, endTime = UnitCastingInfo(self.unit)
 
 	if name then
-		self:SetAttribute('mode', 'cast')
-		self:SetAttribute('label', text)
-		self:SetAttribute('icon', texture)
-		self:SetAttribute('spell', GetSpellInfo(name))
+		self:SetProperty('mode', 'cast')
+		self:SetProperty('label', text)
+		self:SetProperty('icon', texture)
+		self:SetProperty('spell', GetSpellInfo(name))
 
 		local sb = self.statusBar
 		sb:SetMinMaxValues(0, (endTime - startTime) / 1000)
@@ -389,21 +390,21 @@ function CastBar:UpdateCasting()
 end
 
 function CastBar:Reset()
-	self:SetAttribute('state', nil)
-	self:SetAttribute('mode', nil)
-	self:SetAttribute('label', nil)
-	self:SetAttribute('icon', nil)
-	self:SetAttribute('spell', nil)
-	self:SetAttribute('reaction', nil)
+	self:SetProperty('state', nil)
+	self:SetProperty('mode', nil)
+	self:SetProperty('label', nil)
+	self:SetProperty('icon', nil)
+	self:SetProperty('spell', nil)
+	self:SetProperty('reaction', nil)
 end
 
 function CastBar:SetupDemo()
 	local spellID = self:GetRandomSpellID()
 	local name, rank, icon = GetSpellInfo(spellID)
 
-	self:SetAttribute("label", name)
-	self:SetAttribute("icon", icon)
-	self:SetAttribute("spell", spellID)
+	self:SetProperty("label", name)
+	self:SetProperty("icon", icon)
+	self:SetProperty("spell", spellID)
 
 	self.statusBar:SetMinMaxValues(0, 1)
 	self.statusBar:SetValue(1)
@@ -453,7 +454,7 @@ end
 --font
 function CastBar:SetFontID(fontID)
 	self.sets.font = fontID
-	self:SetAttribute('font', fontID)
+	self:SetProperty('font', fontID)
 
 	return self
 end
@@ -465,7 +466,7 @@ end
 --texture
 function CastBar:SetTextureID(textureID)
 	self.sets.texture = textureID
-	self:SetAttribute('texture', textureID)
+	self:SetProperty('texture', textureID)
 
 	return self
 end
@@ -488,13 +489,13 @@ do
 		self.menu = menu
 
 		self.menu:HookScript('OnShow', function()
-			self:SetAttribute("mode", "demo")
-			self:SetAttribute("state", "start")
+			self:SetProperty("mode", "demo")
+			self:SetProperty("state", "start")
 		end)
 
 		self.menu:HookScript('OnHide', function()
-			if self:GetAttribute("mode") == "demo" then
-				self:SetAttribute("state", nil)
+			if self:GetProperty("mode") == "demo" then
+				self:SetProperty("state", nil)
 			end
 		end)
 
