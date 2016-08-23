@@ -5,7 +5,7 @@
 	Simple Chinese : 简体中文
 --]]
 
-local L = LibStub('AceLocale-3.0'):NewLocale('Dominos-CastingBar', 'zhCN')
+local L = LibStub('AceLocale-3.0'):NewLocale('Dominos-CastBar', 'zhCN')
 if not L then return end
 
 L.Texture = '材质'

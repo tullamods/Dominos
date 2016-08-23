@@ -7,3 +7,4 @@
 embeds.xml
 localization.xml
 castBar.lua
+main.lua

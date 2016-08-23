@@ -4,7 +4,7 @@
 	Russian by ZealZany
 --]]
 
-local L = LibStub('AceLocale-3.0'):NewLocale('Dominos-CastingBar', 'ruRU')
+local L = LibStub('AceLocale-3.0'):NewLocale('Dominos-CastBar', 'ruRU')
 if not L then return end
 
 L.Texture = 'Текстура'

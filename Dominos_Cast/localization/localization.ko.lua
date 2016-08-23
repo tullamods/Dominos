@@ -3,7 +3,7 @@
 	translated & modified by SayClub
 ]]
 
-local L = LibStub('AceLocale-3.0'):NewLocale('Dominos-CastingBar', 'koKR')
+local L = LibStub('AceLocale-3.0'):NewLocale('Dominos-CastBar', 'koKR')
 if not L then return end
 
 L.Texture = '무늬'

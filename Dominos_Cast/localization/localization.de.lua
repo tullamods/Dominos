@@ -3,7 +3,7 @@
 		Translations for Dominos Cast (German)
 --]]
 
-local L = LibStub('AceLocale-3.0'):NewLocale('Dominos-CastingBar', 'deDE')
+local L = LibStub('AceLocale-3.0'):NewLocale('Dominos-CastBar', 'deDE')
 if not L then return end
 
 L.Texture = 'Textur'
