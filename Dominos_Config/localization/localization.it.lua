@@ -28,16 +28,15 @@ L.RCUToT = 'Bersaglio del Bersaglio'
 L.EnterName = 'Inserisci il nome'
 L.PossessBar = 'Barra sostituita'
 L.Profiles = 'Profili'
-L.ProfilesPanelDesc = 'Ti permette di gestire le disposizioni salvate di Dominos'
+L.ProfilesPanelDesc = 'Ti permette di gestire le disposizioni salvate in Dominos'
 L.SelfcastKey = 'Tasto per il lancio su se stessi'
 L.QuickMoveKey = 'Tasto per lo spostamento rapito'
 L.ShowMacroText = 'Mostra il testo delle macro'
 L.ShowBindingText = 'Mostra i tasti assegnati'
 L.ShowEmptyButtons = 'Mostra riquadri vuoti'
-L.LockActionButtons = 'Blocca la posizione dei pulsanti di azione'
+L.LockActionButtons = 'Blocca la posizione dei pulsanti azione'
 L.EnterBindingMode = 'Assegna tasto...'
 L.EnterConfigMode = 'Configura le barre...'
-L.ActionBarSettings = 'Barra azione %d'
 L.BarSettings = 'Barra %s'
 L.ShowTooltips = 'Mostra informazioni nelle barre'
 L.ShowTooltipsCombat = 'Mostra informazioni in combattimento'
@@ -51,7 +50,7 @@ L.TopToBottom = "Bottoni dall'alto verso basso"
 L.LinkedOpacity = "Le barre attaccate ereditano l'opacità"
 L.ClickThrough = 'Ignora il passaggio del mouse'
 L.DisableMenuButtons = 'Disattiva bottoni'
-L.ShowOverrideUI = 'Sostituisci con la barra azioni di Blizzard'
+L.ShowOverrideUI = 'Sostituisci con la barra azioni Blizzard'
 L.ShowInOverrideUI = "Mostra con la barra azioni sostituita"
 L.ShowInPetBattleUI = 'Mostra nei combattimenti tra mascotte'
 
@@ -70,4 +69,15 @@ L.ShowTotems = 'Mostra i Totem'
 L.ShowTotemRecall = 'Mostra Richiamo'
 
 --extra bar
-L.ExtraBarShowBlizzardTexture = 'Mostra i motivi di Blizzard'
+L.ExtraBarShowBlizzardTexture = 'Mostra Texture di Blizzard'
+
+--general settings panel
+L.General = 'Generale'
+
+--profile settings panel
+L.CreateProfile = 'Crea il Profilo...'
+L.ResetProfile = 'Reset del Profilo...'
+L.CopyProfile = 'Copia il Profilo...'
+L.ConfirmResetProfile = 'Sei sicuro di voler azzerare il tuo profilo?'
+L.ConfirmCopyProfile = 'Copia i contenuti di %s nel profilo corrente?'
+L.ConfirmDeleteProfile = 'Cancellare il profilo %s?'
