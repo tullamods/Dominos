@@ -58,10 +58,13 @@ L.ShowOptionsTip = '<Clic Destro> per mostrare il menù opzioni.'
 --helper dialog stuff
 L.ConfigMode = 'Modalità Configurazione'
 L.ConfigModeExit = 'Esci dalla Modalità Configurazione'
-L.ConfigModeHelp = '<Trascina> qualsiasi barra per muoverla.            <Clic Destro> per configurare.  <Clic Centrale> o <Shift+Clic Destro> per cambiare la visibilità'
+L.ConfigModeHelp = '<Trascina> qualsiasi barra per muoverla, <Clic Destro> per configurare e <Clic Centrale> o <Shift+Clic Destro> per cambiare la visibilità.'
 
 --bar tooltips
 L.TipRollBar = 'Mostra la finestra dei tiri del bottino quando ci si trova in un gruppo.'
 L.TipVehicleBar = [[
 Mostra i controlli per entrare e uscire da un veicolo.
 Tutte le altre azioni del veicolo sono visualizzate sulla barra principale in uso.]]
+
+L.BarDisplayName = "Barra %s"
+L.ActionBarDisplayName = "Barra Azione %s"
