@@ -119,23 +119,6 @@ function CastBar:OnEvent(event, ...)
 	end
 end
 
-function CastBar:SetProperty(key, value)
-	local oldValue = self.properties[key]
-
-	if oldValue ~= value then
-		self.properties[key] = value
-
-		local func = self[key .. '_update']
-		if func then
-			func(self, value, oldValue)
-		end
-	end
-end
-
-function CastBar:GetProperty(key)
-	return self.properties[key]
-end
-
 function CastBar:OnUpdateCasting(elapsed)
 	local sb = self.statusBar
 	local vmin, vmax = sb:GetMinMaxValues()
@@ -234,6 +217,17 @@ function CastBar:UNIT_SPELLCAST_CHANNEL_STOP(event, unit, ...)
 	self:SetProperty("state", nil)
 end
 
+function CastBar:MIRROR_TIMER_START(event, name, value, maxvalue, step, pause, label)
+	self:SetProperty("mt_" .. name, true)
+end
+
+function CastBar:MIRROR_TIMER_STOP(event, name)
+	self:SetProperty("mt_" .. name, nil)
+end
+
+function CastBar:MIRROR_TIMER_PAUSE(event, duration)
+end
+
 function CastBar:RegisterEvents()
 	self:RegisterEvent('PLAYER_ENTERING_WORLD')
 
@@ -246,6 +240,9 @@ function CastBar:RegisterEvents()
 	self:RegisterUnitEvent('UNIT_SPELLCAST_START', unit)
 	self:RegisterUnitEvent('UNIT_SPELLCAST_STOP', unit)
 	self:RegisterUnitEvent('UNIT_SPELLCAST_FAILED', unit)
+
+	self:RegisterEvent('MIRROR_TIMER_PAUSE')
+	self:RegisterEvent('MIRROR_TIMER_STOP')
 end
 
 
@@ -306,7 +303,7 @@ function CastBar:reaction_update(reaction)
 	elseif reaction == "help" then
 		self.statusBar:SetStatusBarColor(0.31, 0.78, 0.47)
 	elseif reaction == "harm" then
-		self.statusBar:SetStatusBarColor(0.31, 0.78, 0.47)
+		self.statusBar:SetStatusBarColor(0.63, 0.36, 0.94)
 	else
 		self.statusBar:SetStatusBarColor(1, 0.7, 0)
 	end
@@ -333,6 +330,23 @@ function CastBar:texture_update(textureID)
 end
 
 --[[ updates ]]--
+
+function CastBar:SetProperty(key, value)
+	local oldValue = self.properties[key]
+
+	if oldValue ~= value then
+		self.properties[key] = value
+
+		local func = self[key .. '_update']
+		if func then
+			func(self, value, oldValue)
+		end
+	end
+end
+
+function CastBar:GetProperty(key)
+	return self.properties[key]
+end
 
 function CastBar:Layout()
 	local padding = self:GetPadding()
