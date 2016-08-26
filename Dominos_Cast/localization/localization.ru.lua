@@ -10,5 +10,5 @@ if not L then return end
 L.Texture = 'Текстура'
 L.Width = 'Ширина'
 L.Height = 'Высота'
-L.ShowTime =  'Показать время'
+L.Display_time =  'Показать время'
 L.Padding = 'Заполнения'

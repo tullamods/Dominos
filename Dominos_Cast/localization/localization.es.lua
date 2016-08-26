@@ -11,5 +11,5 @@ if not L then return end
 L.Texture = 'Textura'
 L.Width = 'Largo'
 L.Height = 'Alto'
-L.ShowTime = 'Mostrar tiempo'
+L.Display_time = 'Mostrar tiempo'
 L.Padding = 'Relleno'

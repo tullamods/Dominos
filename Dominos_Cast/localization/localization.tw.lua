@@ -10,5 +10,5 @@ if not L then return end
 L.Texture = '材質'
 L.Width = '寬度'
 L.Height = '高度'
-L.ShowTime = "顯示時間"
+L.Display_time = "顯示時間"
 L.Padding = '內距'

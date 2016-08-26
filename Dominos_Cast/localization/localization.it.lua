@@ -6,5 +6,5 @@ if not L then return end
 L.Texture = 'Motivo'
 L.Width = 'Larghezza'
 L.Height = 'Altezza'
-L.ShowTime = 'Mostra tempo'
+L.Display_time = 'Mostra tempo'
 L.Padding = 'Imbottitura'

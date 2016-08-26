@@ -3,6 +3,7 @@ local AddonName, Addon = ...
 local Dominos = _G.Dominos
 
 --[[ global references ]]--
+
 local _G = _G
 
 local GetSpellInfo = _G.GetSpellInfo
@@ -13,7 +14,6 @@ local UnitChannelInfo = _G.UnitChannelInfo
 
 local IsHarmfulSpell = _G.IsHarmfulSpell
 local IsHelpfulSpell = _G.IsHelpfulSpell
-
 
 --[[ casting bar ]]--
 
@@ -33,64 +33,68 @@ function CastBar:OnCreate()
 	self:SetFrameStrata('HIGH')
 	self:SetScript('OnEvent', self.OnEvent)
 
-	local parent = CreateFrame('Frame', nil, self)
-	parent:SetAllPoints(parent:GetParent())
-	parent:SetAlpha(0)
+	local container = CreateFrame('Frame', nil, self)
+	container:SetAllPoints(container:GetParent())
+	container:SetAlpha(0)
+	self.container = container
 
-	local fout = parent:CreateAnimationGroup()
+	local fout = container:CreateAnimationGroup()
 	fout:SetLooping('NONE')
+	fout:SetScript('OnFinished', function() container:SetAlpha(0); self:OnFinished() end)
 
-	local a = fout:CreateAnimation('Alpha')
-
-	a:SetFromAlpha(1)
-	a:SetToAlpha(0)
-	a:SetDuration(0.5)
-
-	fout:SetScript('OnFinished', function()
-		parent:SetAlpha(0)
-		self:OnFinished()
-	end)
+		local a = fout:CreateAnimation('Alpha')
+		a:SetFromAlpha(1)
+		a:SetToAlpha(0)
+		a:SetDuration(0.5)
 
 	self.fout = fout
 
-	local fin = parent:CreateAnimationGroup()
+	local fin = container:CreateAnimationGroup()
 	fin:SetLooping('NONE')
+	fin:SetScript('OnFinished', function() container:SetAlpha(1) end)
 
-	local a = fin:CreateAnimation('Alpha')
-	a:SetFromAlpha(0)
-	a:SetToAlpha(1)
-	a:SetDuration(0.2)
+		local a = fin:CreateAnimation('Alpha')
+		a:SetFromAlpha(0)
+		a:SetToAlpha(1)
+		a:SetDuration(0.2)
 
-	fin:SetScript('OnFinished', function() parent:SetAlpha(1) end)
 	self.fin = fin
 
-	local bg = parent:CreateTexture(nil, 'BACKGROUND')
+	local bg = container:CreateTexture(nil, 'BACKGROUND')
 	bg:SetColorTexture(0, 0, 0, 0.5)
 	bg:SetAllPoints(bg:GetParent())
 	self.bg = bg
 
-	local icon = parent:CreateTexture(nil, 'ARTWORK')
+	local icon = container:CreateTexture(nil, 'ARTWORK')
 	icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
 	self.icon = icon
 
-	local sb = CreateFrame('StatusBar', nil, parent)
+	local sb = CreateFrame('StatusBar', nil, container)
 	sb:SetScript('OnValueChanged', function(s, value) self:OnValueChanged(value) end)
 	self.statusBar = sb
 
 	local timeText = sb:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
-	timeText:SetPoint('RIGHT', -2, 0)
+	timeText:SetJustifyH('RIGHT')
 	self.timeText = timeText
 
 	local labelText = sb:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
-	labelText:SetPoint('LEFT', 2, 0)
+	labelText:SetJustifyH('LEFT')
 	self.labelText = labelText
 
-	self.properties = {}
+	self.props = {}
 
 	return self
 end
 
 function CastBar:OnLoadSettings()
+	if not self.sets.display then
+		self.sets.display = {
+			icon = true,
+			time = true,
+			border = false
+		}
+	end
+
 	self:SetProperty("font", self:GetFontID())
 	self:SetProperty("texture", self:GetTextureID())
 	self:SetProperty("reaction", "neutral")
@@ -101,12 +105,17 @@ function CastBar:GetDefaults()
 		point = 'CENTER',
 		x = 0,
 		y = 30,
-		width = 240,
-		height = 25,
-		padW = 2,
-		padH = 2,
+		width = 320,
+		height = 32,
+		padW = 1,
+		padH = 1,
 		texture = 'blizzard',
 		font = 'Friz Quadrata TT',
+		display = {
+			icon = true,
+			time = true,
+			border = false
+		}
 	}
 end
 
@@ -217,17 +226,6 @@ function CastBar:UNIT_SPELLCAST_CHANNEL_STOP(event, unit, ...)
 	self:SetProperty("state", nil)
 end
 
-function CastBar:MIRROR_TIMER_START(event, name, value, maxvalue, step, pause, label)
-	self:SetProperty("mt_" .. name, true)
-end
-
-function CastBar:MIRROR_TIMER_STOP(event, name)
-	self:SetProperty("mt_" .. name, nil)
-end
-
-function CastBar:MIRROR_TIMER_PAUSE(event, duration)
-end
-
 function CastBar:RegisterEvents()
 	self:RegisterEvent('PLAYER_ENTERING_WORLD')
 
@@ -240,9 +238,6 @@ function CastBar:RegisterEvents()
 	self:RegisterUnitEvent('UNIT_SPELLCAST_START', unit)
 	self:RegisterUnitEvent('UNIT_SPELLCAST_STOP', unit)
 	self:RegisterUnitEvent('UNIT_SPELLCAST_FAILED', unit)
-
-	self:RegisterEvent('MIRROR_TIMER_PAUSE')
-	self:RegisterEvent('MIRROR_TIMER_STOP')
 end
 
 
@@ -259,7 +254,7 @@ function CastBar:mode_update(mode)
 end
 
 function CastBar:state_update(state)
-	if state == "start" then
+	if state == 'start' then
 		self.fout:Stop()
 		self.fin:Play()
 	else
@@ -278,13 +273,7 @@ function CastBar:time_update(text)
 end
 
 function CastBar:icon_update(texture)
-	local icon = self.icon
-	if texture then
-		icon:SetTexture(texture)
-		icon:Show()
-	else
-		icon:Hide()
-	end
+	self.icon:SetTexture(texture)
 end
 
 function CastBar:spell_update(spellID)
@@ -332,35 +321,58 @@ end
 --[[ updates ]]--
 
 function CastBar:SetProperty(key, value)
-	local oldValue = self.properties[key]
+	local prev = self.props[key]
 
-	if oldValue ~= value then
-		self.properties[key] = value
+	if prev ~= value then
+		self.props[key] = value
 
 		local func = self[key .. '_update']
 		if func then
-			func(self, value, oldValue)
+			func(self, value, prev)
 		end
 	end
 end
 
 function CastBar:GetProperty(key)
-	return self.properties[key]
+	return self.props[key]
 end
 
 function CastBar:Layout()
 	local padding = self:GetPadding()
 	local width, height = self:GetDesiredWidth(), self:GetDesiredHeight()
+	local displayIcon = self:Displaying('icon')
+	local displayTime = self:Displaying('time')
 
-	self:SetSize(width, height)
+	self:TrySetSize(width, height)
 
-	self.icon:SetPoint('TOPLEFT', padding, -padding)
-	self.icon:SetPoint('BOTTOMLEFT', padding, padding)
-	self.icon:SetWidth(height - padding * 2)
+	local iconSize = self.container:GetHeight() - padding*2
 
-	self.statusBar:SetPoint('TOPLEFT', self.icon, 'TOPRIGHT', 1, 0)
-	self.statusBar:SetPoint('BOTTOMLEFT', self.icon, 'BOTTOMRIGHT', 1, 0)
-	self.statusBar:SetPoint('RIGHT', -padding, 0)
+	local icon = self.icon
+	icon:SetPoint('LEFT', padding, 0)
+	icon:SetSize(iconSize, iconSize)
+	icon:SetAlpha(displayIcon and 1 or 0)
+
+	local sb = self.statusBar
+	sb:SetHeight(iconSize)
+	sb:SetPoint('RIGHT', -padding or 0, 0)
+	if displayIcon then
+		sb:SetPoint('LEFT', icon, 'RIGHT', 1, 0)
+	else
+		sb:SetPoint('LEFT', padding, 0)
+	end
+
+	local time = self.timeText
+	time:SetPoint('RIGHT', -2, 0)
+	time:SetAlpha(displayTime and 1 or 0)
+
+	local label = self.labelText
+	label:SetJustifyH((displayIcon or displayTime) and 'LEFT' or 'CENTER')
+	label:SetPoint('LEFT', 2, 0)
+	if displayTime then
+		label:SetPoint('RIGHT', time, -2, 0)
+	else
+		label:SetPoint('RIGHT', -2, 0)
+	end
 
 	return self
 end
@@ -370,7 +382,7 @@ function CastBar:UpdateChannelling()
 
 	if name then
 		self:SetProperty('mode', 'channel')
-		self:SetProperty('label', text)
+		self:SetProperty('label', name or text)
 		self:SetProperty('icon', texture)
 		self:SetProperty('spell', GetSpellInfo(name))
 
@@ -416,6 +428,7 @@ function CastBar:SetupDemo()
 	local spellID = self:GetRandomSpellID()
 	local name, rank, icon = GetSpellInfo(spellID)
 
+	self:SetProperty('mode', 'demo')
 	self:SetProperty("label", name)
 	self:SetProperty("icon", icon)
 	self:SetProperty("spell", spellID)
@@ -452,7 +465,7 @@ function CastBar:SetDesiredWidth(width)
 end
 
 function CastBar:GetDesiredWidth()
-	return self.sets.width or 240
+	return self.sets.width or 320
 end
 
 function CastBar:SetDesiredHeight(height)
@@ -461,14 +474,13 @@ function CastBar:SetDesiredHeight(height)
 end
 
 function CastBar:GetDesiredHeight()
-	return self.sets.height or 25
+	return self.sets.height or 32
 end
-
 
 --font
 function CastBar:SetFontID(fontID)
 	self.sets.font = fontID
-	self:SetProperty('font', fontID)
+	self:SetProperty('font', self:GetFontID())
 
 	return self
 end
@@ -480,7 +492,7 @@ end
 --texture
 function CastBar:SetTextureID(textureID)
 	self.sets.texture = textureID
-	self:SetProperty('texture', textureID)
+	self:SetProperty('texture', self:GetTextureID())
 
 	return self
 end
@@ -489,6 +501,15 @@ function CastBar:GetTextureID()
 	return self.sets.texture or 'blizzard'
 end
 
+--display
+function CastBar:SetDisplay(part, enable)
+	self.sets.display[part] = enable
+	self:Layout()
+end
+
+function CastBar:Displaying(part)
+	return self.sets.display[part]
+end
 
 --[[ menu ]]--
 
@@ -503,7 +524,7 @@ do
 		self.menu = menu
 
 		self.menu:HookScript('OnShow', function()
-			self:SetProperty("mode", "demo")
+			self:SetupDemo()
 			self:SetProperty("state", "start")
 		end)
 
@@ -520,6 +541,16 @@ do
 		local panel = menu:NewPanel(LibStub('AceLocale-3.0'):GetLocale('Dominos-Config').Layout)
 
 		local l = LibStub('AceLocale-3.0'):GetLocale('Dominos-CastBar')
+
+		for _, part in ipairs{'icon', 'time'} do
+			panel:NewCheckButton{
+				name = l['Display_' .. part],
+
+				get = function() return panel.owner:Displaying(part) end,
+
+				set = function(_, enable) panel.owner:SetDisplay(part, enable) end
+			}
+		end
 
 		panel.widthSlider = panel:NewSlider{
 			name = l.Width,
@@ -557,7 +588,6 @@ do
 			end,
 		}
 
-		-- panel.spacingSlider = panel:NewSpacingSlider()
 		panel.paddingSlider = panel:NewPaddingSlider()
 		panel.scaleSlider = panel:NewScaleSlider()
 		panel.opacitySlider = panel:NewOpacitySlider()
