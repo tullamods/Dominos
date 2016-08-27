@@ -5,15 +5,24 @@ local Dominos = _G.Dominos
 --[[ global references ]]--
 
 local _G = _G
+local min = math.min
+local max = math.max
 
 local GetSpellInfo = _G.GetSpellInfo
 local GetTime = _G.GetTime
+local GetNetStats = _G.GetNetStats
 
 local UnitCastingInfo = _G.UnitCastingInfo
 local UnitChannelInfo = _G.UnitChannelInfo
 
 local IsHarmfulSpell = _G.IsHarmfulSpell
 local IsHelpfulSpell = _G.IsHelpfulSpell
+
+local GetLatencyMS = function()
+	local _, _, up = GetNetStats()
+
+	return up / 1000
+end
 
 --[[ casting bar ]]--
 
@@ -69,7 +78,10 @@ function CastBar:OnCreate()
 	icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
 	self.icon = icon
 
-	local sb = CreateFrame('StatusBar', nil, container)
+	local lb = CreateFrame('StatusBar', nil, container)
+	self.latencyBar = lb
+
+	local sb = CreateFrame('StatusBar', nil, lb)
 	sb:SetScript('OnValueChanged', function(s, value) self:OnValueChanged(value) end)
 	self.statusBar = sb
 
@@ -130,19 +142,23 @@ end
 
 function CastBar:OnUpdateCasting(elapsed)
 	local sb = self.statusBar
+	local lb = self.latencyBar
 	local vmin, vmax = sb:GetMinMaxValues()
 	local v = sb:GetValue() + elapsed
 
 	if v < vmax then
 		sb:SetValue(v)
+		lb:SetValue(min(v + self:GetProperty("latency"), vmax))
 	else
 		sb:SetValue(vmax)
+		lb:SetValue(vmax)
 		self:SetProperty("state", nil)
 	end
 end
 
 function CastBar:OnUpdateChanneling(elapsed)
 	local sb = self.statusBar
+	local lb = self.latencyBar
 	local vmin, vmax = sb:GetMinMaxValues()
 	local v = sb:GetValue() - elapsed
 
@@ -164,82 +180,80 @@ end
 
 --[[ game events ]]--
 
-function CastBar:PLAYER_ENTERING_WORLD()
-	if not (self:UpdateChannelling() or self:UpdateCasting()) then
-		self:SetProperty("state", nil)
-	end
+function CastBar:RegisterEvents()
+	local unit = self.unit
+
+	self:RegisterUnitEvent('UNIT_SPELLCAST_CHANNEL_START', unit)
+	self:RegisterUnitEvent('UNIT_SPELLCAST_CHANNEL_UPDATE', unit)
+	self:RegisterUnitEvent('UNIT_SPELLCAST_CHANNEL_STOP', unit)
+
+	self:RegisterUnitEvent('UNIT_SPELLCAST_START', unit)
+	self:RegisterUnitEvent('UNIT_SPELLCAST_STOP', unit)
+	self:RegisterUnitEvent('UNIT_SPELLCAST_FAILED', unit)
+	self:RegisterUnitEvent('UNIT_SPELLCAST_FAILED_QUIET', unit)
+
+	self:RegisterUnitEvent('UNIT_SPELLCAST_INTERRUPTED', unit)
+	self:RegisterUnitEvent('UNIT_SPELLCAST_DELAYED', unit)
 end
 
-function CastBar:UNIT_SPELLCAST_START(event, unit, ...)
+-- channeling events
+function CastBar:UNIT_SPELLCAST_CHANNEL_START(event, unit, name, rank, castID, spellID)
 	if unit ~= self.unit then return end
 
-	self:Reset()
-	self:UpdateCasting()
+	self:UpdateChannelling(true)
+	self:SetProperty("castID", castID)
 	self:SetProperty("state", "start")
 end
 
-function CastBar:UNIT_SPELLCAST_STOP(event, unit, ...)
-	if unit ~= self.unit then return end
+function CastBar:UNIT_SPELLCAST_CHANNEL_UPDATE(event, unit, name, rank, castID, spellID)
+	if castID ~= self:GetProperty('castID') then return end
+
+	self:UpdateChannelling()
+end
+
+function CastBar:UNIT_SPELLCAST_CHANNEL_STOP(event, unit, name, rank, castID, spellID)
+	if castID ~= self:GetProperty('castID') then return end
 
 	self:SetProperty("state", nil)
 end
 
-function CastBar:UNIT_SPELLCAST_FAILED(event, unit, ...)
+function CastBar:UNIT_SPELLCAST_START(event, unit, name, rank, castID, spellID)
 	if unit ~= self.unit then return end
+
+	self:UpdateCasting(true)
+	self:SetProperty("castID", castID)
+	self:SetProperty("state", "start")
+end
+
+function CastBar:UNIT_SPELLCAST_STOP(event, unit, name, rank, castID, spellID)
+	if castID ~= self:GetProperty('castID') then return end
+
+	self:SetProperty("state", nil)
+end
+
+function CastBar:UNIT_SPELLCAST_FAILED(event, unit, name, rank, castID, spellID)
+	if castID ~= self:GetProperty('castID') then return end
 
 	self:SetProperty("reaction", "failed")
 	self:SetProperty("label", _G.FAILED)
 	self:SetProperty("state", nil)
 end
 
-function CastBar:UNIT_SPELLCAST_INTERRUPTED(event, unit, ...)
-	if unit ~= self.unit then return end
+CastBar.UNIT_SPELLCAST_FAILED_QUIET = CastBar.UNIT_SPELLCAST_FAILED
+
+function CastBar:UNIT_SPELLCAST_INTERRUPTED(event, unit, name, rank, castID, spellID)
+	if castID ~= self:GetProperty('castID') then return end
 
 	self:SetProperty("reaction", "interrupted")
 	self:SetProperty("label", _G.INTERRUPTED)
 	self:SetProperty("state", nil)
 end
 
-function CastBar:UNIT_SPELLCAST_DELAYED(event, unit, ...)
-	if unit ~= self.unit then return end
+function CastBar:UNIT_SPELLCAST_DELAYED(event, unit, name, rank, castID, spellID)
+	if castID ~= self:GetProperty('castID') then return end
 
 	self:UpdateCasting()
 end
-
-function CastBar:UNIT_SPELLCAST_CHANNEL_START(event, unit, ...)
-	if unit ~= self.unit then return end
-
-	self:Reset()
-	self:UpdateChannelling()
-	self:SetProperty("state", "start")
-end
-
-function CastBar:UNIT_SPELLCAST_CHANNEL_UPDATE(event, unit, ...)
-	if unit ~= self.unit then return end
-
-	self:UpdateChannelling()
-end
-
-function CastBar:UNIT_SPELLCAST_CHANNEL_STOP(event, unit, ...)
-	if unit ~= self.unit then return end
-
-	self:SetProperty("state", nil)
-end
-
-function CastBar:RegisterEvents()
-	self:RegisterEvent('PLAYER_ENTERING_WORLD')
-
-	self:RegisterEvent('UNIT_SPELLCAST_INTERRUPTED')
-	self:RegisterEvent('UNIT_SPELLCAST_DELAYED')
-	self:RegisterEvent('UNIT_SPELLCAST_CHANNEL_START')
-	self:RegisterEvent('UNIT_SPELLCAST_CHANNEL_UPDATE')
-	self:RegisterEvent('UNIT_SPELLCAST_CHANNEL_STOP')
-
-	self:RegisterUnitEvent('UNIT_SPELLCAST_START', unit)
-	self:RegisterUnitEvent('UNIT_SPELLCAST_STOP', unit)
-	self:RegisterUnitEvent('UNIT_SPELLCAST_FAILED', unit)
-end
-
 
 --[[ attribute events ]]--
 
@@ -289,6 +303,7 @@ end
 function CastBar:reaction_update(reaction)
 	if reaction == "failed" or reaction == "interrupted" then
 		self.statusBar:SetStatusBarColor(1, 0, 0)
+		self.latencyBar:SetStatusBarColor(1, 0, 0)
 	elseif reaction == "help" then
 		self.statusBar:SetStatusBarColor(0.31, 0.78, 0.47)
 	elseif reaction == "harm" then
@@ -296,6 +311,10 @@ function CastBar:reaction_update(reaction)
 	else
 		self.statusBar:SetStatusBarColor(1, 0.7, 0)
 	end
+
+	local r, g, b = self.statusBar:GetStatusBarColor()
+
+	self.latencyBar:SetStatusBarColor(r * 2, g * 2, b * 2)
 end
 
 function CastBar:font_update(fontID)
@@ -316,6 +335,7 @@ function CastBar:texture_update(textureID)
 	self.bg:SetTexture(texture)
 	self.bg:SetVertexColor(0, 0, 0, 0.5)
 	self.statusBar:SetStatusBarTexture(texture)
+	self.latencyBar:SetStatusBarTexture(texture)
 end
 
 --[[ updates ]]--
@@ -352,7 +372,7 @@ function CastBar:Layout()
 	icon:SetSize(iconSize, iconSize)
 	icon:SetAlpha(displayIcon and 1 or 0)
 
-	local sb = self.statusBar
+	local sb = self.latencyBar
 	sb:SetHeight(iconSize)
 	sb:SetPoint('RIGHT', -padding or 0, 0)
 	if displayIcon then
@@ -360,6 +380,8 @@ function CastBar:Layout()
 	else
 		sb:SetPoint('LEFT', padding, 0)
 	end
+
+	self.statusBar:SetAllPoints(self.latencyBar)
 
 	local time = self.timeText
 	time:SetPoint('RIGHT', -2, 0)
@@ -377,7 +399,11 @@ function CastBar:Layout()
 	return self
 end
 
-function CastBar:UpdateChannelling()
+function CastBar:UpdateChannelling(reset)
+	if reset then
+		self:Reset()
+	end
+
 	local name, nameSubtext, text, texture, startTime, endTime = UnitChannelInfo(self.unit)
 
 	if name then
@@ -390,13 +416,19 @@ function CastBar:UpdateChannelling()
 		sb:SetMinMaxValues(0, (endTime - startTime) / 1000)
 		sb:SetValue(endTime / 1000 - GetTime())
 
+		self.latencyBar:SetValue(0)
+
 		return true
 	end
 
 	return false
 end
 
-function CastBar:UpdateCasting()
+function CastBar:UpdateCasting(reset)
+	if reset then
+		self:Reset()
+	end
+
 	local name, nameSubtext, text, texture, startTime, endTime = UnitCastingInfo(self.unit)
 
 	if name then
@@ -404,10 +436,15 @@ function CastBar:UpdateCasting()
 		self:SetProperty('label', text)
 		self:SetProperty('icon', texture)
 		self:SetProperty('spell', GetSpellInfo(name))
+		self:SetProperty('latency', GetLatencyMS())
 
 		local sb = self.statusBar
 		sb:SetMinMaxValues(0, (endTime - startTime) / 1000)
 		sb:SetValue(GetTime() - startTime / 1000)
+
+		local lb = self.latencyBar
+		lb:SetMinMaxValues(sb:GetMinMaxValues())
+		lb:SetValue(sb:GetValue() + self:GetProperty("latency"))
 
 		return true
 	end
@@ -425,7 +462,7 @@ function CastBar:Reset()
 end
 
 function CastBar:SetupDemo()
-	local spellID = self:GetRandomSpellID()
+	local spellID = self:GetRandomspellID()
 	local name, rank, icon = GetSpellInfo(spellID)
 
 	self:SetProperty('mode', 'demo')
@@ -437,7 +474,7 @@ function CastBar:SetupDemo()
 	self.statusBar:SetValue(1)
 end
 
-function CastBar:GetRandomSpellID()
+function CastBar:GetRandomspellID()
 	local spells = {}
 	local offset = 0
 
