@@ -314,7 +314,7 @@ function CastBar:reaction_update(reaction)
 
 	local r, g, b = self.statusBar:GetStatusBarColor()
 
-	self.latencyBar:SetStatusBarColor(r * 2, g * 2, b * 2)
+	self.latencyBar:SetStatusBarColor(r + 0.25, g + 0.25, b + 0.25)
 end
 
 function CastBar:font_update(fontID)
