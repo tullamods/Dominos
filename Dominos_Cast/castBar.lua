@@ -18,12 +18,6 @@ local UnitChannelInfo = _G.UnitChannelInfo
 local IsHarmfulSpell = _G.IsHarmfulSpell
 local IsHelpfulSpell = _G.IsHelpfulSpell
 
-local GetLatencyMS = function()
-	local _, _, up = GetNetStats()
-
-	return up / 1000
-end
-
 --[[ casting bar ]]--
 
 local CastBar = Dominos:CreateClass('Frame', Dominos.Frame)
@@ -436,7 +430,7 @@ function CastBar:UpdateCasting(reset)
 		self:SetProperty('label', text)
 		self:SetProperty('icon', texture)
 		self:SetProperty('spell', GetSpellInfo(name))
-		self:SetProperty('latency', GetLatencyMS())
+		self:SetProperty('latency', self:GetLatency())
 
 		local sb = self.statusBar
 		sb:SetMinMaxValues(0, (endTime - startTime) / 1000)
@@ -493,6 +487,14 @@ function CastBar:GetRandomspellID()
 	return spells[math.random(1, #spells)]
 end
 
+-- the latency indicator in the castbar is meant to tell you when you can
+-- safely cast a spell, so we
+function CastBar:GetLatency()
+	local down, up, lagHome, lagWorld = GetNetStats()
+
+	return (max(lagHome, lagWorld) + self:GetLatencyPadding()) / 1000
+end
+
 
 --[[ settings ]]--
 
@@ -546,6 +548,15 @@ end
 
 function CastBar:Displaying(part)
 	return self.sets.display[part]
+end
+
+--latency padding
+function CastBar:SetLatencyPadding(value)
+	self.sets.latencyPadding = value
+end
+
+function CastBar:GetLatencyPadding()
+	return self.sets.latencyPadding or 0
 end
 
 --[[ menu ]]--
@@ -629,6 +640,24 @@ do
 		panel.scaleSlider = panel:NewScaleSlider()
 		panel.opacitySlider = panel:NewOpacitySlider()
 		panel.fadeSlider = panel:NewFadeSlider()
+
+		panel.latencySlider = panel:NewSlider{
+			name = l.LatencyPadding,
+
+			min = 0,
+
+			max = function()
+				return 500
+			end,
+
+			get = function()
+				return panel.owner:GetLatencyPadding()
+			end,
+
+			set = function(_, value)
+				panel.owner:SetLatencyPadding(value)
+			end,
+		}
 	end
 
 	function CastBar:AddFontPanel(menu)
