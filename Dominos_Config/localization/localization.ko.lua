@@ -63,7 +63,6 @@ L.ALT_KEY_TEXT = 'ALT'
 L.Help = '강화 효과'
 L.Harm = '약화 효과'
 L.State_NOTARGET = '대상 없음'
-L.ALT_KEY_TEXT = 'ALT'
 L.AltShift = 'ALT-' .. SHIFT_KEY_TEXT
 L.CtrlShift = CTRL_KEY_TEXT .. '-' .. SHIFT_KEY_TEXT
 L.CtrlAlt = CTRL_KEY_TEXT .. '-ALT'
@@ -75,3 +74,14 @@ L.ShowTotemRecall = '토템의 부름 표시'
 
 --extra bar
 L.ExtraBarShowBlizzardTexture = '블리자드 기본 무늬 표시'
+
+--general settings panel 
+L.General = '일반' 
+
+ --profile settings panel 
+L.CreateProfile = '프로필 생성...' 
+L.ResetProfile = '프로필 초기화...' 
+L.CopyProfile = '프로필 복사...' 
+L.ConfirmResetProfile = '정말로 프로필을 초기화할까요?' 
+L.ConfirmCopyProfile = '현재 프로필에 %s의 내용을 복사할까요?' 
+L.ConfirmDeleteProfile = '%s 프로필을 삭제할까요?'
