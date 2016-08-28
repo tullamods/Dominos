@@ -18,6 +18,11 @@ local UnitChannelInfo = _G.UnitChannelInfo
 local IsHarmfulSpell = _G.IsHarmfulSpell
 local IsHelpfulSpell = _G.IsHelpfulSpell
 
+--[[ constants ]]--
+
+local LATENCY_BAR_ALPHA = 0.7
+local SPARK_ALPHA = 0.7
+
 --[[ casting bar ]]--
 
 local CastBar = Dominos:CreateClass('Frame', Dominos.Frame)
@@ -41,51 +46,78 @@ function CastBar:OnCreate()
 	container:SetAlpha(0)
 	self.container = container
 
-	local fout = container:CreateAnimationGroup()
-	fout:SetLooping('NONE')
-	fout:SetScript('OnFinished', function() container:SetAlpha(0); self:OnFinished() end)
+		local fout = container:CreateAnimationGroup()
+		fout:SetLooping('NONE')
+		fout:SetScript('OnFinished', function() container:SetAlpha(0); self:OnFinished() end)
 
-		local a = fout:CreateAnimation('Alpha')
-		a:SetFromAlpha(1)
-		a:SetToAlpha(0)
-		a:SetDuration(0.5)
+			local a = fout:CreateAnimation('Alpha')
+			a:SetFromAlpha(1)
+			a:SetToAlpha(0)
+			a:SetDuration(0.5)
 
-	self.fout = fout
+		self.fout = fout
 
-	local fin = container:CreateAnimationGroup()
-	fin:SetLooping('NONE')
-	fin:SetScript('OnFinished', function() container:SetAlpha(1) end)
+		local fin = container:CreateAnimationGroup()
+		fin:SetLooping('NONE')
+		fin:SetScript('OnFinished', function() container:SetAlpha(1) end)
 
-		local a = fin:CreateAnimation('Alpha')
-		a:SetFromAlpha(0)
-		a:SetToAlpha(1)
-		a:SetDuration(0.2)
+			local a = fin:CreateAnimation('Alpha')
+			a:SetFromAlpha(0)
+			a:SetToAlpha(1)
+			a:SetDuration(0.2)
 
-	self.fin = fin
+		self.fin = fin
 
-	local bg = container:CreateTexture(nil, 'BACKGROUND')
-	bg:SetColorTexture(0, 0, 0, 0.5)
-	bg:SetAllPoints(bg:GetParent())
-	self.bg = bg
+		local bg = container:CreateTexture(nil, 'BACKGROUND')
+		bg:SetVertexColor(0, 0, 0, 0.5)
+		self.bg = bg
 
-	local icon = container:CreateTexture(nil, 'ARTWORK')
-	icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
-	self.icon = icon
+		local icon = container:CreateTexture(nil, 'ARTWORK')
+		icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+		self.icon = icon
 
-	local lb = CreateFrame('StatusBar', nil, container)
-	self.latencyBar = lb
+		local lb = container:CreateTexture(nil, 'OVERLAY')
+		lb:SetBlendMode('ADD')
+		self.latencyBar = lb
 
-	local sb = CreateFrame('StatusBar', nil, lb)
-	sb:SetScript('OnValueChanged', function(s, value) self:OnValueChanged(value) end)
-	self.statusBar = sb
+		local sb = CreateFrame('StatusBar', nil, container)
+		sb:SetScript('OnValueChanged', function(s, value) self:OnValueChanged(value) end)
 
-	local timeText = sb:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
-	timeText:SetJustifyH('RIGHT')
-	self.timeText = timeText
+			local timeText = sb:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
+			timeText:SetJustifyH('RIGHT')
+			self.timeText = timeText
 
-	local labelText = sb:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
-	labelText:SetJustifyH('LEFT')
-	self.labelText = labelText
+			local labelText = sb:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
+			labelText:SetJustifyH('LEFT')
+			self.labelText = labelText
+
+			local spark = CreateFrame('StatusBar', nil, sb)
+
+				local st = spark:CreateTexture(nil, 'ARTWORK')
+				st:SetColorTexture(1, 1, 1, SPARK_ALPHA)
+				st:SetGradientAlpha('HORIZONTAL', 0, 0, 0, 0, 1, 1, 1, SPARK_ALPHA)
+				st:SetBlendMode('BLEND')
+				st:SetHorizTile(true)
+
+			spark:SetStatusBarTexture(st)
+
+			spark:SetAllPoints(sb)
+			self.spark = spark
+
+		self.statusBar = sb
+
+		local border = CreateFrame('Frame', nil, container)
+
+		border:SetBackdropBorderColor(TOOLTIP_DEFAULT_COLOR.r, TOOLTIP_DEFAULT_COLOR.g, TOOLTIP_DEFAULT_COLOR.b)
+		border:SetFrameLevel(sb:GetFrameLevel() + 3)
+		border:SetAllPoints(container)
+		border:SetBackdrop{
+			edgeFile = [[Interface\DialogFrame\UI-DialogBox-Border]],
+			edgeSize = 16,
+			insets   = { left = 5, right = 5, top = 5, bottom = 5 },
+		}
+
+		self.border = border
 
 	self.props = {}
 
@@ -95,9 +127,9 @@ end
 function CastBar:OnLoadSettings()
 	if not self.sets.display then
 		self.sets.display = {
-			icon = true,
+			icon = false,
 			time = true,
-			border = false
+			border = true
 		}
 	end
 
@@ -111,16 +143,14 @@ function CastBar:GetDefaults()
 		point = 'CENTER',
 		x = 0,
 		y = 30,
-		width = 320,
-		height = 32,
 		padW = 1,
 		padH = 1,
 		texture = 'blizzard',
 		font = 'Friz Quadrata TT',
 		display = {
-			icon = true,
+			icon = false,
 			time = true,
-			border = false
+			border = true
 		}
 	}
 end
@@ -136,23 +166,19 @@ end
 
 function CastBar:OnUpdateCasting(elapsed)
 	local sb = self.statusBar
-	local lb = self.latencyBar
 	local vmin, vmax = sb:GetMinMaxValues()
 	local v = sb:GetValue() + elapsed
 
 	if v < vmax then
 		sb:SetValue(v)
-		lb:SetValue(min(v + self:GetProperty("latency"), vmax))
 	else
 		sb:SetValue(vmax)
-		lb:SetValue(vmax)
-		self:SetProperty("state", nil)
+		self:SetProperty('state', nil)
 	end
 end
 
 function CastBar:OnUpdateChanneling(elapsed)
 	local sb = self.statusBar
-	local lb = self.latencyBar
 	local vmin, vmax = sb:GetMinMaxValues()
 	local v = sb:GetValue() - elapsed
 
@@ -160,12 +186,13 @@ function CastBar:OnUpdateChanneling(elapsed)
 		sb:SetValue(v)
 	else
 		sb:SetValue(vmin)
-		self:SetProperty("state", nil)
+		self:SetProperty('state', nil)
 	end
 end
 
 function CastBar:OnValueChanged(value)
 	self.timeText:SetFormattedText('%.1f', value)
+	self.spark:SetValue(value)
 end
 
 function CastBar:OnFinished()
@@ -297,18 +324,17 @@ end
 function CastBar:reaction_update(reaction)
 	if reaction == "failed" or reaction == "interrupted" then
 		self.statusBar:SetStatusBarColor(1, 0, 0)
-		self.latencyBar:SetStatusBarColor(1, 0, 0)
+		self.latencyBar:SetVertexColor(1, 0, 0, 0, LATENCY_BAR_ALPHA)
 	elseif reaction == "help" then
 		self.statusBar:SetStatusBarColor(0.31, 0.78, 0.47)
+		self.latencyBar:SetVertexColor(0.78, 0.31, 0.62, LATENCY_BAR_ALPHA)
 	elseif reaction == "harm" then
 		self.statusBar:SetStatusBarColor(0.63, 0.36, 0.94)
+		self.latencyBar:SetVertexColor(0.67, 0.94, 0.36, LATENCY_BAR_ALPHA)
 	else
 		self.statusBar:SetStatusBarColor(1, 0.7, 0)
+		self.latencyBar:SetVertexColor(0, 0.3, 1, LATENCY_BAR_ALPHA)
 	end
-
-	local r, g, b = self.statusBar:GetStatusBarColor()
-
-	self.latencyBar:SetStatusBarColor(r + 0.25, g + 0.25, b + 0.25)
 end
 
 function CastBar:font_update(fontID)
@@ -326,10 +352,9 @@ end
 function CastBar:texture_update(textureID)
 	local texture = LibStub('LibSharedMedia-3.0'):Fetch('statusbar', textureID)
 
-	self.bg:SetTexture(texture)
-	self.bg:SetVertexColor(0, 0, 0, 0.5)
 	self.statusBar:SetStatusBarTexture(texture)
-	self.latencyBar:SetStatusBarTexture(texture)
+	self.bg:SetTexture(texture)
+	self.latencyBar:SetTexture(texture)
 end
 
 --[[ updates ]]--
@@ -354,40 +379,76 @@ end
 function CastBar:Layout()
 	local padding = self:GetPadding()
 	local width, height = self:GetDesiredWidth(), self:GetDesiredHeight()
-	local displayIcon = self:Displaying('icon')
-	local displayTime = self:Displaying('time')
+	local displayingIcon = self:Displaying('icon')
+	local displayingTime = self:Displaying('time')
+	local displayingBorder = self:Displaying('border')
+
+	local border = self.border
+	local bg = self.bg
+	local sb = self.statusBar
+	local time = self.timeText
+	local label = self.labelText
+	local icon = self.icon
+	local insets = border:GetBackdrop().insets.left / 2
 
 	self:TrySetSize(width, height)
 
-	local iconSize = self.container:GetHeight() - padding*2
+	if displayingBorder then
 
-	local icon = self.icon
-	icon:SetPoint('LEFT', padding, 0)
-	icon:SetSize(iconSize, iconSize)
-	icon:SetAlpha(displayIcon and 1 or 0)
 
-	local sb = self.latencyBar
-	sb:SetHeight(iconSize)
-	sb:SetPoint('RIGHT', -padding or 0, 0)
-	if displayIcon then
-		sb:SetPoint('LEFT', icon, 'RIGHT', 1, 0)
+		border:SetPoint('TOPLEFT', padding - insets, -(padding - insets))
+		border:SetPoint('BOTTOMRIGHT', -(padding - insets), padding - insets)
+		border:Show()
+
+		padding = padding + insets/2
+
+		bg:SetPoint('TOPLEFT', padding, -padding)
+		bg:SetPoint('BOTTOMRIGHT', -padding, padding)
 	else
+		border:Hide()
+
+		bg:SetPoint('TOPLEFT')
+		bg:SetPoint('BOTTOMRIGHT')
+	end
+
+
+
+	local widgetSize = height - padding*2
+
+	if displayingIcon then
+		icon:SetPoint('LEFT', padding, 0)
+		icon:SetSize(widgetSize, widgetSize)
+		icon:SetAlpha(1)
+
+		sb:SetPoint('LEFT', icon, 'RIGHT', 1)
+	else
+		icon:SetAlpha(0)
+
 		sb:SetPoint('LEFT', padding, 0)
 	end
 
-	self.statusBar:SetAllPoints(self.latencyBar)
+	sb:SetPoint('RIGHT', -padding, 0)
+	sb:SetHeight(widgetSize)
 
-	local time = self.timeText
-	time:SetPoint('RIGHT', -2, 0)
-	time:SetAlpha(displayTime and 1 or 0)
+	local textoffset = 2 + (displayingBorder and insets or 0)
 
-	local label = self.labelText
-	label:SetJustifyH((displayIcon or displayTime) and 'LEFT' or 'CENTER')
-	label:SetPoint('LEFT', 2, 0)
-	if displayTime then
-		label:SetPoint('RIGHT', time, -2, 0)
+	label:SetPoint('LEFT', textoffset, 0)
+
+	if displayingTime then
+		time:SetPoint('RIGHT', -textoffset, 0)
+		time:SetAlpha(1)
+
+		label:SetPoint('RIGHT', time, 'LEFT', -textoffset, 0)
 	else
-		label:SetPoint('RIGHT', -2, 0)
+		time:SetAlpha(0)
+
+		label:SetPoint('RIGHT', -textoffset, 0)
+	end
+
+	if displayingIcon or displayingTime then
+		label:SetJustifyH('LEFT')
+	else
+		label:SetJustifyH('CENTER')
 	end
 
 	return self
@@ -406,11 +467,19 @@ function CastBar:UpdateChannelling(reset)
 		self:SetProperty('icon', texture)
 		self:SetProperty('spell', GetSpellInfo(name))
 
+		local vmin = 0
+		local vmax = (endTime - startTime) / 1000
+		local v = endTime / 1000 - GetTime()
+
 		local sb = self.statusBar
 		sb:SetMinMaxValues(0, (endTime - startTime) / 1000)
-		sb:SetValue(endTime / 1000 - GetTime())
+		sb:SetValue(v)
 
-		self.latencyBar:SetValue(0)
+		local spark = self.spark
+		spark:SetMinMaxValues(vmin, vmax)
+		spark:SetValue(v)
+
+		self.latencyBar:Hide()
 
 		return true
 	end
@@ -430,15 +499,26 @@ function CastBar:UpdateCasting(reset)
 		self:SetProperty('label', text)
 		self:SetProperty('icon', texture)
 		self:SetProperty('spell', GetSpellInfo(name))
-		self:SetProperty('latency', self:GetLatency())
+
+		local vmin = 0
+		local vmax = (endTime - startTime) / 1000
+		local v = GetTime() - startTime / 1000
+		local latency = self:GetLatency()
 
 		local sb = self.statusBar
-		sb:SetMinMaxValues(0, (endTime - startTime) / 1000)
-		sb:SetValue(GetTime() - startTime / 1000)
+		sb:SetMinMaxValues(vmin, vmax)
+		sb:SetValue(v)
+
+		local spark = self.spark
+		spark:SetMinMaxValues(vmin, vmax)
+		spark:SetValue(v)
 
 		local lb = self.latencyBar
-		lb:SetMinMaxValues(sb:GetMinMaxValues())
-		lb:SetValue(sb:GetValue() + self:GetProperty("latency"))
+		lb:SetPoint('TOPRIGHT', sb)
+		lb:SetPoint('BOTTOMRIGHT', sb)
+		lb:SetWidth(min(latency / vmax, 1) * sb:GetWidth())
+		lb:SetHorizTile(true)
+		lb:Show()
 
 		return true
 	end
@@ -465,7 +545,16 @@ function CastBar:SetupDemo()
 	self:SetProperty("spell", spellID)
 
 	self.statusBar:SetMinMaxValues(0, 1)
-	self.statusBar:SetValue(1)
+	self.statusBar:SetValue(0.75)
+
+	self.spark:SetMinMaxValues(0, 1)
+	self.spark:SetValue(0.75)
+
+	local lb = self.latencyBar
+	lb:SetPoint('TOPRIGHT', self.statusBar)
+	lb:SetPoint('BOTTOMRIGHT', self.statusBar)
+	lb:SetWidth(0.15 * self.statusBar:GetWidth())
+	lb:Show()
 end
 
 function CastBar:GetRandomspellID()
@@ -499,21 +588,21 @@ end
 --[[ settings ]]--
 
 function CastBar:SetDesiredWidth(width)
-	self.sets.width = width
+	self.sets.w = tonumber(width)
 	self:Layout()
 end
 
 function CastBar:GetDesiredWidth()
-	return self.sets.width or 320
+	return self.sets.w or 240
 end
 
 function CastBar:SetDesiredHeight(height)
-	self.sets.height = height
+	self.sets.h = tonumber(height)
 	self:Layout()
 end
 
 function CastBar:GetDesiredHeight()
-	return self.sets.height or 32
+	return self.sets.h or 32
 end
 
 --font
@@ -590,7 +679,7 @@ do
 
 		local l = LibStub('AceLocale-3.0'):GetLocale('Dominos-CastBar')
 
-		for _, part in ipairs{'icon', 'time'} do
+		for _, part in ipairs{'icon', 'time', 'border'} do
 			panel:NewCheckButton{
 				name = l['Display_' .. part],
 
