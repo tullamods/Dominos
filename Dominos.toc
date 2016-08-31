@@ -2,7 +2,7 @@
 ## Title: Dominos
 ## Notes: A main actionbar replacement
 ## Author: Tuller
-## Version: 7.0.17
+## Version: 7.0.19
 ## SavedVariables: DominosDB, DominosVersion
 ## OptionalDeps: Ace3, LibKeyBound-1.0, Masque, FlyPaper
 embeds.xml
@@ -27,6 +27,7 @@ bars\bagBar.lua
 bars\menuBar.lua
 bars\extraActionBar.lua
 bars\vehicleBar.lua
+## bars\castBar.lua
 plugins\slashCommands.lua
 plugins\launcher.lua
 plugins\blizzardHider.lua
