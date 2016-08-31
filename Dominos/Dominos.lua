@@ -109,9 +109,15 @@ end
 
 --Load is called  when the addon is first enabled, and also whenever a profile is loaded
 function Addon:Load()
-	for i, module in self:IterateModules() do
+	local module_load = function(module)
 		if module.Load then
 			module:Load()
+		end
+	end
+
+	for i, module in self:IterateModules() do
+		if not pcall(module_load, module) then
+			self:Printf('Failed to load %s', module:GetName())
 		end
 	end
 
@@ -120,10 +126,16 @@ end
 
 --unload is called when we're switching profiles
 function Addon:Unload()
-	--unload any module stuff
-	for i, module in self:IterateModules() do
+	local module_unload = function(module)
 		if module.Unload then
 			module:Unload()
+		end
+	end
+
+	--unload any module stuff
+	for i, module in self:IterateModules() do
+		if not pcall(module_unload, module) then
+			self:Printf('Failed to unload %s', module:GetName())
 		end
 	end
 end
