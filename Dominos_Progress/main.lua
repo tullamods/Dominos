@@ -71,24 +71,16 @@ function ProgressBarModule:ARTIFACT_XP_UPDATE()
 	self:UpdateAllBars()
 end
 
-do
-	local artifactEquipped = false
+function ProgressBarModule:UNIT_INVENTORY_CHANGED(event, unit)
+	if unit ~= 'player' then return end
 
-	function ProgressBarModule:UNIT_INVENTORY_CHANGED(event, unit)
-		if unit ~= 'player' then return end
-
-		local hasArtifactEquipped = HasArtifactEquipped()
-		if artifactEquipped ~= hasArtifactEquipped then
-			artifactEquipped = hasArtifactEquipped
-			self:UpdateAllBars()
-		end
-	end
+	self:UpdateAllBars()
 end
 
 function ProgressBarModule:HONOR_XP_UPDATE()
-	self:UpdateAllBarsInMode('honor')
+	self:UpdateAllBars()
 end
 
 function ProgressBarModule:HONOR_LEVEL_UPDATE()
-	self:UpdateAllBarsInMode('honor')
+	self:UpdateAllBars()
 end
