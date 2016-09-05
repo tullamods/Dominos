@@ -291,7 +291,9 @@ end
 --utility functions
 function ActionBar:ForAll(method, ...)
 	for _,f in pairs(active) do
-		f[method](f, ...)
+		if f.method then
+			f[method](f, ...)
+		end
 	end
 end
 
