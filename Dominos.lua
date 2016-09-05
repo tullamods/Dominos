@@ -115,9 +115,11 @@ function Addon:Load()
 		end
 	end
 
+
 	for i, module in self:IterateModules() do
-		if not pcall(module_load, module) then
-			self:Printf('Failed to load %s', module:GetName())
+		local success, msg = pcall(module_load, module)
+		if not success then
+			self:Printf('Failed to load %s\n%s', module:GetName(), msg)
 		end
 	end
 
@@ -134,8 +136,9 @@ function Addon:Unload()
 
 	--unload any module stuff
 	for i, module in self:IterateModules() do
-		if not pcall(module_unload, module) then
-			self:Printf('Failed to unload %s', module:GetName())
+		local success, msg = pcall(module_unload, module)
+		if not success then
+			self:Printf('Failed to unload %s\n%s', module:GetName(), msg)
 		end
 	end
 end
