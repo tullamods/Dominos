@@ -1,6 +1,7 @@
 
 local AddonName, Addon = ...
 local Dominos = _G.Dominos
+local LSM = LibStub('LibSharedMedia-3.0')
 
 --[[ global references ]]--
 
@@ -124,6 +125,11 @@ function CastBar:OnCreate()
 	return self
 end
 
+function CastBar:OnFree()
+	self:UnregisterAllEvents()
+	LSM.UnregisterAllCallbacks(self)
+end
+
 function CastBar:OnLoadSettings()
 	if not self.sets.display then
 		self.sets.display = {
@@ -215,6 +221,8 @@ function CastBar:RegisterEvents()
 
 	self:RegisterUnitEvent('UNIT_SPELLCAST_INTERRUPTED', unit)
 	self:RegisterUnitEvent('UNIT_SPELLCAST_DELAYED', unit)
+
+	LSM.RegisterCallback(self, 'LibSharedMedia_Registered')
 end
 
 -- channeling events
@@ -274,6 +282,14 @@ function CastBar:UNIT_SPELLCAST_DELAYED(event, unit, name, rank, castID, spellID
 	if castID ~= self:GetProperty('castID') then return end
 
 	self:UpdateCasting()
+end
+
+function CastBar:LibSharedMedia_Registered(event, mediaType, key)
+	if mediaType == LSM.MediaType.STATUSBAR and key == self:GetTextureID() then
+		self:texture_update(key)
+	elseif mediaType == LSM.MediaType.FONT and key == self:GetFontID() then
+		self:font_update(key)
+	end
 end
 
 --[[ attribute events ]]--
@@ -340,7 +356,7 @@ end
 function CastBar:font_update(fontID)
 	self.sets.font = fontID
 
-	local newFont = LibStub('LibSharedMedia-3.0'):Fetch('font', fontID)
+	local newFont = LSM:Fetch(LSM.MediaType.FONT, fontID)
 	local oldFont, fontSize, fontFlags = self.labelText:GetFont()
 
 	if newFont and newFont ~= oldFont then
@@ -350,7 +366,7 @@ function CastBar:font_update(fontID)
 end
 
 function CastBar:texture_update(textureID)
-	local texture = LibStub('LibSharedMedia-3.0'):Fetch('statusbar', textureID)
+	local texture = LSM:Fetch(LSM.MediaType.STATUSBAR, self:GetTextureID())
 
 	self.statusBar:SetStatusBarTexture(texture)
 	self.bg:SetTexture(texture)
@@ -394,8 +410,6 @@ function CastBar:Layout()
 	self:TrySetSize(width, height)
 
 	if displayingBorder then
-
-
 		border:SetPoint('TOPLEFT', padding - insets, -(padding - insets))
 		border:SetPoint('BOTTOMRIGHT', -(padding - insets), padding - insets)
 		border:Show()
@@ -410,8 +424,6 @@ function CastBar:Layout()
 		bg:SetPoint('TOPLEFT')
 		bg:SetPoint('BOTTOMRIGHT')
 	end
-
-
 
 	local widgetSize = height - padding*2
 
