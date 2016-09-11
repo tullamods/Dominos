@@ -65,7 +65,7 @@ function Addon:GetDefaults()
 			showBindingText = true,
 			showTooltips = true,
 			showTooltipsCombat = true,
-			useVehicleUI = true,
+			useOverrideUI = true,
 
 			minimap = {
 				hide = false,
