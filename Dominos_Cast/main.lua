@@ -12,7 +12,7 @@ function CastBarModule:OnInitialize()
 end
 
 function CastBarModule:Load()
-	self.frame = Addon.CastBar:New('cast', 'player')
+	self.frame = Addon.CastBar:New('cast', {'player', 'vehicle'})
 end
 
 function CastBarModule:Unload()

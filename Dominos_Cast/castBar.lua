@@ -28,10 +28,10 @@ local SPARK_ALPHA = 0.7
 
 local CastBar = Dominos:CreateClass('Frame', Dominos.Frame)
 
-function CastBar:New(id, unit, ...)
+function CastBar:New(id, units, ...)
 	local bar = CastBar.proto.New(self, id, ...)
 
-	bar.unit = unit
+	bar.units = type(units) == "table" and units or {units}
 	bar:Layout()
 	bar:RegisterEvents()
 
@@ -208,27 +208,29 @@ end
 --[[ game events ]]--
 
 function CastBar:RegisterEvents()
-	local unit = self.unit
+	local registerUnitEvents = function(...)
+		self:RegisterUnitEvent('UNIT_SPELLCAST_CHANNEL_START', ...)
+		self:RegisterUnitEvent('UNIT_SPELLCAST_CHANNEL_UPDATE', ...)
+		self:RegisterUnitEvent('UNIT_SPELLCAST_CHANNEL_STOP', ...)
 
-	self:RegisterUnitEvent('UNIT_SPELLCAST_CHANNEL_START', unit)
-	self:RegisterUnitEvent('UNIT_SPELLCAST_CHANNEL_UPDATE', unit)
-	self:RegisterUnitEvent('UNIT_SPELLCAST_CHANNEL_STOP', unit)
+		self:RegisterUnitEvent('UNIT_SPELLCAST_START', ...)
+		self:RegisterUnitEvent('UNIT_SPELLCAST_STOP', ...)
+		self:RegisterUnitEvent('UNIT_SPELLCAST_FAILED', ...)
+		self:RegisterUnitEvent('UNIT_SPELLCAST_FAILED_QUIET', ...)
 
-	self:RegisterUnitEvent('UNIT_SPELLCAST_START', unit)
-	self:RegisterUnitEvent('UNIT_SPELLCAST_STOP', unit)
-	self:RegisterUnitEvent('UNIT_SPELLCAST_FAILED', unit)
-	self:RegisterUnitEvent('UNIT_SPELLCAST_FAILED_QUIET', unit)
+		self:RegisterUnitEvent('UNIT_SPELLCAST_INTERRUPTED', ...)
+		self:RegisterUnitEvent('UNIT_SPELLCAST_DELAYED', ...)
+	end
 
-	self:RegisterUnitEvent('UNIT_SPELLCAST_INTERRUPTED', unit)
-	self:RegisterUnitEvent('UNIT_SPELLCAST_DELAYED', unit)
-
+	registerUnitEvents(unpack(self.units))
 	LSM.RegisterCallback(self, 'LibSharedMedia_Registered')
 end
 
 -- channeling events
 function CastBar:UNIT_SPELLCAST_CHANNEL_START(event, unit, name, rank, castID, spellID)
-	if unit ~= self.unit then return end
+	-- if unit ~= self.unit then return end
 
+	self:SetProperty("unit", unit)
 	self:UpdateChannelling(true)
 	self:SetProperty("castID", castID)
 	self:SetProperty("state", "start")
@@ -247,8 +249,9 @@ function CastBar:UNIT_SPELLCAST_CHANNEL_STOP(event, unit, name, rank, castID, sp
 end
 
 function CastBar:UNIT_SPELLCAST_START(event, unit, name, rank, castID, spellID)
-	if unit ~= self.unit then return end
+	-- if unit ~= self.unit then return end
 
+	self:SetProperty("unit", unit)
 	self:UpdateCasting(true)
 	self:SetProperty("castID", castID)
 	self:SetProperty("state", "start")
@@ -471,7 +474,7 @@ function CastBar:UpdateChannelling(reset)
 		self:Reset()
 	end
 
-	local name, nameSubtext, text, texture, startTime, endTime = UnitChannelInfo(self.unit)
+	local name, nameSubtext, text, texture, startTime, endTime = UnitChannelInfo(self:GetProperty("unit"))
 
 	if name then
 		self:SetProperty('mode', 'channel')
@@ -504,7 +507,7 @@ function CastBar:UpdateCasting(reset)
 		self:Reset()
 	end
 
-	local name, nameSubtext, text, texture, startTime, endTime = UnitCastingInfo(self.unit)
+	local name, nameSubtext, text, texture, startTime, endTime = UnitCastingInfo(self:GetProperty("unit"))
 
 	if name then
 		self:SetProperty('mode', 'cast')
