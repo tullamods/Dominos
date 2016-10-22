@@ -27,7 +27,11 @@ function Menu:New(parent)
 	f:SetFrameStrata('DIALOG')
 
 	-- title region
-	local tr = f:CreateTitleRegion()
+	local tr = CreateFrame('Frame', nil, f)
+	tr:EnableMouse(true)
+	tr:RegisterForDrag('LeftButton')
+	tr:SetScript('OnDragStart', function() f:StartMoving() end)
+	tr:SetScript('OnDragStop', function() f:StopMovingOrSizing() end)
 	tr:SetPoint('TOPLEFT', f, 'TOPLEFT', 2, -2)
 	tr:SetPoint('BOTTOMRIGHT', f, 'TOPRIGHT', -2, -20)
 
@@ -49,6 +53,7 @@ function Menu:New(parent)
 	closeButton:SetSize(closeButton:GetFontString():GetSize())
 	closeButton:SetPoint('TOPRIGHT', tr, -2, -2)
 	closeButton:SetScript('OnClick', function() f:Hide() end)
+	closeButton:SetFrameLevel(tr:GetFrameLevel() + 1)
 
 	-- panel selector
 	local panelSelector = Addon.PanelSelector:New(f)
