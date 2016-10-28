@@ -3,9 +3,9 @@ local Dominos = _G.Dominos
 local ExperienceBar = Dominos:CreateClass('Frame', Addon.ProgressBar)
 
 function ExperienceBar:Init()
-	self:SetColor(0.58, 0, 0.55, 1)
-	self:SetBonusColor(0, 0.39, 0.88)
 	self:Update()
+	self:SetColor(Addon.Config:GetColor('xp'))
+	self:SetBonusColor(Addon.Config:GetColor('xp_bonus'))
 end
 
 function ExperienceBar:Update()

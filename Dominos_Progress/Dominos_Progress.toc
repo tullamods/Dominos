@@ -6,6 +6,7 @@
 ## OptionalDeps: LibSharedMedia-3.0
 embeds.xml
 localization.xml
+config.lua
 main.lua
 progressBar.lua
 xpBar.lua

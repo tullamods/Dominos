@@ -3,8 +3,8 @@ local Dominos = _G.Dominos
 local HonorBar = Dominos:CreateClass('Frame', Addon.ProgressBar)
 
 function HonorBar:Init()
-	self:SetColor(1.0, 0.24, 0, 1)
-	self:SetBonusColor(1.0, 0.71, 0, 1)
+	self:SetColor(Addon.Config:GetColor('honor'))
+	self:SetBonusColor(Addon.Config:GetColor('honor_bonus'))
 	self:Update()
 end
 

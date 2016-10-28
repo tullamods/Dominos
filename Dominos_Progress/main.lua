@@ -5,12 +5,24 @@
 local AddonName, Addon = ...
 local Dominos = LibStub('AceAddon-3.0'):GetAddon('Dominos')
 local ProgressBarModule = Dominos:NewModule('ProgressBars', 'AceEvent-3.0')
+local L = LibStub('AceLocale-3.0'):GetLocale('Dominos-Progress')
+local ConfigVersion = 1
+
+function ProgressBarModule:OnInitialize()
+	Addon.Config:Init()
+end
 
 function ProgressBarModule:Load()
-	self.bars = {
-		Addon.ExperienceBar:New('exp', { 'xp', 'reputation', 'honor' }),
-		Addon.ArtifactBar:New('artifact', { 'artifact' })
-	}
+	if Addon.Config:OneBarMode() then
+		self.bars = {
+			Addon.ExperienceBar:New('exp', { 'xp', 'reputation', 'honor', 'artifact' }),
+		}
+	else
+		self.bars = {
+			Addon.ExperienceBar:New('exp', { 'xp', 'reputation', 'honor' }),
+			Addon.ArtifactBar:New('artifact', { 'artifact' })
+		}
+	end
 
 	-- common events
 	self:RegisterEvent('PLAYER_ENTERING_WORLD')
@@ -24,12 +36,14 @@ function ProgressBarModule:Load()
 	self:RegisterEvent('UPDATE_FACTION')
 
 	-- honor events
-	self:RegisterEvent("HONOR_XP_UPDATE");
-	self:RegisterEvent("HONOR_LEVEL_UPDATE");
+	self:RegisterEvent('HONOR_XP_UPDATE')
+	self:RegisterEvent('HONOR_LEVEL_UPDATE')
 
 	-- artifact events
 	self:RegisterEvent('ARTIFACT_XP_UPDATE')
-	self:RegisterEvent("UNIT_INVENTORY_CHANGED")
+	self:RegisterEvent('UNIT_INVENTORY_CHANGED')
+
+	self:RegisterEvent('ADDON_LOADED')
 end
 
 function ProgressBarModule:UpdateAllBars()
@@ -46,6 +60,8 @@ function ProgressBarModule:Unload()
 
 	self.bars = {}
 end
+
+--[[ events ]]--
 
 function ProgressBarModule:PLAYER_ENTERING_WORLD()
 	self:UpdateAllBars()
@@ -83,4 +99,56 @@ end
 
 function ProgressBarModule:HONOR_LEVEL_UPDATE()
 	self:UpdateAllBars()
+end
+
+function ProgressBarModule:ADDON_LOADED(event, addonName)
+	if addonName == 'Dominos_Config' then
+		self:AddOptionsPanel()
+		self:UnregisterEvent('ADDON_LOADED')
+	end
+end
+
+function ProgressBarModule:AddOptionsPanel()
+	local panel = Dominos.Options.AddonOptions:NewPanel(L.Progress)
+	local prev = nil
+
+	local oneBarModeToggle = panel:Add('CheckButton', {
+		name = L.OneBarMode,
+
+		get = function()
+			return Addon.Config:OneBarMode()
+		end,
+
+		set = function(_, enable)
+			Addon.Config:SetOneBarMode(enable)
+			self:Unload()
+			self:Load()
+		end
+	})
+
+	oneBarModeToggle:SetPoint('TOPLEFT', 0, -2)
+
+	for i, key in ipairs{'xp', 'xp_bonus', 'honor', 'honor_bonus', 'artifact'} do
+
+		local picker = panel:Add('ColorPicker', {
+			name = L['Color_' .. key],
+
+			hasOpacity = true,
+
+			get = function()
+				return Addon.Config:GetColor(key)
+			end,
+
+			set = function(...)
+				Addon.Config:SetColor(key, ...)
+
+				for i, bar in pairs(self.bars) do
+					bar:Init()
+				end
+			end
+		})
+
+		picker:SetPoint('TOP', prev or oneBarModeToggle, 'BOTTOM', 0, -6)
+		prev = picker
+	end
 end

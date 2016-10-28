@@ -6,7 +6,7 @@ local GetEquippedArtifactInfo = _G.C_ArtifactUI.GetEquippedArtifactInfo
 local GetCostForPointAtRank = _G.C_ArtifactUI.GetCostForPointAtRank
 
 function ArtifactBar:Init()
-    self:SetColor(0.96, 0.86, 0.72, 1)
+    self:SetColor(Addon.Config:GetColor('artifact'))
     self:Update()
 end
 
