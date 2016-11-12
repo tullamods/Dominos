@@ -591,10 +591,12 @@ do
 	function ConfigOverlay:CreateHelpDialog()
 		local dialog = CreateFrame('Frame', AddonName .. 'ConfigHelperDialog', self.overlay)
 
+		dialog:SetMovable(true)
 		dialog:EnableMouse(true)
 		dialog:SetClampedToScreen(true)
 		dialog:SetSize(360, 120)
 		dialog:SetFrameStrata('FULLSCREEN_DIALOG')
+		dialog:RegisterForDrag('LeftButton')
 
 		dialog:SetBackdrop{
 			bgFile='Interface\\DialogFrame\\UI-DialogBox-Background',
@@ -607,16 +609,10 @@ do
 
 		dialog:SetPoint('TOP', 0, -24)
 
-		dialog:SetScript('OnShow', function()
-			PlaySound('igMainMenuOption')
-		end)
-
-		dialog:SetScript('OnHide', function()
-			PlaySound('gsTitleOptionExit')
-		end)
-
-		local tr = dialog:CreateTitleRegion()
-		tr:SetAllPoints(dialog)
+		dialog:SetScript('OnDragStart', function() dialog:StartMoving() end)
+		dialog:SetScript('OnDragStop', function() dialog:StopMovingOrSizing() end)
+		dialog:SetScript('OnShow', function() PlaySound('igMainMenuOption') end)
+		dialog:SetScript('OnHide', function() PlaySound('gsTitleOptionExit') end)
 
 		local header = dialog:CreateTexture(nil, 'ARTWORK')
 		header:SetTexture('Interface\\DialogFrame\\UI-DialogBox-Header')
@@ -639,10 +635,7 @@ do
 		local exitConfig = CreateFrame('CheckButton', dialog:GetName() .. 'ExitConfig', dialog, 'OptionsButtonTemplate')
 		_G[exitConfig:GetName() .. 'Text']:SetText(EXIT)
 
-		exitConfig:SetScript('OnClick', function()
-			Addon:SetLock(true)
-		end)
-
+		exitConfig:SetScript('OnClick', function() Addon:SetLock(true)end)
 		exitConfig:SetPoint('BOTTOMRIGHT', -14, 14)
 
 		return dialog
