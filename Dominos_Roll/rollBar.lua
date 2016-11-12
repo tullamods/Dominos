@@ -3,66 +3,71 @@
 		A dominos frame for rolling on items when in a party
 --]]
 
---[[ Roll Bar Object ]]--
-
-local RollBar = Dominos:CreateClass('Frame', Dominos.Frame)
-
 local L = LibStub('AceLocale-3.0'):GetLocale('Dominos')
 
-function RollBar:New()
-	local bar = RollBar.proto.New(self, 'roll', L.TipRollBar)
+local ContainerFrame = Dominos:CreateClass('Frame', Dominos.Frame)
 
-	bar:Layout()
+do
+	function ContainerFrame:New(id, frame, tooltip)
+		local bar = ContainerFrame.proto.New(self, id, tooltip)
 
-	return bar
+		bar:Layout(frame)
+
+		return bar
+	end
+
+	function ContainerFrame:GetDefaults()
+		return {
+			point = 'LEFT',
+			columns = 1,
+			spacing = 2,
+			showInPetBattleUI = true,
+			showInOverrideUI = true,
+		}
+	end
+
+	function ContainerFrame:Layout(frame)
+		frame:ClearAllPoints()
+		frame:SetPoint('BOTTOM', self.header)
+
+		local pW, pH = self:GetPadding()
+		self:SetSize(317 + pW, 119 + pH)
+	end
+
+	function ContainerFrame:CreateMenu()
+		local menu = Dominos:NewMenu(self.id)
+		local L = LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')
+
+		local panel = menu:NewPanel(L.Layout)
+
+		panel.opacitySlider = panel:NewOpacitySlider()
+		panel.fadeSlider = panel:NewFadeSlider()
+		panel.scaleSlider = panel:NewScaleSlider()
+		panel.paddingSlider = panel:NewPaddingSlider()
+
+		self.menu = menu
+	end
 end
 
-function RollBar:GetDefaults()
-	return {
-		point = 'LEFT',
-		columns = 1,
-		spacing = 2,
-		showInPetBattleUI = true,
-		showInOverrideUI = true,
-	}
-end
 
-function RollBar:Layout()
-	local container = _G.AlertFrame
-	container:ClearAllPoints()
-	container:SetPoint('BOTTOM', self.header)
+local ContainerFrameModule = Dominos:NewModule('ContainerFrames')
 
-	local pW, pH = self:GetPadding()
-	self:SetSize(317 + pW, 119 + pH)
-end
+do
+	function ContainerFrameModule:OnInitialize()
+		_G['GroupLootContainer'].ignoreFramePositionManager = true
+		_G['AlertFrame'].ignoreFramePositionManager = true
+	end
 
-function RollBar:CreateMenu()
-	local menu = Dominos:NewMenu(self.id)
-	local L = LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')
+	function ContainerFrameModule:Load()
+		self.frames = {
+			ContainerFrame:New('roll', _G.GroupLootContainer, L.TipRollBar),
+			ContainerFrame:New('alerts', _G.AlertFrame),
+		}
+	end
 
-	local panel = menu:NewPanel(L.Layout)
-
-	panel.opacitySlider = panel:NewOpacitySlider()
-	panel.fadeSlider = panel:NewFadeSlider()
-	panel.scaleSlider = panel:NewScaleSlider()
-	panel.paddingSlider = panel:NewPaddingSlider()
-
-	self.menu = menu
-end
-
-
---[[ Module Stuff ]]--
-
-local RollBarController = Dominos:NewModule('RollBar')
-
-function RollBarController:OnInitialize()
-	_G['GroupLootContainer'].ignoreFramePositionManager = true
-end
-
-function RollBarController:Load()
-	self.frame = RollBar:New()
-end
-
-function RollBarController:Unload()
-	self.frame:Free()
+	function ContainerFrameModule:Unload()
+		for i, frame in pairs(self.frames) do
+			frame:Free()
+		end
+	end
 end
