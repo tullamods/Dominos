@@ -11,7 +11,9 @@ do
 	function ContainerFrame:New(id, frame, tooltip)
 		local bar = ContainerFrame.proto.New(self, id, tooltip)
 
-		bar:Layout(frame)
+		bar.repositionedFrame = frame
+
+		bar:Layout()
 
 		return bar
 	end
@@ -26,7 +28,9 @@ do
 		}
 	end
 
-	function ContainerFrame:Layout(frame)
+	function ContainerFrame:Layout()
+		local frame = self.repositionedFrame
+		
 		frame:ClearAllPoints()
 		frame:SetPoint('BOTTOM', self.header)
 
