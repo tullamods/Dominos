@@ -31,7 +31,6 @@ local MICRO_BUTTONS = {
 	"EJMicroButton",
 	"CollectionsMicroButton",
 	"StoreMicroButton",
-	"HelpMicroButton",
 	"MainMenuMicroButton"
 }
 
@@ -45,7 +44,6 @@ local MICRO_BUTTON_NAMES = {
 	['LFDMicroButton'] = _G['DUNGEONS_BUTTON'],
 	['EJMicroButton'] = _G['ENCOUNTER_JOURNAL'],
 	['MainMenuMicroButton'] = _G['MAINMENU_BUTTON'],
-	['HelpMicroButton'] = _G['HELP_BUTTON'],
 	['StoreMicroButton'] = _G['BLIZZARD_STORE'],
 	['CollectionsMicroButton'] = _G['COLLECTIONS']
 }
