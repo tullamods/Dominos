@@ -25,18 +25,18 @@ function ArtifactBar:Update()
         return
     end
 
-    local itemID, altItemID, name, icon, totalXP, pointsSpent = GetEquippedArtifactInfo()
+    local itemID, altItemID, name, icon, xp, pointsSpent, quality, artifactAppearanceID, appearanceModID, itemAppearanceID, altItemAppearanceID, altOnTop, artifactTier = GetEquippedArtifactInfo()
     local pointsAvailable = 0
-    local nextRankCost = GetCostForPointAtRank(pointsSpent + pointsAvailable) or 0
+    local nextRankCost = GetCostForPointAtRank(pointsSpent + pointsAvailable, artifactTier) or 0
 
-    while totalXP >= nextRankCost  do
-        totalXP = totalXP - nextRankCost
+    while xp >= nextRankCost  do
+        xp = xp - nextRankCost
         pointsAvailable = pointsAvailable + 1
-        nextRankCost = GetCostForPointAtRank(pointsSpent + pointsAvailable) or 0
+        nextRankCost = GetCostForPointAtRank(pointsSpent + pointsAvailable, artifactTier) or 0
     end
 
-    self:SetValues(totalXP, nextRankCost)
-    self:UpdateText(_G.ARTIFACT_POWER, totalXP, nextRankCost, pointsAvailable)
+    self:SetValues(xp, nextRankCost)
+    self:UpdateText(_G.ARTIFACT_POWER, xp, nextRankCost, pointsAvailable)
 end
 
 function ArtifactBar:IsModeActive()
