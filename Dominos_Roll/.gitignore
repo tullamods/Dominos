@@ -6,3 +6,7 @@ Desktop.ini
 
 # Mac crap
 .DS_Store
+
+# VSCode
+.VSCode
+
