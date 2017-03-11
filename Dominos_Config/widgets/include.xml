@@ -7,6 +7,7 @@
 
 	<Script file="button.lua"/>
 	<Script file="checkButton.lua"/>
+	<Script file="colorPicker.lua"/>
 	<Script file="slider.lua"/>
 	<Script file="textInput.lua"/>
 	<Script file="dropdown.lua"/>
