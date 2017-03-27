@@ -1,5 +1,6 @@
 local AddonName, Addon = ...
 local ParentAddonName, ParentAddon = GetAddOnDependencies(AddonName), _G[ParentAddonName]
+local L = LibStub('AceLocale-3.0'):GetLocale(ParentAddonName .. '-Config')
 
 local AddonOptionsPanel = Addon:CreateClass('Frame')
 do
@@ -59,7 +60,7 @@ do
 	end
 
 	function AddonOptions:OnShow()
-		self.panelSelector:Select(next(self.panels))
+		self.panelSelector:Select(L.General)
 	end
 
 	function AddonOptions:NewPanel(id)
