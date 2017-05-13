@@ -9,6 +9,7 @@ local CastBarModule = Dominos:NewModule('CastBar')
 function CastBarModule:OnInitialize()
 	_G.CastingBarFrame.ignoreFramePositionManager = true
 	_G.CastingBarFrame:UnregisterAllEvents()
+	_G.PetCastingBarFrame:UnregisterAllEvents()
 end
 
 function CastBarModule:Load()
