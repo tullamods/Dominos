@@ -92,13 +92,21 @@ do
 	})
 	showMacroTextToggle:SetPoint('TOP', showBindingsButtonToggle, 'BOTTOM', 0, -10)
 
+	--show equipped i tem borders
+	local showEquippedToggle = GeneralPanel:Add('CheckButton', {
+		name = L.ShowEquippedItemBorders,
+		get = function() return ParentAddon:ShowEquippedItemBorders() end,
+		set = function(_, enable) ParentAddon:SetShowEquippedItemBorders(enable) end
+	})
+	showEquippedToggle:SetPoint('TOP', showMacroTextToggle, 'BOTTOM', 0, -10)
+
 	--show tooltips
 	local showTooltipsToggle = GeneralPanel:Add('CheckButton', {
 		name = L.ShowTooltips,
 		get = function() return ParentAddon:ShowTooltips() end,
 		set = function(_, enable) ParentAddon:SetShowTooltips(enable) end
 	})
-	showTooltipsToggle:SetPoint('TOP', showMacroTextToggle, 'BOTTOM', 0, -10)
+	showTooltipsToggle:SetPoint('TOP', showEquippedToggle, 'BOTTOM', 0, -10)
 
 	--show tooltips in combat
 	local showTooltipsInCombatToggle = GeneralPanel:Add('CheckButton', {

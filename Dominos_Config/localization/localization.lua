@@ -57,6 +57,7 @@ L.DisableMenuButtons = 'Disable Buttons'
 L.ShowOverrideUI = 'Use Blizzard Override Action Bar'
 L.ShowInOverrideUI = 'Show With Override UI'
 L.ShowInPetBattleUI = 'Show With Pet Battle UI'
+L.ShowEquippedItemBorders = 'Show Equipped Item Borders'
 
 L.ALT_KEY_TEXT = 'ALT'
 
