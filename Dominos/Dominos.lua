@@ -63,6 +63,7 @@ function Addon:GetDefaults()
 			linkedOpacity = false,
 			showMacroText = true,
 			showBindingText = true,
+			showEquippedItemBorders = true,
 			showTooltips = true,
 			showTooltipsCombat = true,
 			useOverrideUI = true,
@@ -545,6 +546,26 @@ end
 function Addon:ShowMacroText()
 	return self.db.profile.showMacroText
 end
+
+--border
+function Addon:SetShowEquippedItemBorders(enable)
+	self.db.profile.showEquippedItemBorders = enable or false
+
+	for _, f in self.Frame:GetAll() do
+		if f.buttons then
+			for _, b in pairs(f.buttons) do
+				if b.UpdateShowEquippedItemBorders then
+					b:UpdateShowEquippedItemBorders()
+				end
+			end
+		end
+	end
+end
+
+function Addon:ShowEquippedItemBorders()
+	return self.db.profile.showEquippedItemBorders
+end
+
 
 --possess bar settings
 function Addon:SetOverrideBar(id)

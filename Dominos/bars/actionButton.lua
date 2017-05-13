@@ -8,6 +8,7 @@ local KeyBound = LibStub('LibKeyBound-1.0')
 local Tooltips = Addon:GetModule('Tooltips')
 
 local ActionButton = Addon:CreateClass('CheckButton', Addon.BindableButton)
+local HiddenFrame = CreateFrame('Frame'); HiddenFrame:Hide()
 
 ActionButton.unused = {}
 ActionButton.active = {}
@@ -75,6 +76,7 @@ function ActionButton:New(id)
 
 		button:UpdateGrid()
 		button:UpdateMacro()
+		button:UpdateShowEquippedItemBorders()
 
 		self.active[id] = button
 	end
@@ -179,6 +181,14 @@ function ActionButton:SetFlyoutDirection(direction)
 
 	self:SetAttribute('flyoutDirection', direction)
 	ActionButton_UpdateFlyout(self)
+end
+
+function ActionButton:UpdateState()
+	ActionButton_UpdateState(self)
+end
+
+function ActionButton:UpdateShowEquippedItemBorders()
+	self.Border:SetParent(Addon:ShowEquippedItemBorders() and self or HiddenFrame)
 end
 
 function ActionButton:UpdateState()
