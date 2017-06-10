@@ -116,7 +116,6 @@ function Addon:Load()
 		end
 	end
 
-
 	for i, module in self:IterateModules() do
 		local success, msg = pcall(module_load, module)
 		if not success then
@@ -125,6 +124,7 @@ function Addon:Load()
 	end
 
 	self.Frame:ForAll('Reanchor')
+	self:GetModule('ButtonThemer'):Reskin()
 end
 
 --unload is called when we're switching profiles

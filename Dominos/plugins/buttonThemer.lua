@@ -31,6 +31,23 @@ function ButtonThemer:OnInitialize()
     end
 end
 
+function ButtonThemer:Unload()
+    self.shouldReskin = true
+end
+
+function ButtonThemer:Reskin()
+    if not self.shouldReskin then return end
+
+    self.shouldReskin = nil
+
+    local Masque = LibStub('Masque', true)
+    if Masque then
+        for _, groupName in pairs(Masque:Group(AddonName).SubList) do
+            Masque:Group(AddonName, groupName):ReSkin()
+        end
+    end
+end
+
 function ButtonThemer:ApplyDefaultTheme(button)
     button.icon:SetTexCoord(0.06, 0.94, 0.06, 0.94)
 
