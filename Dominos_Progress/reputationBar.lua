@@ -1,8 +1,9 @@
 local AddonName, Addon = ...
 local Dominos = _G.Dominos
 local ReputationBar = Dominos:CreateClass('Frame', Addon.ProgressBar)
-
-local FRIEND_ID_FACTION_COLOR_INDEX = 5
+local L = LibStub('AceLocale-3.0'):GetLocale('Dominos-Progress')
+local FRIEND_FACTION_COLOR_INDEX = 5
+local PARAGON_FACTION_COLOR_INDEX = 5
 
 function ReputationBar:Init()
     self:Update()
@@ -10,7 +11,7 @@ end
 
 function ReputationBar:Update()
     local name, reaction, min, max, value, factionID = GetWatchedFactionInfo()
-    if not name then
+    if not factionID then
         local color = FACTION_BAR_COLORS[1]
         self:SetColor(color.r, color.g, color.b)
         self:SetValues()
@@ -18,18 +19,27 @@ function ReputationBar:Update()
         return
     end
 
-    local friendID, friendRep, friendMaxRep, friendName, friendText, friendTexture, friendTextLevel, friendThreshold, nextFriendThreshold = GetFriendshipReputation(factionID)
-    if friendID then
-        if nextFriendThreshold then
-            min, max, value = friendThreshold, nextFriendThreshold, friendRep
-        else
-            -- max rank, make it look like a full bar
-            min, max, value = 0, 1, 1;
-        end
-
-        reaction = FRIEND_ID_FACTION_COLOR_INDEX
+    local description
+    if C_Reputation.IsFactionParagon(factionID) then
+        local currentValue, threshold = C_Reputation.GetFactionParagonInfo(factionID)
+        min, max, value = 0, threshold, currentValue
+        reaction = PARAGON_FACTION_COLOR_INDEX
+        description = L.Paragon
     else
-        friendTextLevel = _G['FACTION_STANDING_LABEL' .. reaction]
+        local friendID, friendRep, friendMaxRep, friendName, friendText, friendTexture, friendTextLevel, friendThreshold, nextFriendThreshold = GetFriendshipReputation(factionID)
+        if friendID then
+            if nextFriendThreshold then
+                min, max, value = friendThreshold, nextFriendThreshold, friendRep
+            else
+                -- max rank, make it look like a full bar
+                min, max, value = 0, 1, 1;
+            end
+
+            reaction = FRIEND_FACTION_COLOR_INDEX
+            description = friendTextLevel
+        else
+            description = _G['FACTION_STANDING_LABEL' .. reaction]
+        end
     end
 
     max = max - min
@@ -39,7 +49,7 @@ function ReputationBar:Update()
 
     self:SetColor(color.r, color.g, color.b)
     self:SetValues(value, max)
-    self:UpdateText(name, value, max, friendTextLevel)
+    self:UpdateText(name, value, max, description)
 end
 
 function ReputationBar:IsModeActive()

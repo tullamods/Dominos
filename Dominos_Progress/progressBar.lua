@@ -14,8 +14,8 @@ function ProgressBar:New(id, modes, ...)
 		}
 	end
 
-
 	bar.modes = modes
+	bar:SetFrameStrata(bar.sets.strata or 'BACKGROUND')
 	bar:UpdateFont()
 	bar:UpdateAlwaysShowText()
 	bar:UpdateMode(true)
