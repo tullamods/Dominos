@@ -3,7 +3,7 @@ local Dominos = _G.Dominos
 local ReputationBar = Dominos:CreateClass('Frame', Addon.ProgressBar)
 local L = LibStub('AceLocale-3.0'):GetLocale('Dominos-Progress')
 local FRIEND_FACTION_COLOR_INDEX = 5
-local PARAGON_FACTION_COLOR_INDEX = 5
+local PARAGON_FACTION_COLOR_INDEX = #FACTION_BAR_COLORS
 
 function ReputationBar:Init()
     self:Update()
@@ -11,7 +11,7 @@ end
 
 function ReputationBar:Update()
     local name, reaction, min, max, value, factionID = GetWatchedFactionInfo()
-    if not factionID then
+    if not name then
         local color = FACTION_BAR_COLORS[1]
         self:SetColor(color.r, color.g, color.b)
         self:SetValues()
@@ -46,7 +46,6 @@ function ReputationBar:Update()
     value = value - min
 
     local color = FACTION_BAR_COLORS[reaction]
-
     self:SetColor(color.r, color.g, color.b)
     self:SetValues(value, max)
     self:UpdateText(name, value, max, description)
