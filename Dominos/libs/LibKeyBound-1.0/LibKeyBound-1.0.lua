@@ -63,11 +63,11 @@ function LibKeyBound:Initialize()
 		}
 		f:SetPoint('TOP', 0, -24)
 		f:Hide()
-		f:SetScript('OnShow', function() PlaySound('igMainMenuOption') end)
-		f:SetScript('OnHide', function() PlaySound('gsTitleOptionExit') end)
+		f:SetScript('OnShow', function() PlaySound(SOUNDKIT.IG_MAINMENU_OPEN) end)
+		f:SetScript('OnHide', function() PlaySound(SOUNDKIT.IG_MAINMENU_CLOSE) end)
 
 		f:RegisterForDrag('LeftButton')
-		f:SetScript('OnDragStart', function(f) f:StartMoving() end) 
+		f:SetScript('OnDragStart', function(f) f:StartMoving() end)
 		f:SetScript('OnDragStop', function(f) f:StopMovingOrSizing() end)
 
 		local header = f:CreateTexture(nil, 'ARTWORK')
