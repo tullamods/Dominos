@@ -611,8 +611,6 @@ do
 
 		dialog:SetScript('OnDragStart', function() dialog:StartMoving() end)
 		dialog:SetScript('OnDragStop', function() dialog:StopMovingOrSizing() end)
-		dialog:SetScript('OnShow', function() PlaySound('igMainMenuOption') end)
-		dialog:SetScript('OnHide', function() PlaySound('gsTitleOptionExit') end)
 
 		local header = dialog:CreateTexture(nil, 'ARTWORK')
 		header:SetTexture('Interface\\DialogFrame\\UI-DialogBox-Header')
