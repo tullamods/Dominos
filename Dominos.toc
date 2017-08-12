@@ -1,8 +1,8 @@
-## Interface: 70200
+## Interface: 70300
 ## Title: Dominos
 ## Notes: A main actionbar replacement
 ## Author: Tuller
-## Version: 7.2.4
+## Version: 7.3.0
 ## SavedVariables: DominosDB, DominosVersion
 ## OptionalDeps: Ace3, LibKeyBound-1.0, Masque, FlyPaper
 embeds.xml
