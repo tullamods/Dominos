@@ -43,7 +43,7 @@ function ReputationBar:Update()
     end
 
     max = max - min
-    value = value - min
+    value = (value - min) % max
 
     local color = FACTION_BAR_COLORS[reaction]
     self:SetColor(color.r, color.g, color.b)
