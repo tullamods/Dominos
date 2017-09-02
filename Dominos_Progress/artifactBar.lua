@@ -29,7 +29,7 @@ function ArtifactBar:Update()
     local pointsAvailable = 0
     local nextRankCost = GetCostForPointAtRank(pointsSpent + pointsAvailable, artifactTier) or 0
 
-    while xp >= nextRankCost  do
+    while xp >= nextRankCost and nextRankCost > 0 do
         xp = xp - nextRankCost
         pointsAvailable = pointsAvailable + 1
         nextRankCost = GetCostForPointAtRank(pointsSpent + pointsAvailable, artifactTier) or 0
