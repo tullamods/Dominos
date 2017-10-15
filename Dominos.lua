@@ -14,12 +14,17 @@ local CONFIG_ADDON_NAME = AddonName .. '_Config'
 
 function Addon:OnInitialize()
 	--register database events
-	self.db = LibStub('AceDB-3.0'):New(AddonName .. 'DB', self:GetDefaults(), UnitClass('player'))
+	self.db = LibStub('AceDB-3.0'):New(AddonName .. 'DB', self:GetDefaults(), true)
+
 	self.db.RegisterCallback(self, 'OnNewProfile')
+	self.db.RegisterCallback(self, 'OnProfileShutdown')
 	self.db.RegisterCallback(self, 'OnProfileChanged')
 	self.db.RegisterCallback(self, 'OnProfileCopied')
 	self.db.RegisterCallback(self, 'OnProfileReset')
 	self.db.RegisterCallback(self, 'OnProfileDeleted')
+
+	local LibDualSpec = LibStub("LibDualSpec-1.0", true)
+	if LibDualSpec then LibDualSpec:EnhanceDatabase(self.db, AddonName) end
 
 	--version update
 	if _G[AddonName .. 'Version'] then
@@ -144,6 +149,11 @@ function Addon:Unload()
 	end
 end
 
+function Addon:Reload()
+	self:Unload()
+	self:Load()
+end
+
 --[[
 	 Configuration
 --]]
@@ -196,21 +206,15 @@ end
 function Addon:SaveProfile(name)
 	local toCopy = self.db:GetCurrentProfile()
 	if name and name ~= toCopy then
-		self:Unload()
 		self.db:SetProfile(name)
 		self.db:CopyProfile(toCopy)
-		self.isNewProfile = nil
-		self:Load()
 	end
 end
 
 function Addon:SetProfile(name)
 	local profile = self:MatchProfile(name)
 	if profile and profile ~= self.db:GetCurrentProfile() then
-		self:Unload()
 		self.db:SetProfile(profile)
-		self.isNewProfile = nil
-		self:Load()
 	else
 		self:Print(format(L.InvalidProfile, name or 'null'))
 	end
@@ -227,18 +231,12 @@ end
 
 function Addon:CopyProfile(name)
 	if name and name ~= self.db:GetCurrentProfile() then
-		self:Unload()
 		self.db:CopyProfile(name)
-		self.isNewProfile = nil
-		self:Load()
 	end
 end
 
 function Addon:ResetProfile()
-	self:Unload()
 	self.db:ResetProfile()
-	self.isNewProfile = true
-	self:Load()
 end
 
 function Addon:ListProfiles()
@@ -274,7 +272,6 @@ end
 --[[ Profile Events ]]--
 
 function Addon:OnNewProfile(msg, db, name)
-	self.isNewProfile = true
 	self:Print(format(L.ProfileCreated, name))
 end
 
@@ -282,16 +279,23 @@ function Addon:OnProfileDeleted(msg, db, name)
 	self:Print(format(L.ProfileDeleted, name))
 end
 
+function Addon:OnProfileShutdown(msg, db)
+	self:Unload()
+end
+
 function Addon:OnProfileChanged(msg, db, name)
 	self:Print(format(L.ProfileLoaded, name))
+	self:Load()
 end
 
 function Addon:OnProfileCopied(msg, db, name)
 	self:Print(format(L.ProfileCopied, name))
+	self:Reload()
 end
 
 function Addon:OnProfileReset(msg, db)
 	self:Print(format(L.ProfileReset, db:GetCurrentProfile()))
+	self:Reload()
 end
 
 
