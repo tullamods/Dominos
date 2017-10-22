@@ -3,8 +3,6 @@
 ## Notes: Progress bars of all sorts
 ## Author: Tuller
 ## Dependencies: Dominos
-## OptionalDeps: LibSharedMedia-3.0
-embeds.xml
 localization.xml
 config.lua
 main.lua
