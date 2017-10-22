@@ -94,6 +94,9 @@ do
 		editBox:SetScript('OnTextChanged', editBox_OnTextChanged)
 		editBox:SetScript('OnEditFocusLost', editBox_OnEditFocusLost)
 		editBox:SetScript('OnEscapePressed', editBox_OnEscapePressed)
+		
+		--clear focus whenenter is pressed(minor quality of life preference)
+		editBox:SetScript('OnEnterPressed', editBox_OnEscapePressed)
 		editBox:SetScript('OnTabPressed', editBox_OnTabPressed)
 
 		local bg = editBox:CreateTexture(nil, 'BACKGROUND')
@@ -138,6 +141,20 @@ do
 		local value = self:GetValue()
 		local minVal, maxVal = self:GetMinMaxValues()
 
+		--allows for custom editing. May need a way to flag a slider as editable or not(thinking of button bar size sliders).
+		if IsControlKeyDown() then
+			if self.storedMin then
+				self:SetMinMaxValues(self.storedMin, self.storedMax)
+			end
+			return
+		elseif IsShiftKeyDown() then
+			self.storedMin = self.storedMin or minVal
+			self.storedMax = self.storedMax or maxVal
+			minVal, maxVal = minVal - step, maxVal + step
+			self:SetMinMaxValues(minVal, maxVal)
+			return
+		end
+		
 		if step > 0 then
 			self:SetValue(min(value+step, maxVal))
 		else
