@@ -7,6 +7,5 @@
 ## Dependencies: Dominos
 ## LoadOnDemand: 1
 localization.xml
-embeds.xml
 widgets\include.xml
 panels\include.xml
