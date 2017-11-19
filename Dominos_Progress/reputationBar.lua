@@ -4,6 +4,7 @@ local ReputationBar = Dominos:CreateClass('Frame', Addon.ProgressBar)
 local L = LibStub('AceLocale-3.0'):GetLocale('Dominos-Progress')
 local FRIEND_FACTION_COLOR_INDEX = 5
 local PARAGON_FACTION_COLOR_INDEX = #FACTION_BAR_COLORS
+local MAX_REPUTATION_REACTION = _G.MAX_REPUTATION_REACTION
 
 function ReputationBar:Init()
     self:Update()
@@ -19,36 +20,45 @@ function ReputationBar:Update()
         return
     end
 
-    local description
+    local description, colorIndex, capped
+
     if C_Reputation.IsFactionParagon(factionID) then
-        local currentValue, threshold = C_Reputation.GetFactionParagonInfo(factionID)
-        min, max, value = 0, threshold, currentValue
-        reaction = PARAGON_FACTION_COLOR_INDEX
-        description = L.Paragon
+        local currentValue, threshold, rewardQuestID, hasRewardPending = C_Reputation.GetFactionParagonInfo(factionID)
+        min, max, value = 0, threshold, currentValue % threshold
+
+        colorIndex = PARAGON_FACTION_COLOR_INDEX
+        description = GetText('FACTION_STANDING_LABEL'..reaction, UnitSex('player'))
+        capped = false
     else
         local friendID, friendRep, friendMaxRep, friendName, friendText, friendTexture, friendTextLevel, friendThreshold, nextFriendThreshold = GetFriendshipReputation(factionID)
         if friendID then
             if nextFriendThreshold then
                 min, max, value = friendThreshold, nextFriendThreshold, friendRep
             else
-                -- max rank, make it look like a full bar
-                min, max, value = 0, 1, 1;
+                min, max, value = 0, 1, 1
+                capped = true
             end
 
-            reaction = FRIEND_FACTION_COLOR_INDEX
+            colorIndex = FRIEND_FACTION_COLOR_INDEX
             description = friendTextLevel
         else
-            description = _G['FACTION_STANDING_LABEL' .. reaction]
+            if reaction == MAX_REPUTATION_REACTION then
+                min, max, value = 0, 1, 1
+                capped = true
+            end
+
+            colorIndex = reaction
+            description = GetText('FACTION_STANDING_LABEL'..reaction, UnitSex('player'))
         end
     end
 
     max = max - min
-    value = (value - min) % max
+    value = value - min
 
     local color = FACTION_BAR_COLORS[reaction]
     self:SetColor(color.r, color.g, color.b)
     self:SetValues(value, max)
-    self:UpdateText(name, value, max, description)
+    self:UpdateText(name, value, max, description, capped)
 end
 
 function ReputationBar:IsModeActive()

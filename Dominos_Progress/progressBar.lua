@@ -109,7 +109,7 @@ do
 	local tinsert = table.insert
 	local tconcat = table.concat
 
-	function ProgressBar:UpdateText(label, value, max, bonus)
+	function ProgressBar:UpdateText(label, value, max, bonus, capped)
 		buffer = buffer or {}
 		twipe(buffer)
 
@@ -119,28 +119,34 @@ do
 			tinsert(buffer, ('%s:'):format(label))
 		end
 
-		if self:Displaying('value') then
-			if self:Displaying('max') then
-				tinsert(buffer, ('%s / %s'):format(fn(value), fn(max)))
-			else
-				tinsert(buffer, fn(value))
+		if capped then
+			if tostring(bonus) then
+				tinsert(buffer, ('%s: %s'):format(label, bonus))
 			end
-		end
-
-		if value < max and self:Displaying('remaining') then
-			tinsert(buffer, ('-%s'):format(fn(max - value)))
-		end
-
-		if tonumber(bonus) then
-			if bonus > 0 and self:Displaying('bonus') then
-				tinsert(buffer, ('(+%s)'):format(fn(bonus)))
+		else
+			if self:Displaying('value') then
+				if self:Displaying('max') then
+					tinsert(buffer, ('%s / %s'):format(fn(value), fn(max)))
+				else
+					tinsert(buffer, fn(value))
+				end
 			end
-		elseif tostring(bonus) and self:Displaying('label') then
-			tinsert(buffer, ('(%s)'):format(bonus))
-		end
 
-		if self:Displaying('percent') and max ~= 0 then
-			tinsert(buffer, ('%.1f%%'):format(value / max * 100))
+			if value < max and self:Displaying('remaining') then
+				tinsert(buffer, ('-%s'):format(fn(max - value)))
+			end
+
+			if tonumber(bonus) then
+				if bonus > 0 and self:Displaying('bonus') then
+					tinsert(buffer, ('(+%s)'):format(fn(bonus)))
+				end
+			elseif tostring(bonus) and self:Displaying('label') then
+				tinsert(buffer, ('(%s)'):format(bonus))
+			end
+
+			if self:Displaying('percent') and max ~= 0 then
+				tinsert(buffer, ('%.1f%%'):format(value / max * 100))
+			end
 		end
 
 		self:SetText(tconcat(buffer, ' '))
