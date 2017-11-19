@@ -377,36 +377,7 @@ function Frame:IsDockedFocus()
 	return false
 end
 
-
 --[[ Fading ]]--
-
-local function fader_Create(parent)
-	local fadeGroup = parent:CreateAnimationGroup()
-	fadeGroup:SetLooping('NONE')
-	fadeGroup:SetScript('OnFinished', function(self) parent:SetAlpha(self.targetAlpha) end)
-
-	local fade = fadeGroup:CreateAnimation('Alpha')
-	fade:SetSmoothing('IN_OUT')
-
-	return function(targetAlpha, duration)
-		if fadeGroup:IsPlaying() then
-			fadeGroup:Pause()
-		end
-
-		fadeGroup.targetAlpha = targetAlpha
-		fade:SetFromAlpha(parent:GetAlpha())
-		fade:SetToAlpha(targetAlpha)
-		fade:SetDuration(duration)
-		fadeGroup:Play()
-	end
-end
-
-local Fade = setmetatable({}, {__index = function(t, parent)
-	local fade = fader_Create(parent)
-	t[parent] = fade
-	return fade
-end})
-
 
 --fades the frame from the current opacity setting
 --to the expected setting
@@ -419,13 +390,12 @@ function Frame:Fade()
 		return
 	end
 
-	Fade[self](self:GetExpectedAlpha(), 0.1)
+	Addon:Fade(self, self:GetExpectedAlpha(), 0.1)
 
 	if Addon:IsLinkedOpacityEnabled() then
 		self:ForDocked('Fade')
 	end
 end
-
 
 --[[ Visibility ]]--
 
