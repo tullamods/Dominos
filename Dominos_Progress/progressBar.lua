@@ -121,7 +121,7 @@ do
 
 		if capped then
 			if tostring(bonus) then
-				tinsert(buffer, ('%s: %s'):format(label, bonus))
+				tinsert(buffer, bonus)
 			end
 		else
 			if self:Displaying('value') then
