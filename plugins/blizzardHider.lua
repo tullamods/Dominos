@@ -3,6 +3,8 @@
     want visible when running Dominos
 --]]
 
+local AddonName, Addon =...
+
 local hiddenFrame = CreateFrame('Frame', nil, _G['UIParent'], 'SecureFrameTemplate');
 hiddenFrame:Hide()
 
@@ -11,6 +13,7 @@ local function disableFrame(frameName, unregisterEvents)
 
     if not frame then
         Addon:Print('Unknown Frame', frameName)
+        return
     end
 
     frame:SetParent(hiddenFrame)
