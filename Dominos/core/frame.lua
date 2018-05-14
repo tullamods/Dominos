@@ -652,8 +652,8 @@ function Frame:GetRelativeFramePosition()
 	local bottom = self:GetBottom() or 0
 
 	local parent = self:GetParent() or _G['UIParent']
-	local pwidth = parent:GetWidth() / self:GetScale()
-	local pheight = parent:GetHeight() / self:GetScale()
+	local pwidth = parent:GetWidth() / scale
+	local pheight = parent:GetHeight() / scale
 
 	local x , y, point
 	if left < (pwidth - right) and left < abs((left+right)/2 - pwidth/2) then
@@ -688,7 +688,7 @@ end
 --[[ Position Saving ]]--
 
 local roundPoint = function(point)
-	local point = point or 0
+	point = point or 0
 
 	if point > 0 then
 		point = floor(point + 0.5)
@@ -705,9 +705,9 @@ function Frame:Reposition()
 end
 
 function Frame:SaveFramePosition(point, x, y)
-	local point = point or 'CENTER'
-	local x = roundPoint(x)
-	local y = roundPoint(y)
+	point = point or 'CENTER'
+	x = roundPoint(x)
+	y = roundPoint(y)
 
 	local sets = self.sets
 	sets.point = point ~= 'CENTER' and point or nil

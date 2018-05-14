@@ -39,18 +39,18 @@ do
     disableFrameSlidingAnimation('MainMenuBar')
     disableFrameSlidingAnimation('OverrideActionBar')
 
-    disableFrame('ArtifactWatchBar')
-    disableFrame('HonorWatchBar')
     disableFrame('MultiBarBottomLeft')
     disableFrame('MultiBarBottomRight')
     disableFrame('MultiBarLeft')
     disableFrame('MultiBarRight')
     disableFrame('MainMenuBarArtFrame')
-    disableFrame('MainMenuExpBar')
-    disableFrame('MainMenuBarMaxLevelBar')
-    disableFrame('ReputationWatchBar')
     disableFrame('StanceBarFrame')
     disableFrame('PossessBarFrame')
     disableFrame('PetActionBarFrame')
     disableFrame('MultiCastActionBarFrame')
+    disableFrame('MicroButtonAndBagsBar')
+    disableFrame('MainMenuBarPerformanceBar')
+
+    _G.StatusTrackingBarManager:UnregisterAllEvents()
+    _G.StatusTrackingBarManager:Hide()
 end

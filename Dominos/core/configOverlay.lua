@@ -331,7 +331,7 @@ do
 			GameTooltip:AddLine(tooltipText .. '\n', nil, nil, nil, nil, 1)
 		end
 
-		if self.owner.ShowMenu then
+		if self.owner.ShowMenu and Addon:IsConfigAddonEnabled() then
 			GameTooltip:AddLine(L.ShowConfig)
 		end
 

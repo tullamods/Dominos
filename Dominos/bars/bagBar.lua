@@ -107,5 +107,8 @@ end
 function BagBarController:RegisterButton(name)
 	local button = _G[name]
 
+	-- button:SetSize(36, 36)
+	button:SetSize(36, 36)
+
 	table.insert(bagButtons, button)
 end
