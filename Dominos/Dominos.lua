@@ -343,9 +343,7 @@ end
 
 function Addon:IsConfigAddonEnabled()
 	if GetAddOnEnableState(UnitName('player'), CONFIG_ADDON_NAME) >= 1 then
-		local loadable = select(4, GetAddOnInfo(CONFIG_ADDON_NAME))
-
-		return loadable
+		return true
 	end
 end
 

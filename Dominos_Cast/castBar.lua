@@ -1,6 +1,6 @@
 
-local AddonName, Addon = ...
-local Dominos = _G.Dominos
+local Addon = (select(2, ...))
+local Dominos = LibStub("AceAddon-3.0"):GetAddon("Dominos")
 local LSM = LibStub('LibSharedMedia-3.0')
 
 --[[ global references ]]--
@@ -62,7 +62,7 @@ function CastBar:OnCreate()
 		fin:SetLooping('NONE')
 		fin:SetScript('OnFinished', function() container:SetAlpha(1) end)
 
-			local a = fin:CreateAnimation('Alpha')
+			a = fin:CreateAnimation('Alpha')
 			a:SetFromAlpha(0)
 			a:SetToAlpha(1)
 			a:SetDuration(0.2)
@@ -172,7 +172,7 @@ end
 
 function CastBar:OnUpdateCasting(elapsed)
 	local sb = self.statusBar
-	local vmin, vmax = sb:GetMinMaxValues()
+	local _, vmax = sb:GetMinMaxValues()
 	local v = sb:GetValue() + elapsed
 
 	if v < vmax then
@@ -185,7 +185,7 @@ end
 
 function CastBar:OnUpdateChanneling(elapsed)
 	local sb = self.statusBar
-	local vmin, vmax = sb:GetMinMaxValues()
+	local vmin = sb:GetMinMaxValues()
 	local v = sb:GetValue() - elapsed
 
 	if v > vmin then
@@ -474,7 +474,7 @@ function CastBar:UpdateChannelling(reset)
 		self:Reset()
 	end
 
-	local name, nameSubtext, text, texture, startTime, endTime = UnitChannelInfo(self:GetProperty("unit"))
+	local name, text, texture, startTime, endTime = UnitChannelInfo(self:GetProperty("unit"))
 
 	if name then
 		self:SetProperty('mode', 'channel')
@@ -507,7 +507,7 @@ function CastBar:UpdateCasting(reset)
 		self:Reset()
 	end
 
-	local name, nameSubtext, text, texture, startTime, endTime = UnitCastingInfo(self:GetProperty("unit"))
+	local name, text, texture, startTime, endTime = UnitCastingInfo(self:GetProperty("unit"))
 
 	if name then
 		self:SetProperty('mode', 'cast')
@@ -552,7 +552,7 @@ end
 
 function CastBar:SetupDemo()
 	local spellID = self:GetRandomspellID()
-	local name, rank, icon = GetSpellInfo(spellID)
+	local name, icon = GetSpellInfo(spellID)
 
 	self:SetProperty('mode', 'demo')
 	self:SetProperty("label", name)
@@ -574,7 +574,6 @@ end
 
 function CastBar:GetRandomspellID()
 	local spells = {}
-	local offset = 0
 
 	for i = 1, GetNumSpellTabs() do
 		local offset, numSpells = select(3, GetSpellTabInfo(i))
@@ -594,7 +593,7 @@ end
 -- the latency indicator in the castbar is meant to tell you when you can
 -- safely cast a spell, so we
 function CastBar:GetLatency()
-	local down, up, lagHome, lagWorld = GetNetStats()
+	local lagHome, lagWorld = select(3, GetNetStats())
 
 	return (max(lagHome, lagWorld) + self:GetLatencyPadding()) / 1000
 end
