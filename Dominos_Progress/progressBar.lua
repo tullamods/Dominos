@@ -120,7 +120,7 @@ do
 		end
 
 		if capped then
-			if tostring(bonus) then
+			if  bonus ~= nil then
 				tinsert(buffer, bonus)
 			end
 		else
@@ -140,7 +140,7 @@ do
 				if bonus > 0 and self:Displaying('bonus') then
 					tinsert(buffer, ('(+%s)'):format(fn(bonus)))
 				end
-			elseif tostring(bonus) and self:Displaying('label') then
+			elseif bonus ~= nil and self:Displaying('label') then
 				tinsert(buffer, ('(%s)'):format(bonus))
 			end
 

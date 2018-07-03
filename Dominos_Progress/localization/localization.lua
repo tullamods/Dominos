@@ -26,5 +26,7 @@ L.Color_xp_bonus = 'Bonus XP Color'
 L.Color_honor = 'Honor Color'
 L.Color_honor_bonus = 'Bonus Honor Color'
 L.Color_artifact = 'Artifact Color'
+L.Color_azerite = 'Azerite Color'
 
 L.Paragon = 'Paragon'
+L.Azerite = 'Azerite Power'

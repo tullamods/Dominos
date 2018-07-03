@@ -15,12 +15,12 @@ end
 function ProgressBarModule:Load()
 	if Addon.Config:OneBarMode() then
 		self.bars = {
-			Addon.ExperienceBar:New('exp', { 'xp', 'reputation', 'honor', 'artifact' }),
+			Addon.ExperienceBar:New('exp', { 'xp', 'reputation', 'honor', 'artifact', 'azerite' }),
 		}
 	else
 		self.bars = {
 			Addon.ExperienceBar:New('exp', { 'xp', 'reputation', 'honor' }),
-			Addon.ArtifactBar:New('artifact', { 'artifact' })
+			Addon.ArtifactBar:New('artifact', { 'artifact', 'azerite' })
 		}
 	end
 
@@ -42,6 +42,9 @@ function ProgressBarModule:Load()
 	-- artifact events
 	self:RegisterEvent('ARTIFACT_XP_UPDATE')
 	self:RegisterEvent('UNIT_INVENTORY_CHANGED')
+
+	-- azerite events
+	self:RegisterEvent('AZERITE_ITEM_EXPERIENCE_CHANGED')
 
 	self:RegisterEvent('ADDON_LOADED')
 end
@@ -87,6 +90,10 @@ function ProgressBarModule:ARTIFACT_XP_UPDATE()
 	self:UpdateAllBars()
 end
 
+function ProgressBarModule:AZERITE_ITEM_EXPERIENCE_CHANGED()
+	self:UpdateAllBars()
+end
+
 function ProgressBarModule:UNIT_INVENTORY_CHANGED(event, unit)
 	if unit ~= 'player' then return end
 
@@ -128,7 +135,7 @@ function ProgressBarModule:AddOptionsPanel()
 
 	oneBarModeToggle:SetPoint('TOPLEFT', 0, -2)
 
-	for i, key in ipairs{'xp', 'xp_bonus', 'honor', 'honor_bonus', 'artifact'} do
+	for i, key in ipairs{'xp', 'xp_bonus', 'honor', 'artifact', 'azerite'} do
 
 		local picker = panel:Add('ColorPicker', {
 			name = L['Color_' .. key],

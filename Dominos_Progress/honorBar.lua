@@ -1,24 +1,22 @@
-local AddonName, Addon = ...
+local Addon = select(2, ...)
 local Dominos = _G.Dominos
 local HonorBar = Dominos:CreateClass('Frame', Addon.ProgressBar)
 
 function HonorBar:Init()
 	self:SetColor(Addon.Config:GetColor('honor'))
-	self:SetBonusColor(Addon.Config:GetColor('honor_bonus'))
 	self:Update()
 end
 
 function HonorBar:Update()
 	local value = UnitHonor('player') or 0
 	local max = UnitHonorMax('player') or 1
-	local bonus = GetHonorExhaustion() or 0
 
-	self:SetValues(value, max, bonus)
-	self:UpdateText(_G.HONOR, value, max, bonus)
+	self:SetValues(value, max)
+	self:UpdateText(_G.HONOR, value, max)
 end
 
 function HonorBar:IsModeActive()
-	return IsWatchingHonorAsXP() or InActiveBattlefield()
+	return IsWatchingHonorAsXP() or InActiveBattlefield() or IsInActiveWorldPVP()
 end
 
 -- register this as a possible progress bar mode
