@@ -184,6 +184,7 @@ function BindingsController:RegisterEvents()
 	self:RegisterEvent('UPDATE_BINDINGS')
 	self:RegisterEvent('PLAYER_LOGIN')
 	self:RegisterEvent('CVAR_UPDATE')
+	self:RegisterEvent("ACTIONBAR_UPDATE_STATE")
 end
 
 function BindingsController:OnEvent(event, ...)
@@ -209,6 +210,14 @@ function BindingsController:CVAR_UPDATE(event, variableName)
 	if variableName == 'ACTION_BUTTON_USE_KEY_DOWN' then
 		self:UpdateCastOnKeyPress()
 		self:RequestUpdateBindings()
+	end
+end
+
+function BindingsController:ACTIONBAR_UPDATE_STATE()
+	for button in pairs(self.surrogates) do
+		if not button:GetChecked() then
+			button:SetButtonState('NORMAL')
+		end
 	end
 end
 
