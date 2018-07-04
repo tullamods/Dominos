@@ -6,12 +6,14 @@
 local AddonName, Addon = ...
 local Frame = Addon:CreateClass('Frame')
 local L = LibStub('AceLocale-3.0'):GetLocale(AddonName)
+local FlyPaper = _G.FlyPaper
+
 local active = {}
 local unused = {}
 
 --constructor
 function Frame:New(id, tooltipText)
-	local id = tonumber(id) or id
+	id = tonumber(id) or id
 
 	local frame = self:Restore(id) or self:Create(id)
 	frame:LoadSettings()
@@ -169,8 +171,8 @@ end
 --[[ Layout ]]--
 
 function Frame:SetPadding(width, height)
-	local width = width or 0
-	local height = height or width
+	width = tonumber(width) or 0
+	height = tonumber(height) or width
 
 	self.sets.padW = width ~= 0 and width or nil
 	self.sets.padH = height ~= 0 and height or nil
@@ -208,7 +210,8 @@ end)
 function Frame:OnSetScale(scale) end
 
 function Frame:SetFrameScale(newScale, scaleAnchored)
-	local newScale = newScale or 1
+	newScale = tonumber(newScale) or 1
+
 	local oldScale = self:GetFrameScale()
 	local ratio = oldScale / newScale
 
@@ -224,7 +227,7 @@ function Frame:SetFrameScale(newScale, scaleAnchored)
 	if scaleAnchored then
 		for _, f in self:GetAll() do
 			if f:GetAnchor() == self then
-				f:SetFrameScale(scale, true)
+				f:SetFrameScale(newScale, true)
 			end
 		end
 	end
@@ -264,7 +267,7 @@ end
 
 --faded opacity (mouse not over the frame)
 function Frame:SetFadeMultiplier(alpha)
-	local alpha = alpha or 1
+	alpha = tonumber(alpha) or 1
 
 	if alpha == 1 then
 		self.sets.fadeAlpha = nil
@@ -594,7 +597,7 @@ function Frame:SetAnchor(anchor, point)
 end
 
 function Frame:ClearAnchor()
-	local anchor, point = self:GetAnchor()
+	local anchor = self:GetAnchor()
 
 	if anchor and anchor.docked then
 		for i,f in pairs(anchor.docked) do

@@ -2,7 +2,7 @@
 	bagBar -  A bar for holding container buttons
 --]]
 
-local AddonName, Addon = ...
+local Addon = select(2, ...)
 
 -- register buttons for use later
 local bagButtons = {}
@@ -88,8 +88,11 @@ function BagBarController:OnInitialize()
 end
 
 function BagBarController:OnEnable()
-	for i, button in pairs(bagButtons) do
-		Addon:GetModule('ButtonThemer'):Register(button, 'Bag Bar', { Icon = button.icon, Border = button.IconBorder })
+	for _, button in pairs(bagButtons) do
+		Addon:GetModule('ButtonThemer'):Register(button, 'Bag Bar', {
+			Icon = button.icon,
+			-- Border = button.IconBorder
+		 })
 	end
 end
 
@@ -104,11 +107,18 @@ function BagBarController:Unload()
 	end
 end
 
+local function resize(o, size)
+	-- local width, height = o:GetSize()
+	o:SetSize(size, size)
+end
+
 function BagBarController:RegisterButton(name)
 	local button = _G[name]
 
-	-- button:SetSize(36, 36)
-	button:SetSize(36, 36)
+	resize(button, 36)
+	resize(button.IconBorder, 37)
+	resize(button.IconOverlay, 37)
+	resize(_G[button:GetName() .. "NormalTexture"], 64)
 
 	table.insert(bagButtons, button)
 end

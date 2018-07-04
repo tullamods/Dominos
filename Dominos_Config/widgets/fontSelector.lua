@@ -3,7 +3,7 @@
 		Displays a list of fonts registered with LibSharedMedia for the user to pick from
 --]]
 
-local AddonName, Addon = ...
+local Addon = select(2, ...)
 
 -- wrapper around LSM in case i want to replace it with something else
 -- in the future
@@ -102,17 +102,12 @@ end
 
 local FontSelector = Addon:CreateClass('Frame')
 do
-	FontSelector.buttonWidth = 282
+	FontSelector.buttonWidth = 266
 	FontSelector.buttonHeight = 24
-	FontSelector.buttonPadding = 2
+	FontSelector.buttonPadding = 4
 
 	function FontSelector:New(options)
 		local f = self:Bind(CreateFrame('Frame', nil, options.parent))
-
-		-- local bg = f:CreateTexture(nil, 'BACKGROUND')
-		-- bg:SetAllPoints(bg:GetParent())
-		-- bg:SetColorTexture(0.2, 0.8, 0.2, 0.5)
-		-- f.bg = bg
 
 		f.SetSavedValue = options.set
 		f.GetSavedValue = options.get
@@ -142,8 +137,8 @@ do
 	end
 
 	function FontSelector:Refresh()
-		local width, height = 0, 0
 		local selectedValue = self:GetSavedValue()
+		local width = 0
 
 		for i, id in Fonts:GetAll() do
 			local button = self:GetOrCreateButton(i)
@@ -163,7 +158,7 @@ do
 			width = max(width, button:GetWidth())
 		end
 
-		height = (#self.buttons * self.buttons[1]:GetHeight()) + (#self.buttons-1) * self.buttonPadding
+		local height = (#self.buttons * self.buttons[1]:GetHeight()) + (#self.buttons-1) * self.buttonPadding
 
 		self:GetParent():SetSize(width, height)
 	end
@@ -189,7 +184,8 @@ do
 
 	function FontSelector:UpdateSelected()
 		local selectedValue = self:GetSavedValue()
-		for i, button in pairs(self.buttons) do
+
+		for _, button in pairs(self.buttons) do
 			button:SetChecked(button:GetAttribute('texture') == selectedValue)
 		end
 	end

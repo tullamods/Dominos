@@ -5,7 +5,7 @@ do
 	local nextName = Addon:CreateNameGenerator('CheckButton')
 
 	function CheckButton:New(options)
-		local template = options.small
+		local template
 		if options.small then
 			template = 'InterfaceOptionsSmallCheckButtonTemplate'
 		else
@@ -44,10 +44,8 @@ do
 	end
 
 	function CheckButton:GetEffectiveSize()
-		local width, height = 0, 0
-
-		width = self:GetWidth() + self.text:GetWidth() + 4
-		height = max(self:GetHeight(), self.text:GetHeight())
+		local width = self:GetWidth() + self.text:GetWidth() + 4
+		local height = max(self:GetHeight(), self.text:GetHeight())
 
 		return width, height
 	end

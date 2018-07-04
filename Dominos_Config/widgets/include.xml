@@ -3,7 +3,7 @@
 
 	<!-- base elements -->
 	<Script file="panel.lua"/>
-	<Script file="scrollablePanel.lua"/>
+	<Script file="scrollableContainer.lua"/>
 
 	<Script file="button.lua"/>
 	<Script file="checkButton.lua"/>

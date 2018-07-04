@@ -1,4 +1,4 @@
-local AddonName, Addon = ...
+local Addon = select(2, ...)
 local Dominos = _G.Dominos
 
 function Addon:CreateClass(...)
@@ -8,10 +8,10 @@ end
 -- returns a function that generates unique names for frames
 -- in the format <AddonName>_<Prefix>[1, 2, ...]
 function Addon:CreateNameGenerator(prefix)
-	local id = 0
+    local id = 0
 	return function()
-		id = id + 1
-		return ('%s_%s_%d'):format('DominosOptions', prefix, id)
+        id = id + 1
+        return strjoin("_", 'DominosOptions', prefix, id)
 	end
 end
 
@@ -30,7 +30,7 @@ do
 	end)
 
 	function Addon:Render(frame)
-		for i, f in pairs(subscribers) do
+		for _, f in pairs(subscribers) do
 			if f == frame then
 				return false
 			end
@@ -75,5 +75,19 @@ do
         end
     end
 end
+
+-- Addon.callbacks = CreateFromMixins(CallbackRegistryBaseMixin)
+
+-- function Addon:RegisterCallback(event, ...)
+--     return self.callbacks:RegisterCallback(event, ...)
+-- end
+
+-- function Addon:UnregisterCallback(event, ...)
+--     return self.callbacks:UnregisterCallback(event, ...)
+-- end
+
+-- function Addon:Notify(event, ...)
+--     return self.callbacks:TriggerEvent(event, ...)
+-- end
 
 Dominos.Options = Addon

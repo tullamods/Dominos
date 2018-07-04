@@ -1,8 +1,17 @@
 --[[ a textarea control implementation ]]--
 
-local AddonName, Addon = ...
+local Addon = select(2, ...)
 
 local EditBox = Addon:CreateClass('EditBox')
+
+local function editBox_Save(self)
+	self.owner:Save(self:GetText())
+end
+
+local function editBox_OnSizeChanged(self)
+	self.owner:OnSizeChanged()
+end
+
 do
 	function EditBox:New(parent, owner)
 		local editBox = self:Bind(CreateFrame('EditBox', nil, parent))
@@ -14,8 +23,8 @@ do
 		editBox:SetJustifyH('LEFT')
 		editBox:SetJustifyV('TOP')
 
-		editBox.Save = Addon:Debounce(function(self) self.owner:Save(self:GetText()) end, 300)
-		editBox.OnSizeChanged = Addon:Debounce(function(self) self.owner:OnSizeChanged() end, 100)
+		editBox.Save = Addon:Debounce(editBox_Save, 300)
+		editBox.OnSizeChanged = Addon:Debounce(editBox_OnSizeChanged, 100)
 
 		editBox:SetScript('OnShow', self.OnShow)
 		editBox:SetScript('OnEscapePressed', self.OnEscapePressed)
@@ -81,7 +90,7 @@ do
 		viewport:SetPoint('TOPLEFT', label, 'BOTTOMLEFT', 0, -2)
 		viewport:EnableMouse(true)
 		viewport:SetScript('OnMouseUp', function() editBox:SetFocus() end)
-		viewport:SetScript('OnMouseWheel', function(self, delta)
+		viewport:SetScript('OnMouseWheel', function(_, delta)
 			local scrollBar = panel.vScrollBar
 			if scrollBar:IsShown() then
 				scrollBar:GetScript('OnMouseWheel')(scrollBar, delta)

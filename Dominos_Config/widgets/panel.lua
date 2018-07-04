@@ -1,14 +1,13 @@
 --[[ a generic widget for holding stuff ]]--
 
-local AddonName, Addon = ...
+local Addon = select(2, ...)
 local Panel = Addon:CreateClass('Frame')
-
 local L = LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')
+
 local max = math.max
-local min = math.min
 local round = function(v) return math.floor(v + 0.5) end
 
-Panel.width = 0
+Panel.width = 260
 Panel.height = 0
 
 function Panel:New(parent, manualLayout)
@@ -34,8 +33,7 @@ end
 --[[ generic widgets ]]--
 
 function Panel:Add(widget, options)
-	local options = options or {}
-
+	options = options or {}
 	options.parent = self
 
 	return Addon[widget]:New(options)
@@ -44,7 +42,7 @@ end
 function Panel:NewHeader(name)
 	local frame = CreateFrame('Frame', nil, self)
 
-	local text = frame:CreateFontString(nil, 'ARTWORK', 'GameFontNormalSmall')
+	local text = frame:CreateFontString(nil, 'ARTWORK', 'GameFontHighlight')
 	text:SetJustifyH('LEFT')
 	text:SetPoint('BOTTOMLEFT', 0, 1)
 	text:SetText(name)
@@ -57,16 +55,16 @@ function Panel:NewHeader(name)
 
 	local prev = self.lastWidget
 	if prev then
-		frame:SetPoint('TOPLEFT', self.lastWidget, 'BOTTOMLEFT', 0, -2)
+		frame:SetPoint('TOPLEFT', self.lastWidget, 'BOTTOMLEFT', 0, -4)
 	else
-		frame:SetPoint('TOPLEFT', 0, -2)
+		frame:SetPoint('TOPLEFT', 0, -4)
 	end
 	frame:SetPoint('RIGHT')
 
 	local width, height = text:GetSize()
 	frame:SetSize(width + 4, height + 4)
 
-	self.height = self.height + (frame:GetHeight() + 2)
+	self.height = self.height + (frame:GetHeight() + 4)
 	self.width = max(self.width, frame:GetWidth())
 	self.lastWidget = frame
 
@@ -104,11 +102,10 @@ function Panel:NewSlider(options)
 
 	local prev = self.lastWidget
 	if prev then
-		slider:SetPoint('TOPLEFT', self.lastWidget, 'BOTTOMLEFT', 0, -(8 + slider.text:GetHeight()))
+		slider:SetPoint('TOPLEFT', self.lastWidget, 'BOTTOMLEFT', 0, -(12 + slider.text:GetHeight()))
 	else
-		slider:SetPoint('TOPLEFT', 0, -(8 + slider.text:GetHeight()))
+		slider:SetPoint('TOPLEFT', 4, -(12 + slider.text:GetHeight()))
 	end
-	slider:SetPoint('RIGHT')
 
 	local width, height = slider:GetEffectiveSize()
 	self.height = self.height + (height + 8)
@@ -127,14 +124,14 @@ function Panel:NewDropdown(options)
 
 	local prev = self.lastWidget
 	if prev then
-		dropdown:SetPoint('TOPLEFT', self.lastWidget, 'BOTTOMLEFT', 0, -2)
+		dropdown:SetPoint('TOPLEFT', self.lastWidget, 'BOTTOMLEFT', 0, -4)
 	else
-		dropdown:SetPoint('TOPLEFT', 0, -2)
+		dropdown:SetPoint('TOPLEFT', 4, -4)
 	end
 	dropdown:SetPoint('RIGHT')
 
 	local width, height = dropdown:GetEffectiveSize()
-	self.height = self.height + (height + 2)
+	self.height = self.height + (height + 4)
 	self.width = math.max(self.width, width)
 	self.lastWidget = dropdown
 
@@ -173,9 +170,9 @@ function Panel:NewTextInput(options)
 
 	local prev = self.lastWidget
 	if prev then
-		textInput:SetPoint('TOPLEFT', self.lastWidget, 'BOTTOMLEFT', 0, -2)
+		textInput:SetPoint('TOPLEFT', self.lastWidget, 'BOTTOMLEFT', 0, -6)
 	else
-		textInput:SetPoint('TOPLEFT', 0, -2)
+		textInput:SetPoint('TOPLEFT', 0, -6)
 	end
 
 	if options.width then
@@ -187,7 +184,7 @@ function Panel:NewTextInput(options)
 	textInput:SetHeight(options.height)
 
 	local width, height = textInput:GetEffectiveSize()
-	self.height = self.height + (height + 4)
+	self.height = self.height + (height + 6)
 	self.width = math.max(self.width, width)
 	self.lastWidget = textInput
 
@@ -353,7 +350,7 @@ function Panel:AddAdvancedOptions()
 	self.showStatesEditBox = self:NewTextInput{
 		name = L.ShowStates,
 		multiline = true,
-		width = 290,
+		width = 268,
 		height = 64,
 		get = function() return self.owner:GetShowStates() end,
 		set = function(_, value) self.owner:SetShowStates(value) end

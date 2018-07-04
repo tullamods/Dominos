@@ -1,6 +1,5 @@
-local AddonName, Addon = ...
+local Addon = select(2, ...)
 local Button = Addon:CreateClass('Button')
-
 
 function Button:New(options)
 	local button = self:Bind(CreateFrame('Button', nil, options.parent, 'UIPanelButtonTemplate'))

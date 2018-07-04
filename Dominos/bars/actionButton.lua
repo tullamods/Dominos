@@ -5,7 +5,6 @@
 
 local AddonName, Addon = ...
 local KeyBound = LibStub('LibKeyBound-1.0')
-local Tooltips = Addon:GetModule('Tooltips')
 
 local ActionButton = Addon:CreateClass('CheckButton', Addon.BindableButton)
 local HiddenFrame = CreateFrame('Frame'); HiddenFrame:Hide()

@@ -17,7 +17,7 @@ function Addon:CreateClass(frameType, prototype)
     local class = self:CreateHiddenFrame(frameType)
     local class_mt = { __index = class }
 
-    class.Bind = function(self, obj)
+    class.Bind = function(_, obj)
         return setmetatable(obj, class_mt)
     end
 

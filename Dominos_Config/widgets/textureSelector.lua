@@ -3,7 +3,7 @@
 		Displays a list of textures registered with LibSharedMedia for the user to pick from
 --]]
 
-local AddonName, Addon = ...
+local Addon = select(2, ...)
 
 -- wrapper around LSM in case i want to replace it with something else
 -- in the future
@@ -111,9 +111,9 @@ end
 
 local TextureSelector = Addon:CreateClass('Frame')
 do
-	TextureSelector.buttonWidth = 282
+	TextureSelector.buttonWidth = 266
 	TextureSelector.buttonHeight = 24
-	TextureSelector.buttonPadding = 2
+	TextureSelector.buttonPadding = 4
 
 	function TextureSelector:New(options)
 		local f = self:Bind(CreateFrame('Frame', nil, options.parent))
@@ -151,7 +151,7 @@ do
 	end
 
 	function TextureSelector:Refresh()
-		local width, height = 0, 0
+		local width = 0
 		local selectedValue = self:GetSavedValue()
 
 		for i, id in Textures:GetAll() do
@@ -172,7 +172,7 @@ do
 			width = max(width, button:GetWidth())
 		end
 
-		height = (#self.buttons * self.buttons[1]:GetHeight()) + (#self.buttons-1) * self.buttonPadding
+		local height = (#self.buttons * self.buttons[1]:GetHeight()) + (#self.buttons-1) * self.buttonPadding
 
 		self:GetParent():SetSize(width, height)
 	end
@@ -198,7 +198,7 @@ do
 
 	function TextureSelector:UpdateSelected()
 		local selectedValue = self:GetSavedValue()
-		for i, button in pairs(self.buttons) do
+		for _, button in pairs(self.buttons) do
 			button:SetChecked(button:GetAttribute('texture') == selectedValue)
 		end
 	end

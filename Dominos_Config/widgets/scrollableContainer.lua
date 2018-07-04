@@ -1,82 +1,86 @@
 local Addon = select(2, ...)
-local ScrollablePanel = Addon:CreateClass('Frame')
+local ScrollableContainer = Addon:CreateClass('Frame')
 
-ScrollablePanel.scrollBarSize = 8
+ScrollableContainer.scrollBarSize = 8
 
-function ScrollablePanel:New(parent)
+function ScrollableContainer:New(parent)
 	local panel = self:Bind(CreateFrame('Frame', nil, parent))
 	panel:SetScript('OnSizeChanged', self.OnSizeChanged)
 
-	local container = Addon.Panel:New()
-	container:SetScript('OnSizeChanged', function() Addon:Render(panel) end)
-	panel.container = container
+	local vScrollBar = panel:CreateVerticalScrollBar()
+	vScrollBar:SetPoint('TOPLEFT', panel, 'TOPRIGHT', -self.scrollBarSize, 0)
+	vScrollBar:SetPoint('BOTTOMRIGHT', panel, 'BOTTOMRIGHT', 0, self.scrollBarSize)
+	panel.vScrollBar = vScrollBar
+
+	local hScrollBar = panel:CreateHorizontalScrollBar()
+	hScrollBar:SetPoint('TOPLEFT', panel, 'BOTTOMLEFT', 0, self.scrollBarSize)
+	hScrollBar:SetPoint('BOTTOMRIGHT', panel, 'BOTTOMRIGHT', -self.scrollBarSize, 0)
+	panel.hScrollBar = hScrollBar
 
 	local viewport = CreateFrame('ScrollFrame', nil, panel)
-	viewport:SetScrollChild(panel.container)
 	viewport:SetPoint('TOPLEFT')
+	viewport:SetPoint('BOTTOMRIGHT', -self.scrollBarSize, self.scrollBarSize)
 	viewport:EnableMouseWheel(true)
+
 	viewport:SetScript('OnMouseWheel', function(_, delta)
 		local scrollBar = panel.vScrollBar
 		if scrollBar:IsShown() then
 			scrollBar:GetScript('OnMouseWheel')(scrollBar, delta)
 		end
 	end)
+
 	panel.viewport = viewport
-
-	panel.vScrollBar = panel:CreateVerticalScrollBar()
-	panel.hScrollBar = panel:CreateHorizontalScrollBar()
-
 	return panel
 end
 
-function ScrollablePanel:OnSizeChanged()
+function ScrollableContainer:OnSizeChanged()
 	Addon:Render(self)
 end
 
-function ScrollablePanel:OnRender()
-	-- update the size of the scroll frame
-	local viewportWidth, viewportHeight = self:GetSize()
+function ScrollableContainer:SetChild(child)
+	self.viewport:SetScrollChild(child)
+	self.viewport:SetHorizontalScroll(0)
+	self.viewport:SetVerticalScroll(0)
 
-	-- the total width of the thing we care about
-	local containerWidth, containerHeight = self.container:GetSize()
-
-	local showHScrollBar = false
-	if viewportWidth < containerWidth then
-		viewportHeight = viewportHeight - self.scrollBarSize
-		showHScrollBar = true
-	end
-
-	local showVScrollBar = false
-	if viewportHeight < containerHeight then
-		viewportWidth = viewportWidth - self.scrollBarSize
-		showVScrollBar = true
-	end
-
-	-- update scroll frame size
-	self.viewport:SetSize(viewportWidth, viewportHeight)
-
-	-- update scroll bar visibility and bounds
-	if showHScrollBar then
-		self.hScrollBar:SetSize(viewportWidth, self.scrollBarSize)
-		self.hScrollBar:SetMinMaxValues(0, containerWidth - viewportWidth)
-		self.hScrollBar:SetValue(self.viewport:GetHorizontalScroll())
-		self.hScrollBar:Show()
-	else
-		self.hScrollBar:Hide()
-	end
-
-	if showVScrollBar then
-		self.vScrollBar:SetSize(self.scrollBarSize, viewportHeight)
-		self.vScrollBar:SetMinMaxValues(0, containerHeight - viewportHeight)
-		self.vScrollBar:SetValue(self.viewport:GetVerticalScroll())
-		self.vScrollBar:Show()
-	else
-		self.vScrollBar:Hide()
-	end
+	Addon:Render(self)
 end
 
-function ScrollablePanel:SetContainerSize(width, height)
-	self.container:SetSize(width, height)
+function ScrollableContainer:GetChildSize()
+	local child = self.viewport:GetScrollChild()
+
+	if child then
+		return child:GetSize()
+	end
+
+	return 0, 0
+end
+
+function ScrollableContainer:OnRender()
+	local maxWidth, maxHeight = self:GetSize()
+	local childWidth, childHeight = self:GetChildSize()
+
+	local viewportXOffset, viewportYOffset
+	if childWidth > maxWidth then
+		self.hScrollBar:SetMinMaxValues(0, childWidth - maxWidth)
+		self.hScrollBar:SetValue(self.viewport:GetHorizontalScroll())
+		self.hScrollBar:Show()
+		viewportYOffset = self.scrollBarSize
+	else
+		self.hScrollBar:Hide()
+		viewportYOffset = 0
+	end
+
+	if childHeight > maxHeight then
+		self.vScrollBar:SetMinMaxValues(0, childHeight - maxHeight)
+		self.vScrollBar:SetValue(self.viewport:GetVerticalScroll())
+		self.vScrollBar:Show()
+		viewportXOffset = -self.scrollBarSize
+	else
+		self.vScrollBar:Hide()
+		viewportXOffset = 0
+	end
+
+	self.viewport:SetPoint('BOTTOMRIGHT', viewportXOffset, viewportYOffset)
 end
 
 do
@@ -96,16 +100,16 @@ do
 		end
 	end
 
-	function ScrollablePanel:CreateScrollBar(orientation)
+	function ScrollableContainer:CreateScrollBar(orientation)
 		local scrollBar = CreateFrame('Slider', nil, self)
 		scrollBar:EnableMouseWheel(true)
 
 		local bg = scrollBar:CreateTexture(nil, 'BACKGROUND')
-		bg:SetColorTexture(0, 0, 0, 0.5)
+		bg:SetColorTexture(0.3, 0.3, 0.3, 0.5)
 		bg:SetAllPoints(scrollBar)
 
 		local tt = scrollBar:CreateTexture(nil, 'OVERLAY')
-		tt:SetColorTexture(0.3, 0.3, 0.3, 0.8)
+		tt:SetColorTexture(0.3, 0.3, 0.3, 1)
 		tt:SetSize(self.scrollBarSize, self.scrollBarSize)
 		scrollBar:SetThumbTexture(tt)
 
@@ -126,19 +130,18 @@ do
 	local function vScrollBar_OnSizeChanged(self)
 		local height = self:GetHeight()
 		local viewportHeight = self:GetParent().viewport:GetHeight()
-		local containerHeight = self:GetParent().container:GetHeight()
+		local childHeight = select(2, self:GetParent():GetChildSize())
 
-		if containerHeight > 0 then
-			self:GetThumbTexture():SetHeight(height * (viewportHeight / containerHeight))
+		if childHeight > 0 then
+			self:GetThumbTexture():SetHeight(height * (viewportHeight / childHeight))
 		else
 			self:GetThumbTexture():SetHeight(height)
 		end
 	end
 
-	function ScrollablePanel:CreateVerticalScrollBar()
+	function ScrollableContainer:CreateVerticalScrollBar()
 		local vScrollBar = self:CreateScrollBar('VERTICAL')
 
-		vScrollBar:SetPoint('TOPRIGHT')
 		vScrollBar:SetScript('OnValueChanged', vScrollBar_OnValueChanged)
 		vScrollBar:SetScript('OnSizeChanged', vScrollBar_OnSizeChanged)
 
@@ -154,19 +157,18 @@ do
 	local function hScrollBar_OnSizeChanged(self)
 		local width = self:GetWidth()
 		local viewportWidth = self:GetParent().viewport:GetWidth()
-		local containerWidth = self:GetParent().container:GetWidth()
+		local childWidth = self:GetParent():GetChildSize()
 
-		if containerWidth > 0 then
-			self:GetThumbTexture():SetWidth(width * (viewportWidth / containerWidth))
+		if childWidth > 0 then
+			self:GetThumbTexture():SetWidth(width * (viewportWidth / childWidth))
 		else
 			self:GetThumbTexture():SetWidth(width)
 		end
 	end
 
-	function ScrollablePanel:CreateHorizontalScrollBar()
+	function ScrollableContainer:CreateHorizontalScrollBar()
 		local hScrollBar = self:CreateScrollBar('HORIZONTAL')
 
-		hScrollBar:SetPoint('BOTTOMLEFT')
 		hScrollBar:SetScript('OnValueChanged', hScrollBar_OnValueChanged)
 		hScrollBar:SetScript('OnSizeChanged', hScrollBar_OnSizeChanged)
 
@@ -176,4 +178,4 @@ end
 
 --[[ exports ]]--
 
-Addon.ScrollablePanel = ScrollablePanel
+Addon.ScrollableContainer = ScrollableContainer

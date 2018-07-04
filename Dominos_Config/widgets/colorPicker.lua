@@ -1,6 +1,5 @@
-local AddonName, Addon = ...
+local Addon = select(2, ...)
 local ColorPicker = Addon:CreateClass('Button')
-
 
 --[[ Constructor ]]--
 
@@ -14,7 +13,7 @@ do
         picker:SetSize(16, 16)
 
 		if options.set then
-			picker.SetSavedValue = function(self, ...) options.set(...) end
+			picker.SetSavedValue = function(_, ...) options.set(...) end
 		end
 
 		if options.get then
@@ -121,10 +120,8 @@ do
     end
 
 	function ColorPicker:GetEffectiveSize()
-		local width, height = 0, 0
-
-		width = self:GetWidth() + self.text:GetWidth() + 4
-		height = max(self:GetHeight(), self.text:GetHeight())
+		local width = self:GetWidth() + self.text:GetWidth() + 4
+		local height = max(self:GetHeight(), self.text:GetHeight())
 
 		return width, height
 	end

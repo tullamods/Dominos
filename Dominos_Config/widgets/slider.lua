@@ -1,4 +1,4 @@
-local AddonName, Addon = ...
+local Addon = select(2, ...)
 local Slider = Addon:CreateClass('Slider')
 
 do
@@ -9,6 +9,10 @@ do
 			return v(self, ...)
 		end
 		return v
+	end
+
+	local function editBox_OnEditFocusGained(self)
+		self:HighlightText(0, #self:GetText())
 	end
 
 	local function editBox_OnEditFocusLost(self)
@@ -64,17 +68,7 @@ do
 	end
 
 	function Slider:New(options)
-		local f = self:Bind(CreateFrame('Slider', nextName(), options.parent, 'OptionsSliderTemplate'))
-
-		f.text = _G[f:GetName() .. 'Text']
-		f.text:SetFontObject('GameFontNormalLeft')
-		f.text:ClearAllPoints()
-		f.text:SetPoint('BOTTOMLEFT', f, 'TOPLEFT')
-		f.text:SetText(options.name or '')
-
-		f.High:Hide()
-		f.Low:Hide()
-		f:EnableMouseWheel(true)
+		local f = self:Bind(CreateFrame('Slider', nextName(), options.parent, 'HorizontalSliderTemplate'))
 
 		f.min = options.min or 0
 		f.max = options.max or 100
@@ -82,19 +76,29 @@ do
 		f.GetSavedValue = options.get
 		f.SetSavedValue = options.set
 
+		f.text = f:CreateFontString(nil, 'ARTWORK', 'GameFontNormalLeft')
+		f.text:SetPoint('BOTTOMLEFT', f, 'TOPLEFT')
+		f.text:SetText(options.name or '')
+
+		f:SetSize(268, 18)
+		f:EnableMouseWheel(true)
+		f:SetValueStep(f.step)
+		f:SetObeyStepOnDrag(true)
+
 		--todo: add edit option
 		local editBox = CreateFrame('EditBox', nil, f)
 		editBox:SetPoint('BOTTOMRIGHT', f, 'TOPRIGHT')
 		editBox:SetNumeric(false)
 		editBox:SetAutoFocus(false)
 		editBox:SetFontObject('GameFontHighlightRight')
-		editBox:SetHeight(f.text:GetHeight())
+		editBox:SetHeight(f.text:GetHeight() * 1.25)
 		editBox:SetWidth(f.text:GetHeight() * 3)
 		editBox:HighlightText(0, 0)
 		editBox:SetScript('OnTextChanged', editBox_OnTextChanged)
+		editBox:SetScript('OnEditFocusGained', editBox_OnEditFocusGained)
 		editBox:SetScript('OnEditFocusLost', editBox_OnEditFocusLost)
 		editBox:SetScript('OnEscapePressed', editBox_OnEscapePressed)
-		
+
 		--clear focus whenenter is pressed(minor quality of life preference)
 		editBox:SetScript('OnEnterPressed', editBox_OnEscapePressed)
 		editBox:SetScript('OnTabPressed', editBox_OnTabPressed)
@@ -109,14 +113,11 @@ do
 		f:SetScript('OnShow', f.OnShow)
 		f:SetScript('OnValueChanged', f.OnValueChanged)
 		f:SetScript('OnMouseWheel', f.OnMouseWheel)
-		f:SetWidth(284)
 
 		return f
 	end
 
 	--[[ Frame Events ]]--
-
-	-- the render call here is a delay hack since it seemed to fix
 
 	function Slider:OnShow()
 		Addon:Render(self)
@@ -128,10 +129,6 @@ do
 	end
 
 	function Slider:OnValueChanged(value)
-		local min = self:GetMinMaxValues()
-		local step = self:GetValueStep()
-		local value = min + ceil((value - min) / step) * step
-
 		self:SetSavedValue(value)
 		self:UpdateText(value)
 	end
@@ -154,7 +151,7 @@ do
 			self:SetMinMaxValues(minVal, maxVal)
 			return
 		end
-		
+
 		if step > 0 then
 			self:SetValue(min(value+step, maxVal))
 		else
@@ -208,9 +205,12 @@ do
 
 	function Slider:SetEnabled(enable)
 		if enable then
-			return BlizzardOptionsPanel_Slider_Enable(self)
+			self.text:SetVertexColor(NORMAL_FONT_COLOR.r , NORMAL_FONT_COLOR.g , NORMAL_FONT_COLOR.b)
+			self:Enable()
+		else
+			self.text:SetVertexColor(GRAY_FONT_COLOR.r, GRAY_FONT_COLOR.g, GRAY_FONT_COLOR.b)
+			self:Disable()
 		end
-		return BlizzardOptionsPanel_Slider_Disable(self)
 	end
 end
 

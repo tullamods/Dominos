@@ -1,25 +1,13 @@
---[[ a dominos frame options/right-click menu ]]--
-
-local AddonName, Addon = ...
+local Addon = select(2, ...)
 local Menu = Addon:CreateClass('Frame')
 local L = LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')
 
-local MenuBackdrop = {
-	bgFile   = [[Interface\ChatFrame\ChatFrameBackground]],
-	edgeFile = [[Interface\ChatFrame\ChatFrameBackground]],
-	insets   = {left = 2, right = 2, top = 2, bottom = 2},
-	edgeSize = 2,
-}
-
-local nextName = Addon:CreateNameGenerator('Frame')
+local nextName = Addon:CreateNameGenerator('Menu')
 
 function Menu:New(parent)
-	local f = self:Bind(CreateFrame('Frame', nextName(), parent or _G.UIParent))
+	local f = self:Bind(CreateFrame('Frame', nextName(), parent or _G.UIParent, "UIPanelDialogTemplate"))
 
 	f.panels = {}
-	f:SetBackdrop(MenuBackdrop)
-	f:SetBackdropColor(0, 0, 0, 0.8)
-	f:SetBackdropBorderColor(0.3, 0.3, 0.3, 0.8)
 	f:EnableMouse(true)
 	f:SetToplevel(true)
 	f:SetMovable(true)
@@ -27,60 +15,40 @@ function Menu:New(parent)
 	f:SetFrameStrata('DIALOG')
 
 	-- title region
-	local tr = CreateFrame('Frame', nil, f)
-	tr:EnableMouse(true)
-	tr:RegisterForDrag('LeftButton')
-	tr:SetScript('OnDragStart', function() f:StartMoving() end)
-	tr:SetScript('OnDragStop', function() f:StopMovingOrSizing() end)
-	tr:SetPoint('TOPLEFT', f, 'TOPLEFT', 2, -2)
-	tr:SetPoint('BOTTOMRIGHT', f, 'TOPRIGHT', -2, -20)
-
-	local trBackground = f:CreateTexture(nil, 'ARTWORK')
-	trBackground:SetAllPoints(tr)
-	trBackground:SetColorTexture(0.2, 0.2, 0.2, 0.5)
+	local tr = CreateFrame('Frame', nil, f, 'TitleDragAreaTemplate')
+	tr:SetAllPoints(f:GetName() .. 'TitleBG')
 
 	--title text
-	local text = f:CreateFontString(nil, 'OVERLAY', 'GameFontNormal')
+	local text = f:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
 	text:SetPoint('CENTER', tr)
 	f.text = text
 
-	-- this was originally a standard close button
-	-- but placement looked weird when scaled
-	local closeButton = CreateFrame('Button', nil, f)
-	closeButton:SetNormalFontObject('GameFontRedLarge')
-	closeButton:SetHighlightFontObject('GameFontHighlightLarge')
-	closeButton:SetText('×')
-	closeButton:SetSize(closeButton:GetFontString():GetSize())
-	closeButton:SetPoint('TOPRIGHT', tr, -2, -2)
-	closeButton:SetScript('OnClick', function() f:Hide() end)
-	closeButton:SetFrameLevel(tr:GetFrameLevel() + 1)
-
 	-- panel selector
 	local panelSelector = Addon.PanelSelector:New(f)
-	panelSelector:SetPoint('TOPLEFT', tr, 'BOTTOMLEFT', 0, 0)
-	panelSelector:SetPoint('TOPRIGHT', tr, 'BOTTOMRIGHT', 0, 0)
+	panelSelector:SetPoint('TOPLEFT', tr, 'BOTTOMLEFT', 2, -6)
+	panelSelector:SetPoint('TOPRIGHT', tr, 'BOTTOMRIGHT', 0, -6)
 	panelSelector:SetHeight(20)
-	panelSelector.OnSelect = function(self, id)
+	panelSelector.OnSelect = function(_, id)
 		f:OnShowPanel(id)
 	end
 	f.panelSelector = panelSelector
 
 	-- panel container
-	local panelContainer = CreateFrame('Frame', nil, f)
-	panelContainer:SetPoint('TOPLEFT', panelSelector, 'BOTTOMLEFT', 2, -2)
-	panelContainer:SetPoint('TOPRIGHT', panelSelector, 'BOTTOMRIGHT', -2, -2)
-	panelContainer:SetPoint('BOTTOM', 0, 4)
+	local panelContainer = Addon.ScrollableContainer:New(f)
+	panelContainer:SetPoint('TOPLEFT', panelSelector, 'BOTTOMLEFT', 4, -4)
+	panelContainer:SetPoint('TOPRIGHT', panelSelector, 'BOTTOMRIGHT', 0, -4)
+	panelContainer:SetPoint('BOTTOM', 0, 10)
 	f.panelContainer = panelContainer
 
-	f:SetSize(240 * 1.25, 320 * 1.25)
+	f:SetSize(300, 400)
 	return f
 end
 
 --tells the panel what frame we're pointed to
 function Menu:SetOwner(owner)
 	if self.panels then
-		for i, panel in pairs(self.panels) do
-			panel.container:SetOwner(owner)
+		for _, panel in pairs(self.panels) do
+			panel:SetOwner(owner)
 		end
 	end
 
@@ -100,13 +68,13 @@ end
 function Menu:NewPanel(id)
 	self.panelSelector:AddPanel(id)
 
-	local panel = Addon.ScrollablePanel:New(self.panelContainer)
-	panel:SetAllPoints(self.panelContainer)
-	panel:Hide()
+	local panel = Addon.Panel:New()
+	-- panel:SetAllPoints(self.panelContainer)
+	-- panel:Hide()
 
 	self.panels[id] = panel
 
-	return panel.container
+	return panel
 end
 
 function Menu:ShowPanel(id)
@@ -118,6 +86,7 @@ function Menu:OnShowPanel(id)
 		for i, panel in pairs(self.panels) do
 			if i == id then
 				panel:Show()
+				self.panelContainer:SetChild(panel)
 			else
 				panel:Hide()
 			end

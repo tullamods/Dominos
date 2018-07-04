@@ -8,12 +8,7 @@
 local AddonName, Addon = ...
 local ActionButton = Addon.ActionButton
 local HiddenFrame = Addon:CreateHiddenFrame('Frame', nil, _G.UIParent)
-
 local MAX_BUTTONS = 120
-
-local ceil = math.ceil
-local min = math.min
-local format = string.format
 
 --[[ Action Bar ]]--
 
@@ -317,7 +312,7 @@ function ActionBar:UpdateTransparent(force)
 end
 
 function ActionBar:ShowButtonCooldowns()
-	for i, button in pairs(self.buttons) do
+	for _, button in pairs(self.buttons) do
 		if button.cooldown:GetParent() ~= button then
 			button.cooldown:SetParent(button)
 			ActionButton_UpdateCooldown(button)
@@ -328,7 +323,7 @@ end
 function ActionBar:HideButtonCooldowns()
 	-- hide cooldown frames on transparent buttons by sticking them onto a
 	-- different parent
-	for i, button in pairs(self.buttons) do
+	for _, button in pairs(self.buttons) do
 		button.cooldown:SetParent(HiddenFrame)
 	end
 end
@@ -417,7 +412,7 @@ do
 		panel:NewHeader(categoryName)
 
 		-- local items = getDropdownItems()
-		for i, state in ipairs(states) do
+		for _, state in ipairs(states) do
 			local id = state.id
 			local name = state.text
 			if type(name) == 'function' then
@@ -490,6 +485,7 @@ do
 
 		panel:AddLayoutOptions()
 
+		panel:SetSize(320, 400)
 		return panel
 	end
 
