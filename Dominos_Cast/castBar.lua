@@ -227,7 +227,7 @@ function CastBar:RegisterEvents()
 end
 
 -- channeling events
-function CastBar:UNIT_SPELLCAST_CHANNEL_START(event, unit, name, rank, castID, spellID)
+function CastBar:UNIT_SPELLCAST_CHANNEL_START(event, unit, castID, spellID)
 	-- if unit ~= self.unit then return end
 
 	self:SetProperty("unit", unit)
@@ -236,19 +236,19 @@ function CastBar:UNIT_SPELLCAST_CHANNEL_START(event, unit, name, rank, castID, s
 	self:SetProperty("state", "start")
 end
 
-function CastBar:UNIT_SPELLCAST_CHANNEL_UPDATE(event, unit, name, rank, castID, spellID)
+function CastBar:UNIT_SPELLCAST_CHANNEL_UPDATE(event, unit, castID, spellID)
 	if castID ~= self:GetProperty('castID') then return end
 
 	self:UpdateChannelling()
 end
 
-function CastBar:UNIT_SPELLCAST_CHANNEL_STOP(event, unit, name, rank, castID, spellID)
+function CastBar:UNIT_SPELLCAST_CHANNEL_STOP(event, unit, castID, spellID)
 	if castID ~= self:GetProperty('castID') then return end
 
 	self:SetProperty("state", nil)
 end
 
-function CastBar:UNIT_SPELLCAST_START(event, unit, name, rank, castID, spellID)
+function CastBar:UNIT_SPELLCAST_START(event, unit, castID, spellID)
 	-- if unit ~= self.unit then return end
 
 	self:SetProperty("unit", unit)
@@ -257,13 +257,13 @@ function CastBar:UNIT_SPELLCAST_START(event, unit, name, rank, castID, spellID)
 	self:SetProperty("state", "start")
 end
 
-function CastBar:UNIT_SPELLCAST_STOP(event, unit, name, rank, castID, spellID)
+function CastBar:UNIT_SPELLCAST_STOP(event, unit, castID, spellID)
 	if castID ~= self:GetProperty('castID') then return end
 
 	self:SetProperty("state", nil)
 end
 
-function CastBar:UNIT_SPELLCAST_FAILED(event, unit, name, rank, castID, spellID)
+function CastBar:UNIT_SPELLCAST_FAILED(event, unit, castID, spellID)
 	if castID ~= self:GetProperty('castID') then return end
 
 	self:SetProperty("reaction", "failed")
@@ -273,7 +273,7 @@ end
 
 CastBar.UNIT_SPELLCAST_FAILED_QUIET = CastBar.UNIT_SPELLCAST_FAILED
 
-function CastBar:UNIT_SPELLCAST_INTERRUPTED(event, unit, name, rank, castID, spellID)
+function CastBar:UNIT_SPELLCAST_INTERRUPTED(event, unit, castID, spellID)
 	if castID ~= self:GetProperty('castID') then return end
 
 	self:SetProperty("reaction", "interrupted")
@@ -281,7 +281,7 @@ function CastBar:UNIT_SPELLCAST_INTERRUPTED(event, unit, name, rank, castID, spe
 	self:SetProperty("state", nil)
 end
 
-function CastBar:UNIT_SPELLCAST_DELAYED(event, unit, name, rank, castID, spellID)
+function CastBar:UNIT_SPELLCAST_DELAYED(event, unit, castID, spellID)
 	if castID ~= self:GetProperty('castID') then return end
 
 	self:UpdateCasting()
@@ -474,13 +474,13 @@ function CastBar:UpdateChannelling(reset)
 		self:Reset()
 	end
 
-	local name, text, texture, startTime, endTime = UnitChannelInfo(self:GetProperty("unit"))
+	local name, text, texture, startTime, endTime, _, _, spellID = UnitChannelInfo(self:GetProperty("unit"))
 
 	if name then
 		self:SetProperty('mode', 'channel')
 		self:SetProperty('label', name or text)
 		self:SetProperty('icon', texture)
-		self:SetProperty('spell', GetSpellInfo(name))
+		self:SetProperty('spell', spellID)
 
 		local vmin = 0
 		local vmax = (endTime - startTime) / 1000
@@ -507,13 +507,13 @@ function CastBar:UpdateCasting(reset)
 		self:Reset()
 	end
 
-	local name, text, texture, startTime, endTime = UnitCastingInfo(self:GetProperty("unit"))
+	local name, text, texture, startTime, endTime, _, _, _, spellID = UnitCastingInfo(self:GetProperty("unit"))
 
 	if name then
 		self:SetProperty('mode', 'cast')
 		self:SetProperty('label', text)
 		self:SetProperty('icon', texture)
-		self:SetProperty('spell', GetSpellInfo(name))
+		self:SetProperty('spell', spellID)
 
 		local vmin = 0
 		local vmax = (endTime - startTime) / 1000
@@ -552,7 +552,7 @@ end
 
 function CastBar:SetupDemo()
 	local spellID = self:GetRandomspellID()
-	local name, icon = GetSpellInfo(spellID)
+	local name, _, icon = GetSpellInfo(spellID)
 
 	self:SetProperty('mode', 'demo')
 	self:SetProperty("label", name)
