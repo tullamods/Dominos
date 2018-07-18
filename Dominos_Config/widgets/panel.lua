@@ -6,11 +6,13 @@ local L = LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')
 
 local max = math.max
 local round = function(v) return math.floor(v + 0.5) end
+local MIN_WIDTH = 276
+local MIN_HEIGHT = 330
 
-Panel.width = 260
+Panel.width = 0
 Panel.height = 0
 
-function Panel:New(parent, manualLayout)
+function Panel:New(parent)
 	return self:Bind(CreateFrame('Frame', nil, parent))
 end
 
@@ -23,11 +25,12 @@ function Panel:GetOwner()
 end
 
 function Panel:Render()
+	self:SetSize(max(self.width, MIN_WIDTH), max(self.height, MIN_HEIGHT))
 	Addon:Render(self)
 end
 
 function Panel:OnRender()
-	self:SetSize(self.width, self.height)
+	self:SetSize(max(self.width, MIN_WIDTH), max(self.height, MIN_HEIGHT))
 end
 
 --[[ generic widgets ]]--
@@ -86,7 +89,7 @@ function Panel:NewCheckButton(options)
 	end
 
 	local width, height = button:GetEffectiveSize()
-	self.height = self.height + (height + 2)
+	self.height = self.height + (height + 4)
 	self.width = max(self.width, width)
 	self.lastWidget = button
 
@@ -108,7 +111,7 @@ function Panel:NewSlider(options)
 	end
 
 	local width, height = slider:GetEffectiveSize()
-	self.height = self.height + (height + 8)
+	self.height = self.height + (height + 12)
 	self.width = math.max(self.width, width)
 	self.lastWidget = slider
 

@@ -51,7 +51,6 @@ function ScrollableContainer:GetChildSize()
 	if child then
 		return child:GetSize()
 	end
-
 	return 0, 0
 end
 
@@ -66,6 +65,8 @@ function ScrollableContainer:OnRender()
 		self.hScrollBar:Show()
 		viewportYOffset = self.scrollBarSize
 	else
+		self.hScrollBar:SetMinMaxValues(0, 0)
+		self.hScrollBar:SetValue(0)
 		self.hScrollBar:Hide()
 		viewportYOffset = 0
 	end
@@ -76,6 +77,8 @@ function ScrollableContainer:OnRender()
 		self.vScrollBar:Show()
 		viewportXOffset = -self.scrollBarSize
 	else
+		self.vScrollBar:SetMinMaxValues(0, 0)
+		self.vScrollBar:SetValue(0)
 		self.vScrollBar:Hide()
 		viewportXOffset = 0
 	end

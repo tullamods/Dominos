@@ -5,7 +5,6 @@
 --[[ globals ]]--
 
 local _G = _G
-local CreateFrame = _G.CreateFrame
 local hooksecurefunc = _G.hooksecurefunc
 local table = _G.table
 local ipairs = _G.ipairs
@@ -71,15 +70,14 @@ function MenuBar:Create(...)
 	local requestLayoutUpdate
 	do
 		local frame = Addon:CreateHiddenFrame('Frame')
-		local delay = 0.01
 
-		frame:SetScript('OnUpdate', function(self, elapsed)
-			self:Hide()
+		frame:SetScript('OnUpdate', function(_, elapsed)
+			frame:Hide()
 			bar:Layout()
 		end)
 
-		requestLayoutUpdate = function() 
-			frame:Show() 
+		requestLayoutUpdate = function()
+			frame:Show()
 		end
 	end
 
@@ -260,17 +258,17 @@ end
 
 local function MenuButtonCheckbox_Create(panel, button, name)
 	if not button then return end
-	
+
 	return panel:NewCheckButton{
 		name = name or button:GetName(),
-		
-		get = function() 
-			return not panel.owner:IsMenuButtonDisabled(button) 
+
+		get = function()
+			return not panel.owner:IsMenuButtonDisabled(button)
 		end,
-		
+
 		set = function(_, enable)
 			panel.owner:DisableMenuButton(button, not enable)
-		end			
+		end
 	}
 end
 
@@ -278,8 +276,8 @@ local function Menu_AddDisableMenuButtonsPanel(menu)
 	local panel = menu:NewPanel('Buttons')
 	local prev  = nil
 	local width, height = 0, 0
-	
-	for i, buttonName in ipairs(MICRO_BUTTONS) do
+
+	for _, buttonName in ipairs(MICRO_BUTTONS) do
 		local button = MenuButtonCheckbox_Create(panel, _G[buttonName], MICRO_BUTTON_NAMES[buttonName])
 		if button then
 			if prev then
@@ -287,14 +285,14 @@ local function Menu_AddDisableMenuButtonsPanel(menu)
 			else
 				button:SetPoint('TOPLEFT', 0, -2)
 			end
-			
+
 			local bWidth, bHeight = button:GetEffectiveSize()
 			width = math.max(width, bWidth)
-			height = height + (bHeight + 2) 
-			prev = button			
+			height = height + (bHeight + 2)
+			prev = button
 		end
 	end
-	
+
 	panel.width = width
 	panel.height = height
 	return panel
@@ -321,10 +319,6 @@ local MenuBarController = Addon:NewModule('MenuBar')
 
 function MenuBarController:OnInitialize()
 
-	-- fixed blizzard nil bug
-	if not _G['AchievementMicroButton_Update'] then
-		_G['AchievementMicroButton_Update'] = function() end
-	end
 end
 
 function MenuBarController:Load()

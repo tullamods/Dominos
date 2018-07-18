@@ -485,7 +485,6 @@ do
 
 		panel:AddLayoutOptions()
 
-		panel:SetSize(320, 400)
 		return panel
 	end
 
