@@ -51369,5 +51369,5 @@ read_globals = {
             "GetAllRacialAbilitiesFromID",
             "GetRaceInfoByID",
         },
-    },
+    }
 }

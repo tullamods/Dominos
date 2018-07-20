@@ -19,7 +19,7 @@ end
 function AzeriteBar:Update()
     if not self:IsModeActive() then
         self:SetValues()
-        self:UpdateText(L.Azerite, 0)
+        self:UpdateText(L.Azerite, 0, 0)
         return
     end
 

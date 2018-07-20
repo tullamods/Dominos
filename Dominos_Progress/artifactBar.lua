@@ -23,7 +23,7 @@ function ArtifactBar:Update()
     end
 
 	local _, _, _, _, artifactTotalXP, artifactPointsSpent, _, _, _, _, _, _, artifactTier = C_ArtifactUI.GetEquippedArtifactInfo()
-	local numPointsAvailableToSpend, xp, xpForNextPoint = ArtifactBarGetNumArtifactTraitsPurchasableFromXP(artifactPointsSpent, artifactTotalXP, artifactTier)
+	local _, xp, xpForNextPoint = ArtifactBarGetNumArtifactTraitsPurchasableFromXP(artifactPointsSpent, artifactTotalXP, artifactTier)
 
     self:SetValues(xp, xpForNextPoint)
     self:UpdateText(_G.ARTIFACT_POWER, xp, xpForNextPoint)
