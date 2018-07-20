@@ -2,6 +2,13 @@ local Addon = select(2, ...)
 local Dominos = _G.Dominos
 local ArtifactBar = Dominos:CreateClass('Frame', Addon.ProgressBar)
 
+local IsEquippedArtifactDisabled
+if C_ArtifactUI.IsEquippedArtifactDisabled ~= nil then
+    IsEquippedArtifactDisabled = C_ArtifactUI.IsEquippedArtifactDisabled
+else
+    IsEquippedArtifactDisabled = function() return false end
+end
+
 function ArtifactBar:Init()
     self:SetColor(Addon.Config:GetColor('artifact'))
     self:Update()
@@ -30,7 +37,7 @@ function ArtifactBar:Update()
 end
 
 function ArtifactBar:IsModeActive()
-    return HasArtifactEquipped() and not (C_ArtifactUI.IsEquippedArtifactMaxed() or C_ArtifactUI.IsEquippedArtifactDisabled())
+    return HasArtifactEquipped() and not (C_ArtifactUI.IsEquippedArtifactMaxed() or IsEquippedArtifactDisabled())
 end
 
 -- register this as a possible progress bar mode
