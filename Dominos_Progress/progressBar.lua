@@ -1,4 +1,4 @@
-local AddonName, Addon = ...
+local _, Addon = ...
 local Dominos = LibStub('AceAddon-3.0'):GetAddon('Dominos')
 local ProgressBar = Dominos:CreateClass('Frame', Dominos.ButtonBar)
 
@@ -242,20 +242,22 @@ function ProgressBar:SetValues(value, max, bonus)
 	local valueChanged = false
 
 	local maxChanged = false
-	local max = math.max(tonumber(max) or 0, 1)
+
+	max = math.max(tonumber(max) or 0, 1)
 	if self.max ~= max then
 		self.max = max
 		maxChanged = true
 	end
 
-	local value = math.min(math.max(tonumber(value) or 0, 0), max)
+	value = math.min(math.max(tonumber(value) or 0, 0), max)
 	if self.value ~= value then
 		self.value = value
 		valueChanged = true
 	end
 
 	local bonusChanged = false
-	local bonus = tonumber(bonus) or 0
+
+	bonus = tonumber(bonus) or 0
 	if self.bonus ~= bonus then
 		self.bonus = bonus
 		bonusChanged = true
@@ -297,7 +299,8 @@ end
 
 function ProgressBar:UpdateBonusValue()
 	local value, max, bonus = self:GetValues()
-	local bonus = bonus > 0 and math.min(value + bonus, max) or bonus
+
+	bonus = bonus > 0 and math.min(value + bonus, max) or bonus
 
 	local segmentValue = max / self:GetSegmentCount()
 	local lastFilledIndex = floor(bonus / segmentValue)
@@ -343,13 +346,17 @@ function ProgressBar:SetColor(r, g, b, a)
 	colors[3] = tonumber(b) or 0
 	colors[4] = tonumber(a) or 1
 
+	self:UpdateColor()
+	return self
+end
+
+function ProgressBar:UpdateColor()
 	local r, g, b, a = self:GetColor()
-	for i, bar in pairs(self.buttons) do
+
+	for _, bar in pairs(self.buttons) do
 		bar.bg:SetVertexColor(r / 2, g / 2, b / 2, a / 2)
 		bar.value:SetStatusBarColor(r, g, b, a)
 	end
-
-	return self
 end
 
 function ProgressBar:GetColor()
@@ -366,12 +373,16 @@ function ProgressBar:SetBonusColor(r, g, b, a)
 	colors[3] = tonumber(b) or 0
 	colors[4] = tonumber(a) or 1
 
+	self:UpdateBonusColor()
+	return self
+end
+
+function ProgressBar:UpdateBonusColor()
 	local r, g, b, a = self:GetBonusColor()
-	for i, bar in pairs(self.buttons) do
+
+	for _, bar in pairs(self.buttons) do
 		bar.bonus:SetStatusBarColor(r, g, b, a)
 	end
-
-	return self
 end
 
 function ProgressBar:GetBonusColor()
@@ -424,7 +435,7 @@ end
 --[[ segments ]]--
 
 function ProgressBar:SetSegmentCount(count)
-	local count = tonumber(count) or 1
+	count = tonumber(count) or 1
 
 	if count ~= self:GetSegmentCount() then
 		self:SetNumButtons(count)
@@ -487,7 +498,7 @@ end
 function ProgressBar:UpdateTexture()
 	local texture = LibStub('LibSharedMedia-3.0'):Fetch('statusbar', self:GetTextureID())
 
-	for i, segment in pairs(self.buttons) do
+	for _, segment in pairs(self.buttons) do
 		segment.bg:SetTexture(texture)
 		segment.value:SetStatusBarTexture(texture)
 		segment.bonus:SetStatusBarTexture(texture)
@@ -571,7 +582,7 @@ end
 function ProgressBar:Layout()
 	local width, height = self:GetSegmentSize()
 
-	for i, segment in pairs(self.buttons) do
+	for _, segment in pairs(self.buttons) do
 		segment:SetSize(width, height)
 	end
 
