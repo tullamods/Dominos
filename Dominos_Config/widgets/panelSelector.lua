@@ -87,6 +87,7 @@ end
 function PanelSelector:OnSelect(id) end
 
 function PanelSelector:OnMouseWheel(delta)
+	
 	local _min, _max = 0, self:GetScrollChild():GetWidth() - self:GetWidth()
 	local value = self:GetHorizontalScroll() or 0
 
@@ -98,39 +99,21 @@ function PanelSelector:OnMouseWheel(delta)
 	   --self:SetHorizontalScrollTo(value - delta * 32)
 	
 		--scroll whole buttons at a time!
-	
-		self.scroll = self.scroll or 1
-
-		local scroll = self.scroll - (delta)
-		
-		if not self.buttons[scroll] then
-			return
-		end
-
-		scroll = min(max(scroll, 1), #self.buttons)
-		
-		local value = max((64 * scroll) - 64, 0)
-		
-		local _max = max(self:GetWidth(), self:GetScrollChild():GetWidth()) - self:GetWidth()
-
-		if value > _max then
-			value = _max
-		else
-			self.scroll = scroll
-		end
-		
-		self:SetHorizontalScroll(value)
+		self:SetHorizontalScroll(min(max((64 * (min(max(((self:GetHorizontalScroll()/64) + 1) - (delta), 1), #self.buttons))) - 64, 0), max(self:GetWidth(), self:GetScrollChild():GetWidth()) - self:GetWidth()))
 	end
 end
 
 function PanelSelector:SetHorizontalScrollTo(value)
 	local min, max = 0, self:GetScrollChild():GetWidth() - self:GetWidth()
+
 	self:SetHorizontalScroll(math.max(math.min(value, max), min))
 end
 
 function PanelSelector:AddPanel(id)
 	local button = PanelSelectorButton_Create(id, self:GetScrollChild())
+
 	table.insert(self.buttons, button)
+
 	Addon:Render(self)
 end
 
