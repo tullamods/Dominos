@@ -156,13 +156,15 @@ end
 hooksecurefunc('ActionButton_UpdateHotkeys', ActionButton.UpdateHotkey)
 
 --button visibility
+local BECAUSE_REASONS = 1024
+
 function ActionButton:UpdateGrid()
 	if InCombatLockdown() then return end
 
 	if self:GetAttribute('showgrid') > 0 then
-		ActionButton_ShowGrid(self)
+		ActionButton_ShowGrid(self, BECAUSE_REASONS)
 	else
-		ActionButton_HideGrid(self)
+		ActionButton_HideGrid(self, BECAUSE_REASONS)
 	end
 end
 
