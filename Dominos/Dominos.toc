@@ -18,7 +18,6 @@ core\overrideController.lua
 core\tooltipController.lua
 core\bindingsController.lua
 bars\barStates.lua
-bars\multiActionBarFixer.lua
 bars\actionButton.lua
 bars\actionBar.lua
 bars\petBar.lua

@@ -8,7 +8,11 @@
 local AddonName, Addon = ...
 local ActionButton = Addon.ActionButton
 local HiddenFrame = Addon:CreateHiddenFrame('Frame', nil, _G.UIParent)
+
 local MAX_BUTTONS = 120
+local ACTION_BUTTON_SHOW_GRID_REASON_ADDON = 1024
+local ACTION_BUTTON_SHOW_GRID_REASON_KEYBOUND = 2048
+
 
 --[[ Action Bar ]]--
 
@@ -247,35 +251,33 @@ end
 
 
 --Empty button display
-function ActionBar:ShowGrid()
-	for _, button in pairs(self.buttons) do
-		button:SetAttribute('showgrid', button:GetAttribute('showgrid') + 1)
-		button:UpdateGrid()
+function ActionBar:ShowGrid(reason)
+	for _,b in pairs(self.buttons) do
+		b:ShowGrid(reason)
 	end
 end
 
-function ActionBar:HideGrid()
-	for _, button in pairs(self.buttons) do
-		button:SetAttribute('showgrid', max(button:GetAttribute('showgrid') - 1, 0))
-		button:UpdateGrid()
+function ActionBar:HideGrid(reason)
+	for _,b in pairs(self.buttons) do
+		b:HideGrid(reason)
 	end
 end
 
 function ActionBar:UpdateGrid()
 	if Addon:ShowGrid() then
-		self:ShowGrid()
+		self:ShowGrid(ACTION_BUTTON_SHOW_GRID_REASON_ADDON)
 	else
-		self:HideGrid()
+		self:HideGrid(ACTION_BUTTON_SHOW_GRID_REASON_ADDON)
 	end
 end
 
 ---keybound support
 function ActionBar:KEYBOUND_ENABLED()
-	self:ShowGrid()
+	self:ShowGrid(ACTION_BUTTON_SHOW_GRID_REASON_KEYBOUND)
 end
 
 function ActionBar:KEYBOUND_DISABLED()
-	self:HideGrid()
+	self:HideGrid(ACTION_BUTTON_SHOW_GRID_REASON_KEYBOUND)
 end
 
 --right click targeting support
