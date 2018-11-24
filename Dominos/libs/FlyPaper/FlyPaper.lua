@@ -1,6 +1,6 @@
 --[[
 	FlyPaper
-		Functionality for sticking one frome to another frame
+		Functionality for sticking one frame to another frame
 
 	Methods:
 		FlyPaper.Stick(frame, otherFrame, tolerance, xOff, yOff) - Attempts to attach <frame> to <otherFrame>
@@ -18,11 +18,8 @@
 		171 Second Street, Suite 300, San Francisco, California, 94105, USA.
 --]]
 
-
-
 --[[ library stuff ]]--
-
-local VERSION = 2
+local VERSION = 3
 if FlyPaper and tonumber(FlyPaper.version) and tonumber(FlyPaper.version) >= VERSION then 
 	return 
 end
@@ -33,14 +30,12 @@ else
 	FlyPaper.version = VERSION
 end
 
-
 --returns true if <frame>, or one of the frames that <frame> is dependent on, is anchored to <otherFrame>.  Returns nil otherwise.
 local function FrameIsDependentOnFrame(frame, otherFrame)
 	if (frame and otherFrame) then
 		if frame == otherFrame then 
 			return true 
 		end
-
 		local points = frame:GetNumPoints()
 		for i = 1, points do
 			local parent = select(2, frame:GetPoint(i))
@@ -65,80 +60,62 @@ local function CanAttach(frame, otherFrame)
 	return true
 end
 
-
 --[[ Attachment Functions ]]--
-
-local function AttachToTop(frame, otherFrame, distLeft, distRight, distCenter, offset)
-	frame:ClearAllPoints()
-	--closest to the left
-	if distLeft < distCenter and distLeft < distRight then
-		frame:SetPoint('BOTTOMLEFT', otherFrame, 'TOPLEFT', 0, offset)
-		return 'TL'
-	--closest to the right
-	elseif distRight < distCenter and distRight < distLeft then
-		frame:SetPoint('BOTTOMRIGHT', otherFrame, 'TOPRIGHT', 0, offset)
-		return 'TR'
-	--closest to the center
-	else
-		frame:SetPoint('BOTTOM', otherFrame, 'TOP', 0, offset)
-		return 'TC'
-	end
+local function WithinRange(value, otherValue, tolerance)
+	return ((value >= otherValue - tolerance and value <= otherValue + tolerance) or nil)
 end
 
-local function AttachToBottom(frame, otherFrame, distLeft, distRight, distCenter, offset)
-	frame:ClearAllPoints()
-	--bottomleft
-	if distLeft < distCenter and distLeft < distRight then
-		frame:SetPoint('TOPLEFT', otherFrame, 'BOTTOMLEFT', 0, -offset)
-		return 'BL'
-	--bottomright
-	elseif distRight < distCenter and distRight < distLeft then
-		frame:SetPoint('TOPRIGHT', otherFrame, 'BOTTOMRIGHT', 0, -offset)
-		return 'BR'
-	--bottom
-	else
-		frame:SetPoint('TOP', otherFrame, 'BOTTOM', 0, -offset)
-		return 'BC'
+local function smallest(tableWithNumbers)
+	local index
+	local small = math.huge
+	for i, b in pairs(tableWithNumbers) do
+		if b and b < small then
+			small, index = b, i
+		end
 	end
+	return index
 end
 
-local function AttachToLeft(frame, otherFrame, distTop, distBottom, distCenter, offset)
-	frame:ClearAllPoints()
-	--bottomleft
-	if distBottom < distTop and distBottom < distCenter then
-		frame:SetPoint('BOTTOMRIGHT', otherFrame, 'BOTTOMLEFT', -offset, 0)
-		return 'LB'
-	--topleft
-	elseif distTop < distBottom and distTop < distCenter then
-		frame:SetPoint('TOPRIGHT', otherFrame, 'TOPLEFT', -offset, 0)
-		return 'LT'
-	--left
+local points = {
+	TL = "TopLeft",
+	TC = "Top",
+	TR = "TopRight",
+	BL = "BottomLeft",
+	BC = "Bottom",
+	BR = "BottomRight",
+	LB = "BottomLeft",
+	LC = "Left",
+	LT = "TopLeft",
+	RB = "BottomRight",
+	RC = "Right",
+	RT = "TopRight",
+}
+
+local opposite = {
+	--needed for legacy compatibility 
+	TL = "BOTTOMLEFT",
+	TC = "BOTTOM",
+	TR = "BOTTOMRIGHT",
+	BL = "TOPLEFT",
+	BC = "TOP",
+	BR = "TOPRIGHT",
+	LB = "BOTTOMRIGHT",
+	LC = "RIGHT",
+	LT = "TOPRIGHT",
+	RB = "BOTTOMLEFT",
+	RC = "LEFT",
+	RT = "TOPLEFT",
+}
+
+local function Convert(a, b)
+	if (a == "R") or (a == "L") or (a == "C") then
+		return b..a
 	else
-		frame:SetPoint('RIGHT', otherFrame, 'LEFT', -offset, 0)
-		return 'LC'
+		return a..b
 	end
 end
-
-local function AttachToRight(frame, otherFrame, distTop, distBottom, distCenter, offset)
-	frame:ClearAllPoints()
-	--bottomright
-	if distBottom < distTop and distBottom < distCenter then
-		frame:SetPoint('BOTTOMLEFT', otherFrame, 'BOTTOMRIGHT', offset, 0)
-		return 'RB'
-	--topright
-	elseif distTop < distBottom and distTop < distCenter then
-		frame:SetPoint('TOPLEFT', otherFrame, 'TOPRIGHT', offset, 0)
-		return 'RT'
-	--right
-	else
-		frame:SetPoint('LEFT', otherFrame, 'RIGHT', offset, 0)
-		return 'RC'
-	end
-end
-
 
 --[[ Usable Functions ]]--
-
 function FlyPaper.Stick(frame, otherFrame, tolerance, xOff, yOff)
 	local xOff = xOff or 0
 	local yOff = yOff or 0
@@ -164,7 +141,6 @@ function FlyPaper.Stick(frame, otherFrame, tolerance, xOff, yOff)
 		centerY = centerY / oScale
 	else return end
 
-
 	local oLeft = otherFrame:GetLeft()
 	local oRight = otherFrame:GetRight()
 	local oTop = otherFrame:GetTop()
@@ -181,100 +157,74 @@ function FlyPaper.Stick(frame, otherFrame, tolerance, xOff, yOff)
 		oBottom = oBottom / scale
 	else return end
 
-
 	--[[ Start Attempting to Anchor <frame> to <otherFrame> ]]--
-
-	if(oLeft - tolerance <= left and oRight + tolerance >= right) or (left - tolerance <= oLeft and right + tolerance >= oRight)then
-		local distCenter = math.abs(oCenterX - centerX)
-		local distLeft = math.abs(oLeft - left)
-		local distRight = math.abs(right - oRight)
-
-		--try to stick to the top if the distance is under the threshold distance to stick frames to each other (tolerance)
-		if math.abs(oTop - bottom) <= tolerance then
-			return AttachToTop(frame, otherFrame, distLeft, distRight, distCenter, yOff)
-		--to the bottom
-		elseif math.abs(oBottom - top) <= tolerance then
-			return AttachToBottom(frame, otherFrame, distLeft, distRight, distCenter, yOff)
-		end
-	end
-
-
-	if(oTop + tolerance >= top and oBottom - tolerance <= bottom) or (top + tolerance >= oTop and bottom - tolerance <= oBottom)then
-		local distCenter = math.abs(oCenterY - centerY)
-		local distTop = math.abs(oTop - top)
-		local distBottom = math.abs(oBottom - bottom)
-
-		--to the left
-		if math.abs(oLeft - right) <= tolerance then
-			return AttachToLeft(frame, otherFrame, distTop, distBottom, distCenter, xOff)
-		end
-
-		--to the right
-		if math.abs(oRight - left) <= tolerance then
-			return AttachToRight(frame, otherFrame, distTop, distBottom, distCenter, xOff)
+	local horiAnchor, oHoriAnchor, vertAnchor, oVertAnchor
+	local x = smallest({
+		LtoL = WithinRange(left, oLeft, tolerance) and math.abs(left - oLeft),
+		LtoC = WithinRange(left, oCenterX, tolerance) and math.abs(left - oCenterX),
+		LtoR = WithinRange(left, oRight, tolerance) and math.abs(left - oRight),
+		CtoL = WithinRange(centerX, oLeft, tolerance) and math.abs(centerX - oLeft),
+		CtoC = WithinRange(centerX, oCenterX, tolerance) and math.abs(centerX - oCenterX),
+		CtoR = WithinRange(centerX, oRight, tolerance) and math.abs(centerX - oRight),
+		RtoL = WithinRange(right, oLeft, tolerance) and math.abs(right - oLeft),
+		RtoC = WithinRange(right, oCenterX, tolerance) and math.abs(right - oCenterX),
+		RtoR = WithinRange(right, oRight, tolerance) and math.abs(right - oRight)
+	})
+	local y = smallest({
+		TtoT = WithinRange(top, oTop, tolerance) and math.abs(top - oTop),
+		TtoC = WithinRange(top, oCenterY, tolerance) and math.abs(top - oCenterY),
+		TtoB = WithinRange(top, oBottom, tolerance) and math.abs(top - oBottom),
+		CtoT = WithinRange(centerY, oTop, tolerance) and math.abs(centerY - oTop),
+		CtoC = WithinRange(centerY, oCenterY, tolerance) and math.abs(centerY - oCenterY),
+		CtoB = WithinRange(centerY, oBottom, tolerance) and math.abs(centerY - oBottom),
+		BtoT = WithinRange(bottom, oTop, tolerance) and math.abs(bottom - oTop),
+		BtoC = WithinRange(bottom, oCenterY, tolerance) and math.abs(bottom - oCenterY),
+		BtoB = WithinRange(bottom, oBottom, tolerance) and math.abs(bottom - oBottom),
+	})
+	if x and y then
+		local a, _, b = string.split("to", y)
+		local c, _, d = string.split("to", x) 
+		local anchors = {
+			T = "Top",
+			C = "",
+			B = "Bottom",
+			L = "Left",
+			R = "Right",
+		}	
+		frame:ClearAllPoints()
+		local A, C = anchors[a], anchors[c]
+		local B, D = anchors[b], anchors[d]
+		if (A ~= C and B ~= D and A..C ~= B..D and A ~= B..D) or otherFrame:GetName() == "UIParent" then
+			--prevent bars from snapping inside of each other. example: topleft to topleft (unless you are snapping to UIParent!)
+			frame:SetPoint(A..C, otherFrame, B..D, 0, 0)		
+			return Convert(a, c), Convert(b, d)
 		end
 	end
 end
 
-function FlyPaper.StickToPoint(frame, otherFrame, point, xOff, yOff)
+function FlyPaper.StickToPoint(frame, otherFrame, point, otherPoint, xOff, yOff) --do we really need the offsets? will take some effort to work with this implementation
 	local xOff = xOff or 0
 	local yOff = yOff or 0
-
+	if otherPoint == "" then
+		otherPoint = nil
+	end
 	--check to make sure its actually possible to attach the frames
 	if not(point and CanAttach(frame, otherFrame)) then 
 		return 
 	end
 
-
 	--[[ Start Attempting to Anchor <frame> to <otherFrame> ]]--
-
 	frame:ClearAllPoints()
-
-	--to the top
-	if point == 'TL' then
-		frame:SetPoint('BOTTOMLEFT', otherFrame, 'TOPLEFT', 0, yOff)
-		return point
-	elseif point == 'TC' then
-		frame:SetPoint('BOTTOM', otherFrame, 'TOP', 0, yOff)
-		return point
-	elseif point == 'TR' then
-		frame:SetPoint('BOTTOMRIGHT', otherFrame, 'TOPRIGHT', 0, yOff)
-		return point
-	end
-
-	--to the bottom
-	if point == 'BL' then
-		frame:SetPoint('TOPLEFT', otherFrame, 'BOTTOMLEFT', 0, -yOff)
-		return point
-	elseif point == 'BC' then
-		frame:SetPoint('TOP', otherFrame, 'BOTTOM', 0, -yOff)
-		return point
-	elseif point == 'BR' then
-		frame:SetPoint('TOPRIGHT', otherFrame, 'BOTTOMRIGHT', 0, -yOff)
-		return point
-	end
-
-	--to the left
-	if point == 'LB' then
-		frame:SetPoint('BOTTOMRIGHT', otherFrame, 'BOTTOMLEFT', -xOff, 0)
-		return point
-	elseif point == 'LC' then
-		frame:SetPoint('RIGHT', otherFrame, 'LEFT', -xOff, 0)
-		return point
-	elseif point == 'LT' then
-		frame:SetPoint('TOPRIGHT', otherFrame, 'TOPLEFT', -xOff, 0)
-		return point
-	end
-
-	--to the right
-	if point == 'RB' then
-		frame:SetPoint('BOTTOMLEFT', otherFrame, 'BOTTOMRIGHT', xOff, 0)
-		return point
-	elseif point == 'RC' then
-		frame:SetPoint('LEFT', otherFrame, 'RIGHT', xOff, 0)
-		return point
-	elseif point == 'RT' then
-		frame:SetPoint('TOPLEFT', otherFrame, 'TOPRIGHT', xOff, 0)
-		return point
+	if points[point] then
+		if otherPoint then
+			local otherPoint = points[otherPoint] or opposite[point]
+			frame:SetPoint(points[point], otherFrame, otherPoint, 0, 0)
+			return point
+		else
+			--legacy compatibility
+			local otherPoint = opposite[point]
+			frame:SetPoint(otherPoint, otherFrame, points[point], 0, 0)
+			return point
+		end
 	end
 end
