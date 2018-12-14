@@ -3,7 +3,7 @@
     want visible when running Dominos
 --]]
 
-local AddonName, Addon =...
+local _, Addon =...
 
 local hiddenFrame = CreateFrame('Frame', nil, _G['UIParent'], 'SecureFrameTemplate');
 hiddenFrame:Hide()
@@ -53,4 +53,7 @@ do
 
     _G.StatusTrackingBarManager:UnregisterAllEvents()
     _G.StatusTrackingBarManager:Hide()
+
+    -- disable multiactionbar_update to prevent some taint issues
+    _G.MultiActionBar_Update = Multibar_EmptyFunc
 end
