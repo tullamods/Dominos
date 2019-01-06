@@ -82,7 +82,7 @@ function CastBar:OnCreate()
 		self.latencyBar = lb
 
 		local sb = CreateFrame('StatusBar', nil, container)
-		sb:SetScript('OnValueChanged', function(s, value) self:OnValueChanged(value) end)
+		sb:SetScript('OnValueChanged', function(_, value) self:OnValueChanged(value) end)
 
 			local timeText = sb:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
 			timeText:SetJustifyH('RIGHT')
@@ -196,8 +196,13 @@ function CastBar:OnUpdateChanneling(elapsed)
 	end
 end
 
-function CastBar:OnValueChanged(value)
+function CastBar:OnChannellingValueChanged(value)
 	self.timeText:SetFormattedText('%.1f', value)
+	self.spark:SetValue(value)
+end
+
+function CastBar:OnCastingValueChanged(value)
+	self.timeText:SetFormattedText('%.1f', self.tend - value)
 	self.spark:SetValue(value)
 end
 
@@ -299,10 +304,13 @@ end
 
 function CastBar:mode_update(mode)
 	if mode == 'cast' then
+		self.OnValueChanged = self.OnCastingValueChanged
 		self:SetScript('OnUpdate', self.OnUpdateCasting)
 	elseif mode == 'channel' then
+		self.OnValueChanged = self.OnChannelingValueChanged
 		self:SetScript('OnUpdate', self.OnUpdateChanneling)
 	elseif mode == 'demo' then
+		self.OnValueChanged = self.OnCastingValueChanged
 		self:SetupDemo()
 	end
 end
@@ -486,6 +494,8 @@ function CastBar:UpdateChannelling(reset)
 		local vmax = (endTime - startTime) / 1000
 		local v = endTime / 1000 - GetTime()
 
+		self.tend = vmax
+
 		local sb = self.statusBar
 		sb:SetMinMaxValues(0, (endTime - startTime) / 1000)
 		sb:SetValue(v)
@@ -519,6 +529,8 @@ function CastBar:UpdateCasting(reset)
 		local vmax = (endTime - startTime) / 1000
 		local v = GetTime() - startTime / 1000
 		local latency = self:GetLatency()
+
+		self.tend = vmax
 
 		local sb = self.statusBar
 		sb:SetMinMaxValues(vmin, vmax)
@@ -558,6 +570,7 @@ function CastBar:SetupDemo()
 	self:SetProperty("label", name)
 	self:SetProperty("icon", icon)
 	self:SetProperty("spell", spellID)
+	self.tend = 1
 
 	self.statusBar:SetMinMaxValues(0, 1)
 	self.statusBar:SetValue(0.75)
