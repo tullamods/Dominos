@@ -200,10 +200,6 @@ function ActionButton:UpdateShowEquippedItemBorders()
 	self.Border:SetParent(Addon:ShowEquippedItemBorders() and self or HiddenFrame)
 end
 
-function ActionButton:UpdateState()
-	ActionButton_UpdateState(self)
-end
-
 --utility function, resyncs the button's current action, modified by state
 function ActionButton:LoadAction()
 	local state = self:GetParent():GetAttribute('state-page')
