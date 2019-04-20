@@ -211,7 +211,7 @@ function Addon:SetProfile(name)
 		self.isNewProfile = nil
 		self:Load()
 	else
-		self:Print(format(L.InvalidProfile, name or 'null'))
+		self:Printf(L.InvalidProfile, name or 'null')
 	end
 end
 
@@ -275,23 +275,23 @@ end
 
 function Addon:OnNewProfile(msg, db, name)
 	self.isNewProfile = true
-	self:Print(format(L.ProfileCreated, name))
+	self:Printf(L.ProfileCreated, name)
 end
 
 function Addon:OnProfileDeleted(msg, db, name)
-	self:Print(format(L.ProfileDeleted, name))
+	self:Printf(L.ProfileDeleted, name)
 end
 
 function Addon:OnProfileChanged(msg, db, name)
-	self:Print(format(L.ProfileLoaded, name))
+	self:Printf(L.ProfileLoaded, name)
 end
 
 function Addon:OnProfileCopied(msg, db, name)
-	self:Print(format(L.ProfileCopied, name))
+	self:Printf(L.ProfileCopied, name)
 end
 
 function Addon:OnProfileReset(msg, db)
-	self:Print(format(L.ProfileReset, db:GetCurrentProfile()))
+	self:Printf(L.ProfileReset, db:GetCurrentProfile())
 end
 
 
