@@ -511,8 +511,12 @@ local ActionBarController = Addon:NewModule('ActionBars', 'AceEvent-3.0')
 
 function ActionBarController:Load()
 	self:RegisterEvent('UPDATE_BONUS_ACTIONBAR', 'UpdateOverrideBar')
-	self:RegisterEvent('UPDATE_VEHICLE_ACTIONBAR', 'UpdateOverrideBar')
-	self:RegisterEvent('UPDATE_OVERRIDE_ACTIONBAR', 'UpdateOverrideBar')
+
+	if _G.OverrideActionBar then
+		self:RegisterEvent('UPDATE_VEHICLE_ACTIONBAR', 'UpdateOverrideBar')
+		self:RegisterEvent('UPDATE_OVERRIDE_ACTIONBAR', 'UpdateOverrideBar')
+	end
+
 	self:RegisterEvent("PET_BAR_HIDEGRID")
 
 	for i = 1, Addon:NumBars() do

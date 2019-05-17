@@ -25,12 +25,15 @@ local MICRO_BUTTONS = {
 	"TalentMicroButton",
 	"AchievementMicroButton",
 	"QuestLogMicroButton",
+	"SocialMicroButton",
 	"GuildMicroButton",
+	"WorldMapMicroButton",
 	"LFDMicroButton",
 	"EJMicroButton",
 	"CollectionsMicroButton",
 	"StoreMicroButton",
-	"MainMenuMicroButton"
+	"MainMenuMicroButton",
+	"HelpMicroButton"
 }
 
 local MICRO_BUTTON_NAMES = {
@@ -83,30 +86,32 @@ function MenuBar:Create(...)
 
 	hooksecurefunc('UpdateMicroButtons', requestLayoutUpdate)
 
-	local petBattleFrame = _G['PetBattleFrame'].BottomFrame.MicroButtonFrame
+	if _G.PetBattleFrame then
+		local petMicroButtons = _G.PetBattleFrame.BottomFrame.MicroButtonFrame
 
-	getOrHook(petBattleFrame, 'OnShow', function()
-		bar.isPetBattleUIShown = true
-		requestLayoutUpdate()
-	end)
+		getOrHook(petMicroButtons, 'OnShow', function()
+			bar.isPetBattleUIShown = true
+			requestLayoutUpdate()
+		end)
 
-	getOrHook(petBattleFrame, 'OnHide', function()
-		bar.isPetBattleUIShown = nil
-		requestLayoutUpdate()
-	end)
+		getOrHook(petMicroButtons, 'OnHide', function()
+			bar.isPetBattleUIShown = nil
+			requestLayoutUpdate()
+		end)
+	end
 
+	local overrideActionBar = _G.OverrideActionBar
+	if overrideActionBar then
+		getOrHook(overrideActionBar, 'OnShow', function()
+			bar.isOverrideUIShown = Addon:UsingOverrideUI()
+			requestLayoutUpdate()
+		end)
 
-	local overrideActionBar = _G['OverrideActionBar']
-
-	getOrHook(overrideActionBar, 'OnShow', function()
-		bar.isOverrideUIShown = Addon:UsingOverrideUI()
-		requestLayoutUpdate()
-	end)
-
-	getOrHook(overrideActionBar, 'OnHide', function()
-		bar.isOverrideUIShown = nil
-		requestLayoutUpdate()
-	end)
+		getOrHook(overrideActionBar, 'OnHide', function()
+			bar.isOverrideUIShown = nil
+			requestLayoutUpdate()
+		end)
+	end
 
 	return bar
 end
@@ -204,7 +209,10 @@ end
 
 function MenuBar:LayoutNormal()
 	for _, name in pairs(MICRO_BUTTONS) do
-		_G[name]:Hide()
+		local button = _G[name]
+		if button then
+			button:Hide()
+		end
 	end
 
 	for _, button in pairs(self.buttons) do

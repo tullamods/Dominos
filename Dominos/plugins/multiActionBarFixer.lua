@@ -1,3 +1,5 @@
+if not _G.ACTION_BUTTON_SHOW_GRID_REASON_CVAR then return end
+
 --[[
 	This code works around empty action buttons appearing on the multi action
 	buttons either because the user has set to always show blizzard slots, or

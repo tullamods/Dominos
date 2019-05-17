@@ -30,7 +30,7 @@ do
 
 	function ContainerFrame:Layout()
 		local frame = self.repositionedFrame
-		
+
 		frame:ClearAllPoints()
 		frame:SetPoint('BOTTOM', self.header)
 

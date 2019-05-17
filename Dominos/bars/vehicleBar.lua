@@ -1,3 +1,5 @@
+if not _G.UnitVehicle then return end
+
 local AddonName, Addon = ...
 local VehicleLeaveButton = _G.MainMenuBarVehicleLeaveButton
 if not VehicleLeaveButton then return end
@@ -86,7 +88,7 @@ function VehicleBarController:Load()
 	self.frame = VehicleBar:New()
 
 	self:RegisterEvent('UPDATE_BONUS_ACTIONBAR', 'UpdateOnTaxi')
-	self:RegisterEvent('UPDATE_MULTI_CAST_ACTIONBAR', 'UpdateOnTaxi')
+	-- self:RegisterEvent('UPDATE_MULTI_CAST_ACTIONBAR', 'UpdateOnTaxi')
 	self:RegisterEvent('UNIT_ENTERED_VEHICLE', 'UpdateOnTaxi')
 	self:RegisterEvent('UNIT_EXITED_VEHICLE', 'UpdateOnTaxi')
 	self:RegisterEvent('VEHICLE_UPDATE', 'UpdateOnTaxi')

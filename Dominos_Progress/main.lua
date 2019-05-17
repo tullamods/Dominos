@@ -11,14 +11,20 @@ function ProgressBarModule:OnInitialize()
 end
 
 function ProgressBarModule:Load()
-	if Addon.Config:OneBarMode() then
-		self.bars = {
-			Addon.ExperienceBar:New("exp", {"xp", "reputation", "honor", "artifact", "azerite"})
-		}
+	if Addon.ArtifactBar then
+		if Addon.Config:OneBarMode() then
+			self.bars = {
+				Addon.ExperienceBar:New("exp", {"xp", "reputation", "honor", "artifact", "azerite"})
+			}
+		else
+			self.bars = {
+				Addon.ExperienceBar:New("exp", {"xp", "reputation", "honor"}),
+				Addon.ArtifactBar:New("artifact", {"artifact", "azerite"})
+			}
+		end
 	else
 		self.bars = {
-			Addon.ExperienceBar:New("exp", {"xp", "reputation", "honor"}),
-			Addon.ArtifactBar:New("artifact", {"artifact", "azerite"})
+			Addon.ExperienceBar:New("exp", {"xp", "reputation"})
 		}
 	end
 
@@ -34,15 +40,21 @@ function ProgressBarModule:Load()
 	self:RegisterEvent("UPDATE_FACTION")
 
 	-- honor events
-	self:RegisterEvent("HONOR_XP_UPDATE")
-	self:RegisterEvent("HONOR_LEVEL_UPDATE")
+	if _G.UnitHonor then
+		self:RegisterEvent("HONOR_XP_UPDATE")
+		self:RegisterEvent("HONOR_LEVEL_UPDATE")
+	end
 
 	-- artifact events
-	self:RegisterEvent("ARTIFACT_XP_UPDATE")
-	self:RegisterEvent("UNIT_INVENTORY_CHANGED")
+	if _G.C_ArtifactUI then
+		self:RegisterEvent("ARTIFACT_XP_UPDATE")
+		self:RegisterEvent("UNIT_INVENTORY_CHANGED")
+	end
 
 	-- azerite events
-	self:RegisterEvent("AZERITE_ITEM_EXPERIENCE_CHANGED")
+	if _G.C_AzeriteItem then
+		self:RegisterEvent("AZERITE_ITEM_EXPERIENCE_CHANGED")
+	end
 
 	self:RegisterEvent("ADDON_LOADED")
 end

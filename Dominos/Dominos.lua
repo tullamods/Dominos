@@ -157,6 +157,8 @@ function Addon:UsingOverrideUI()
 end
 
 function Addon:UpdateUseOverrideUI()
+	if not _G.OverrideActionBar then return end
+
 	local usingOverrideUI = self:UsingOverrideUI()
 
 	self.OverrideController:SetAttribute('state-useoverrideui', usingOverrideUI)
@@ -169,7 +171,6 @@ function Addon:UpdateUseOverrideUI()
 		oab:SetPoint('LEFT', oab:GetParent(), 'RIGHT', 100, 0)
 	end
 end
-
 
 --[[ Keybound Events ]]--
 

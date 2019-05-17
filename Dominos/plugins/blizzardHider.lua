@@ -48,8 +48,15 @@ MainMenuBar:UnregisterEvent("DISPLAY_SIZE_CHANGED")
 MainMenuBar:UnregisterEvent("UI_SCALE_CHANGED")
 
 -- don't reparent the tracking manager, as it assumes its parent has a callback
-StatusTrackingBarManager:UnregisterAllEvents()
-StatusTrackingBarManager:Hide()
+if StatusTrackingBarManager then
+    StatusTrackingBarManager:UnregisterAllEvents()
+    StatusTrackingBarManager:Hide()
+end
+
+if StatusTrackingBarManager then
+    StatusTrackingBarManager:UnregisterAllEvents()
+    StatusTrackingBarManager:Hide()
+end
 
 disableSlideOutAnimations(
     'MainMenuBar',
@@ -57,6 +64,7 @@ disableSlideOutAnimations(
 )
 
 hideFrames(
+    'MainMenuExpBar',
     'MultiBarBottomLeft',
     'MultiBarBottomRight',
     'MultiBarLeft',
