@@ -92,6 +92,12 @@ do
 	elseif class == "ROGUE" then
 		addState("class", "shadowdance", "[form:2]", GetSpellInfo(185313))
 		addState("class", "stealth", "[bonusbar:1]", GetSpellInfo(1784))
+	elseif class == 'WARRIOR' and Addon.ENABLE_CLASSIC_MODE then
+		addState("class", "battle", "[bonusbar:1]", GetSpellInfo(2457))
+		addState("class", "defensive", "[bonusbar:2]", GetSpellInfo(71))
+		addState("class", "berserker", "[bonusbar:3]", GetSpellInfo(2458))
+	elseif class == 'PRIEST' and Addon.ENABLE_CLASSIC_MODE then
+		addState("class", "shadowform", "[bonusbar:1]", GetSpellInfo(16592))
 	end
 end
 
