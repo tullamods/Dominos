@@ -1,9 +1,23 @@
 local _, Addon = ...
 local Dominos = _G.Dominos
-local ReputationBar = Dominos:CreateClass('Frame', Addon.ProgressBar)
+local ReputationBar = Dominos:CreateClass("Frame", Addon.ProgressBar)
 local FRIEND_FACTION_COLOR_INDEX = 5
 local PARAGON_FACTION_COLOR_INDEX = #FACTION_BAR_COLORS
 local MAX_REPUTATION_REACTION = _G.MAX_REPUTATION_REACTION
+
+local GetFriendshipReputation = GetFriendshipReputation
+if not GetFriendshipReputation then
+    GetFriendshipReputation = function()
+        return
+    end
+end
+
+local IsFactionParagon = C_Reputation and C_Reputation.IsFactionParagon
+if not IsFactionParagon then
+    IsFactionParagon = function()
+        return false
+    end
+end
 
 function ReputationBar:Init()
     self:Update()
@@ -21,15 +35,16 @@ function ReputationBar:Update()
 
     local description, colorIndex, capped
 
-    if C_Reputation.IsFactionParagon(factionID) then
+    if IsFactionParagon(factionID) then
         local currentValue, threshold = C_Reputation.GetFactionParagonInfo(factionID)
         min, max, value = 0, threshold, currentValue % threshold
 
         colorIndex = PARAGON_FACTION_COLOR_INDEX
-        description = GetText('FACTION_STANDING_LABEL'..reaction, UnitSex('player'))
+        description = GetText("FACTION_STANDING_LABEL" .. reaction, UnitSex("player"))
         capped = false
     else
         local friendID, friendRep, _, _, _, _, friendTextLevel, friendThreshold, nextFriendThreshold = GetFriendshipReputation(factionID)
+
         if friendID then
             if nextFriendThreshold then
                 min, max, value = friendThreshold, nextFriendThreshold, friendRep
@@ -47,7 +62,7 @@ function ReputationBar:Update()
             end
 
             colorIndex = reaction
-            description = GetText('FACTION_STANDING_LABEL'..reaction, UnitSex('player'))
+            description = GetText("FACTION_STANDING_LABEL" .. reaction, UnitSex("player"))
         end
     end
 
@@ -66,5 +81,5 @@ end
 
 -- register this as a possible progress bar mode
 Addon.progressBarModes = Addon.progressBarModes or {}
-Addon.progressBarModes['reputation'] = ReputationBar
+Addon.progressBarModes["reputation"] = ReputationBar
 Addon.ReputationBar = ReputationBar
