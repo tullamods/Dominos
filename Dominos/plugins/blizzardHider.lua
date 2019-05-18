@@ -20,6 +20,19 @@ local function hideFrames(...)
     end
 end
 
+local function disableEvents(...)
+    for i = 1, select("#", ...) do
+        local frameName = select(i, ...)
+        local frame = _G[frameName]
+
+        if frame then
+            frame:UnregisterAllEvents()
+        else
+            Addon:Print('Unknown Frame', frameName)
+        end
+    end
+end
+
 -- disable override bar transition animations
 local function disableSlideOutAnimations(...)
     for i = 1, select("#", ...) do
@@ -40,40 +53,60 @@ local function disableSlideOutAnimations(...)
 end
 
 -- disable but don't reparent and hide the
-MainMenuBar:EnableMouse(false)
-MainMenuBar.ignoreFramePositionManager = true
-MainMenuBar:UnregisterEvent("ACTIONBAR_PAGE_CHANGED")
-MainMenuBar:UnregisterEvent("PLAYER_ENTERING_WORLD")
-MainMenuBar:UnregisterEvent("DISPLAY_SIZE_CHANGED")
-MainMenuBar:UnregisterEvent("UI_SCALE_CHANGED")
+local mainBar = MainMenuBar
+if mainBar then
+    mainBar:EnableMouse(false)
+    mainBar.ignoreFramePositionManager = true
+    mainBar:UnregisterEvent("ACTIONBAR_PAGE_CHANGED")
+    mainBar:UnregisterEvent("PLAYER_ENTERING_WORLD")
+    mainBar:UnregisterEvent("DISPLAY_SIZE_CHANGED")
+    mainBar:UnregisterEvent("UI_SCALE_CHANGED")
+end
 
--- don't reparent the tracking manager, as it assumes its parent has a callback
-if StatusTrackingBarManager then
+if Addon.ENABLE_CLASSIC_MODE then
+    hideFrames(
+        'MainMenuExpBar',
+        'ReputationWatchBar',
+        'MultiBarBottomLeft',
+        'MultiBarBottomRight',
+        'MultiBarLeft',
+        'MultiBarRight',
+        'MainMenuBarArtFrame',
+        'StanceBarFrame',
+        -- 'PossessBarFrame',
+        'PetActionBarFrame',
+        -- 'MultiCastActionBarFrame',
+        -- 'MicroButtonAndBagsBar',
+        'MainMenuBarPerformanceBar'
+    )
+
+    disableEvents(
+        'MainMenuExpBar',
+        'ReputationWatchBar'
+    )
+else
+    hideFrames(
+        -- 'MainMenuExpBar',
+        -- 'ReputationWatchBar',
+        'MultiBarBottomLeft',
+        'MultiBarBottomRight',
+        'MultiBarLeft',
+        'MultiBarRight',
+        'MainMenuBarArtFrame',
+        'StanceBarFrame',
+        'PossessBarFrame',
+        'PetActionBarFrame',
+        'MultiCastActionBarFrame',
+        'MicroButtonAndBagsBar',
+        'MainMenuBarPerformanceBar'
+    )
+
+    disableSlideOutAnimations(
+        'MainMenuBar',
+        'OverrideActionBar'
+    )
+
+    -- don't reparent the tracking manager, as it assumes its parent has a callback
     StatusTrackingBarManager:UnregisterAllEvents()
     StatusTrackingBarManager:Hide()
 end
-
-if StatusTrackingBarManager then
-    StatusTrackingBarManager:UnregisterAllEvents()
-    StatusTrackingBarManager:Hide()
-end
-
-disableSlideOutAnimations(
-    'MainMenuBar',
-    'OverrideActionBar'
-)
-
-hideFrames(
-    'MainMenuExpBar',
-    'MultiBarBottomLeft',
-    'MultiBarBottomRight',
-    'MultiBarLeft',
-    'MultiBarRight',
-    'MainMenuBarArtFrame',
-    'StanceBarFrame',
-    'PossessBarFrame',
-    'PetActionBarFrame',
-    'MultiCastActionBarFrame',
-    'MicroButtonAndBagsBar',
-    'MainMenuBarPerformanceBar'
-)
