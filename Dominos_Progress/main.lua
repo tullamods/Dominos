@@ -1,6 +1,3 @@
---[[
-	the main controller of dominos progress
---]]
 local _, Addon = ...
 local Dominos = LibStub("AceAddon-3.0"):GetAddon("Dominos")
 local ProgressBarModule = Dominos:NewModule("ProgressBars", "AceEvent-3.0")
@@ -11,20 +8,18 @@ function ProgressBarModule:OnInitialize()
 end
 
 function ProgressBarModule:Load()
-	if Addon.ArtifactBar then
-		if Addon.Config:OneBarMode() then
-			self.bars = {
-				Addon.ExperienceBar:New("exp", {"xp", "reputation", "honor", "artifact", "azerite"})
-			}
-		else
-			self.bars = {
-				Addon.ExperienceBar:New("exp", {"xp", "reputation", "honor"}),
-				Addon.ArtifactBar:New("artifact", {"artifact", "azerite"})
-			}
-		end
-	else
+	if Dominos.ENABLE_CLASSIC_MODE then
 		self.bars = {
 			Addon.ExperienceBar:New("exp", {"xp", "reputation"})
+		}
+	elseif Addon.Config:OneBarMode() then
+		self.bars = {
+			Addon.ExperienceBar:New("exp", {"xp", "reputation", "honor", "artifact", "azerite"})
+		}
+	else
+		self.bars = {
+			Addon.ExperienceBar:New("exp", {"xp", "reputation", "honor"}),
+			Addon.ArtifactBar:New("artifact", {"artifact", "azerite"})
 		}
 	end
 
@@ -40,19 +35,19 @@ function ProgressBarModule:Load()
 	self:RegisterEvent("UPDATE_FACTION")
 
 	-- honor events
-	if _G.UnitHonor then
+	if Addon.progressBarModes.honor then
 		self:RegisterEvent("HONOR_XP_UPDATE")
 		self:RegisterEvent("HONOR_LEVEL_UPDATE")
 	end
 
 	-- artifact events
-	if _G.C_ArtifactUI then
+	if Addon.progressBarModes.artifact then
 		self:RegisterEvent("ARTIFACT_XP_UPDATE")
 		self:RegisterEvent("UNIT_INVENTORY_CHANGED")
 	end
 
 	-- azerite events
-	if _G.C_AzeriteItem then
+	if Addon.progressBarModes.azerite then
 		self:RegisterEvent("AZERITE_ITEM_EXPERIENCE_CHANGED")
 	end
 
