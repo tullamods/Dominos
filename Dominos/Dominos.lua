@@ -7,34 +7,24 @@ local AddonName, AddonTable = ...
 local Addon = LibStub('AceAddon-3.0'):NewAddon(AddonTable, AddonName, 'AceEvent-3.0', 'AceConsole-3.0')
 local L = LibStub('AceLocale-3.0'):GetLocale(AddonName)
 
-local CURRENT_VERSION = GetAddOnMetadata(AddonName, 'Version')
 local CONFIG_ADDON_NAME = AddonName .. '_Config'
+local ADDON_VERSION = GetAddOnMetadata(AddonName, 'Version')
+local CONFIG_VERSION = 1
+
 
 --[[ Startup ]]--
 
-function Addon:OnInitialize()
-	--register database events
-	self.db = LibStub('AceDB-3.0'):New(AddonName .. 'DB', self:GetDefaults(), UnitClass('player'))
-	self.db.RegisterCallback(self, 'OnNewProfile')
-	self.db.RegisterCallback(self, 'OnProfileChanged')
-	self.db.RegisterCallback(self, 'OnProfileCopied')
-	self.db.RegisterCallback(self, 'OnProfileReset')
-	self.db.RegisterCallback(self, 'OnProfileDeleted')
+-- test to see if we're on 1.13
+-- while I would prefer feature flags, this is a good enough test for now
+Addon.ENABLE_CLASSIC_MODE = math.floor(select(4, GetBuildInfo() ) / 100) == 113
 
-	--version update
-	if _G[AddonName .. 'Version'] then
-		if _G[AddonName .. 'Version'] ~= CURRENT_VERSION then
-			self:UpdateSettings(_G[AddonName .. 'Version']:match('(%w+)%.(%w+)%.(%w+)'))
-			self:UpdateVersion()
-		end
-	--new user
-	else
-		_G[AddonName .. 'Version'] = CURRENT_VERSION
-	end
+function Addon:OnInitialize()
+	-- setup db
+	self:CreateDatabase()
+	self:UpgradeDatabase()
 
 	--create a loader for the options menu
-	local f = CreateFrame('Frame', nil, _G['InterfaceOptionsFrame'])
-
+	local f = CreateFrame('Frame', nil, _G.InterfaceOptionsFrame)
 	f:SetScript('OnShow', function()
 		f:SetScript('OnShow', nil)
 		LoadAddOn(CONFIG_ADDON_NAME)
@@ -51,10 +41,24 @@ function Addon:OnEnable()
 	self:Load()
 end
 
---[[ Version Updating ]]--
+-- saved settings
+function Addon:CreateDatabase()
+	local db = LibStub('AceDB-3.0'):New(AddonName .. 'DB', self:GetDatabaseDefaults(), UnitClass('player'))
 
-function Addon:GetDefaults()
+	db.RegisterCallback(self, 'OnNewProfile')
+	db.RegisterCallback(self, 'OnProfileChanged')
+	db.RegisterCallback(self, 'OnProfileCopied')
+	db.RegisterCallback(self, 'OnProfileReset')
+	db.RegisterCallback(self, 'OnProfileDeleted')
+
+	self.db = db
+end
+
+function Addon:GetDatabaseDefaults()
 	return {
+		global = {
+		},
+
 		profile = {
 			possessBar = 1,
 
@@ -65,7 +69,7 @@ function Addon:GetDefaults()
 			showEquippedItemBorders = true,
 			showTooltips = true,
 			showTooltipsCombat = true,
-			useOverrideUI = true,
+			useOverrideUI = not self.ENABLE_CLASSIC_MODE,
 
 			minimap = {
 				hide = false,
@@ -81,29 +85,29 @@ function Addon:GetDefaults()
 	}
 end
 
-function Addon:UpdateSettings(major, minor, bugfix)
-	--inject new roll bar defaults
-	if major == '5' and minor == '0' and bugfix < '14' then
-		for _, sets in pairs(self.db.sv.profiles) do
-			if sets.frames then
-				local rollBarFrameSets = sets.frames['roll']
-				if rollBarFrameSets then
-					rollBarFrameSets.showInPetBattleUI = true
-					rollBarFrameSets.showInOverrideUI = true
-				end
-			end
-		end
+function Addon:UpgradeDatabase()
+	local configVerison = self.db.global.configVersion
+	if configVerison ~= CONFIG_VERSION then
+		self:OnUpgradeDatabase(configVerison, CONFIG_VERSION)
+		self.db.global.configVersion = CONFIG_VERSION
+	end
+
+	local addonVersion = self.db.global.addonVersion
+	if addonVersion ~= ADDON_VERSION then
+		self:OnUpgradeAddon(addonVersion, ADDON_VERSION)
+		self.db.global.addonVersion = ADDON_VERSION
 	end
 end
 
-function Addon:UpdateVersion()
-	_G[AddonName .. 'Version'] = CURRENT_VERSION
+function Addon:OnUpgradeDatabase(oldVersion, newVersion)
+end
 
-	self:Printf(L.Updated, _G[AddonName .. 'Version'])
+function Addon:OnUpgradeAddon(oldVersion, newVersion)
+	self:Printf(L.Updated, ADDON_VERSION)
 end
 
 function Addon:PrintVersion()
-	self:Print(_G[AddonName .. 'Version'])
+	self:Print(ADDON_VERSION)
 end
 
 
@@ -143,37 +147,7 @@ function Addon:Unload()
 	end
 end
 
---[[
-	 Configuration
---]]
-
-function Addon:SetUseOverrideUI(enable)
-	self.db.profile.useOverrideUI = enable and true or false
-	self:UpdateUseOverrideUI()
-end
-
-function Addon:UsingOverrideUI()
-	return self.db.profile.useOverrideUI
-end
-
-function Addon:UpdateUseOverrideUI()
-	if not _G.OverrideActionBar then return end
-
-	local usingOverrideUI = self:UsingOverrideUI()
-
-	self.OverrideController:SetAttribute('state-useoverrideui', usingOverrideUI)
-
-	local oab = _G['OverrideActionBar']
-	oab:ClearAllPoints()
-	if usingOverrideUI then
-		oab:SetPoint('BOTTOM')
-	else
-		oab:SetPoint('LEFT', oab:GetParent(), 'RIGHT', 100, 0)
-	end
-end
-
---[[ Keybound Events ]]--
-
+-- keybound events
 function Addon:LIBKEYBOUND_ENABLED()
 	for _,frame in self.Frame:GetAll() do
 		if frame.KEYBOUND_ENABLED then
@@ -190,9 +164,7 @@ function Addon:LIBKEYBOUND_DISABLED()
 	end
 end
 
-
---[[ Profile Functions ]]--
-
+-- addon profiles
 function Addon:SaveProfile(name)
 	local toCopy = self.db:GetCurrentProfile()
 	if name and name ~= toCopy then
@@ -271,9 +243,7 @@ function Addon:MatchProfile(name)
 	return match
 end
 
-
---[[ Profile Events ]]--
-
+-- profile events
 function Addon:OnNewProfile(msg, db, name)
 	self.isNewProfile = true
 	self:Printf(L.ProfileCreated, name)
@@ -350,7 +320,7 @@ function Addon:IsConfigAddonEnabled()
 end
 
 
---[[ Configuration Functions ]]--
+--[[ Configuration ]]--
 
 --moving
 Addon.locked = true
@@ -387,7 +357,7 @@ function Addon:IsBindingModeEnabled()
 	return LibStub('LibKeyBound-1.0'):IsShown()
 end
 
---scale
+-- scale
 function Addon:ScaleFrames(...)
 	local numArgs = select('#', ...)
 	local scale = tonumber(select(numArgs, ...))
@@ -399,7 +369,7 @@ function Addon:ScaleFrames(...)
 	end
 end
 
---opacity
+-- opacity
 function Addon:SetOpacityForFrames(...)
 	local numArgs = select('#', ...)
 	local alpha = tonumber(select(numArgs, ...))
@@ -411,7 +381,7 @@ function Addon:SetOpacityForFrames(...)
 	end
 end
 
---faded opacity
+-- faded opacity
 function Addon:SetFadeForFrames(...)
 	local numArgs = select('#', ...)
 	local alpha = tonumber(select(numArgs, ...))
@@ -423,7 +393,7 @@ function Addon:SetFadeForFrames(...)
 	end
 end
 
---columns
+-- columns
 function Addon:SetColumnsForFrames(...)
 	local numArgs = select('#', ...)
 	local cols = tonumber(select(numArgs, ...))
@@ -435,7 +405,7 @@ function Addon:SetColumnsForFrames(...)
 	end
 end
 
---spacing
+-- spacing
 function Addon:SetSpacingForFrame(...)
 	local numArgs = select('#', ...)
 	local spacing = tonumber(select(numArgs, ...))
@@ -447,7 +417,7 @@ function Addon:SetSpacingForFrame(...)
 	end
 end
 
---padding
+-- padding
 function Addon:SetPaddingForFrames(...)
 	local numArgs = select('#', ...)
 	local pW, pH = select(numArgs - 1, ...)
@@ -459,7 +429,7 @@ function Addon:SetPaddingForFrames(...)
 	end
 end
 
---visibility
+-- visibility
 function Addon:ShowFrames(...)
 	for i = 1, select('#', ...) do
 		self.Frame:ForFrame(select(i, ...), 'ShowFrame')
@@ -478,7 +448,7 @@ function Addon:ToggleFrames(...)
 	end
 end
 
---clickthrough
+-- clickthrough
 function Addon:SetClickThroughForFrames(...)
 	local numArgs = select('#', ...)
 	local enable = select(numArgs - 1, ...)
@@ -488,7 +458,7 @@ function Addon:SetClickThroughForFrames(...)
 	end
 end
 
---empty button display
+-- empty button display
 function Addon:ToggleGrid()
 	self:SetShowGrid(not self:ShowGrid())
 end
@@ -502,7 +472,7 @@ function Addon:ShowGrid()
 	return self.db.profile.showgrid
 end
 
---right click selfcast
+-- right click selfcast
 function Addon:SetRightClickUnit(unit)
 	self.db.profile.ab.rightClickUnit = unit
 	self.ActionBar:ForAll('UpdateRightClickUnit')
@@ -512,7 +482,7 @@ function Addon:GetRightClickUnit()
 	return self.db.profile.ab.rightClickUnit
 end
 
---binding text
+-- binding text
 function Addon:SetShowBindingText(enable)
 	self.db.profile.showBindingText = enable or false
 
@@ -531,7 +501,7 @@ function Addon:ShowBindingText()
 	return self.db.profile.showBindingText
 end
 
---macro text
+-- macro text
 function Addon:SetShowMacroText(enable)
 	self.db.profile.showMacroText = enable or false
 
@@ -550,7 +520,7 @@ function Addon:ShowMacroText()
 	return self.db.profile.showMacroText
 end
 
---border
+-- border
 function Addon:SetShowEquippedItemBorders(enable)
 	self.db.profile.showEquippedItemBorders = enable or false
 
@@ -569,8 +539,37 @@ function Addon:ShowEquippedItemBorders()
 	return self.db.profile.showEquippedItemBorders
 end
 
+-- override ui
+function Addon:SetUseOverrideUI(enable)
+	self.db.profile.useOverrideUI = enable and true or false
+	self:UpdateUseOverrideUI()
+end
 
---possess bar settings
+function Addon:UsingOverrideUI()
+	if self.ENABLE_CLASSIC_MODE then
+		return false
+	end
+
+	return self.db.profile.useOverrideUI
+end
+
+function Addon:UpdateUseOverrideUI()
+	if not _G.OverrideActionBar then return end
+
+	local usingOverrideUI = self:UsingOverrideUI()
+
+	self.OverrideController:SetAttribute('state-useoverrideui', usingOverrideUI)
+
+	local oab = _G['OverrideActionBar']
+	oab:ClearAllPoints()
+	if usingOverrideUI then
+		oab:SetPoint('BOTTOM')
+	else
+		oab:SetPoint('LEFT', oab:GetParent(), 'RIGHT', 100, 0)
+	end
+end
+
+-- override bar
 function Addon:SetOverrideBar(id)
 	local prevBar = self:GetOverrideBar()
 	self.db.profile.possessBar = id
@@ -584,9 +583,9 @@ function Addon:GetOverrideBar()
 	return self.Frame:Get(self.db.profile.possessBar)
 end
 
---action bar numbers
+-- action bar numbers
 function Addon:SetNumBars(count)
-	count = max(min(count, 120), 1) --sometimes, I do entertaininig things
+	count = max(min(count, 120), 1)
 
 	if count ~= self:NumBars() then
 		self.ActionBar:ForAll('Delete')
@@ -607,7 +606,7 @@ function Addon:NumBars()
 end
 
 
---tooltips
+-- tooltips
 function Addon:ShowTooltips()
 	return self.db.profile.showTooltips
 end
@@ -627,7 +626,7 @@ function Addon:ShowCombatTooltips()
 end
 
 
---minimap button
+-- minimap button
 function Addon:SetShowMinimap(enable)
 	self.db.profile.minimap.hide = not enable
 	self:GetModule('Launcher'):Update()
@@ -637,7 +636,7 @@ function Addon:ShowingMinimap()
 	return not self.db.profile.minimap.hide
 end
 
---sticky bars
+-- sticky bars
 function Addon:SetSticky(enable)
 	self.db.profile.sticky = enable or false
 
@@ -651,7 +650,7 @@ function Addon:Sticky()
 	return self.db.profile.sticky
 end
 
---linked opacity
+-- linked opacity
 function Addon:SetLinkedOpacity(enable)
 	self.db.profile.linkedOpacity = enable or false
 
@@ -663,6 +662,5 @@ function Addon:IsLinkedOpacityEnabled()
 	return self.db.profile.linkedOpacity
 end
 
---[[ exports ]]--
-
+-- exports
 _G[AddonName] = Addon
