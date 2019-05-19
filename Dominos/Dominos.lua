@@ -1,8 +1,4 @@
---[[
-	Dominos.lua
-		Driver for Dominos Frames
---]]
-
+-- Dominos.lua - The main driver for Dominos
 local AddonName, AddonTable = ...
 local Addon = LibStub('AceAddon-3.0'):NewAddon(AddonTable, AddonName, 'AceEvent-3.0', 'AceConsole-3.0')
 local L = LibStub('AceLocale-3.0'):GetLocale(AddonName)
@@ -11,26 +7,27 @@ local CONFIG_ADDON_NAME = AddonName .. '_Config'
 local ADDON_VERSION = GetAddOnMetadata(AddonName, 'Version')
 local CONFIG_VERSION = 1
 
-
---[[ Startup ]]--
+--[[ Global Flags ]]
 
 -- test to see if we're on 1.13
 -- while I would prefer feature flags, this is a good enough test for now
 Addon.ENABLE_CLASSIC_MODE = math.floor(select(4, GetBuildInfo() ) / 100) == 113
+
+--[[ Events ]]
 
 function Addon:OnInitialize()
 	-- setup db
 	self:CreateDatabase()
 	self:UpgradeDatabase()
 
-	--create a loader for the options menu
+	-- create a loader for the options menu
 	local f = CreateFrame('Frame', nil, _G.InterfaceOptionsFrame)
 	f:SetScript('OnShow', function()
 		f:SetScript('OnShow', nil)
 		LoadAddOn(CONFIG_ADDON_NAME)
 	end)
 
-	--keybound support
+	-- keybound support
 	local kb = LibStub('LibKeyBound-1.0')
 	kb.RegisterCallback(self, 'LIBKEYBOUND_ENABLED')
 	kb.RegisterCallback(self, 'LIBKEYBOUND_DISABLED')
@@ -41,7 +38,92 @@ function Addon:OnEnable()
 	self:Load()
 end
 
--- saved settings
+-- configuration events
+function Addon:OnUpgradeDatabase(oldVersion, newVersion)
+end
+
+function Addon:OnUpgradeAddon(oldVersion, newVersion)
+	self:Printf(L.Updated, ADDON_VERSION)
+end
+
+-- keybound events
+function Addon:LIBKEYBOUND_ENABLED()
+	for _,frame in self.Frame:GetAll() do
+		if frame.KEYBOUND_ENABLED then
+			frame:KEYBOUND_ENABLED()
+		end
+	end
+end
+
+function Addon:LIBKEYBOUND_DISABLED()
+	for _,frame in self.Frame:GetAll() do
+		if frame.KEYBOUND_DISABLED then
+			frame:KEYBOUND_DISABLED()
+		end
+	end
+end
+
+-- profile events
+function Addon:OnNewProfile(msg, db, name)
+	self.isNewProfile = true
+	self:Printf(L.ProfileCreated, name)
+end
+
+function Addon:OnProfileDeleted(msg, db, name)
+	self:Printf(L.ProfileDeleted, name)
+end
+
+function Addon:OnProfileChanged(msg, db, name)
+	self:Printf(L.ProfileLoaded, name)
+end
+
+function Addon:OnProfileCopied(msg, db, name)
+	self:Printf(L.ProfileCopied, name)
+end
+
+function Addon:OnProfileReset(msg, db)
+	self:Printf(L.ProfileReset, db:GetCurrentProfile())
+end
+
+-- module actions
+-- Load is called when the addon is first enabled, and also whenever a profile
+-- is loaded
+function Addon:Load()
+	local module_load = function(module)
+		if module.Load then
+			module:Load()
+		end
+	end
+
+	for _, module in self:IterateModules() do
+		local success, msg = pcall(module_load, module)
+		if not success then
+			self:Printf('Failed to load %s\n%s', module:GetName(), msg)
+		end
+	end
+
+	self.Frame:ForAll('Reanchor')
+	self:GetModule('ButtonThemer'):Reskin()
+end
+
+-- unload is called when we're switching profiles
+function Addon:Unload()
+	local module_unload = function(module)
+		if module.Unload then
+			module:Unload()
+		end
+	end
+
+	-- unload any module stuff
+	for _, module in self:IterateModules() do
+		local success, msg = pcall(module_unload, module)
+		if not success then
+			self:Printf('Failed to unload %s\n%s', module:GetName(), msg)
+		end
+	end
+end
+
+-- db actions
 function Addon:CreateDatabase()
 	local db = LibStub('AceDB-3.0'):New(AddonName .. 'DB', self:GetDatabaseDefaults(), UnitClass('player'))
 
@@ -57,6 +139,8 @@ end
 function Addon:GetDatabaseDefaults()
 	return {
 		global = {
+			-- configVersion = CONFIG_VERSION,
+			-- addonVersion = ADDON_VERSION
 		},
 
 		profile = {
@@ -99,72 +183,7 @@ function Addon:UpgradeDatabase()
 	end
 end
 
-function Addon:OnUpgradeDatabase(oldVersion, newVersion)
-end
-
-function Addon:OnUpgradeAddon(oldVersion, newVersion)
-	self:Printf(L.Updated, ADDON_VERSION)
-end
-
-function Addon:PrintVersion()
-	self:Print(ADDON_VERSION)
-end
-
-
---Load is called  when the addon is first enabled, and also whenever a profile is loaded
-function Addon:Load()
-	local module_load = function(module)
-		if module.Load then
-			module:Load()
-		end
-	end
-
-	for _, module in self:IterateModules() do
-		local success, msg = pcall(module_load, module)
-		if not success then
-			self:Printf('Failed to load %s\n%s', module:GetName(), msg)
-		end
-	end
-
-	self.Frame:ForAll('Reanchor')
-	self:GetModule('ButtonThemer'):Reskin()
-end
-
---unload is called when we're switching profiles
-function Addon:Unload()
-	local module_unload = function(module)
-		if module.Unload then
-			module:Unload()
-		end
-	end
-
-	--unload any module stuff
-	for _, module in self:IterateModules() do
-		local success, msg = pcall(module_unload, module)
-		if not success then
-			self:Printf('Failed to unload %s\n%s', module:GetName(), msg)
-		end
-	end
-end
-
--- keybound events
-function Addon:LIBKEYBOUND_ENABLED()
-	for _,frame in self.Frame:GetAll() do
-		if frame.KEYBOUND_ENABLED then
-			frame:KEYBOUND_ENABLED()
-		end
-	end
-end
-
-function Addon:LIBKEYBOUND_DISABLED()
-	for _,frame in self.Frame:GetAll() do
-		if frame.KEYBOUND_DISABLED then
-			frame:KEYBOUND_DISABLED()
-		end
-	end
-end
-
--- addon profiles
+-- profile actions
 function Addon:SaveProfile(name)
 	local toCopy = self.db:GetCurrentProfile()
 	if name and name ~= toCopy then
@@ -243,46 +262,7 @@ function Addon:MatchProfile(name)
 	return match
 end
 
--- profile events
-function Addon:OnNewProfile(msg, db, name)
-	self.isNewProfile = true
-	self:Printf(L.ProfileCreated, name)
-end
-
-function Addon:OnProfileDeleted(msg, db, name)
-	self:Printf(L.ProfileDeleted, name)
-end
-
-function Addon:OnProfileChanged(msg, db, name)
-	self:Printf(L.ProfileLoaded, name)
-end
-
-function Addon:OnProfileCopied(msg, db, name)
-	self:Printf(L.ProfileCopied, name)
-end
-
-function Addon:OnProfileReset(msg, db)
-	self:Printf(L.ProfileReset, db:GetCurrentProfile())
-end
-
-
---[[ Settings...Setting ]]--
-
-function Addon:SetFrameSets(id, sets)
-	id = tonumber(id) or id
-
-	self.db.profile.frames[id] = sets
-
-	return self.db.profile.frames[id]
-end
-
-function Addon:GetFrameSets(id)
-	return self.db.profile.frames[tonumber(id) or id]
-end
-
-
---[[ Options Menu Display ]]--
-
+-- options menu display
 function Addon:GetOptions()
 	local options = self.Options
 
@@ -319,10 +299,28 @@ function Addon:IsConfigAddonEnabled()
 	end
 end
 
+-- miscellanous actions
+function Addon:PrintVersion()
+	self:Print(ADDON_VERSION)
+end
+
 
 --[[ Configuration ]]--
 
---moving
+-- frame configuration
+function Addon:SetFrameSets(id, sets)
+	id = tonumber(id) or id
+
+	self.db.profile.frames[id] = sets
+
+	return self.db.profile.frames[id]
+end
+
+function Addon:GetFrameSets(id)
+	return self.db.profile.frames[tonumber(id) or id]
+end
+
+-- configuration mode
 Addon.locked = true
 
 function Addon:SetLock(enable)
@@ -348,6 +346,7 @@ function Addon:ToggleLockedFrames()
 	self:SetLock(not self:Locked())
 end
 
+-- binding mode
 function Addon:ToggleBindingMode()
 	self:SetLock(true)
 	LibStub('LibKeyBound-1.0'):Toggle()
@@ -554,22 +553,22 @@ function Addon:UsingOverrideUI()
 end
 
 function Addon:UpdateUseOverrideUI()
-	if not _G.OverrideActionBar then return end
+	local overrideBar = _G.OverrideActionBar
+	if not overrideBar then return end
 
 	local usingOverrideUI = self:UsingOverrideUI()
 
 	self.OverrideController:SetAttribute('state-useoverrideui', usingOverrideUI)
 
-	local oab = _G['OverrideActionBar']
-	oab:ClearAllPoints()
+	overrideBar:ClearAllPoints()
 	if usingOverrideUI then
-		oab:SetPoint('BOTTOM')
+		overrideBar:SetPoint('BOTTOM')
 	else
-		oab:SetPoint('LEFT', oab:GetParent(), 'RIGHT', 100, 0)
+		overrideBar:SetPoint('LEFT', overrideBar:GetParent(), 'RIGHT', 100, 0)
 	end
 end
 
--- override bar
+-- override action bar selection
 function Addon:SetOverrideBar(id)
 	local prevBar = self:GetOverrideBar()
 	self.db.profile.possessBar = id
@@ -583,7 +582,7 @@ function Addon:GetOverrideBar()
 	return self.Frame:Get(self.db.profile.possessBar)
 end
 
--- action bar numbers
+-- action bar counts
 function Addon:SetNumBars(count)
 	count = max(min(count, 120), 1)
 
@@ -605,7 +604,6 @@ function Addon:NumBars()
 	return self.db.profile.ab.count
 end
 
-
 -- tooltips
 function Addon:ShowTooltips()
 	return self.db.profile.showTooltips
@@ -624,7 +622,6 @@ end
 function Addon:ShowCombatTooltips()
 	return self.db.profile.showTooltipsCombat
 end
-
 
 -- minimap button
 function Addon:SetShowMinimap(enable)
