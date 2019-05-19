@@ -26,7 +26,6 @@ bars\bagBar.lua
 bars\menuBar.lua
 bars\extraActionBar.lua
 bars\vehicleBar.lua
-## bars\castBar.lua
 plugins\multiActionBarFixer.lua
 plugins\slashCommands.lua
 plugins\launcher.lua
