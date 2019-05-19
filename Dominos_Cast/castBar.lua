@@ -13,8 +13,8 @@ local GetSpellInfo = _G.GetSpellInfo
 local GetTime = _G.GetTime
 local GetNetStats = _G.GetNetStats
 
-local UnitCastingInfo = _G.UnitCastingInfo
-local UnitChannelInfo = _G.UnitChannelInfo
+local UnitCastingInfo = _G.UnitCastingInfo or _G.CastingInfo
+local UnitChannelInfo = _G.UnitChannelInfo or _G.ChannelInfo
 
 local IsHarmfulSpell = _G.IsHarmfulSpell
 local IsHelpfulSpell = _G.IsHelpfulSpell
