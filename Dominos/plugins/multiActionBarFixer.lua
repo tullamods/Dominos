@@ -1,4 +1,4 @@
-if not _G.ACTION_BUTTON_SHOW_GRID_REASON_CVAR then return end
+local _, Addon = ...
 
 --[[
 	This code works around empty action buttons appearing on the multi action
@@ -10,41 +10,117 @@ if not _G.ACTION_BUTTON_SHOW_GRID_REASON_CVAR then return end
 --]]
 
 local MultiBarFixer = CreateFrame("Frame", nil, nil, "SecureHandlerBaseTemplate")
-
 MultiBarFixer:Hide()
 
--- adapted from http://lua-users.org/wiki/BitUtils
-MultiBarFixer:SetAttribute("ClearFlags", [[
-	local set = ...
+if Addon.ENABLE_CLASSIC_MODE then
+	local bars = {
+		"MultiBarBottomLeft",
+		"MultiBarBottomRight",
+		"MultiBarLeft",
+		"MultiBarRight"
+	}
 
-	for i = 2, select("#", ...) do
-		local flag = select(i, ...)
+	SpellBookFrame:HookScript("OnShow", function() MultiBarFixer:UpdateGrid() end)
+	SpellBookFrame:HookScript("OnHide", function() MultiBarFixer:UpdateGrid() end)
 
-		if set % (2 * flag) >= flag then
-			set = set - flag
+	MultiBarFixer:SetScript("OnEvent", function(self, event, ...)
+		local f = self[event]
+		if type(f) == "function" then
+			f(self, event, ...)
+		end
+	end)
+
+	MultiBarFixer:RegisterEvent("PLAYER_ENTERING_WORLD")
+	MultiBarFixer:RegisterEvent("CVAR_UPDATE")
+	MultiBarFixer:RegisterEvent("ACTIONBAR_SHOWGRID")
+	MultiBarFixer:RegisterEvent("ACTIONBAR_HIDEGRID")
+	MultiBarFixer:RegisterEvent("PLAYER_REGEN_ENABLED")
+	MultiBarFixer.showgrid = 0
+
+	function MultiBarFixer:CVAR_UPDATE(event, key, value)
+		if key == "LOCK_ACTIONBAR_TEXT" then
+			self:UpdateGrid()
 		end
 	end
 
-	return set
-]])
+	function MultiBarFixer:PLAYER_ENTERING_WORLD()
+		self:UpdateGrid()
+	end
 
--- clears the given show grid reasons
-local OnAttributeChanged = ([[
-	if name == "showgrid" and value > 0 then
-		value = control:RunAttribute("ClearFlags", value, %d, %d)
+	function MultiBarFixer:ACTIONBAR_SHOWGRID()
+		self.showgrid = self.showgrid + 1
+		self:UpdateGrid()
+	end
 
-		if self:GetAttribute("showgrid") ~= value then
-			self:SetAttribute("showgrid", value)
+	function MultiBarFixer:ACTIONBAR_HIDEGRID()
+		self.showgrid = self.showgrid - 1
+		self:UpdateGrid()
+	end
+
+	function MultiBarFixer:UpdateGrid()
+		if InCombatLockdown() then return end
+
+		local showgrid = self.showgrid
+		if Addon:ShowGrid() then
+			showgrid = showgrid + 1
+		end
+
+		if Addon:IsBindingModeEnabled() then
+			showgrid = showgrid + 1
+		end
+
+		for _, barName in pairs(bars) do
+			for i = 1, NUM_MULTIBAR_BUTTONS do
+				local buttonName = ("%sButton%d"):format(barName, i)
+				local button = _G[buttonName]
+				if button then
+					button:SetAttribute("showgrid", showgrid)
+					button:UpdateGrid()
+				end
+			end
 		end
 	end
-]]):format(ACTION_BUTTON_SHOW_GRID_REASON_CVAR, ACTION_BUTTON_SHOW_GRID_REASON_SPELLBOOK)
+else
+	-- adapted from http://lua-users.org/wiki/BitUtils
+	MultiBarFixer:SetAttribute(
+		"ClearFlags",
+		[[
+		local set = ...
 
--- apply to every multi bar action button
-for _, barName in pairs{'MultiBarBottomLeft', 'MultiBarBottomRight', 'MultiBarLeft', 'MultiBarRight'} do
-	for i = 1, NUM_MULTIBAR_BUTTONS do
-		local buttonName = ('%sButton%d'):format(barName, i)
-		local button = _G[buttonName]
+		for i = 2, select("#", ...) do
+			local flag = select(i, ...)
 
-		MultiBarFixer:WrapScript(button, "OnAttributeChanged", OnAttributeChanged)
+			if set % (2 * flag) >= flag then
+				set = set - flag
+			end
+		end
+
+		return set
+	]]
+	)
+
+	-- clears the given show grid reasons
+	local OnAttributeChanged =
+		([[
+		if name == "showgrid" and value > 0 then
+			value = control:RunAttribute("ClearFlags", value, %d, %d)
+
+			if self:GetAttribute("showgrid") ~= value then
+				self:SetAttribute("showgrid", value)
+			end
+		end
+	]]):format(
+		ACTION_BUTTON_SHOW_GRID_REASON_CVAR,
+		ACTION_BUTTON_SHOW_GRID_REASON_SPELLBOOK
+	)
+
+	-- apply to every multi bar action button
+	for _, barName in pairs {"MultiBarBottomLeft", "MultiBarBottomRight", "MultiBarLeft", "MultiBarRight"} do
+		for i = 1, NUM_MULTIBAR_BUTTONS do
+			local buttonName = ("%sButton%d"):format(barName, i)
+			local button = _G[buttonName]
+
+			MultiBarFixer:WrapScript(button, "OnAttributeChanged", OnAttributeChanged)
+		end
 	end
 end
