@@ -1,7 +1,4 @@
---[[
-    This handles the creation and configuration of the minimap/DataBroker button
---]]
-
+-- lancher.lua - The Dominos minimap button
 local AddonName = ...
 local Addon = _G[AddonName]
 local Launcher = Addon:NewModule('Launcher')
