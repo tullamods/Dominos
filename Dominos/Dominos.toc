@@ -3,7 +3,7 @@
 ## Notes: A main actionbar replacement
 ## Author: Tuller
 ## Version: 8.2.2
-## X-Build: Retail
+## X-Build: Classic
 ## SavedVariables: DominosDB
 ## OptionalDeps: Ace3, LibKeyBound-1.0, LibSharedMedia-3.0, Masque, FlyPaper
 embeds.xml
