@@ -3,15 +3,10 @@ local AddonName, AddonTable = ...
 local Addon = LibStub('AceAddon-3.0'):NewAddon(AddonTable, AddonName, 'AceEvent-3.0', 'AceConsole-3.0')
 local L = LibStub('AceLocale-3.0'):GetLocale(AddonName)
 
-local CONFIG_ADDON_NAME = AddonName .. '_Config'
 local ADDON_VERSION = GetAddOnMetadata(AddonName, 'Version')
+local ADDON_BUILD = GetAddOnMetadata(AddonName, 'X-Build')
+local CONFIG_ADDON_NAME = AddonName .. '_Config'
 local CONFIG_VERSION = 1
-
---[[ Global Flags ]]
-
--- test to see if we're on 1.13
--- while I would prefer feature flags, this is a good enough test for now
-Addon.ENABLE_CLASSIC_MODE = math.floor(select(4, GetBuildInfo() ) / 100) == 113
 
 --[[ Events ]]
 
@@ -43,7 +38,7 @@ function Addon:OnUpgradeDatabase(oldVersion, newVersion)
 end
 
 function Addon:OnUpgradeAddon(oldVersion, newVersion)
-	self:Printf(L.Updated, ADDON_VERSION)
+	self:Printf(L.Updated, ADDON_VERSION, ADDON_BUILD)
 end
 
 -- keybound events
@@ -153,7 +148,7 @@ function Addon:GetDatabaseDefaults()
 			showEquippedItemBorders = true,
 			showTooltips = true,
 			showTooltipsCombat = true,
-			useOverrideUI = not self.ENABLE_CLASSIC_MODE,
+			useOverrideUI = not self:IsBuild("classic"),
 
 			minimap = {
 				hide = false,
@@ -301,7 +296,7 @@ end
 
 -- miscellanous actions
 function Addon:PrintVersion()
-	self:Print(ADDON_VERSION)
+	self:Printf("%s-%s", ADDON_VERSION, ADDON_BUILD)
 end
 
 
@@ -545,11 +540,7 @@ function Addon:SetUseOverrideUI(enable)
 end
 
 function Addon:UsingOverrideUI()
-	if self.ENABLE_CLASSIC_MODE then
-		return false
-	end
-
-	return self.db.profile.useOverrideUI
+	return self.db.profile.useOverrideUI and not self:IsBuild("classic")
 end
 
 function Addon:UpdateUseOverrideUI()
@@ -657,6 +648,23 @@ end
 
 function Addon:IsLinkedOpacityEnabled()
 	return self.db.profile.linkedOpacity
+end
+
+-- build test
+function Addon:GetBuild()
+	return ADDON_BUILD
+end
+
+function Addon:IsBuild(...)
+	local build = ADDON_BUILD:upper()
+
+	for i = 1, select('#', ...) do
+		if build == select(i, ...):upper() then
+			return true
+		end
+	end
+
+	return false
 end
 
 -- exports

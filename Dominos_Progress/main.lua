@@ -8,7 +8,7 @@ function ProgressBarModule:OnInitialize()
 end
 
 function ProgressBarModule:Load()
-	if Dominos.ENABLE_CLASSIC_MODE then
+	if Dominos:IsBuild("classic") then
 		self.bars = {
 			Addon.ExperienceBar:New("exp", {"xp", "reputation"})
 		}

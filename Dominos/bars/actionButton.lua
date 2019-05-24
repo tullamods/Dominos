@@ -153,7 +153,7 @@ end
 hooksecurefunc('ActionButton_UpdateHotkeys', ActionButton.UpdateHotkey)
 
 --button visibility
-if Addon.ENABLE_CLASSIC_MODE then
+if Addon:IsBuild("classic") then
 	function ActionButton:ShowGrid()
 		if InCombatLockdown() then return end
 
