@@ -23,7 +23,7 @@ end
 function Launcher:CreateDataBrokerObject()
 	local L = LibStub('AceLocale-3.0'):GetLocale(AddonName)
 	local iconPath
-	if Addon.ENABLE_CLASSIC_MODE then
+	if Addon:IsBuild("classic") then
 		iconPath = 133841 -- Interface\Icons\INV_Misc_Drum_01
 	else
 		iconPath = ([[Interface\Addons\%s\%s]]):format(AddonName, AddonName)
