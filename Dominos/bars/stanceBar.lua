@@ -4,10 +4,14 @@ local _, Addon = ...
 local playerClass = select(2, UnitClass('player'))
 
 -- don't bother loading the module if the player is currently playing something without a stance
-if not (playerClass == 'DRUID' or playerClass == 'ROGUE' or playerClass == 'PRIEST' or (playerClass == 'WARRIOR' and Addon.ENABLE_CLASSIC_MODE)) then
+if not (
+	playerClass == 'DRUID'
+	or playerClass == 'ROGUE'
+	or playerClass == 'PRIEST'
+	or (Addon:IsBuild("classic") and (playerClass == 'WARRIOR' or playerClass == 'PALADIN'))
+) then
 	return
 end
-
 
 local KeyBound = LibStub('LibKeyBound-1.0')
 
