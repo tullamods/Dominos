@@ -12,7 +12,7 @@ local _, Addon = ...
 local MultiBarFixer = CreateFrame("Frame", nil, nil, "SecureHandlerBaseTemplate")
 MultiBarFixer:Hide()
 
-if Addon.ENABLE_CLASSIC_MODE then
+if Addon:IsBuild("classic") then
 	local bars = {
 		"MultiBarBottomLeft",
 		"MultiBarBottomRight",

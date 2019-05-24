@@ -87,7 +87,7 @@ function VehicleBarController:Load()
 	self:RegisterEvent('UPDATE_BONUS_ACTIONBAR', 'UpdateOnTaxi')
 	self:RegisterEvent('PLAYER_REGEN_ENABLED', 'UpdateOnTaxi')
 
-	if not Addon.ENABLE_CLASSIC_MODE then
+	if Addon:IsBuild("retail") then
 		self:RegisterEvent('VEHICLE_UPDATE', 'UpdateOnTaxi')
 		self:RegisterEvent('UPDATE_MULTI_CAST_ACTIONBAR', 'UpdateOnTaxi')
 		self:RegisterEvent('UNIT_ENTERED_VEHICLE', 'UpdateOnTaxi')

@@ -63,7 +63,7 @@ if mainBar then
     mainBar:UnregisterEvent("UI_SCALE_CHANGED")
 end
 
-if Addon.ENABLE_CLASSIC_MODE then
+if Addon:IsBuild("classic") then
     hideFrames(
         'MainMenuExpBar',
         'ReputationWatchBar',
