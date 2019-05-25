@@ -29,7 +29,7 @@ function Launcher:CreateDataBrokerObject()
 
 		icon = iconPath,
 
-		OnClick = function(self, button)
+		OnClick = function(_, button)
 			if button == 'LeftButton' then
 				if IsShiftKeyDown() then
 					Addon:ToggleBindingMode()
