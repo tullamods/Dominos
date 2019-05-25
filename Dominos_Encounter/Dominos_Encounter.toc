@@ -1,0 +1,7 @@
+## Interface: 80200
+## Title: Dominos Encounter
+## Notes: Makes the PlayerPowerBarAlt movable
+## Author: Tuller (with help from Goranaws)
+## Dependencies: Dominos
+bar.lua
+controller.lua
