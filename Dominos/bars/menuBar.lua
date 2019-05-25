@@ -19,22 +19,7 @@ local MenuBar = Addon:CreateClass('Frame', Addon.ButtonBar); Addon.MenuBar = Men
 
 --[[ local constants ]]--
 
-local MICRO_BUTTONS = {
-	"CharacterMicroButton",
-	"SpellbookMicroButton",
-	"TalentMicroButton",
-	"AchievementMicroButton",
-	"QuestLogMicroButton",
-	"SocialMicroButton",
-	"GuildMicroButton",
-	"WorldMapMicroButton",
-	"LFDMicroButton",
-	"EJMicroButton",
-	"CollectionsMicroButton",
-	"StoreMicroButton",
-	"MainMenuMicroButton",
-	"HelpMicroButton"
-}
+local MICRO_BUTTONS = _G.MICRO_BUTTONS
 
 local MICRO_BUTTON_NAMES = {
 	['CharacterMicroButton'] = _G['CHARACTER_BUTTON'],
@@ -47,7 +32,8 @@ local MICRO_BUTTON_NAMES = {
 	['EJMicroButton'] = _G['ENCOUNTER_JOURNAL'],
 	['MainMenuMicroButton'] = _G['MAINMENU_BUTTON'],
 	['StoreMicroButton'] = _G['BLIZZARD_STORE'],
-	['CollectionsMicroButton'] = _G['COLLECTIONS']
+	['CollectionsMicroButton'] = _G['COLLECTIONS'],
+	['HelpMicroButton'] = _G['HELP_BUTTON']
 }
 
 --[[ Menu Bar ]]--
