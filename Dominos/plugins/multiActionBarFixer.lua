@@ -24,10 +24,7 @@ if Addon:IsBuild("classic") then
 	SpellBookFrame:HookScript("OnHide", function() MultiBarFixer:UpdateGrid() end)
 
 	MultiBarFixer:SetScript("OnEvent", function(self, event, ...)
-		local f = self[event]
-		if type(f) == "function" then
-			f(self, event, ...)
-		end
+		self[event](self, event, ...)
 	end)
 
 	MultiBarFixer:RegisterEvent("PLAYER_ENTERING_WORLD")
@@ -60,14 +57,7 @@ if Addon:IsBuild("classic") then
 	function MultiBarFixer:UpdateGrid()
 		if InCombatLockdown() then return end
 
-		local showgrid = self.showgrid
-		if Addon:ShowGrid() then
-			showgrid = showgrid + 1
-		end
-
-		if Addon:IsBindingModeEnabled() then
-			showgrid = showgrid + 1
-		end
+		local showgrid = self:GetShowgridState()
 
 		for _, barName in pairs(bars) do
 			for i = 1, NUM_MULTIBAR_BUTTONS do
@@ -75,16 +65,28 @@ if Addon:IsBuild("classic") then
 				local button = _G[buttonName]
 				if button then
 					button:SetAttribute("showgrid", showgrid)
-					button:UpdateGrid()
+					Addon.ActionButton.UpdateGrid(button)
 				end
 			end
 		end
 	end
+
+	function MultiBarFixer:GetShowgridState()
+		local result = self.showgrid or 0
+
+		if Addon:ShowGrid() then
+			result = result + 1
+		end
+
+		if Addon:IsBindingModeEnabled() then
+			result = result + 1
+		end
+
+		return result
+	end
 else
 	-- adapted from http://lua-users.org/wiki/BitUtils
-	MultiBarFixer:SetAttribute(
-		"ClearFlags",
-		[[
+	MultiBarFixer:SetAttribute("ClearFlags", [[
 		local set = ...
 
 		for i = 2, select("#", ...) do
@@ -96,12 +98,10 @@ else
 		end
 
 		return set
-	]]
-	)
+	]])
 
 	-- clears the given show grid reasons
-	local OnAttributeChanged =
-		([[
+	local OnAttributeChanged = ([[
 		if name == "showgrid" and value > 0 then
 			value = control:RunAttribute("ClearFlags", value, %d, %d)
 
@@ -115,7 +115,7 @@ else
 	)
 
 	-- apply to every multi bar action button
-	for _, barName in pairs {"MultiBarBottomLeft", "MultiBarBottomRight", "MultiBarLeft", "MultiBarRight"} do
+	for _, barName in pairs{"MultiBarBottomLeft", "MultiBarBottomRight", "MultiBarLeft", "MultiBarRight"} do
 		for i = 1, NUM_MULTIBAR_BUTTONS do
 			local buttonName = ("%sButton%d"):format(barName, i)
 			local button = _G[buttonName]
