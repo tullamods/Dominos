@@ -3,7 +3,7 @@
 		A thingy for mapping stateIds to macro states
 --]]
 
-local AddonName, Addon = ...
+local _, Addon = ...
 local states = {}
 
 local getStateIterator = function(type, i)
@@ -90,7 +90,10 @@ do
 		addState("class", "prowl", "[bonusbar:1,stealth]", GetSpellInfo(5215))
 		addState("class", "cat", "[bonusbar:1]", GetSpellInfo(768))
 	elseif class == "ROGUE" then
-		addState("class", "shadowdance", "[form:2]", GetSpellInfo(185313))
+		if GetSpellInfo(185313) then
+			addState("class", "shadowdance", "[form:2]", GetSpellInfo(185313))
+		end
+
 		addState("class", "stealth", "[bonusbar:1]", GetSpellInfo(1784))
 	elseif class == 'WARRIOR' and Addon:IsBuild("classic") then
 		addState("class", "battle", "[bonusbar:1]", GetSpellInfo(2457))
