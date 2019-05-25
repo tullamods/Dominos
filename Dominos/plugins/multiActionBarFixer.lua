@@ -31,7 +31,6 @@ if Addon:IsBuild("classic") then
 	MultiBarFixer:RegisterEvent("CVAR_UPDATE")
 	MultiBarFixer:RegisterEvent("ACTIONBAR_SHOWGRID")
 	MultiBarFixer:RegisterEvent("ACTIONBAR_HIDEGRID")
-	MultiBarFixer:RegisterEvent("PLAYER_REGEN_ENABLED")
 	MultiBarFixer.showgrid = 0
 
 	function MultiBarFixer:CVAR_UPDATE(event, key, value)
