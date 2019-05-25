@@ -1,4 +1,4 @@
-## Interface: 11302
+## Interface: 80200
 ## Title: Dominos
 ## Notes: A main actionbar replacement
 ## Author: Tuller
