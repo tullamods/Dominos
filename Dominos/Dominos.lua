@@ -4,7 +4,7 @@ local Addon = LibStub('AceAddon-3.0'):NewAddon(AddonTable, AddonName, 'AceEvent-
 local L = LibStub('AceLocale-3.0'):GetLocale(AddonName)
 
 local ADDON_VERSION = GetAddOnMetadata(AddonName, 'Version')
-local ADDON_BUILD = GetAddOnMetadata(AddonName, 'X-Build')
+local ADDON_BUILD = (select(4, GetBuildInfo())) == 11302 and "Classic" or "Retail"
 local CONFIG_ADDON_NAME = AddonName .. '_Config'
 local CONFIG_VERSION = 1
 
