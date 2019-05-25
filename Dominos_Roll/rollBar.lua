@@ -64,9 +64,12 @@ do
 
 	function ContainerFrameModule:Load()
 		self.frames = {
-			ContainerFrame:New('roll', _G.GroupLootContainer, L.TipRollBar),
-			ContainerFrame:New('alerts', _G.AlertFrame),
+			ContainerFrame:New('roll', _G.GroupLootContainer, L.TipRollBar)
 		}
+
+		if Dominos:IsBuild("retail") then
+			tinsert(self.frames, ContainerFrame:New('alerts', _G.AlertFrame))
+		end
 	end
 
 	function ContainerFrameModule:Unload()
