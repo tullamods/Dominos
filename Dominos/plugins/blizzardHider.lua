@@ -13,6 +13,7 @@ local function hideFrames(...)
 
         if frame then
             frame:SetParent(HiddenFrame)
+            frame:ClearAllPoints()
             frame.ignoreFramePositionManager = true
         else
             Addon:Print('Unknown Frame', frameName)
