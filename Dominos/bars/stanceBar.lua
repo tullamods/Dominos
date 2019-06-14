@@ -7,7 +7,7 @@ local playerClass = select(2, UnitClass('player'))
 if not (
 	playerClass == 'DRUID'
 	or playerClass == 'ROGUE'
-	or playerClass == 'PRIEST'
+	or (not Addon:IsBuild("classic") and playerClass == 'PRIEST')
 	or (Addon:IsBuild("classic") and (playerClass == 'WARRIOR' or playerClass == 'PALADIN'))
 ) then
 	return

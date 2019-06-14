@@ -100,7 +100,7 @@ do
 		addState("class", "defensive", "[bonusbar:2]", GetSpellInfo(71))
 		addState("class", "berserker", "[bonusbar:3]", GetSpellInfo(2458))
 	elseif class == 'PRIEST' and Addon:IsBuild("classic") then
-		addState("class", "shadowform", "[bonusbar:1]", GetSpellInfo(16592))
+		addState("class", "shadowform", "[form:1]", GetSpellInfo(16592))
 	end
 end
 
