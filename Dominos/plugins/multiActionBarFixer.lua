@@ -59,7 +59,7 @@ if Addon:IsBuild("classic") then
 		local showgrid = self:GetShowgridState()
 
 		for _, barName in pairs(bars) do
-			for i = 1, NUM_MULTIBAR_BUTTONS do
+			for i = 1, 12 do
 				local buttonName = ("%sButton%d"):format(barName, i)
 				local button = _G[buttonName]
 				if button then
