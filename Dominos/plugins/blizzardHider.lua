@@ -4,19 +4,38 @@
 --]]
 
 local _, Addon =...
-local HiddenFrame = CreateFrame('Frame', nil, UIParent); HiddenFrame:Hide()
+local HiddenFrame = CreateFrame('Frame', nil, UIParent)
+HiddenFrame:SetAllPoints(UIParent)
+HiddenFrame:Hide()
 
-local function hideFrames(...)
-    for i = 1, select("#", ...) do
-        local frameName = select(i, ...)
-        local frame = _G[frameName]
+local hideFrames
+if Addon:IsBuild("classic") then
+    function hideFrames(...)
+        for i = 1, select("#", ...) do
+            local frameName = select(i, ...)
+            local frame = _G[frameName]
 
-        if frame then
-            frame:SetParent(HiddenFrame)
-            frame:ClearAllPoints()
-            frame.ignoreFramePositionManager = true
-        else
-            Addon:Print('Unknown Frame', frameName)
+            if frame then
+                frame:SetParent(HiddenFrame)
+                frame.ignoreFramePositionManager = true
+            else
+                Addon:Print('Unknown Frame', frameName)
+            end
+        end
+    end
+else
+    function hideFrames(...)
+        for i = 1, select("#", ...) do
+            local frameName = select(i, ...)
+            local frame = _G[frameName]
+
+            if frame then
+                frame:ClearAllPoints()
+                frame:SetParent(HiddenFrame)
+                frame.ignoreFramePositionManager = true
+            else
+                Addon:Print('Unknown Frame', frameName)
+            end
         end
     end
 end
@@ -53,7 +72,6 @@ local function disableSlideOutAnimations(...)
     end
 end
 
--- disable but don't reparent and hide the
 local mainBar = MainMenuBar
 if mainBar then
     mainBar:EnableMouse(false)
@@ -74,10 +92,7 @@ if Addon:IsBuild("classic") then
         'MultiBarRight',
         'MainMenuBarArtFrame',
         'StanceBarFrame',
-        -- 'PossessBarFrame',
         'PetActionBarFrame',
-        -- 'MultiCastActionBarFrame',
-        -- 'MicroButtonAndBagsBar',
         'MainMenuBarPerformanceBar'
     )
 
@@ -87,8 +102,6 @@ if Addon:IsBuild("classic") then
     )
 else
     hideFrames(
-        -- 'MainMenuExpBar',
-        -- 'ReputationWatchBar',
         'MultiBarBottomLeft',
         'MultiBarBottomRight',
         'MultiBarLeft',
