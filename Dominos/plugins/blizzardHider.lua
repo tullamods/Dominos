@@ -105,16 +105,15 @@ if VerticalMultiBarsContainer then
         local showLeft = SHOW_MULTI_ACTIONBAR_3
         local showRight = SHOW_MULTI_ACTIONBAR_4
         local stack = GetCVarBool("multiBarRightVerticalLayout")
-        local scale =  MultiBarRight:GetScale()
 
         if showLeft then
             width = width + VERTICAL_MULTI_BAR_WIDTH
         end
 
         if showRight and not stack then
-            width = width + VERTICAL_MULTI_BAR_WIDTH + VERTICAL_MULTI_BAR_VERTICAL_SPACING
+            width = width + VERTICAL_MULTI_BAR_WIDTH
         end
 
-        VerticalMultiBarsContainer:SetWidth(width * scale)
+        VerticalMultiBarsContainer:SetWidth(width)
     end)
 end
