@@ -8,7 +8,7 @@
 	<Include file="libs\AceDB-3.0\AceDB-3.0.xml"/>
 	<Include file="libs\LibKeyBound-1.0\lib.xml"/>
 	<Script file="libs\LibDataBroker-1.1\LibDataBroker-1.1.lua"/>
-	<Include file="libs\LibDBIcon-1.0\lib.xml"/>
+	<Script file="libs\LibDBIcon-1.0\LibDBIcon-1.0.lua"/>
 	<Include file="libs\LibSharedMedia-3.0\lib.xml"/>
 	<Script file="libs\LibFlyPaper-1.0\LibFlyPaper-1.0.lua"/>
 </Ui>
