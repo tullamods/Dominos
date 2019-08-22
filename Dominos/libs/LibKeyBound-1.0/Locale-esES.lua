@@ -1,4 +1,4 @@
-﻿--[[
+--[[
 	LibKeyBound-1.0 localization file
 		Spanish by StiviS
 --]]

@@ -1,4 +1,4 @@
-﻿--[[
+--[[
 	KeyBound localization file
 		Russian by ?
 --]]

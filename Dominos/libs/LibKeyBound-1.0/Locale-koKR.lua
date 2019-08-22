@@ -1,4 +1,4 @@
-﻿--[[
+--[[
 	KeyBound localization file
 		Korean by damjau
 --]]
