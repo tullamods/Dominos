@@ -29,7 +29,9 @@ bars\petBar.lua
 bars\stanceBar.lua
 bars\bagBar.lua
 bars\menuBar.lua
+#@retail@
 bars\extraActionBar.lua
+#@end-retail@
 bars\vehicleBar.lua
 plugins\multiActionBarFixer.lua
 plugins\slashCommands.lua
