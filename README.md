@@ -38,4 +38,4 @@
 
 ## [You can find help in the wiki](http://code.google.com/p/tullamods/wiki/Dominos)
 
-## [And source code on GitHub](http://github.com/Tuller/Dominos)
+## [And source code on GitHub](http://github.com/tullamods/Dominos)
