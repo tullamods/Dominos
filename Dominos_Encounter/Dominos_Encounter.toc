@@ -3,5 +3,8 @@
 ## Notes: Makes the PlayerPowerBarAlt movable
 ## Author: Tuller (with help from Goranaws)
 ## Dependencies: Dominos
+#@non-retail@
+## DefaultState: disabled
+#@end-non-retail@
 bar.lua
 controller.lua
