@@ -19,7 +19,12 @@ end
 
 function Config:Upgrade(db, oldVersion, newVersion)
 	if oldVersion == 1 then
-		for _, charSettings in pairs(db.sv.char) do
+		local charTable = db and db.sv and db.sv.char
+		if type(charTable) ~= "table" then
+			return
+		end
+
+		for _, charSettings in pairs(charTable) do
 			local bars = charSettings.bars
 			if type(bars) == "table" then
 				for barId, barSettings in pairs(bars) do
