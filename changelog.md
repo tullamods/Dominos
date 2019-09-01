@@ -1,3 +1,9 @@
+# Dominos Changelog
+
+8.2.16
+
+* Fixed cases where the progress bar would appear blank
+
 8.2.15
 
 * Automated release
