@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+8.2.17
+
+* Add migration bits for the config change introduced in 8.2.16
+
 8.2.16
 
 * Fixed cases where the progress bar would appear blank
