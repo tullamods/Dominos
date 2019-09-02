@@ -42,6 +42,14 @@ if Masque then
         end
     end
 
+    function ButtonThemer:Unregister(button, groupName)
+        local group = Masque:Group(AddonName, groupName)
+
+        group:RemoveButton(button)
+
+        theme(button)
+    end
+
     -- handle differences in the masque API
     if MasqueVersion < 80100 then
         -- in older verisons, fallback to the dominos theme when disabled
@@ -79,7 +87,7 @@ if Masque then
                 Author = "Tuller, StormFX",
                 -- Skin
                 Template = "Default",
-                Disable = true, -- Hides the skin in the GUI.
+                --Disable = true, -- Hides the skin in the GUI.
                 Icon = {
                     TexCoords = {0.06, 0.94, 0.06, 0.94},
                     DrawLayer = "BACKGROUND",
@@ -106,24 +114,33 @@ if Masque then
                     OffsetX = 0,
                     OffsetY = 0,
                     UseStates = true,
-                    Item = {
-                        Texture = "Interface\\Buttons\\UI-Quickslot2",
-                        -- TexCoords = {0, 1, 0, 1},
-                        Color = {1, 1, 1, 1},
-                        -- EmptyTexture = [[Interface\Buttons\UI-Quickslot2]],
-                        -- EmptyCoords = {0, 1, 0, 1},
-                        -- EmptyColor = {1, 1, 1, 0.5},
-                        BlendMode = "BLEND",
-                        DrawLayer = "ARTWORK",
-                        DrawLevel = 0,
-                        Width = 62,
-                        Height = 62,
-                        Point = "CENTER",
-                        OffsetX = 0,
-                        OffsetY = -1,
-                        UseStates = true
-                    }
-                }
+                },
+                IconBorder = {
+                    Texture = [[Interface\Common\WhiteIconFrame]],
+                    RelicTexture = [[Interface\Artifacts\RelicIconFrame]],
+                    -- TexCoords = {0, 1, 0, 1},
+                    -- Color = {1, 1, 1, 1},
+                    BlendMode = "BLEND",
+                    DrawLayer = "OVERLAY",
+                    DrawLevel = 0,
+                    Width = 37,
+                    Height = 37,
+                    Point = "CENTER",
+                    OffsetX = 0,
+                    OffsetY = 0,
+                },
+                IconOverlay = {
+                    Atlas = "AzeriteIconFrame",
+                    -- Color = {1, 1, 1, 1},
+                    BlendMode = "BLEND",
+                    DrawLayer = "OVERLAY",
+                    DrawLevel = 1,
+                    Width = 37,
+                    Height = 37,
+                    Point = "CENTER",
+                    OffsetX = 0,
+                    OffsetY = 0,
+                },
             },
             true
         )
@@ -144,6 +161,9 @@ if Masque then
 else
     function ButtonThemer:Register(button)
         theme(button)
+    end
+
+    function ButtonThemer:Unregister(button)
     end
 
     function ButtonThemer:Reskin() end
