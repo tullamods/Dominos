@@ -5,7 +5,7 @@ local round = _G.Round
 local ActionButtonWidth = round(_G["ActionButton1"]:GetWidth())
 
 local function theme(button)
-    if not Addon.db.profile.applyButtonTheme then
+    if not Addon:ThemeButtons() then
         return
     end
 
@@ -166,5 +166,6 @@ else
     function ButtonThemer:Unregister(button)
     end
 
-    function ButtonThemer:Reskin() end
+    function ButtonThemer:Reskin()
+    end
 end
