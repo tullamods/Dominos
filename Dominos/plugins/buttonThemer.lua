@@ -1,34 +1,27 @@
-local AddonName = ...
-local ButtonThemer = LibStub('AceAddon-3.0'):GetAddon(AddonName):NewModule('ButtonThemer')
+local AddonName, Addon = ...
+local ButtonThemer = LibStub("AceAddon-3.0"):GetAddon(AddonName):NewModule("ButtonThemer")
 
 local round = _G.Round
-local _NormalButtonWidth = round(_G['ActionButton1']:GetWidth())
+local ActionButtonWidth = round(_G["ActionButton1"]:GetWidth())
 
-function ButtonThemer:OnInitialize()
-    local Masque = LibStub('Masque', true)
+local function theme(button)
+    if not Addon.db.profile.applyButtonTheme then
+        return
+    end
 
-    if Masque then
-        Masque:Register(AddonName, function(...)
-            local _, group, _, _, _, _, disabled = ...
+    button.icon:SetTexCoord(0.06, 0.94, 0.06, 0.94)
 
-            if disabled then
-                for button in pairs(Masque:Group(AddonName, group).Buttons) do
-                    self:ApplyDefaultTheme(button)
-                end
-            end
-        end)
+    local r = round(button:GetWidth()) / ActionButtonWidth
 
-        self.Register = function(self, button, groupName, ...)
-            local group = Masque:Group(AddonName, groupName)
+    local nt = button:GetNormalTexture()
+    nt:ClearAllPoints()
+    nt:SetPoint("TOPLEFT", -15 * r, 15 * r)
+    nt:SetPoint("BOTTOMRIGHT", 15 * r, -15 * r)
+    nt:SetVertexColor(1, 1, 1, 0.5)
 
-            group:AddButton(button, ...)
-
-            if group.db.disabled then
-                self:ApplyDefaultTheme(button)
-            end
-        end
-    else
-        self.Register = self.ApplyDefaultTheme
+    local floatingBG = _G[button:GetName() .. "FloatingBG"]
+    if floatingBG then
+        floatingBG:Hide()
     end
 end
 
@@ -36,32 +29,145 @@ function ButtonThemer:Unload()
     self.shouldReskin = true
 end
 
-function ButtonThemer:Reskin()
-    if not self.shouldReskin then return end
+-- masque installed, use for theming
+local Masque, MasqueVersion = LibStub("Masque", true)
+if Masque then
+    -- handle differences in the masque API
+    if MasqueVersion < 80100 then
+        -- in older verisons, fallback to the dominos theme when
+        Masque:Register(
+            AddonName,
+            function(...)
+                local _, group, _, _, _, _, disabled = ...
 
-    self.shouldReskin = nil
+                if disabled then
+                    for button in pairs(Masque:Group(AddonName, group).Buttons) do
+                        theme(button)
+                    end
+                end
+            end
+        )
 
-    local Masque = LibStub('Masque', true)
-    if Masque then
-        for _, groupName in pairs(Masque:Group(AddonName).SubList) do
-            Masque:Group(AddonName, groupName):ReSkin()
+        function ButtonThemer:Register(button, groupName, ...)
+            local group = Masque:Group(AddonName, groupName)
+
+            group:AddButton(button, ...)
+
+            if group.db.disabled then
+                theme(button)
+            end
+        end
+
+        function ButtonThemer:Reskin()
+            if not self.shouldReskin then
+                return
+            end
+
+            self.shouldReskin = nil
+
+            for _, groupName in pairs(Masque:Group(AddonName).SubList) do
+                Masque:Group(AddonName, groupName):ReSkin()
+            end
+        end
+    else
+        -- Add the new default skin (thanks StormFX)
+        Masque:AddSkin(
+            AddonName,
+            {
+                -- Info
+                Description = ("The default skin for %s."):format(AddonName),
+                Author = "Tuller, StormFX",
+                -- Skin
+                Template = "Default",
+                Disable = true, -- Hides the skin in the GUI.
+                Icon = {
+                    TexCoords = {0.06, 0.94, 0.06, 0.94},
+                    DrawLayer = "BACKGROUND",
+                    DrawLevel = 0,
+                    Width = 36,
+                    Height = 36,
+                    Point = "CENTER",
+                    OffsetX = 0,
+                    OffsetY = 0
+                },
+                Normal = {
+                    Texture = [[Interface\Buttons\UI-Quickslot2]],
+                    -- TexCoords = {0, 1, 0, 1},
+                    Color = {1, 1, 1, 0.5},
+                    -- EmptyTexture = [[Interface\Buttons\UI-Quickslot2]],
+                    -- EmptyCoords = {0, 1, 0, 1},
+                    -- EmptyColor = {1, 1, 1, 0.5},
+                    BlendMode = "BLEND",
+                    DrawLayer = "ARTWORK",
+                    DrawLevel = 0,
+                    Width = 66,
+                    Height = 66,
+                    Point = "CENTER",
+                    OffsetX = 0,
+                    OffsetY = 0,
+                    UseStates = true,
+                    Pet = {
+                        Texture = [[Interface\Buttons\UI-Quickslot2]],
+                        -- TexCoords = {0, 1, 0, 1},
+                        Color = {1, 1, 1, 0.5},
+                        -- EmptyTexture = [[Interface\Buttons\UI-Quickslot2]],
+                        -- EmptyCoords = {0, 1, 0, 1},
+                        -- EmptyColor = {1, 1, 1, 0.5},
+                        BlendMode = "BLEND",
+                        DrawLayer = "ARTWORK",
+                        DrawLevel = 0,
+                        Width = 66,
+                        Height = 66,
+                        Point = "CENTER",
+                        OffsetX = 0,
+                        OffsetY = 0,
+                        UseStates = true
+                    },
+                    Item = {
+                        Texture = "Interface\\Buttons\\UI-Quickslot2",
+                        -- TexCoords = {0, 1, 0, 1},
+                        Color = {1, 1, 1, 1},
+                        -- EmptyTexture = [[Interface\Buttons\UI-Quickslot2]],
+                        -- EmptyCoords = {0, 1, 0, 1},
+                        -- EmptyColor = {1, 1, 1, 0.5},
+                        BlendMode = "BLEND",
+                        DrawLayer = "ARTWORK",
+                        DrawLevel = 0,
+                        Width = 62,
+                        Height = 62,
+                        Point = "CENTER",
+                        OffsetX = 0,
+                        OffsetY = -1,
+                        UseStates = true
+                    }
+                }
+            },
+            true
+        )
+
+        function ButtonThemer:Register(button, groupName, ...)
+            local group = Masque:Group(AddonName, groupName)
+
+            group:AddButton(button, ...)
+        end
+
+        function ButtonThemer:Reskin()
+            if not self.shouldReskin then
+                return
+            end
+
+            self.shouldReskin = nil
+
+            for _, group in pairs(Masque:Group(AddonName).SubList) do
+                group:ReSkin()
+            end
         end
     end
-end
-
-function ButtonThemer:ApplyDefaultTheme(button)
-    button.icon:SetTexCoord(0.06, 0.94, 0.06, 0.94)
-
-    local r = round(button:GetWidth()) / _NormalButtonWidth
-
-    local nt = button:GetNormalTexture()
-    nt:ClearAllPoints()
-    nt:SetPoint('TOPLEFT', -15 * r, 15 * r)
-    nt:SetPoint('BOTTOMRIGHT', 15 * r, -15 * r)
-    nt:SetVertexColor(1, 1, 1, 0.5)
-
-    local floatingBG = _G[('%sFloatingBG'):format(button:GetName())]
-    if floatingBG then
-        floatingBG:Hide()
+-- masque not installed
+else
+    function ButtonThemer:Register(button)
+        theme(button)
     end
+
+    function ButtonThemer:Reskin() end
 end

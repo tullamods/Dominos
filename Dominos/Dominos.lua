@@ -141,6 +141,10 @@ function Addon:GetDatabaseDefaults()
 		profile = {
 			possessBar = 1,
 
+			-- if true, applies a default dominos skin to buttons
+			-- when masque is not enabled
+			applyButtonTheme = true,
+
 			sticky = true,
 			linkedOpacity = false,
 			showMacroText = true,
