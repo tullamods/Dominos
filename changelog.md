@@ -1,5 +1,11 @@
 # Dominos Changelog
 
+8.2.20
+
+* Skipped version 8.2.19
+* Added a Theme Action Buttons toggle to the main interface window to enable/disable the Dominos look for action buttons
+* Added support for the next version of Masque
+
 8.2.18
 
 * Fix a db migration error for completely new profiles
