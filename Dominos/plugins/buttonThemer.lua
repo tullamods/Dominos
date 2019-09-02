@@ -32,9 +32,19 @@ end
 -- masque installed, use for theming
 local Masque, MasqueVersion = LibStub("Masque", true)
 if Masque then
+    function ButtonThemer:Register(button, groupName, ...)
+        local group = Masque:Group(AddonName, groupName)
+
+        group:AddButton(button, ...)
+
+        if group.db.Disabled then
+            theme(button)
+        end
+    end
+
     -- handle differences in the masque API
     if MasqueVersion < 80100 then
-        -- in older verisons, fallback to the dominos theme when
+        -- in older verisons, fallback to the dominos theme when disabled
         Masque:Register(
             AddonName,
             function(...)
@@ -47,16 +57,6 @@ if Masque then
                 end
             end
         )
-
-        function ButtonThemer:Register(button, groupName, ...)
-            local group = Masque:Group(AddonName, groupName)
-
-            group:AddButton(button, ...)
-
-            if group.db.disabled then
-                theme(button)
-            end
-        end
 
         function ButtonThemer:Reskin()
             if not self.shouldReskin then
@@ -106,23 +106,6 @@ if Masque then
                     OffsetX = 0,
                     OffsetY = 0,
                     UseStates = true,
-                    Pet = {
-                        Texture = [[Interface\Buttons\UI-Quickslot2]],
-                        -- TexCoords = {0, 1, 0, 1},
-                        Color = {1, 1, 1, 0.5},
-                        -- EmptyTexture = [[Interface\Buttons\UI-Quickslot2]],
-                        -- EmptyCoords = {0, 1, 0, 1},
-                        -- EmptyColor = {1, 1, 1, 0.5},
-                        BlendMode = "BLEND",
-                        DrawLayer = "ARTWORK",
-                        DrawLevel = 0,
-                        Width = 66,
-                        Height = 66,
-                        Point = "CENTER",
-                        OffsetX = 0,
-                        OffsetY = 0,
-                        UseStates = true
-                    },
                     Item = {
                         Texture = "Interface\\Buttons\\UI-Quickslot2",
                         -- TexCoords = {0, 1, 0, 1},
@@ -144,12 +127,6 @@ if Masque then
             },
             true
         )
-
-        function ButtonThemer:Register(button, groupName, ...)
-            local group = Masque:Group(AddonName, groupName)
-
-            group:AddButton(button, ...)
-        end
 
         function ButtonThemer:Reskin()
             if not self.shouldReskin then
