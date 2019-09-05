@@ -40,7 +40,7 @@ end
 function Config:GetDefaults()
 	return {
 		profile = {
-			one_bar = false,
+			one_bar = true,
 			colors = {
 				xp = {0.58, 0, 0.55, 1},
 				xp_bonus = {0, 0.39, 0.88},
