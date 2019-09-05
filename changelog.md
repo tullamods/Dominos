@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+8.2.23
+
+* Revert one bar mode being the default setting for the progress bar.
+
 8.2.22
 
 * Fix an issue preventing the main options panel for the progress bar from loading
