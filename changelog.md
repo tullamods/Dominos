@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+8.2.21
+
+* Fix an issue causing druid form states to not work properly if the player has a bar set for Moonkin form without having the form
+
 8.2.20
 
 * Skipped version 8.2.19
