@@ -41,6 +41,7 @@ function Config:GetDefaults()
 	return {
 		profile = {
 			one_bar = false,
+			skip_inactive_modes = false,
 			colors = {
 				xp = {0.58, 0, 0.55, 1},
 				xp_bonus = {0, 0.39, 0.88},
@@ -73,6 +74,14 @@ end
 
 function Config:OneBarMode()
 	return self.db.profile.one_bar
+end
+
+function Config:SetSkipInactiveModes(skip)
+	self.db.profile.skip_inactive_modes = skip or false
+end
+
+function Config:SkipInactiveModes()
+	return self.db.profile.skip_inactive_modes
 end
 
 function Config:SetColor(key, ...)

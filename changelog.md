@@ -1,5 +1,10 @@
 # Dominos Changelog
 
+8.2.24
+
+* Add a new progress bar mode setting: Skip Inactive modes. Enabling this skip any inactive progress bar mode when you
+click a progress bar to switch the next mode
+
 8.2.23
 
 * Revert one bar mode being the default setting for the progress bar.
