@@ -95,6 +95,7 @@ function ActionButton:Create(id)
 		button:ClearAllPoints()
 		button:SetAttribute('useparent-actionpage', nil)
 		button:SetAttribute('useparent-unit', true)
+		button:SetAttribute("statehidden", nil)
 		button:EnableMouseWheel(true)
 		button:HookScript('OnEnter', self.OnEnter)
 
@@ -132,6 +133,7 @@ do
 		Addon:GetModule('Tooltips'):Unregister(self)
 		Addon.BindingsController:Unregister(self)
 
+		self:SetAttribute("statehidden", true)
 		self:SetParent(HiddenActionButtonFrame)
 		self:Hide()
 

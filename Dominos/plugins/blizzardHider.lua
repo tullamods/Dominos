@@ -117,3 +117,12 @@ if VerticalMultiBarsContainer then
         VerticalMultiBarsContainer:SetWidth(width)
     end)
 end
+
+-- set the stock action buttons to hidden by default
+for id = 1, 12 do
+    _G[('ActionButton%d'):format(id)]:SetAttribute("statehidden", true)
+    _G[('MultiBarRightButton%d'):format(id)]:SetAttribute("statehidden", true)
+    _G[('MultiBarLeftButton%d'):format(id)]:SetAttribute("statehidden", true)
+    _G[('MultiBarBottomRightButton%d'):format(id)]:SetAttribute("statehidden", true)
+    _G[('MultiBarBottomLeftButton%d'):format(id)]:SetAttribute("statehidden", true)
+end
