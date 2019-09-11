@@ -84,6 +84,10 @@ do
     end
 
 	if class == "DRUID" then
+		addState("class", "bear", "[bonusbar:3]", GetSpellInfo(5487))
+		addState("class", "prowl", "[bonusbar:1,stealth]", GetSpellInfo(5215))
+		addState("class", "cat", "[bonusbar:1]", GetSpellInfo(768))
+
 		if Addon:IsBuild("classic") then
 			addState(
 				"class",
@@ -91,19 +95,49 @@ do
                 newFormConditionLookup(24858),
 				GetSpellInfo(24858)
 			)
+
+			addState(
+				"class",
+                "travel",
+                newFormConditionLookup(783),
+				GetSpellInfo(783)
+			)
+
+			addState(
+				"class",
+                "aquatic",
+                newFormConditionLookup(1066),
+				GetSpellInfo(1066)
+			)
 		else
-			addState("class", "moonkin", "[bonusbar:4]", GetSpellInfo(24858))
+			addState(
+				"class",
+				"moonkin",
+				"[bonusbar:4]",
+				GetSpellInfo(24858)
+			)
+
 			addState(
 				"class",
                 "tree",
-                newFormConditionLookup(33891),
-				GetSpellInfo(33891)
+                newFormConditionLookup(114282),
+				GetSpellInfo(114282)
+			)
+
+			addState(
+				"class",
+                "travel",
+                newFormConditionLookup(783),
+				GetSpellInfo(783)
+			)
+
+			addState(
+				"class",
+                "stag",
+                newFormConditionLookup(210053),
+				GetSpellInfo(210053)
 			)
 		end
-
-		addState("class", "bear", "[bonusbar:3]", GetSpellInfo(5487))
-		addState("class", "prowl", "[bonusbar:1,stealth]", GetSpellInfo(5215))
-		addState("class", "cat", "[bonusbar:1]", GetSpellInfo(768))
 	elseif class == "ROGUE" then
 		if GetSpellInfo(185313) then
 			addState("class", "shadowdance", "[form:2]", GetSpellInfo(185313))
