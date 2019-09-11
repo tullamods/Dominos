@@ -25,7 +25,7 @@ local BarStates = {
 		return getStateIterator, type, 0
 	end,
 	get = function(self, id)
-		for i, v in pairs(states) do
+		for _, v in pairs(states) do
 			if v.id == id then
 				return v
 			end
@@ -33,7 +33,7 @@ local BarStates = {
 	end,
 	map = function(self, f)
 		local results = {}
-		for k, v in ipairs(states) do
+		for _, v in ipairs(states) do
 			if f(v) then
 				table.insert(results, v)
 			end
