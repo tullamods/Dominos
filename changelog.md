@@ -1,5 +1,12 @@
 # Dominos Changelog
 
+8.2.25
+
+* Added a workaround for cases where the progress bar mode update updated failed
+* Added druid travel form paging options
+* Set statehidden = true on all Blizzard action buttons by default
+* Classic - Added counts to action buttons for abilities that consume reagents
+
 8.2.24
 
 * Add a new progress bar mode setting: Skip Inactive modes. Enabling this skip any inactive progress bar mode when you
