@@ -61,11 +61,25 @@ function Config:GetDefaults()
 end
 
 function Config:SetBarMode(barId, mode)
-	self.db.char.bars[barId].mode = mode
+	local barSettings = self.db.char.bars[barId]
+
+	if type(barSettings) == "table" then
+		barSettings.mode = mode
+	else
+		self.db.char.bars[barId] = {
+			["mode"] = mode
+		}
+	end
 end
 
 function Config:GetBarMode(barId)
-	return self.db.char.bars[barId].mode
+	local barSettings = self.db.char.bars[barId]
+
+	if type(barSettings) == "table" then
+		return barSettings.mode
+	else
+		return barSettings
+	end
 end
 
 function Config:SetOneBarMode(enable)
