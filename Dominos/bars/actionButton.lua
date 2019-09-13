@@ -72,6 +72,7 @@ function ActionButton:New(id)
 		end
 
 		button:UpdateMacro()
+		button:UpdateCount()
 		button:UpdateShowEquippedItemBorders()
 
 		self.active[id] = button
@@ -169,6 +170,14 @@ if Addon:IsBuild("classic") then
 			end
 		end
 	end)
+end
+
+function ActionButton:UpdateCount()
+	if Addon:ShowCounts() then
+		self.Count:Show()
+	else
+		self.Count:Hide()
+	end
 end
 
 --button visibility
