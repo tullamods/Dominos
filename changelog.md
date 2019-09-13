@@ -1,5 +1,10 @@
 # Dominos Changelog
 
+8.2.26
+
+* Added a new option Show Count Text - toggles showing item/reagent counts on action buttons
+* Updated the artifact bar display to prioritize the azerite bar
+
 8.2.25
 
 * Added a workaround for cases where the progress bar mode update updated failed
