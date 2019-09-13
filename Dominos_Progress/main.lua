@@ -10,16 +10,16 @@ end
 function ProgressBarModule:Load()
 	if Dominos:IsBuild("classic") then
 		self.bars = {
-			Addon.ExperienceBar:New("exp", {"xp", "reputation"})
+			Addon.ProgressBar:New("exp", {"xp", "reputation"})
 		}
 	elseif Addon.Config:OneBarMode() then
 		self.bars = {
-			Addon.ExperienceBar:New("exp", {"xp", "reputation", "honor", "artifact", "azerite"})
+			Addon.ProgressBar:New("exp", {"xp", "reputation", "honor", "artifact", "azerite"})
 		}
 	else
 		self.bars = {
-			Addon.ExperienceBar:New("exp", {"xp", "reputation", "honor"}),
-			Addon.ArtifactBar:New("artifact", {"artifact", "azerite"})
+			Addon.ProgressBar:New("exp", {"xp", "reputation", "honor"}),
+			Addon.ProgressBar:New("artifact", {"azerite", "artifact"})
 		}
 	end
 
