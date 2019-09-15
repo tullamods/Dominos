@@ -115,9 +115,7 @@ function ActionButton:Restore(id)
 	if button then
 		self.unused[id] = nil
 
-		button:LoadEvents()
-		ActionButton_UpdateAction(button)
-		button:Show()
+		button:SetAttribute("statehidden", nil)
 
 		self.active[id] = button
 		return button
@@ -143,11 +141,6 @@ do
 
 		self.unused[id] = self
 	end
-end
-
---these are all events that are registered OnLoad for action buttons
-function ActionButton:LoadEvents()
-	ActionBarActionEventsFrame_RegisterFrame(self)
 end
 
 --keybound support
