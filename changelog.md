@@ -1,5 +1,10 @@
 # Dominos Changelog
 
+8.2.27
+
+* Yet more progress bar bugfixes
+* Fix an issue that would cause empty slots to not reappear after switching profiles
+
 8.2.26
 
 * Added a new option Show Count Text - toggles showing item/reagent counts on action buttons
