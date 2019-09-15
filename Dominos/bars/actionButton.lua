@@ -21,7 +21,10 @@ end
 local function GetOrCreateActionButton(id)
 	if id <= 12 then
 		local b = _G[('ActionButton%d'):format(id)]
+
+		-- luacheck: push ignore 122
 		b.buttonType = 'ACTIONBUTTON'
+		-- luacheck: pop
 		return b
 	elseif id <= 24 then
 		return CreateActionButton(id - 12)
