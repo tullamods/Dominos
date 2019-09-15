@@ -172,6 +172,18 @@ function ProgressBar:GetMode()
 	return Addon.Config:GetBarMode(self.id) or self.modes[1]
 end
 
+function ProgressBar:GetModeIndex()
+	local currentMode = self:GetMode()
+
+	for i, mode in pairs(self.modes) do
+		if mode == currentMode then
+			return i
+		end
+	end
+
+	return 1
+end
+
 function ProgressBar:OnModeChanged(mode)
 	local newType = Addon.progressBarModes and Addon.progressBarModes[mode]
 	if newType then
@@ -181,58 +193,67 @@ function ProgressBar:OnModeChanged(mode)
 end
 
 function ProgressBar:UpdateMode()
+	local mode
 	if self:IsModeLocked() then
-		self:SetMode(self:GetMode())
+		mode = self:GetMode()
 	else
-		-- update to the first active mode we have, in reverse order
-		local modeId = 1
-		for i = #self.modes, 1, -1 do
-			local mode = self.modes[i]
-			if Addon.progressBarModes[mode]:IsModeActive() then
-				modeId = i
-				break
-			end
-		end
-
-		self:SetMode(modeId)
+		mode = self:GetLastActiveMode()
 	end
+
+	self:SetMode(mode)
 end
 
 function ProgressBar:IsModeActive()
 	return false
 end
 
-function ProgressBar:GetModeIndex()
-	local mode = self:GetMode()
+-- iterates through all modes in reverse order
+-- and finds the first one that's active
+-- if no active modes are found, retrieves the first mode from the list
+function ProgressBar:GetLastActiveMode()
+	local modes = self.modes
 
-	for i, availableMode in ipairs(self.modes) do
-		if availableMode == mode then
-			return i
+	for i = #modes, 2, -1 do
+		local mode = modes[i]
+		if Addon.progressBarModes[mode]:IsModeActive() then
+			return mode
 		end
 	end
 
-	return 1
+	return modes[1]
 end
 
 function ProgressBar:NextMode()
-	local currentIndex = self:GetModeIndex()
+	local mode
 
 	if Addon.Config:SkipInactiveModes() then
-		for i = 1, #self.modes do
-			local nextIndex = Wrap(currentIndex + i, #self.modes)
-			local nextMode = self.modes[nextIndex]
-			if Addon.progressBarModes[nextMode]:IsModeActive() then
-				self:SetMode(nextMode)
-			end
-		end
+		mode = self:GetNextActiveMode()
 	else
-		local nextIndex = Wrap(currentIndex + 1, #self.modes)
-		self:SetMode(self.modes[nextIndex])
+		mode = self:GetNextMode()
 	end
+
+	self:SetMode(mode)
 end
 
-function ProgressBar:GetCurrentModeIndex()
-	return self.modeIndex or 1
+function ProgressBar:GetNextMode()
+	local modes = self.modes
+	return modes[Wrap(self:GetModeIndex() + 1, #modes)]
+end
+
+function ProgressBar:GetNextActiveMode()
+	local currentIndex = self:GetModeIndex()
+	local modes = self.modes
+
+	for offset = 1, #modes - 1 do
+		local index = Wrap(currentIndex + offset, #modes)
+		local mode = modes[index]
+
+		if Addon.progressBarModes[mode]:IsModeActive() then
+			return mode
+		end
+	end
+
+	return modes[currentIndex]
 end
 
 function ProgressBar:SetLockMode(lock)
@@ -329,8 +350,6 @@ function ProgressBar:UpdateBonusValue()
 		end
 	end
 end
-
-
 
 --[[ text display ]]--
 
