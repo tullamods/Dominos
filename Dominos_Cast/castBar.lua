@@ -489,7 +489,7 @@ function CastBar:UpdateChanneling(reset)
 	if name then
 		self:SetProperty('mode', 'channel')
 		self:SetProperty('label', name or text)
-		self:SetProperty('icon', spellID and SPELL_ICONS[spellID] or texture)
+		self:SetProperty('icon', texture)
 		self:SetProperty('spell', spellID)
 
 		local vmin = 0

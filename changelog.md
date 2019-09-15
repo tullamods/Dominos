@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+8.2.28
+
+* Fix an error when channeling spells
+
 8.2.27
 
 * Yet more progress bar bugfixes
