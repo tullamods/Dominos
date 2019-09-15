@@ -7,6 +7,40 @@ function ProgressBarModule:OnInitialize()
 	Addon.Config:Init()
 end
 
+function ProgressBarModule:OnEnable()
+	-- common events
+	self:RegisterEvent("ADDON_LOADED")
+	self:RegisterEvent("PLAYER_ENTERING_WORLD")
+	self:RegisterEvent("PLAYER_UPDATE_RESTING")
+	self:RegisterEvent("UPDATE_EXHAUSTION")
+
+	-- xp bar events
+	self:RegisterEvent("PLAYER_XP_UPDATE")
+
+	-- reputation events
+	self:RegisterEvent("UPDATE_FACTION")
+
+	-- honor events
+	if Addon.HonorBar then
+		self:RegisterEvent("HONOR_LEVEL_UPDATE")
+		self:RegisterEvent("HONOR_XP_UPDATE")
+	end
+
+	-- artifact events
+	if Addon.ArtifactBar then
+		self:RegisterEvent("ARTIFACT_XP_UPDATE")
+		self:RegisterEvent("UNIT_INVENTORY_CHANGED")
+	end
+
+	-- azerite events
+	if Addon.AzeriteBar then
+		self:RegisterEvent("AZERITE_ITEM_EXPERIENCE_CHANGED")
+	end
+
+	-- libsharedmedia callbacks
+	LibStub("LibSharedMedia-3.0").RegisterCallback(self, 'LibSharedMedia_Registered')
+end
+
 function ProgressBarModule:Load()
 	if Dominos:IsBuild("classic") then
 		self.bars = {
@@ -22,63 +56,32 @@ function ProgressBarModule:Load()
 			Addon.ProgressBar:New("artifact", {"azerite", "artifact"})
 		}
 	end
-
-	-- common events
-	self:RegisterEvent("ADDON_LOADED")
-	self:RegisterEvent("PLAYER_ENTERING_WORLD")
-	self:RegisterEvent("UPDATE_EXHAUSTION")
-	self:RegisterEvent("PLAYER_UPDATE_RESTING")
-
-	-- xp bar events
-	self:RegisterEvent("PLAYER_XP_UPDATE")
-
-	-- reputation events
-	self:RegisterEvent("UPDATE_FACTION")
-
-	-- honor events
-	if Addon.progressBarModes.honor then
-		self:RegisterEvent("HONOR_XP_UPDATE")
-		self:RegisterEvent("HONOR_LEVEL_UPDATE")
-	end
-
-	-- artifact events
-	if Addon.progressBarModes.artifact then
-		self:RegisterEvent("ARTIFACT_XP_UPDATE")
-		self:RegisterEvent("UNIT_INVENTORY_CHANGED")
-	end
-
-	-- azerite events
-	if Addon.progressBarModes.azerite then
-		self:RegisterEvent("AZERITE_ITEM_EXPERIENCE_CHANGED")
-	end
-
-	self:UpdateAllBars()
-end
-
-function ProgressBarModule:UpdateAllBars()
-	for _, bar in pairs(self.bars) do
-		bar:UpdateMode()
-		bar:Update()
-	end
 end
 
 function ProgressBarModule:Unload()
-	for _, bar in pairs(self.bars) do
+	for i, bar in pairs(self.bars) do
 		bar:Free()
+		self.bars[i] = nil
 	end
+end
 
-	self.bars = {}
+-- events
+function ProgressBarModule:ADDON_LOADED(event, addonName)
+	if addonName ~= "Dominos_Config" then return end
+
+	self:UnregisterEvent("ADDON_LOADED")
+	self:AddOptionsPanel()
 end
 
 function ProgressBarModule:PLAYER_ENTERING_WORLD()
 	self:UpdateAllBars()
 end
 
-function ProgressBarModule:UPDATE_EXHAUSTION()
+function ProgressBarModule:PLAYER_UPDATE_RESTING()
 	self:UpdateAllBars()
 end
 
-function ProgressBarModule:PLAYER_UPDATE_RESTING()
+function ProgressBarModule:UPDATE_EXHAUSTION()
 	self:UpdateAllBars()
 end
 
@@ -106,23 +109,26 @@ function ProgressBarModule:UNIT_INVENTORY_CHANGED(event, unit)
 	self:UpdateAllBars()
 end
 
-function ProgressBarModule:HONOR_XP_UPDATE()
-	self:UpdateAllBars()
-end
-
 function ProgressBarModule:HONOR_LEVEL_UPDATE()
 	self:UpdateAllBars()
 end
 
-function ProgressBarModule:ADDON_LOADED(event, addonName)
-	if addonName ~= "Dominos_Config" then return end
-
-	self:AddOptionsPanel()
-	self:UnregisterEvent("ADDON_LOADED")
+function ProgressBarModule:HONOR_XP_UPDATE()
+	self:UpdateAllBars()
 end
 
-function ProgressBarModule:OnMediaUpdated(event, ...)
+function ProgressBarModule:LibSharedMedia_Registered()
 	self:UpdateAllBars()
+end
+
+function ProgressBarModule:UpdateAllBars()
+	local bars = self.bars
+	if not bars then return end
+
+	for _, bar in pairs(self.bars) do
+		bar:UpdateMode()
+		bar:Update()
+	end
 end
 
 function ProgressBarModule:AddOptionsPanel()
