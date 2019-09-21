@@ -4,7 +4,6 @@ local Addon = LibStub('AceAddon-3.0'):NewAddon(AddonTable, AddonName, 'AceEvent-
 local L = LibStub('AceLocale-3.0'):GetLocale(AddonName)
 
 local ADDON_VERSION = GetAddOnMetadata(AddonName, 'Version')
-local ADDON_BUILD = (select(4, GetBuildInfo())) < 20000 and "Classic" or "Retail"
 local CONFIG_ADDON_NAME = AddonName .. '_Config'
 local CONFIG_VERSION = 1
 
@@ -38,7 +37,7 @@ function Addon:OnUpgradeDatabase(oldVersion, newVersion)
 end
 
 function Addon:OnUpgradeAddon(oldVersion, newVersion)
-	self:Printf(L.Updated, ADDON_VERSION, ADDON_BUILD)
+	self:Printf(L.Updated, ADDON_VERSION, self:GetBuild())
 end
 
 -- keybound events
@@ -301,7 +300,7 @@ end
 
 -- miscellanous actions
 function Addon:PrintVersion()
-	self:Printf("%s-%s", ADDON_VERSION, ADDON_BUILD)
+	self:Printf("%s-%s", ADDON_VERSION, self:GetBuild())
 end
 
 
@@ -688,14 +687,22 @@ end
 
 -- build test
 function Addon:GetBuild()
-	return ADDON_BUILD
+	local project = WOW_PROJECT_ID
+
+	if project == WOW_PROJECT_CLASSIC then
+		return "classic"
+	elseif project == WOW_PROJECT_MAINLINE then
+		return "retail"
+	else
+		return "unknown"
+	end
 end
 
 function Addon:IsBuild(...)
-	local build = ADDON_BUILD:upper()
+	local build = self:GetBuild()
 
-	for i = 1, select('#', ...) do
-		if build == select(i, ...):upper() then
+	for i = 1, select("#", ...) do
+		if build == select(i, ...):lower() then
 			return true
 		end
 	end
