@@ -1,5 +1,11 @@
 # Dominos Changelog
 
+8.2.29
+
+* Now using the Dominos icon in both retail and classic
+* Added the ability to disable Dominos modules on a per profile basis via Dominos.db.profile.modules.ModuleName = false
+* Misc internal changes
+
 8.2.28
 
 * Fix an error when channeling spells
