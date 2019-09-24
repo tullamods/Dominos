@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+8.2.30
+
+* Updated TOCs for 8.2.5
+
 8.2.29
 
 * Now using the Dominos icon in both retail and classic
