@@ -2,7 +2,7 @@
 	bagBar -  A bar for holding container buttons
 --]]
 
-local Addon = select(2, ...)
+local AddonName, Addon = ...
 
 -- register buttons for use later
 local bagButtons = {}
@@ -19,18 +19,28 @@ end
 function BagBar:GetDefaults()
 	return {
 		point = 'BOTTOMRIGHT',
+		oneBag = false,
+		keyRing = true,
 		spacing = 2,
 	}
 end
 
 function BagBar:SetOneBag(enable)
 	self.sets.oneBag = enable or nil
-
 	self:ReloadButtons()
 end
 
 function BagBar:OneBag()
 	return self.sets.oneBag
+end
+
+function BagBar:SetShowKeyRing(enable)
+	self.sets.keyRing = enable or nil
+	self:ReloadButtons()
+end
+
+function BagBar:ShowKeyRing()
+	return self.sets.keyRing
 end
 
 
@@ -45,12 +55,23 @@ function BagBar:GetButton(index)
 		return nil
 	end
 
+	-- skip the keyring in classic mode
+	if Addon:IsBuild("classic") and not self:ShowKeyRing() then
+		if index == #bagButtons - 1 then
+			index = index + 1
+		end
+	end
+
 	return bagButtons[index]
 end
 
 function BagBar:NumButtons()
 	if self:OneBag() then
 		return 1
+	end
+
+	if Addon:IsBuild("classic") and not self:ShowKeyRing() then
+		return #bagButtons - 1
 	end
 
 	return #bagButtons
@@ -68,6 +89,14 @@ function BagBar:CreateMenu()
 		set = function(_, enable) return layoutPanel.owner:SetOneBag(enable) end,
 	}
 
+	if Addon:IsBuild("Classic") then
+		layoutPanel:NewCheckButton{
+			name = KEYRING,
+			get = function() return layoutPanel.owner:ShowKeyRing() end,
+			set = function(_, enable) return layoutPanel.owner:SetShowKeyRing(enable) end,
+		}
+	end
+
 	layoutPanel:AddLayoutOptions()
 
 	menu:AddAdvancedPanel()
@@ -84,14 +113,52 @@ function BagBarController:OnInitialize()
 		self:RegisterButton(('CharacterBag%dSlot'):format(slot))
 	end
 
+	if Addon:IsBuild("Classic") then
+		local keyring = CreateFrame('CheckButton', AddonName .. 'KeyRingButton', UIParent, 'ItemButtonTemplate')
+		keyring:RegisterForClicks('LeftButtonUp', 'RightButtonUp')
+		keyring:SetID(KEYRING_CONTAINER)
+
+		keyring:SetScript('OnClick', function(_, button)
+			if CursorHasItem() then
+				PutKeyInKeyRing()
+			else
+				ToggleBag(KEYRING_CONTAINER)
+			end
+		end)
+
+		keyring:SetScript('OnReceiveDrag', function(_)
+			if CursorHasItem() then
+				PutKeyInKeyRing()
+			end
+		end)
+
+		keyring:SetScript('OnEnter', function(self)
+			GameTooltip:SetOwner(self, 'ANCHOR_LEFT')
+
+			local color = HIGHLIGHT_FONT_COLOR
+			GameTooltip:SetText(KEYRING, color.r, color.g, color.b)
+			GameTooltip:AddLine()
+		end)
+
+		keyring:SetScript('OnLeave', function()
+			GameTooltip:Hide()
+		end)
+
+		keyring.icon:SetTexture([[Interface\Icons\INV_Misc_Bag_16]])
+
+		self:RegisterButton(keyring:GetName())
+
+		MainMenuBarBackpackButton:HookScript("OnClick", function(_, button)
+			if IsControlKeyDown() then
+				ToggleBag(KEYRING_CONTAINER)
+			end
+		end)
+	end
+
 	self:RegisterButton('MainMenuBarBackpackButton')
 end
 
 function BagBarController:OnEnable()
-	-- for _, button in pairs(bagButtons) do
-	-- 	button:Hide()
-	-- end
-
 	for _, button in pairs(bagButtons) do
 		Addon:GetModule('ButtonThemer'):Register(button, 'Bag Bar', {
 			Icon = button.icon,
