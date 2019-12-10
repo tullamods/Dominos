@@ -1,5 +1,11 @@
 # Dominos Changelog
 
+8.2.31
+
+* Update TOCs for 1.13.3
+* Add keyring support to the bag bar
+* Add the ability to control click the backpack button to toggle the key ring
+
 8.2.30
 
 * Updated TOCs for 8.2.5
