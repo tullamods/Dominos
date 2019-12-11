@@ -26,7 +26,7 @@ function BagBar:GetDefaults()
 end
 
 function BagBar:SetOneBag(enable)
-	self.sets.oneBag = enable or nil
+	self.sets.oneBag = enable or false
 	self:ReloadButtons()
 end
 
@@ -35,7 +35,7 @@ function BagBar:OneBag()
 end
 
 function BagBar:SetShowKeyRing(enable)
-	self.sets.keyRing = enable or nil
+	self.sets.keyRing = enable or false
 	self:ReloadButtons()
 end
 

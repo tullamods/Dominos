@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+8.2.32
+
+* Fix display settings for keyring not persisting
+
 8.2.31
 
 * Update TOCs for 1.13.3
