@@ -187,13 +187,13 @@ function Addon.GetActionReagentUses(action)
 
                 count = min(count, floor(GetItemCount(reagentID) / reagentQuantity))
                 if count == 0 then
-                    return 0
+                    break
                 end
             end
 
-            return true,  count
+            return true, count
         end
     end
 
-    return false
+    return false, 0
 end
