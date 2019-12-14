@@ -1,0 +1,33 @@
+name: Deploy Release
+
+# when a tag is created with the format vx.y.z-thing or x.y.z-thing
+on:
+  push:
+    tags:
+      - "*.*.*"
+      - "v*.*.*"
+      - "!v*.*.*-*"
+      - "!*.*.*-*"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v1
+      - name: Run packager for live
+        run: curl -s https://raw.githubusercontent.com/BigWigsMods/packager/master/release.sh | bash -s -- -p $CF_PROJECT_ID -w $WOWI_PROJECT_ID
+        env:
+          CF_API_KEY: ${{ secrets.CF_API_KEY }}
+          GITHUB_OAUTH: ${{ secrets.GITHUB_OAUTH }}
+          WOWI_API_TOKEN: ${{ secrets.WOWI_API_TOKEN }}
+          CF_PROJECT_ID: 6650
+          WOWI_PROJECT_ID: 9085
+      - name: Run packager for classic
+        run: curl -s https://raw.githubusercontent.com/BigWigsMods/packager/master/release.sh | bash -s -- -g 1.13.3 -p $CF_PROJECT_ID -w $WOWI_PROJECT_ID
+        env:
+          CF_API_KEY: ${{ secrets.CF_API_KEY }}
+          GITHUB_OAUTH: ${{ secrets.GITHUB_OAUTH }}
+          WOWI_API_TOKEN: ${{ secrets.WOWI_API_TOKEN }}
+          CF_PROJECT_ID: 6650
+          WOWI_PROJECT_ID: 24918
