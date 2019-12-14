@@ -171,11 +171,6 @@ local SPELL_REAGENTS = {
     [18871] = 6265,
 }
 
-local GetActionInfo = GetActionInfo
-local GetItemCount = GetItemCount
-local min = math.min
-local floor = math.floor
-
 -- Usage: requiresReagents, usesRemaining = GetActionReagentInfo(action)
 function Addon.GetActionReagentUses(action)
     local actionType, actionID = GetActionInfo(action)
