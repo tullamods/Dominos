@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+8.2.36
+
+* Fix issue with packager
+
 8.2.35
 
 * Fix bag slot ordering
