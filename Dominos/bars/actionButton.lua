@@ -153,8 +153,24 @@ hooksecurefunc('ActionButton_UpdateHotkeys', ActionButton.UpdateHotkey)
 
 -- add inventory counts in classic
 if Addon:IsBuild("classic") then
+	local GetActionReagentUses = Addon.GetActionReagentUses
+
 	hooksecurefunc("ActionButton_UpdateCount", function(self)
-		local action = self.action;
+		-- do nothing if we have a count already set
+		if self.Count:GetText() == "" then
+			return
+		end
+
+		local action = self.action
+
+		-- check reagent counts
+		local requiresReagents, usesRemaining = GetActionReagentUses(self.action)
+		if requiresReagents then
+			self.Count:SetText(usesRemaining)
+			return
+		end
+
+		-- standard inventory counts
 		if IsConsumableAction(action) or IsStackableAction(action)  then
 			local count = GetActionCount(action)
 			if count > (self.maxDisplayCount or 9999) then

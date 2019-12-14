@@ -23,6 +23,7 @@ core\overrideController.lua
 core\tooltipController.lua
 core\bindingsController.lua
 bars\barStates.lua
+bars\getActionReagentUses.lua
 bars\actionButton.lua
 bars\actionBar.lua
 bars\petBar.lua
