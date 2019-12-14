@@ -156,15 +156,10 @@ if Addon:IsBuild("classic") then
 	local GetActionReagentUses = Addon.GetActionReagentUses
 
 	hooksecurefunc("ActionButton_UpdateCount", function(self)
-		-- do nothing if we have a count already set
-		if self.Count:GetText() == "" then
-			return
-		end
-
 		local action = self.action
 
 		-- check reagent counts
-		local requiresReagents, usesRemaining = GetActionReagentUses(self.action)
+		local requiresReagents, usesRemaining = GetActionReagentUses(action)
 		if requiresReagents then
 			self.Count:SetText(usesRemaining)
 			return
