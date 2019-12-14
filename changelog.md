@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+8.2.35
+
+* Fix bag slot ordering
+
 8.2.34
 
 * Add Shadowburn reagent count

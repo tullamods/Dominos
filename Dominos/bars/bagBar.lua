@@ -67,7 +67,7 @@ function BagBar:GetButton(index)
 	elseif index == backpackIndex then
 		return MainMenuBarBackpackButton
 	elseif index > keyRingIndex and index < backpackIndex then
-		return _G[('CharacterBag%dSlot'):format(index - keyRingIndex - 1)]
+		return _G[('CharacterBag%dSlot'):format(NUM_BAG_SLOTS - (index - keyRingIndex))]
 	end
 end
 
