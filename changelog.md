@@ -1,5 +1,11 @@
 # Dominos Changelog
 
+8.2.33
+
+* Classic: Abilities that require reagents should now show how many times you can currently cast the ability
+* Classic: Moved the keyring icon to the left side of the bag bar
+* Replaced the One Bag option with a Show Bag Slots option. If you want to only display the backpack, you'll need to uncheck both the Show Keyring and the Show Bag Slots options.
+
 8.2.32
 
 * Fix display settings for keyring not persisting
