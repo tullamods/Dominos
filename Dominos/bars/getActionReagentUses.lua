@@ -195,5 +195,5 @@ function Addon.GetActionReagentUses(action)
         end
     end
 
-    return 0
+    return false
 end
