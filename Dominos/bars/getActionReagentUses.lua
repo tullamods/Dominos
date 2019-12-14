@@ -162,6 +162,13 @@ local SPELL_REAGENTS = {
     [712] = 6265,
     -- Summon Voidwalker
     [697] = 6265,
+    -- Shadowburn
+    [17877] = 6265,
+    [18867] = 6265,
+    [18868] = 6265,
+    [18869] = 6265,
+    [18870] = 6265,
+    [18871] = 6265,
 }
 
 local GetActionInfo = GetActionInfo
