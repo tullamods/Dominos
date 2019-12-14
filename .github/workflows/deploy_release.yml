@@ -15,6 +15,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v1
+      - name: Install pandoc
+        run: sudo apt-get install pandoc
       - name: Run packager for live
         run: curl -s https://raw.githubusercontent.com/BigWigsMods/packager/master/release.sh | bash -s -- -p $CF_PROJECT_ID -w $WOWI_PROJECT_ID
         env:
