@@ -1,5 +1,10 @@
 # Dominos Changelog
 
+8.2.34
+
+* Add Shadowburn reagent count
+* Fix an issue that would sometimes prevent action counts from being set
+
 8.2.33
 
 * Classic: Abilities that require reagents should now show how many times you can currently cast the ability
