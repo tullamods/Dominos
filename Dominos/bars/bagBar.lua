@@ -25,13 +25,13 @@ function BagBar:GetDefaults()
 	}
 end
 
-function BagBar:SetOneBag(enable)
-	self.sets.oneBag = enable or false
+function BagBar:SetShowBags(enable)
+	self.sets.oneBag = not enable
 	self:ReloadButtons()
 end
 
-function BagBar:OneBag()
-	return self.sets.oneBag
+function BagBar:ShowBags()
+	return not self.sets.oneBag
 end
 
 function BagBar:SetShowKeyRing(enable)
@@ -40,41 +40,49 @@ function BagBar:SetShowKeyRing(enable)
 end
 
 function BagBar:ShowKeyRing()
-	return self.sets.keyRing
+	if Addon:IsBuild("classic") then
+		return self.sets.keyRing
+	end
 end
 
 
 --[[ Frame Overrides ]]--
 
 function BagBar:GetButton(index)
-	if self:OneBag() then
-		if index == 1 then
-			return bagButtons[#bagButtons]
-		end
-
+	if index < 1 then
 		return nil
 	end
 
-	-- skip the keyring in classic mode
-	if Addon:IsBuild("classic") and not self:ShowKeyRing() then
-		if index == #bagButtons - 1 then
-			index = index + 1
-		end
+	local keyRingIndex = self:ShowKeyRing() and 1 or 0
+
+	local backpackIndex
+	if self:ShowBags() then
+		backpackIndex = keyRingIndex + NUM_BAG_SLOTS + 1
+	else
+		backpackIndex = keyRingIndex + 1
 	end
 
-	return bagButtons[index]
+	if index == keyRingIndex then
+		return _G[AddonName .. 'KeyRingButton']
+	elseif index == backpackIndex then
+		return MainMenuBarBackpackButton
+	elseif index > keyRingIndex and index < backpackIndex then
+		return _G[('CharacterBag%dSlot'):format(index - keyRingIndex - 1)]
+	end
 end
 
 function BagBar:NumButtons()
-	if self:OneBag() then
-		return 1
+	local count = 1
+
+	if self:ShowKeyRing() then
+		count = count + 1
 	end
 
-	if Addon:IsBuild("classic") and not self:ShowKeyRing() then
-		return #bagButtons - 1
+	if self:ShowBags() then
+		count = count + NUM_BAG_SLOTS
 	end
 
-	return #bagButtons
+	return count
 end
 
 function BagBar:CreateMenu()
@@ -84,14 +92,14 @@ function BagBar:CreateMenu()
 	local layoutPanel = menu:NewPanel(L.Layout)
 
 	layoutPanel:NewCheckButton{
-		name = L.OneBag,
-		get = function() return layoutPanel.owner:OneBag() end,
-		set = function(_, enable) return layoutPanel.owner:SetOneBag(enable) end,
+		name = L.BagBarShowBags,
+		get = function() return layoutPanel.owner:ShowBags() end,
+		set = function(_, enable) return layoutPanel.owner:SetShowBags(enable) end,
 	}
 
 	if Addon:IsBuild("Classic") then
 		layoutPanel:NewCheckButton{
-			name = KEYRING,
+			name = L.BagBarShowKeyRing,
 			get = function() return layoutPanel.owner:ShowKeyRing() end,
 			set = function(_, enable) return layoutPanel.owner:SetShowKeyRing(enable) end,
 		}
