@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+8.3.0
+
+* Update TOCs for 8.3.0
+
 8.2.36
 
 * Fix issue with packager
