@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+8.3.1-beta3
+
+* Add zone ability bar (shows on the right by default)
+
 8.3.1-beta2
 
 * Adjust the PlayerPowerBarAlt repositioning bits to try and prevent the stock UI from continuing to take it over
