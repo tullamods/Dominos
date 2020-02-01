@@ -9,7 +9,11 @@ local ZoneBar = Addon:CreateClass('Frame', Addon.Frame)
 
 do
 	function ZoneBar:New()
-		return ZoneBar.proto.New(self, 'zone')
+		local bar = ZoneBar.proto.New(self, 'zone')
+
+		bar:Layout()
+
+		return bar
 	end
 
 	function ZoneBar:GetDefaults()
@@ -38,8 +42,6 @@ do
 
 		self:AddLayoutPanel(menu)
 
-		menu:AddAdvancedPanel()
-
 		self.menu = menu
 	end
 
@@ -59,13 +61,11 @@ end
 
 local ZoneBarController = Addon:NewModule('ZoneBar')
 
-function ZoneBarController:OnInitialize()
+function ZoneBarController:Load()
 	-- luacheck: push ignore 122
 	ZoneAbilityFrame.ignoreFramePositionManager = true
 	-- luacheck: pop
-end
 
-function ZoneBarController:Load()
 	self.frame = ZoneBar:New()
 end
 
