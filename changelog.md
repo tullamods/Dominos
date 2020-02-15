@@ -1,5 +1,11 @@
 # Dominos Changelog
 
+8.3.2-beta
+
+* Update the default position of the zone ability bar to be more like the position in the stock UI
+* Fixed an issue causing reagent counts to not show for macros in classic (thanks, Jayrgo)
+* Adjusted the show states for the pet bar in classic
+
 8.3.1
 
 * Add zone ability bar (shows on the right by default)
