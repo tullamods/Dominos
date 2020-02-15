@@ -18,9 +18,9 @@ do
 
 	function ZoneBar:GetDefaults()
 		return {
-			point = 'RIGHT',
+			point = 'BOTTOM',
 			x = 0,
-			y = 0,
+			y = 160,
 			showInPetBattleUI = true,
 			showInOverrideUI = true
 		}
