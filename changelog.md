@@ -1,9 +1,9 @@
 # Dominos Changelog
 
-8.3.2-beta
-
-* Update the default position of the zone ability bar to be more like the position in the stock UI
+8.3.2
+* Dominos Cast now supports the mirror bars, which display out of breath, exhaustion, etc (thanks to [Jayrgo](https://github.com/Jayrgo))
 * Fixed an issue causing reagent counts to not show for macros in classic (thanks, Jayrgo)
+* Update the default position of the zone ability bar to be more like the position in the stock UI
 * Adjusted the show states for the pet bar in classic
 
 8.3.1
