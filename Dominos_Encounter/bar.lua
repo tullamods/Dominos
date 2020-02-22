@@ -60,7 +60,7 @@ function EncounterBar:CreateMenu()
 
 	self:AddLayoutPanel(menu)
 	self:AddAdvancedPanel(menu)
-	self:AddFadingPanel()
+	menu:AddFadingPanel()
 
 	self.menu = menu
 
