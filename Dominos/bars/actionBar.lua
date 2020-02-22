@@ -470,6 +470,7 @@ do
 		self:AddLayoutPanel(menu)
 		self:AddPagingPanel(menu)
 		menu:AddAdvancedPanel()
+		menu:AddFadingPanel()
 
 		self.menu = menu
 	end

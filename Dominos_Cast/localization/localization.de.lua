@@ -10,4 +10,5 @@ L.Texture = 'Textur'
 L.Width = 'Breite'
 L.Height = 'H\195\182he'
 L.Display_time = 'Zeige Zeit'
+L.Display_label = "Zeige Beschriftung"
 L.Padding = "Padding" --Needs Translation

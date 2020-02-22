@@ -1,9 +1,10 @@
 # Dominos Changelog
 
-8.3.2-beta
-
+8.3.2 - The "Jayrgo did a bunch of neat things" update
+* Dominos Cast now supports the mirror bars, which display out of breath, exhaustion, etc (thanks to [Jayrgo](https://github.com/Jayrgo))
+* Fixed an issue causing reagent counts to not show for macros in classic (thanks to [Jayrgo](https://github.com/Jayrgo))
+* Opacity and fade settings have been broken up in to their own menu section, with additional options for controlling fade duration (thanks to [Jayrgo](https://github.com/Jayrgo))
 * Update the default position of the zone ability bar to be more like the position in the stock UI
-* Fixed an issue causing reagent counts to not show for macros in classic (thanks, Jayrgo)
 * Adjusted the show states for the pet bar in classic
 
 8.3.1
