@@ -292,12 +292,12 @@ function ActionBar:KEYBOUND_DISABLED()
 	self:HideGrid(ACTION_BUTTON_SHOW_GRID_REASON_KEYBOUND)
 end
 
---right click targeting support
+-- right click targeting support
 function ActionBar:UpdateRightClickUnit()
 	self.header:SetAttribute('*unit2', Addon:GetRightClickUnit())
 end
 
---utility functions
+-- utility functions
 function ActionBar:ForAll(method, ...)
 	for _, f in pairs(active) do
 		local func = f[method]
@@ -306,7 +306,6 @@ function ActionBar:ForAll(method, ...)
 		end
 	end
 end
-
 
 function ActionBar:OnSetAlpha(alpha)
 	self:UpdateTransparent()
