@@ -11,4 +11,5 @@
 ## Dependencies: Dominos
 localization.xml
 castBar.lua
+mirrorTimer.lua
 main.lua
