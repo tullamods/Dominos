@@ -41,7 +41,7 @@ do
 		local menu = Addon:NewMenu()
 
 		self:AddLayoutPanel(menu)
-		manue:AddFadingPanel()
+		menu:AddFadingPanel()
 
 		self.menu = menu
 	end
