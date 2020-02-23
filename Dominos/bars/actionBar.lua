@@ -7,7 +7,6 @@
 
 local AddonName, Addon = ...
 local ActionButton = Addon.ActionButton
-local HiddenFrame = Addon:CreateHiddenFrame('Frame', nil, _G.UIParent)
 
 local MAX_BUTTONS = 120
 local ACTION_BUTTON_SHOW_GRID_REASON_ADDON = 1024
@@ -338,7 +337,7 @@ function ActionBar:HideButtonCooldowns()
 	-- hide cooldown frames on transparent buttons by sticking them onto a
 	-- different parent
 	for _, button in pairs(self.buttons) do
-		button.cooldown:SetParent(HiddenFrame)
+		button.cooldown:SetParent(Addon.ShadowUIParent)
 	end
 end
 
