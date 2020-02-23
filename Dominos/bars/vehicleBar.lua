@@ -23,8 +23,8 @@ end
 
 function VehicleBar:Layout()
 	VehicleLeaveButton:ClearAllPoints()
-	VehicleLeaveButton:SetPoint('CENTER', self.header)
-	VehicleLeaveButton:SetParent(self.header)
+	VehicleLeaveButton:SetPoint('CENTER', self)
+	VehicleLeaveButton:SetParent(self)
 
 	local w, h = VehicleLeaveButton:GetSize()
 	local pW, pH = self:GetPadding()

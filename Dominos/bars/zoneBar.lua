@@ -27,8 +27,8 @@ end
 
 function ZoneBar:Layout()
 	ZoneAbilityFrame:ClearAllPoints()
-	ZoneAbilityFrame:SetPoint('CENTER', self.header)
-	ZoneAbilityFrame:SetParent(self.header)
+	ZoneAbilityFrame:SetPoint('CENTER', self)
+	ZoneAbilityFrame:SetParent(self)
 
 	local w, h = ZoneAbilityFrame:GetSize()
 	local pW, pH = self:GetPadding()
