@@ -7,53 +7,51 @@ local _, Addon = ...
 
 local ZoneBar = Addon:CreateClass('Frame', Addon.Frame)
 
-do
-	function ZoneBar:New()
-		local bar = ZoneBar.proto.New(self, 'zone')
+function ZoneBar:New()
+	local bar = ZoneBar.proto.New(self, 'zone')
 
-		bar:Layout()
+	bar:Layout()
 
-		return bar
-	end
+	return bar
+end
 
-	function ZoneBar:GetDefaults()
-		return {
-			point = 'BOTTOM',
-			x = 0,
-			y = 160,
-			showInPetBattleUI = true,
-			showInOverrideUI = true
-		}
-	end
+function ZoneBar:GetDefaults()
+	return {
+		point = 'BOTTOM',
+		x = 0,
+		y = 160,
+		showInPetBattleUI = true,
+		showInOverrideUI = true
+	}
+end
 
-	function ZoneBar:Layout()
-		ZoneAbilityFrame:ClearAllPoints()
-		ZoneAbilityFrame:SetPoint('CENTER', self.header)
-		ZoneAbilityFrame:SetParent(self.header)
+function ZoneBar:Layout()
+	ZoneAbilityFrame:ClearAllPoints()
+	ZoneAbilityFrame:SetPoint('CENTER', self.header)
+	ZoneAbilityFrame:SetParent(self.header)
 
-		local w, h = ZoneAbilityFrame:GetSize()
-		local pW, pH = self:GetPadding()
+	local w, h = ZoneAbilityFrame:GetSize()
+	local pW, pH = self:GetPadding()
 
-		self:SetSize(w + pW, h + pH)
-	end
+	self:SetSize(w + pW, h + pH)
+end
 
-	function ZoneBar:CreateMenu()
-		local menu = Addon:NewMenu()
+function ZoneBar:CreateMenu()
+	local menu = Addon:NewMenu()
 
-		self:AddLayoutPanel(menu)
-		menu:AddFadingPanel()
+	self:AddLayoutPanel(menu)
+	menu:AddFadingPanel()
 
-		self.menu = menu
-	end
+	self.menu = menu
+end
 
-	function ZoneBar:AddLayoutPanel(menu)
-		local l = LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')
+function ZoneBar:AddLayoutPanel(menu)
+	local l = LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')
 
-		local panel = menu:NewPanel(l.Layout)
+	local panel = menu:NewPanel(l.Layout)
 
-		panel.scaleSlider = panel:NewScaleSlider()
-		panel.paddingSlider = panel:NewPaddingSlider()
-	end
+	panel.scaleSlider = panel:NewScaleSlider()
+	panel.paddingSlider = panel:NewPaddingSlider()
 end
 
 --[[ module ]]--
