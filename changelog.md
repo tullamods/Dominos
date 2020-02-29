@@ -6,6 +6,7 @@
 * Opacity and fade settings have been broken up in to their own menu section, with additional options for controlling fade duration (thanks to [Jayrgo](https://github.com/Jayrgo))
 * Update the default position of the zone ability bar to be more like the position in the stock UI
 * Adjusted the show states for the pet bar in classic
+* Minor internal improvements
 
 8.3.1
 
