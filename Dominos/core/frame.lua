@@ -41,27 +41,40 @@ function Frame:Create(id)
 
 	frame:SetAttribute('id', id)
 
+	frame:SetAttribute('_onstate-alpha', [[
+		self:CallMethod('FadeOut')
+	]])
+
 	frame:SetAttribute('_onstate-overrideui', [[
-		self:RunAttribute('updateShown')
+		self:RunAttribute('UpdateShown')
 	]])
 
 	frame:SetAttribute('_onstate-showinoverrideui', [[
-		self:RunAttribute('updateShown')
+		self:RunAttribute('UpdateShown')
 	]])
 
 	frame:SetAttribute('_onstate-petbattleui', [[
-		self:RunAttribute('updateShown')
+		self:RunAttribute('UpdateShown')
 	]])
 
 	frame:SetAttribute('_onstate-showinpetbattleui', [[
-		self:RunAttribute('updateShown')
+		self:RunAttribute('UpdateShown')
 	]])
 
 	frame:SetAttribute('_onstate-display', [[
-		self:RunAttribute('updateShown')
+		self:RunAttribute('UpdateShown')
 	]])
 
-	frame:SetAttribute('updateShown', [[
+	frame:SetAttribute("_onstate-hidden", [[
+		self:RunAttribute("UpdateShown")
+	]])
+
+	frame:SetAttribute('UpdateShown', [[
+		if self:GetAttribute("state-hidden") then
+			self:Hide()
+			return
+		end
+
 		local isOverrideUIShown = self:GetAttribute('state-overrideui') and true or false
 		local isPetBattleUIShown = self:GetAttribute('state-petbattleui') and true or false
 
@@ -80,6 +93,7 @@ function Frame:Create(id)
 			if self:GetAttribute('state-alpha') then
 				self:SetAttribute('state-alpha', nil)
 			end
+
 			self:Hide()
 			return
 		end
@@ -88,11 +102,8 @@ function Frame:Create(id)
 		if self:GetAttribute('state-alpha') ~= stateAlpha then
 			self:SetAttribute('state-alpha', stateAlpha)
 		end
-		self:Show()
-	]])
 
-	frame:SetAttribute('_onstate-alpha', [[
-		self:CallMethod('FadeOut')
+		self:Show()
 	]])
 
 	frame:OnCreate()
@@ -441,7 +452,7 @@ end
 function Frame:ShowFrame()
 	self.sets.hidden = nil
 
-	self:Show()
+	self:SetAttribute("state-hidden", nil)
 	self:UpdateWatched()
 	self:UpdateAlpha()
 
@@ -453,7 +464,7 @@ end
 function Frame:HideFrame()
 	self.sets.hidden = true
 
-	self:Hide()
+	self:SetAttribute("state-hidden", true)
 	self:UpdateWatched()
 	self:UpdateAlpha()
 
@@ -690,7 +701,7 @@ function Frame:GetRelativeFramePosition()
 	local right = self:GetRight() or 0
 	local bottom = self:GetBottom() or 0
 
-	local parent = self:GetParent() or _G['UIParent']
+	local parent = self:GetParent() or UIParent
 	local pwidth = parent:GetWidth() / scale
 	local pheight = parent:GetHeight() / scale
 
