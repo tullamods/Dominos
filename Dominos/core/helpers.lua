@@ -79,13 +79,13 @@ do
 end
 
 -- somewhere between a debounce and a throttle
-function Addon:Defer(func, delay, ...)
+function Addon:Defer(func, delay, arg1)
 	delay = delay or 0
 
 	local waiting = false
 
-	local function callback(...)
-		func(...)
+	local function callback()
+		func(arg1)
 		waiting = false
 	end
 
