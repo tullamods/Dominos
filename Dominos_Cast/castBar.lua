@@ -472,20 +472,19 @@ function CastBar:CreateMenu()
 	self:AddTexturePanel(menu)
 	self:AddFontPanel(menu)
 
-	self.menu = menu
-
-	self.menu:HookScript("OnShow", function()
+	menu:HookScript("OnShow", function()
 		if not (self:GetProperty("state") == "casting" or self:GetProperty("state") == "channeling") then
 			self:SetupDemo()
 		end
 	end)
 
-	self.menu:HookScript("OnHide", function()
+	menu:HookScript("OnHide", function()
 		if self:GetProperty("state") == "demo" then
 			self:Stop()
 		end
-	end)
+	end)	
 
+	self.menu = menu
 	return menu
 end
 

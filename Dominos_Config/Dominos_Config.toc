@@ -11,6 +11,9 @@
 ## Author: Tuller
 ## Dependencies: Dominos
 ## LoadOnDemand: 1
+embeds.xml
 localization.xml
 widgets\include.xml
-panels\include.xml
+options\main.lua
+options\general.lua
+options\profiles.lua
