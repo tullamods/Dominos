@@ -89,14 +89,21 @@ end
 
 function Addon:OnProfileChanged(msg, db, name)
 	self:Printf(L.ProfileLoaded, name)
+	self:Load()
 end
 
 function Addon:OnProfileCopied(msg, db, name)
 	self:Printf(L.ProfileCopied, name)
+	self:Reload()
 end
 
 function Addon:OnProfileReset(msg, db)
 	self:Printf(L.ProfileReset, db:GetCurrentProfile())
+	self:Reload()
+end
+
+function Addon:OnProfileShutdown(msg, db, name)
+	self:Unload()
 end
 
 --------------------------------------------------------------------------------
@@ -158,6 +165,11 @@ function Addon:Unload()
 	self.callbacks:Fire("LAYOUT_UNLOADED")
 end
 
+function Addon:Reload()
+	self:Unload()
+	self:Load()
+end
+
 --------------------------------------------------------------------------------
 -- Database Setup
 --------------------------------------------------------------------------------
@@ -169,8 +181,9 @@ function Addon:CreateDatabase()
 	db.RegisterCallback(self, "OnNewProfile")
 	db.RegisterCallback(self, "OnProfileChanged")
 	db.RegisterCallback(self, "OnProfileCopied")
-	db.RegisterCallback(self, "OnProfileReset")
 	db.RegisterCallback(self, "OnProfileDeleted")
+	db.RegisterCallback(self, "OnProfileReset")
+	db.RegisterCallback(self, "OnProfileShutdown")
 
 	self.db = db
 end
@@ -238,19 +251,15 @@ end
 function Addon:SaveProfile(name)
 	local toCopy = self.db:GetCurrentProfile()
 	if name and name ~= toCopy then
-		self:Unload()
 		self.db:SetProfile(name)
 		self.db:CopyProfile(toCopy)
-		self:Load()
 	end
 end
 
 function Addon:SetProfile(name)
 	local profile = self:MatchProfile(name)
 	if profile and profile ~= self.db:GetCurrentProfile() then
-		self:Unload()
 		self.db:SetProfile(profile)
-		self:Load()
 	else
 		self:Printf(L.InvalidProfile, name or "null")
 	end
@@ -267,16 +276,12 @@ end
 
 function Addon:CopyProfile(name)
 	if name and name ~= self.db:GetCurrentProfile() then
-		self:Unload()
 		self.db:CopyProfile(name)
-		self:Load()
 	end
 end
 
 function Addon:ResetProfile()
-	self:Unload()
 	self.db:ResetProfile()
-	self:Load()
 end
 
 function Addon:ListProfiles()
