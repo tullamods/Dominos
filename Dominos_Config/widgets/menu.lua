@@ -4,7 +4,7 @@ local L = LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')
 
 local nextName = Addon:CreateNameGenerator('Menu')
 
-local MENU_WIDTH = 480
+local MENU_WIDTH = 428
 local MENU_HEIGHT = 320
 
 function Menu:New(parent)

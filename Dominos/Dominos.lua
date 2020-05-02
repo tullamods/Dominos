@@ -37,12 +37,7 @@ end
 
 function Addon:OnEnable()
 	if self:IsWrongBuild() then
-		self:Printf(
-			"You're running a %s version for %s on a %s server. Things may not work", 
-			AddonName, 
-			ADDON_BUILD, 
-			self:GetWowBuild()
-		)		
+		self:Printf(L.WrongBuildWarning, AddonName, ADDON_BUILD, self:GetWowBuild())
 	end
 
 	self:UpdateUseOverrideUI()
@@ -210,7 +205,8 @@ function Addon:GetDatabaseDefaults()
 			},
 			ab = {
 				count = 10,
-				showgrid = true
+				showgrid = true,
+				rightClickUnit = "player",
 			},
 			frames = {
 				bags = {
@@ -355,7 +351,6 @@ function Addon:IsConfigAddonEnabled()
 		return true
 	end
 end
-
 
 --------------------------------------------------------------------------------
 -- Configuration API
@@ -778,7 +773,7 @@ function Addon:IsBuild(...)
 end
 
 -- checks to see if we're running a version of the addon intended to actually
--- run on this server. Twitch likes to push classic versions to retail and I 
+-- run on this server. Twitch likes to push classic versions to retail and I
 -- need to check for that
 function Addon:IsWrongBuild()
 	return not self:IsBuild(ADDON_BUILD)
