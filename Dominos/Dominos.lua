@@ -49,7 +49,7 @@ function Addon:OnUpgradeDatabase(oldVersion, newVersion)
 end
 
 function Addon:OnUpgradeAddon(oldVersion, newVersion)
-	self:Printf(L.Updated, ADDON_VERSION, self:GetBuild())
+	self:Printf(L.Updated, ADDON_VERSION, ADDON_BUILD)
 end
 
 -- keybound events
