@@ -47,7 +47,7 @@ Addon:AddOptionsPanel(
                 end,
                 width = 1.5,
             },
-            h "Action Bar Behavior",
+            h(L.ActionBarBehavior),
             check(L.LockActionButtons) {
                 get = function()
                     return LOCK_ACTIONBAR == "1"
@@ -62,7 +62,7 @@ Addon:AddOptionsPanel(
                     player = L.RCUPlayer,
                     focus = L.RCUFocus,
                     targettarget = L.RCUToT,
-                    none = "None"
+                    none = L.None
                 },
                 get = function()
                     return ParentAddon:GetRightClickUnit() or "none"
@@ -76,7 +76,7 @@ Addon:AddOptionsPanel(
                 end
             },
             check(L.ShowOverrideUI) {
-                desc = "Display the Blizzard override UI when entering a vehicle, and other situations.",
+                desc = L.ShowOverrideUIDesc,
                 disabled = ParentAddon:IsBuild("classic"),
                 get = function()
                     return ParentAddon:UsingOverrideUI()
@@ -87,12 +87,12 @@ Addon:AddOptionsPanel(
                 width = 1.5,
             },
             select(L.PossessBar) {
-                desc = "What action bar to display actions on when possessing an enemy, and other situations",
+                desc = L.PossessBarDesc,
                 values = function()
                     local items = {}
 
                     for i = 1, ParentAddon:NumBars() do
-                        table.insert(items, ("Action Bar %d"):format(i))
+                        tinsert(items, L.ActionBarNumber:format(i))
                     end
 
                     return items
@@ -110,7 +110,7 @@ Addon:AddOptionsPanel(
                     ParentAddon:SetOverrideBar(value)
                 end
             },            
-            h "Action Button Look & Feel",
+            h(L.ActionButtonLookAndFeel),
             check(L.ShowEmptyButtons) {
                 get = function()
                     return ParentAddon:ShowGrid()
@@ -163,7 +163,7 @@ Addon:AddOptionsPanel(
                 set = function(_, enable)
                     ParentAddon:SetThemeButtons(enable)
                 end,
-                desc = "Applies some custom style adjustments to action buttons when enabled, and leave them untouched when not",
+                desc = L.ThemeActionButtonsDesc,
                 width = 2,
             },
             select(L.ShowTooltips) {
@@ -171,7 +171,7 @@ Addon:AddOptionsPanel(
                 values = {
                     always = ALWAYS,
                     never = NEVER,
-                    ooc = "Out of Combat"
+                    ooc = L.OutOfCombat
                 },
                 get = function()
                     if ParentAddon:ShowTooltips() then

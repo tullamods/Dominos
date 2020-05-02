@@ -77,9 +77,11 @@ end
 
 -- todo, fire callbacks
 function Addon:OnInitialize()
+    ParentAddon.callbacks:Fire("OPTIONS_MENU_LOADING")
 end
 
 function Addon:OnInitialized()
+    ParentAddon.callbacks:Fire("OPTIONS_MENU_LOADED")
 end
 
 function Addon:ShowMainOptionsPanel()
