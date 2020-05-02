@@ -1,5 +1,8 @@
 # Dominos Changelog
 
+8.3.3
+* Fix an error on upgrade.
+
 8.3.2 - The "Jayrgo did a bunch of neat things" update
 * Dominos Cast now supports the mirror bars, which display out of breath, exhaustion, etc (thanks to [Jayrgo](https://github.com/Jayrgo))
 * Opacity and fade settings have been broken up in to their own menu section, with additional options for controlling fade duration (thanks to [Jayrgo](https://github.com/Jayrgo))
