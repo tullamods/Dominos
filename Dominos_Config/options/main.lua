@@ -2,9 +2,7 @@ local AddonName, Addon = ...
 local ParentAddonName = GetAddOnDependencies(AddonName)
 local ParentAddon = LibStub("AceAddon-3.0"):GetAddon(ParentAddonName)
 
-Addon.panels = {}
-
-local function createMainOptionsPanel()
+local function createMainPanel()
     local frame = CreateFrame("Frame", nil, InterfaceOptionsFrame)
     frame.name = ParentAddonName
     frame.children = {}
@@ -30,7 +28,7 @@ function Addon:Initialize()
     self:OnInitialize()
 
     -- setup the main options panel
-    self.frame = createMainOptionsPanel()
+    self.frame = createMainPanel()
 
     -- register ace config options
     LibStub("AceConfig-3.0"):RegisterOptionsTable(
@@ -42,7 +40,7 @@ function Addon:Initialize()
                 args = {}
             }
 
-            for _, panel in ipairs(self.panels) do
+            for _, panel in self:GetOptionsPanels() do
                 if panel.options then
                     options.args[panel.key] = panel.options
                 end
@@ -53,7 +51,7 @@ function Addon:Initialize()
     )
 
     -- build options panels
-    for _, panel in ipairs(self.panels) do
+    for _, panel in self:GetOptionsPanels() do
         local frame = panel.frame
 
         if not frame then
@@ -69,14 +67,6 @@ function Addon:Initialize()
     end
 
     self:OnInitialized()
-end
-
-function Addon:AddOptionsPanel(key, frame)
-    tinsert(self.panels, {key = key, frame = frame})
-end
-
-function Addon:AddAceConfigOptionsPanel(key, options)
-    tinsert(self.panels, {key = key, options = options})
 end
 
 function Addon:ShowAddonPanel()

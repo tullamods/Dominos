@@ -14,6 +14,7 @@
 embeds.xml
 localization.xml
 widgets\include.xml
+options\dsl.lua
 options\main.lua
 options\general.lua
 options\profiles.lua
