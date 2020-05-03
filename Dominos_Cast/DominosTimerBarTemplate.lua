@@ -5,39 +5,45 @@ local Clamp = _G.Clamp
 
 local TimerBar = {}
 
+local function statusBar_OnValueChanged(self, value)
+    self:GetParent():OnValueChanged(value)
+end
+
 function TimerBar:OnLoad()
     self.border:SetFrameLevel(self.statusBar:GetFrameLevel() + 3)
     self.Layout = Dominos:Defer(TimerBar.Layout, 0.1, self)
+
+    self.statusBar:SetScript("OnValueChanged", statusBar_OnValueChanged)
 end
 
 function TimerBar:OnSizeChanged()
     self:Layout()
 end
 
-function TimerBar:OnUpdate()
-    local value = Clamp(self:GetProgress(), self.tmin, self.tmax)
-
-    if self.tvalue ~= value then
-        self.tvalue = value
-        self:OnValueChanged(value)
-    end
-end
-
-function TimerBar:GetProgress()
-    return GetTime()
-end
-
-function TimerBar:OnValueChanged(value)
-    self:SetValue(value)
-
+function TimerBar:OnUpdate(elasped)
+    local value = self.tvalue or 0
+    
     if self.countdown then
-        self:SetFormattedText("%.1f", (self.tmax - value))
+        value = value - elasped
     else
+        value = value + elasped
+    end
+
+    self:SetValue(value)
+end
+
+function TimerBar:OnValueChanged(value)    
+    if self.countdown then
         self:SetFormattedText("%.1f", value)
+    else
+        self:SetFormattedText("%.1f", self.tmax - value)
     end
 end
 
 function TimerBar:SetValue(value)
+    value = Clamp(value, self.tmin, self.tmax)
+
+    self.tvalue = value
     self.statusBar:SetValue(value)
     self.statusBar.spark:SetValue(value)
 end
@@ -131,10 +137,6 @@ TimerBar.countdown = true
 
 function TimerBar:SetCountdown(countdown)
     self.countdown = countdown
-
-    if self.tvalue then
-        self:OnValueChanged(self.tvalue)
-    end
 end
 
 function TimerBar:Start(value, minValue, maxValue)
@@ -160,7 +162,7 @@ end
 
 function TimerBar:Pause()
     if not self.paused then
-        self.paused = true
+        self.paused = GetTime()
 
         self:SetScript("OnUpdate", nil)
     end
@@ -168,8 +170,9 @@ end
 
 function TimerBar:Resume()
     if self.paused then
+        self:OnUpdate(GetTime() - self.paused)
+        
         self.paused = nil
-
         self:SetScript("OnUpdate", self.OnUpdate)
     end
 end

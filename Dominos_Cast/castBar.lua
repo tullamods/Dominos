@@ -297,8 +297,14 @@ function CastBar:UpdateChanneling()
 		self:SetProperty("spell", spellID)
 		self:SetProperty("uninterruptible", notInterruptible)
 
+		self.timer:SetCountdown(true)
 		self.timer:SetShowLatency(false)
-		self.timer:Start(GetTime(), startTimeMS / 1000, endTimeMS / 1000)
+
+		local time = GetTime()
+		local startTime = startTimeMS / 1000
+		local endTime = endTimeMS / 1000
+
+		self.timer:Start(endTime - (time - startTime), 0, endTime - startTime)
 
 		return true
 	end
@@ -316,8 +322,14 @@ function CastBar:UpdateCasting()
 		self:SetProperty("spell", spellID)
 		self:SetProperty("uninterruptible", notInterruptible)
 
+		self.timer:SetCountdown(false)
 		self.timer:SetShowLatency(self:Displaying("latency"))
-		self.timer:Start(GetTime(), startTimeMS / 1000, endTimeMS / 1000)
+
+		local time = GetTime()
+		local startTime = startTimeMS / 1000
+		local endTime = endTimeMS / 1000
+
+		self.timer:Start(time - startTime, 0, endTime - startTime)
 		self.timer.latencyBar:SetWidth(self.timer.statusBar:GetWidth() * self:GetLatency() / (endTimeMS - startTimeMS))
 
 		return true
