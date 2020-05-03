@@ -88,6 +88,10 @@ function CastBar:GetDefaults()
 		padH = 1,
 		texture = "blizzard",
 		font = "Friz Quadrata TT",
+
+		-- default to the spell queue window for latency padding
+		latencyPadding = tonumber(GetCVar("SpellQueueWindow")),
+
 		display = {
 			icon = false,
 			time = true,
@@ -283,6 +287,7 @@ function CastBar:Layout()
 	self.timer:SetShowBorder(self:Displaying("border"))
 
 	self.timer:SetShowLatency(self:Displaying("latency"))
+	self.timer:SetLatencyPadding(self:GetLatencyPadding())
 
 	self.timer:SetShowSpark(self:Displaying("spark"))
 end
@@ -330,7 +335,6 @@ function CastBar:UpdateCasting()
 		local endTime = endTimeMS / 1000
 
 		self.timer:Start(time - startTime, 0, endTime - startTime)
-		self.timer.latencyBar:SetWidth(self.timer.statusBar:GetWidth() * self:GetLatency() / (endTimeMS - startTimeMS))
 
 		return true
 	end
@@ -363,14 +367,6 @@ function CastBar:UpdateColor()
 	end
 end
 
--- the latency indicator in the castbar is meant to tell you when you can
--- safely cast a spell, so we
-function CastBar:GetLatency()
-	local lagHome, lagWorld = select(3, GetNetStats())
-
-	return (max(lagHome, lagWorld) + self:GetLatencyPadding())
-end
-
 
 function CastBar:Stop()
 	self.timer:Stop()
@@ -378,7 +374,15 @@ end
 
 function CastBar:SetupDemo()
 	local spellID = self:GetRandomSpellID()
-	local name, _, icon = GetSpellInfo(spellID)
+	local name, rank, icon, castTime = GetSpellInfo(spellID)
+	
+	-- use the spell cast time if we have it, otherwise set a default one
+	-- of a few seconds
+	if not (castTime and castTime > 0) then
+		castTime = 3
+	else
+		castTime = castTime / 1000
+	end
 
 	self:SetProperty("state", "demo")
 	self:SetProperty("label", name)
@@ -387,20 +391,28 @@ function CastBar:SetupDemo()
 	self:SetProperty("reaction", nil)
 	self:SetProperty("uninterruptible", nil)
 
-	self.timer:Start(GetTime(), GetTime(), GetTime() + 60)
+	self.timer:SetCountdown(false)
+	self.timer:SetShowLatency(self:Displaying("latency"))	
+	self.timer:Start(0, 0, castTime)
+
+	-- loop the demo if it is still visible
+	C_Timer.After(castTime, function() 
+		if self.menuShown and self:GetProperty("state") == "demo" then
+			self:SetupDemo()
+		end
+	end)
 end
 
 function CastBar:GetRandomSpellID()
 	local spells = {}
 
 	for i = 1, GetNumSpellTabs() do
-		local offset, numSpells = select(3, GetSpellTabInfo(i))
-		local tabEnd = offset + numSpells
+		local _, _, offset, numSpells = GetSpellTabInfo(i)		
 
-		for j = offset, tabEnd - 1 do
+		for j = offset, (offset + numSpells) - 1 do
 			local _, spellID = GetSpellBookItemInfo(j, "player")
 			if spellID then
-				table.insert(spells, spellID)
+				tinsert(spells, spellID)
 			end
 		end
 	end
@@ -467,10 +479,11 @@ end
 --latency padding
 function CastBar:SetLatencyPadding(value)
 	self.sets.latencyPadding = value
+	self:Layout()
 end
 
 function CastBar:GetLatencyPadding()
-	return self.sets.latencyPadding or 0
+	return self.sets.latencyPadding or tonumber(GetCVar("SpellQueueWindow")) or 0
 end
 
 --------------------------------------------------------------------------------
@@ -485,12 +498,16 @@ function CastBar:CreateMenu()
 	self:AddFontPanel(menu)
 
 	menu:HookScript("OnShow", function()
+		self.menuShown = true
+
 		if not (self:GetProperty("state") == "casting" or self:GetProperty("state") == "channeling") then
 			self:SetupDemo()
 		end
 	end)
 
 	menu:HookScript("OnHide", function()
+		self.menuShown = nil
+
 		if self:GetProperty("state") == "demo" then
 			self:Stop()
 		end
@@ -505,7 +522,7 @@ function CastBar:AddLayoutPanel(menu)
 
 	local l = LibStub("AceLocale-3.0"):GetLocale("Dominos-CastBar")
 
-	for _, part in ipairs{"icon", "time", "border"} do
+	for _, part in ipairs{"border", "icon", "latency", "time"} do
 		panel:NewCheckButton{
 			name = l["Display_" .. part],
 			get = function()

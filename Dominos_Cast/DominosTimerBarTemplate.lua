@@ -1,7 +1,9 @@
 local Dominos = LibStub("AceAddon-3.0"):GetAddon("Dominos")
 local SharedMedia = LibStub('LibSharedMedia-3.0')
+
 local GetTime = _G.GetTime
 local Clamp = _G.Clamp
+local GetNetStats = _G.GetNetStats
 
 local TimerBar = {}
 
@@ -36,7 +38,7 @@ function TimerBar:OnValueChanged(value)
     if self.countdown then
         self:SetFormattedText("%.1f", value)
     else
-        self:SetFormattedText("%.1f", self.tmax - value)
+        self:SetFormattedText("%.1f", max(self.tmax - value, 0))
     end
 end
 
@@ -126,6 +128,27 @@ function TimerBar:SetShowLatency(show)
     self:Layout()
 end
 
+TimerBar.latencyPadding = 0
+
+function TimerBar:SetLatencyPadding(padding)
+    self.latencyPadding = padding or 0
+
+    self:UpdateLatencyPadding()  
+end
+
+function TimerBar:UpdateLatencyPadding()
+    local _, vmax = self.statusBar:GetMinMaxValues()
+
+    if (not vmax) or vmax == 0 then
+        self.latencyBar:SetWidth(0)
+    else
+        local _, _, lagHome, lagWorld = GetNetStats()
+        local latency = max(lagHome, lagWorld, self.latencyPadding or 0) / 1000
+
+        self.latencyBar:SetWidth(self.statusBar:GetWidth() * Clamp(latency / vmax, 0, 1))
+    end
+end
+
 TimerBar.padding = 0
 
 function TimerBar:SetPadding(padding)
@@ -146,6 +169,7 @@ function TimerBar:Start(value, minValue, maxValue)
 
     self.statusBar:SetMinMaxValues(minValue, maxValue)
     self.statusBar.spark:SetMinMaxValues(minValue, maxValue)
+    self:UpdateLatencyPadding()
 
     self:OnValueChanged(value)
     self:SetScript("OnUpdate", self.OnUpdate)
@@ -155,7 +179,10 @@ end
 -- the latency indicator in the castbar is meant to tell you when you can
 -- safely cast a spell, so we
 function TimerBar:GetLatency()
+
+
     local _, _, latencyHome, latencyWorld = GetNetStats()
+    local padding = self.latencyPadding or 0
 
 	return math.max(latencyHome, latencyWorld) / 100
 end
