@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+8.3.5
+* Add a new option to toggle the latency bar display on the cast  bar
+* The latency padding option now defaults to your spell queue window
+
 8.3.4
 * Fix castbar directions and hopefully reduced jitter
 
