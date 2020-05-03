@@ -14,18 +14,18 @@ move-folders:
 
 externals:
   # core dominos libraries
-  Dominos/libs/LibStub: https://repos.wowace.com/wow/libstub/tags/1.0
-  Dominos/libs/CallbackHandler-1.0: https://repos.wowace.com/wow/callbackhandler/trunk/CallbackHandler-1.0
   Dominos/libs/AceAddon-3.0: https://repos.wowace.com/wow/ace3/trunk/AceAddon-3.0
   Dominos/libs/AceConsole-3.0: https://repos.wowace.com/wow/ace3/trunk/AceConsole-3.0
-  Dominos/libs/AceEvent-3.0: https://repos.wowace.com/wow/ace3/trunk/AceEvent-3.0
   Dominos/libs/AceDB-3.0: https://repos.wowace.com/wow/ace3/trunk/AceDB-3.0
+  Dominos/libs/AceEvent-3.0: https://repos.wowace.com/wow/ace3/trunk/AceEvent-3.0
   Dominos/libs/AceLocale-3.0: https://repos.wowace.com/wow/ace3/trunk/AceLocale-3.0
-  Dominos/libs/LibKeyBound-1.0: https://repos.wowace.com/wow/libkeybound-1-0/trunk/LibKeyBound-1.0
+  Dominos/libs/CallbackHandler-1.0: https://repos.wowace.com/wow/callbackhandler/trunk/CallbackHandler-1.0
   Dominos/libs/LibDataBroker-1.1: https://github.com/tekkub/libdatabroker-1-1.git
   Dominos/libs/LibDBIcon-1.0: https://repos.wowace.com/wow/libdbicon-1-0/trunk/LibDBIcon-1.0
-  Dominos/libs/LibSharedMedia-3.0: https://repos.curseforge.com/wow/libsharedmedia-3-0/trunk/LibSharedMedia-3.0
   Dominos/libs/LibFlyPaper-1.0: https://github.com/Tuller/FlyPaper.git
+  Dominos/libs/LibKeyBound-1.0: https://repos.wowace.com/wow/libkeybound-1-0/trunk/LibKeyBound-1.0
+  Dominos/libs/LibSharedMedia-3.0: https://repos.curseforge.com/wow/libsharedmedia-3-0/trunk/LibSharedMedia-3.0
+  Dominos/libs/LibStub: https://repos.wowace.com/wow/libstub/tags/1.0
   # ones specific to dominos config
   Dominos_Config/libs/AceConfig-3.0: https://repos.wowace.com/wow/ace3/trunk/AceConfig-3.0
   Dominos_Config/libs/AceDBOptions-3.0: https://repos.wowace.com/wow/ace3/trunk/AceDBOptions-3.0
