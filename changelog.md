@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+8.3.6
+
+* Linked bars now inherit fade delay and duration settings
+
 8.3.5
 
 * Add a new option to toggle the latency bar display on the cast bar
