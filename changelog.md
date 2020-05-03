@@ -1,5 +1,8 @@
 # Dominos Changelog
 
+8.3.4
+* Fix castbar directions and hopefully reduced jitter
+
 8.3.3
 * Fix an error on upgrade.
 
