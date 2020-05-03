@@ -14,7 +14,7 @@ end
 -- A utility function for extending blizzard widget types (Frames, Buttons, etc)
 function Addon:CreateClass(frameType, prototype)
     local class = self:CreateHiddenFrame(frameType)
-    local class_mt = { __index = class }
+    local class_mt = {__index = class}
 
     class.Bind = function(_, obj)
         return setmetatable(obj, class_mt)
@@ -32,67 +32,66 @@ end
 -- returns a function that generates unique names for frames
 -- in the format <AddonName>_<Prefix>[1, 2, ...]
 function Addon:CreateNameGenerator(prefix)
-	local id = 0
-	return function()
-		id = id + 1
-		return ('%s_%s_%d'):format(AddonName, prefix, id)
-	end
+    local id = 0
+    return function()
+        id = id + 1
+        return ("%s_%s_%d"):format(AddonName, prefix, id)
+    end
 end
 
 -- A functional way to fade a frame from one opacity to another without constantly
 -- creating new animation groups for the frame
 do
-    local function fader_OnFinished(self)
-        self:GetParent():SetAlpha(self.toAlpha)
-    end
+    local Fade = setmetatable({}, {
+        __call = function(self, frame, toAlpha, delay, duration)
+            return self[frame](toAlpha, delay, duration)
+        end,
 
-    local faders = setmetatable({}, {
-        __index = function(t, k)
-            local animation = k:CreateAnimationGroup()
-            animation:SetLooping('NONE')
-            animation:SetScript('OnFinished', fader_OnFinished)
+        __index = function(self, frame)
+            local animationGroup = frame:CreateAnimationGroup()
+            animationGroup:SetLooping("NONE")
+            animationGroup:SetToFinalAlpha(true)
 
-            local fade = animation:CreateAnimation('Alpha')
-            fade:SetSmoothing('IN_OUT')
+            local fadeAnimation = animationGroup:CreateAnimation("Alpha")
+            fadeAnimation:SetSmoothing("IN_OUT")
+            fadeAnimation:SetOrder(0)
 
-            local v = function(toAlpha, delay, duration)
-                if animation:IsPlaying() then
-                    animation:Pause()
-                end
+            local function func(toAlpha, delay, duration)
+                fadeAnimation:SetFromAlpha(frame:GetAlpha())
+                fadeAnimation:SetToAlpha(toAlpha)
+                fadeAnimation:SetStartDelay(delay)
+                fadeAnimation:SetDuration(duration)
 
-                fade:SetFromAlpha(k:GetAlpha())
-                fade:SetToAlpha(toAlpha)
-                fade:SetStartDelay(delay)
-                fade:SetDuration(duration)
-
-                animation.toAlpha = toAlpha
-                animation:Play()
+                animationGroup:Restart()
             end
-            t[k] = v
-            return v
+
+            self[frame] = func
+            return func
         end
     })
 
     function Addon:Fade(frame, toAlpha, delay, duration)
-        faders[frame](toAlpha, delay, duration)
+        Fade(frame, toAlpha, delay, duration)
     end
 end
 
 -- somewhere between a debounce and a throttle
 function Addon:Defer(func, delay, arg1)
-	delay = delay or 0
+    delay = delay or 0
 
-	local waiting = false
+    local waiting = false
 
-	local function callback()
-		func(arg1)
-		waiting = false
-	end
+    local function callback()
+        func(arg1)
 
-	return function()
-		if not waiting then
-			waiting = true
-			_G.C_Timer.After(delay or 0, callback)
-		end
-	end
+        waiting = false
+    end
+
+    return function()
+        if not waiting then
+            waiting = true
+
+            C_Timer.After(delay or 0, callback)
+        end
+    end
 end
