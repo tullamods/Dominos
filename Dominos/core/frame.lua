@@ -37,6 +37,10 @@ function Frame:Create(id)
 	frame:SetClampedToScreen(true)
 	frame:SetMovable(true)
 
+	-- artfically increase the frame level of the bar to account for the header
+	-- frame we no longer use
+	frame:SetFrameLevel(frame:GetFrameLevel() + 1)
+
 	frame.id = id
 
 	frame:SetAttribute('id', id)
