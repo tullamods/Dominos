@@ -1,5 +1,10 @@
 # Dominos Changelog
 
+8.3.7
+
+* Fixed a bug preventing the options menu from loading in when it should
+* Dominos_Config should now load in a bit closer to when its actually needed
+
 8.3.6
 
 * Linked bars now inherit fade delay and duration settings
