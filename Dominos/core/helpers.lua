@@ -42,8 +42,17 @@ end
 -- A functional way to fade a frame from one opacity to another without constantly
 -- creating new animation groups for the frame
 do
-    local Fade = setmetatable({}, {
-        __call = function(self, frame, toAlpha, delay, duration)
+    -- set alpha on finished even though we SetToFinalAlpha(true) 
+    -- this is so that the action bars can react to the SetAlpha call and adjust
+    -- cooldown appearances when bars are invisible
+    local function animationGroup_OnFinished(self)
+        if self.toAlpha then
+            self:GetParent():SetAlpha(self.toAlpha)
+        end
+    end
+
+    Addon.Fade = setmetatable({}, {
+        __call = function(self, addon, frame, toAlpha, delay, duration)
             return self[frame](toAlpha, delay, duration)
         end,
 
@@ -51,17 +60,32 @@ do
             local animationGroup = frame:CreateAnimationGroup()
             animationGroup:SetLooping("NONE")
             animationGroup:SetToFinalAlpha(true)
+            animationGroup:SetScript("OnFinished", animationGroup_OnFinished)
 
             local fadeAnimation = animationGroup:CreateAnimation("Alpha")
             fadeAnimation:SetSmoothing("IN_OUT")
             fadeAnimation:SetOrder(0)
 
             local function func(toAlpha, delay, duration)
-                fadeAnimation:SetFromAlpha(frame:GetAlpha())
+                local fromAlpha
+
+                -- if we're not done animating, then figure out what alpha level
+                -- we are at and pick up where we left off
+                if not fadeAnimation:IsDone() then                  
+                    local start = fadeAnimation:GetFromAlpha()
+                    local delta = fadeAnimation:GetToAlpha() - start
+
+                    fromAlpha = start + delta * fadeAnimation:GetSmoothProgress()
+                else
+                    fromAlpha  = frame:GetAlpha()
+                end
+
+                fadeAnimation:SetFromAlpha(fromAlpha)
                 fadeAnimation:SetToAlpha(toAlpha)
                 fadeAnimation:SetStartDelay(delay)
                 fadeAnimation:SetDuration(duration)
 
+                animationGroup.toAlpha = toAlpha
                 animationGroup:Restart()
             end
 
@@ -69,10 +93,6 @@ do
             return func
         end
     })
-
-    function Addon:Fade(frame, toAlpha, delay, duration)
-        Fade(frame, toAlpha, delay, duration)
-    end
 end
 
 -- somewhere between a debounce and a throttle
