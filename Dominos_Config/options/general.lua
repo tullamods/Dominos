@@ -68,11 +68,7 @@ Addon:AddOptionsPanel(
                     return ParentAddon:GetRightClickUnit() or "none"
                 end,
                 set = function(_, value)
-                    if value == "none" then
-                        ParentAddon:SetRightClickUnit(nil)
-                    else
-                        ParentAddon:SetRightClickUnit(value)
-                    end
+                    ParentAddon:SetRightClickUnit(value)
                 end
             },
             check(L.ShowOverrideUI) {

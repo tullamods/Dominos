@@ -293,7 +293,13 @@ end
 
 -- right click targeting support
 function ActionBar:UpdateRightClickUnit()
-	self:SetAttribute('*unit2', Addon:GetRightClickUnit())
+	local unit = Adodn:GetRightClickUnit() or "none"
+
+	if unit ~= "none" then
+		self:SetAttribute("*unit2", unit)
+	else
+		self:SetAttribute("*unit2", nil)
+	end
 end
 
 -- utility functions
