@@ -5,6 +5,7 @@
 * Fixed a bug causing bars with a 0 opacity show state to no longer display cds
 * Fixed a bug preventing the options menu from loading in when it should
 * Dominos_Config should now load in a bit closer to when its actually needed
+* Slightly increased the frame level of Dominos bars for addon compatibility
 
 8.3.6
 
