@@ -19,15 +19,8 @@ function Addon:OnInitialize()
 	self:CreateDatabase()
 	self:UpgradeDatabase()
 
-	-- create a loader for the options menu
-	local f = CreateFrame("Frame", nil, InterfaceOptionsFrame)
-	f:SetScript(
-		"OnShow",
-		function()
-			f:SetScript("OnShow", nil)
-			LoadAddOn(CONFIG_ADDON_NAME)
-		end
-	)
+	-- create a stub loader for the options menu
+	self:CreateOptionsFrame()
 
 	-- keybound support
 	local kb = LibStub("LibKeyBound-1.0")
@@ -314,24 +307,35 @@ end
 -- Configuration UI
 --------------------------------------------------------------------------------
 
-function Addon:GetOptions()
-	local options = self.Options
+-- create a stub container on the Blizzard interface options panel
+-- it will be filled with content once the config addon loads
+function Addon:CreateOptionsFrame()
+	if not self:IsConfigAddonEnabled() then return end
 
-	if (not options) and LoadAddOn(CONFIG_ADDON_NAME) then
-		options = self.Options
-	end
+	local frame = CreateFrame("Frame"); frame:Hide()
 
-	return options
+	frame.name = AddonName
+	
+	-- if a user shows this frame and we've not yet loaded  the config addon,
+	-- then load it
+	frame:SetScript("OnShow", function(f)
+		f:SetScript("OnShow", nil)
+		LoadAddOn(CONFIG_ADDON_NAME)
+	end)
+
+	InterfaceOptions_AddCategory(frame)
+	
+	self.OptionsFrame = frame
+	return frame
 end
 
-function Addon:ShowOptions()
-	if InCombatLockdown() then
-		return
-	end
+function Addon:ShowOptionsFrame()
+	if self.OptionsFrame and not InCombatLockdown() then
+		if not InterfaceOptionsFrame:IsShown() then
+			InterfaceOptionsFrame_Show()
+		end
 
-	local options = self:GetOptions()
-	if options then
-		options:ShowAddonPanel()
+		InterfaceOptionsFrame_OpenToCategory(self.OptionsFrame)
 		return true
 	end
 
@@ -339,11 +343,13 @@ function Addon:ShowOptions()
 end
 
 function Addon:NewMenu()
-	local options = self:GetOptions()
-	if options then
-		return options.Menu:New()
+	if not self:IsConfigAddonEnabled() then return end
+
+	if not IsAddOnLoaded(CONFIG_ADDON_NAME) then
+		LoadAddOn(CONFIG_ADDON_NAME)
 	end
-	return nil
+
+	return self.Options.Menu:New()
 end
 
 function Addon:IsConfigAddonEnabled()

@@ -2,33 +2,28 @@ local AddonName, Addon = ...
 local ParentAddonName = GetAddOnDependencies(AddonName)
 local ParentAddon = LibStub("AceAddon-3.0"):GetAddon(ParentAddonName)
 
-local function createMainPanel()
-    local frame = CreateFrame("Frame", nil, InterfaceOptionsFrame)
-    frame.name = ParentAddonName
-    frame.children = {}
-    frame:Hide()
+-- shows the first options panel frame we have
+function Addon:ShowPrimaryOptionsPanel()
+    local _, child = next(self.frame.children)
 
-    frame:SetScript(
-        "OnShow",
-        function()
-            local _, child = next(frame.children)
-
-            if child then
-                InterfaceOptionsFrame_OpenToCategory(child)
-            end
-        end
-    )
-
-    InterfaceOptions_AddCategory(frame)
-
-    return frame
+    if child then
+        InterfaceOptionsFrame_OpenToCategory(child)
+    end
 end
 
-function Addon:Initialize()
-    self:OnInitialize()
+-- on the next frame, actually load the options menu
+-- this should allow other addons to respond to ADDON_LOADED and add additional
+-- panels to the options menu, and also let me list panels a bit later in the 
+-- toc order without ill effect
+C_Timer.After(GetTickTime(), function()
+    ParentAddon.callbacks:Fire("OPTIONS_MENU_LOADING", self)
 
-    -- setup the main options panel
-    self.frame = createMainPanel()
+    -- augment the options panel with new stuff
+    Addon.frame = ParentAddon.OptionsFrame
+    Addon.frame.children = {}
+    Addon.frame:SetScript("OnShow", function() 
+        Addon:ShowPrimaryOptionsPanel() 
+    end)
 
     -- register ace config options
     LibStub("AceConfig-3.0"):RegisterOptionsTable(
@@ -40,7 +35,7 @@ function Addon:Initialize()
                 args = {}
             }
 
-            for _, panel in self:GetOptionsPanels() do
+            for _, panel in Addon:GetOptionsPanels() do
                 if panel.options then
                     options.args[panel.key] = panel.options
                 end
@@ -51,46 +46,27 @@ function Addon:Initialize()
     )
 
     -- build options panels
-    for _, panel in self:GetOptionsPanels() do
+    for _, panel in Addon:GetOptionsPanels() do
         local frame = panel.frame
 
         if not frame then
             frame = LibStub("AceConfigDialog-3.0"):AddToBlizOptions(
-                self.frame.name,
+                Addon.frame.name,
                 panel.options.name,
-                self.frame.name,
+                Addon.frame.name,
                 panel.key
             )
         end
 
-        tinsert(self.frame.children, frame)
+        tinsert(Addon.frame.children, frame)
     end
 
-    self:OnInitialized()
-end
+    ParentAddon.callbacks:Fire("OPTIONS_MENU_LOADED", self)    
 
-function Addon:ShowAddonPanel()
-    self:Initialize()
-    self:ShowMainOptionsPanel()
-    self.ShowAddonPanel = self.ShowMainOptionsPanel
-end
-
--- todo, fire callbacks
-function Addon:OnInitialize()
-    ParentAddon.callbacks:Fire("OPTIONS_MENU_LOADING")
-end
-
-function Addon:OnInitialized()
-    ParentAddon.callbacks:Fire("OPTIONS_MENU_LOADED")
-end
-
-function Addon:ShowMainOptionsPanel()
-    if not InterfaceOptionsFrame:IsShown() then
-        InterfaceOptionsFrame_Show()
+    if Addon.frame:IsShown() then
+        Addon:ShowPrimaryOptionsPanel()    
     end
+end)
 
-    InterfaceOptionsFrame_OpenToCategory(self.frame)
-end
-
--- export
+-- exports
 ParentAddon.Options = Addon
