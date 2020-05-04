@@ -304,11 +304,8 @@ end
 
 -- utility functions
 function ActionBar:ForAll(method, ...)
-	for _, f in pairs(active) do
-		local func = f[method]
-		if type(func) == "function" then
-			func(f, ...)
-		end
+	for _, bar in pairs(active) do
+		bar:MaybeCallMethod(method, ...)
 	end
 end
 
@@ -352,6 +349,12 @@ end
 --[[ flyout direction updating ]]--
 
 function ActionBar:GetFlyoutDirection()
+	local direction = self.sets.flyoutDirection or "auto"
+
+	if direction ~= "auto" then
+		return direction
+	end
+
 	local w, h = self:GetSize()
 	local isVertical = w < h
 	local anchor = self:GetPoint()
@@ -369,6 +372,16 @@ function ActionBar:GetFlyoutDirection()
 	end
 
 	return 'UP'
+end
+
+function ActionBar:SetFlyoutDirection(direction)
+	local oldDirection = self.sets.flyoutDirection or "auto"
+	local newDirection = direction or "auto"
+
+	if oldDirection ~= newDirection then
+		self.sets.flyoutDirection = newDirection
+		self:UpdateFlyoutDirection()
+	end
 end
 
 function ActionBar:UpdateFlyoutDirection()
