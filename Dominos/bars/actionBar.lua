@@ -333,9 +333,10 @@ function ActionBar:ShowButtonCooldowns()
 	end
 end
 
+-- hide cooldown frames on transparent buttons by sticking them onto a
+-- different parent. We do this because the cooldown flashes still show up on 
+-- bars when they're transparent
 function ActionBar:HideButtonCooldowns()
-	-- hide cooldown frames on transparent buttons by sticking them onto a
-	-- different parent
 	for _, button in pairs(self.buttons) do
 		button.cooldown:SetParent(Addon.ShadowUIParent)
 	end
