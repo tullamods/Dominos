@@ -1,6 +1,8 @@
 ﻿-- Translations for Dominos Cast (English - Default Version)
 local L = LibStub("AceLocale-3.0"):NewLocale("Dominos-CastBar", "enUS", true)
 
+L.UseSpellReactionColors = "Contextual Coloring"
+L.UseSpellReactionColorsTip = "Color helpful and harmful spells differently"
 L.Display_border = "Show Border"
 L.Display_icon = "Show Icon"
 L.Display_label = "Show Label"

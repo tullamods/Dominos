@@ -82,7 +82,7 @@ function TimerBar:SetTexture(textureID)
     self.background:SetTexture(texture)
     self.background:SetVertexColor(0, 0, 0, 0.5)
 
-	self.latencyBar:SetTexture(texture)
+	-- self.latencyBar:SetTexture(texture)
 	self.statusBar:SetStatusBarTexture(texture)
 end
 

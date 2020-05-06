@@ -18,20 +18,30 @@ local ICON_OVERRIDES = {
 	[136235] = 136243
 }
 
-local LATENCY_BAR_ALPHA = 0.7
+local CAST_BAR_COLORS = {
+	default = {1, 0.7, 0},
+	failed = {1, 0, 0},
+	harm = {0.63, 0.36, 0.94},
+	help = {0.31, 0.78, 0.47},
+	spell = {0, 1, 0},
+	uninterruptible = {0.63, 0.63, 0.63},
+}
+
+local LATENCY_BAR_ALPHA = 0.5
 
 local function GetSpellReaction(spellID)
 	local name = GetSpellInfo(spellID)
-	if not name then
-		return "neutral"
+	if name then
+		if IsHelpfulSpell(name) then
+			return "help"
+		end
+	
+		if IsHarmfulSpell(name) then
+			return "harm"
+		end
 	end
 
-	if IsHelpfulSpell(name) then
-		return "help"
-	elseif IsHarmfulSpell(name) then
-		return "harm"
-	end
-	return "neutral"
+	return "default"
 end
 
 
@@ -88,6 +98,8 @@ function CastBar:GetDefaults()
 		padH = 1,
 		texture = "blizzard",
 		font = "Friz Quadrata TT",
+		
+		useSpellReactionColors = true,
 
 		-- default to the spell queue window for latency padding
 		latencyPadding = tonumber(GetCVar("SpellQueueWindow")),
@@ -239,7 +251,9 @@ function CastBar:reaction_update(reaction)
 end
 
 function CastBar:spell_update(spellID)
-	self:SetProperty("reaction", GetSpellReaction(spellID))
+	local reaction = GetSpellReaction(spellID)
+
+	self:SetProperty("reaction", reaction)
 end
 
 function CastBar:uninterruptible_update(uninterruptible)
@@ -309,7 +323,7 @@ function CastBar:UpdateChanneling()
 		local startTime = startTimeMS / 1000
 		local endTime = endTimeMS / 1000
 
-		self.timer:Start(endTime - (time - startTime), 0, endTime - startTime)
+		self.timer:Start(endTime - time, 0, endTime - startTime)
 
 		return true
 	end
@@ -342,28 +356,58 @@ function CastBar:UpdateCasting()
 	return false
 end
 
-function CastBar:UpdateColor()
-	local state = self:GetProperty("state")
-	local reaction = self:GetProperty("reaction")
-	local uninterruptible = self:GetProperty("uninterruptible")
+local function getLatencyColor(r, g, b)
+	return 1 - r, 1 - g, 1 - b, LATENCY_BAR_ALPHA
+end
 
+
+function CastBar:GetColorID()
+	local state = self:GetProperty("state")
 	if state == "failed" or state == "interrupted" then
-		self.timer.statusBar:SetStatusBarColor(1, 0, 0)
-		self.timer.latencyBar:SetColorTexture(1, 0, 0, 0)
-	elseif reaction == "harm" then
-		if uninterruptible then
-			self.timer.statusBar:SetStatusBarColor(0.63, 0.63, 0.63)
-			self.timer.latencyBar:SetColorTexture(0.37, 0.37, 0.37, LATENCY_BAR_ALPHA)
-		else
-			self.timer.statusBar:SetStatusBarColor(0.63, 0.36, 0.94)
-			self.timer.latencyBar:SetColorTexture(0.37, 0.64, 0.06, LATENCY_BAR_ALPHA)
+		return "failed"
+	end
+
+	local reaction = self:GetProperty("reaction")
+
+	if self:UseSpellReactionColors() then
+		if reaction == "help" then
+			return "help"
 		end
-	elseif reaction == "help" then
-		self.timer.statusBar:SetStatusBarColor(0.31, 0.78, 0.47)
-		self.timer.latencyBar:SetColorTexture(0.69, 0.22, 0.53, LATENCY_BAR_ALPHA)
+
+		if reaction == "harm" then
+			if self:GetProperty("uninterruptible") then
+				return "uninterruptible"
+			end
+
+			return "harm"
+		end
 	else
-		self.timer.statusBar:SetStatusBarColor(1, 0.7, 0)
-		self.timer.latencyBar:SetColorTexture(0, 0.3, 1, LATENCY_BAR_ALPHA)
+		if reaction == "help" then
+			return "spell"
+		end
+
+		if reaction == "harm" then
+			if self:GetProperty("uninterruptible") then
+				return "uninterruptible"
+			end
+
+			return "spell"
+		end
+	end
+	
+	return "default"
+end
+
+function CastBar:UpdateColor()
+	local color = self:GetColorID()
+	local r, g, b = unpack(CAST_BAR_COLORS[self:GetColorID()])
+
+	self.timer.statusBar:SetStatusBarColor(r, g, b)
+
+	if color == "failed" then
+		self.timer.latencyBar:SetColorTexture(0, 0, 0, 0)
+	else
+		self.timer.latencyBar:SetColorTexture(getLatencyColor(r, g, b))
 	end
 end
 
@@ -388,7 +432,7 @@ function CastBar:SetupDemo()
 	self:SetProperty("label", name)
 	self:SetProperty("icon", icon)
 	self:SetProperty("spell", spellID)
-	self:SetProperty("reaction", nil)
+	self:SetProperty("reaction", GetSpellReaction(spellID))
 	self:SetProperty("uninterruptible", nil)
 
 	self.timer:SetCountdown(false)
@@ -486,6 +530,21 @@ function CastBar:GetLatencyPadding()
 	return self.sets.latencyPadding or tonumber(GetCVar("SpellQueueWindow")) or 0
 end
 
+function CastBar:SetUseSpellReactionColors(enable)
+	self.sets.useSpellReactionColors = enable or false
+	self:UpdateColor()
+end
+
+function CastBar:UseSpellReactionColors(enable)
+	local state = self.sets.useSpellReactionColors
+
+	if self.sets.useSpellReactionColors == nil then
+		return true
+	end
+
+	return state
+end
+
 --------------------------------------------------------------------------------
 -- Cast Bar Right Click Menu
 --------------------------------------------------------------------------------
@@ -521,6 +580,12 @@ function CastBar:AddLayoutPanel(menu)
 	local panel = menu:NewPanel(LibStub("AceLocale-3.0"):GetLocale("Dominos-Config").Layout)
 
 	local l = LibStub("AceLocale-3.0"):GetLocale("Dominos-CastBar")
+
+	panel:NewCheckButton{
+		name = l["UseSpellReactionColors"],
+		get = function() return panel.owner:UseSpellReactionColors() end,
+		set = function(_, enable) panel.owner:SetUseSpellReactionColors(enable) end
+	}	
 
 	for _, part in ipairs{"border", "icon", "latency", "time"} do
 		panel:NewCheckButton{
