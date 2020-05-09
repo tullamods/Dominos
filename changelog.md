@@ -1,5 +1,10 @@
 # Dominos Changelog
 
+8.3.8
+
+* Fixed an issue causing the castbar to sometimes get stuck on screen
+* Added contextual color option to the castbar for help/harm coloring
+
 8.3.7
 
 * Fixed a bug causing bars with a 0 opacity show state to no longer display cds

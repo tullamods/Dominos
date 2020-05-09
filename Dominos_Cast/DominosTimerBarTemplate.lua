@@ -7,47 +7,51 @@ local GetNetStats = _G.GetNetStats
 
 local TimerBar = {}
 
-local function statusBar_OnValueChanged(self, value)
-    self:GetParent():OnValueChanged(value)
-end
-
 function TimerBar:OnLoad()
     self.border:SetFrameLevel(self.statusBar:GetFrameLevel() + 3)
     self.Layout = Dominos:Defer(TimerBar.Layout, 0.1, self)
-
-    self.statusBar:SetScript("OnValueChanged", statusBar_OnValueChanged)
 end
 
 function TimerBar:OnSizeChanged()
     self:Layout()
 end
 
-function TimerBar:OnUpdate(elasped)
+function TimerBar:OnUpdate(elapsed)
     local value = self.tvalue or 0
-    
-    if self.countdown then
-        value = value - elasped
-    else
-        value = value + elasped
-    end
 
-    self:SetValue(value)
+    if self.countdown then
+        self:SetValue(value - elapsed)
+    else
+        self:SetValue(value + elapsed)
+    end
 end
 
 function TimerBar:OnValueChanged(value)    
+    self.statusBar:SetValue(value)
+    self.statusBar.spark:SetValue(value)
+
     if self.countdown then
         self:SetFormattedText("%.1f", value)
+
+        if value <= self.tmin then
+            self:Stop()
+        end
     else
         self:SetFormattedText("%.1f", max(self.tmax - value, 0))
+
+        if value >= self.tmax then
+            self:Stop()
+        end        
     end
 end
 
 function TimerBar:SetValue(value)
     value = Clamp(value, self.tmin, self.tmax)
 
-    self.tvalue = value
-    self.statusBar:SetValue(value)
-    self.statusBar.spark:SetValue(value)
+    if self.tvalue ~= value then
+        self.tvalue = value
+        self:OnValueChanged(value)
+    end
 end
 
 function TimerBar:SetLabel(text)
@@ -82,7 +86,6 @@ function TimerBar:SetTexture(textureID)
     self.background:SetTexture(texture)
     self.background:SetVertexColor(0, 0, 0, 0.5)
 
-	-- self.latencyBar:SetTexture(texture)
 	self.statusBar:SetStatusBarTexture(texture)
 end
 
@@ -159,7 +162,7 @@ end
 TimerBar.countdown = true
 
 function TimerBar:SetCountdown(countdown)
-    self.countdown = countdown
+    self.countdown = countdown 
 end
 
 function TimerBar:Start(value, minValue, maxValue)
@@ -179,8 +182,6 @@ end
 -- the latency indicator in the castbar is meant to tell you when you can
 -- safely cast a spell, so we
 function TimerBar:GetLatency()
-
-
     local _, _, latencyHome, latencyWorld = GetNetStats()
     local padding = self.latencyPadding or 0
 
