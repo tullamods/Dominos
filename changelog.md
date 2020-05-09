@@ -2,6 +2,7 @@
 
 8.3.8
 
+* Fixed a bug causing the vehicle button to not show up when it should
 * Fixed an issue causing the castbar to sometimes get stuck on screen
 * Added contextual color option to the castbar for help/harm coloring
 
