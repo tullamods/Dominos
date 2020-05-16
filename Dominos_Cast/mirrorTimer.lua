@@ -26,7 +26,8 @@ function MirrorTimer:OnCreate()
 
     self.timer.OnUpdate = function(timer, elapsed)
         if self.timerName then
-            timer:SetValue(GetMirrorTimerProgress(self.timerName) / 1000)
+            local value = (GetMirrorTimerProgress(self.timerName) or 0) / 1000
+            timer:SetValue(value)
         else
             timer:SetValue(0)
         end
