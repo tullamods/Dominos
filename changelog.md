@@ -1,5 +1,10 @@
 # Dominos Changelog
 
+8.3.9
+
+* Fix an error when any of the mirror timers end
+* Added an option to the cast bar to hide the spark/gradient texture
+
 8.3.8
 
 * Fixed a bug causing the vehicle button to not show up when it should
