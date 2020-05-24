@@ -1,5 +1,10 @@
 # Dominos Changelog
 
+8.3.10
+
+* Fixed some more errors with the mirror timers
+* Implemented an alternative way to hide the keyring button
+
 8.3.9
 
 * Fix an error when any of the mirror timers end
