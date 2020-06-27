@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+8.3.11
+
+* Recoded the extra action bar frame to work more like the zone bar. The parent frame the bar should stay with the acutal bar position now
+
 8.3.10
 
 * Fixed some more errors with the mirror timers
