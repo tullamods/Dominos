@@ -26,7 +26,7 @@ jobs:
           CF_PROJECT_ID: 6650
           WOWI_PROJECT_ID: 9085
       - name: Run packager for classic
-        run: curl -s https://raw.githubusercontent.com/BigWigsMods/packager/master/release.sh | bash -s -- -g 1.13.5 -p $CF_PROJECT_ID -w $WOWI_PROJECT_ID -m .pkgmeta-classic
+        run: curl -s https://raw.githubusercontent.com/BigWigsMods/packager/master/release.sh | bash -s -- -g 1.13.4 -p $CF_PROJECT_ID -w $WOWI_PROJECT_ID -m .pkgmeta-classic
         env:
           CF_API_KEY: ${{ secrets.CF_API_KEY }}
           GITHUB_OAUTH: ${{ secrets.GITHUB_OAUTH }}
