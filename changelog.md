@@ -1,5 +1,10 @@
 # Dominos Changelog
 
+8.3.12
+
+* Update classic TOCs for 1.13.5
+* Add Packet of Seeds to the reagent count list in classic
+
 8.3.11
 
 * Recoded the extra action bar frame to work more like the zone bar. The parent frame the bar should stay with the acutal bar position now
