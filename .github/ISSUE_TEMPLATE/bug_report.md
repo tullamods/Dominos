@@ -1,16 +1,15 @@
 ---
 name: Bug report
-about: Create a report to help us improve
+about: Oh no, something broke.
 title: ''
 labels: "☠️ bug"
 assignees: Tuller
-
 ---
 
-If applicable, try reproducing your issue with just Dominos and Dominos_Config enabled. This helps route out issues that are due to either conflicts with other addons, or Dominos modules that are not part of the core, like Dominos_Units.
+**When reporting an issue, please try to reproduce the issue with just Dominos and Dominos_Config running.** Dominos reuses a good chunk of the stock UI, and other popular addons, like Move Anything, like to take control of those parts, too.
 
 **Addon Version**
 You can get this via running `/dominos version` in game
 
 **World of Warcraft Version**
-Classic, Retail, PTR
+For example, Classic, Retail, PTR, Beta.
