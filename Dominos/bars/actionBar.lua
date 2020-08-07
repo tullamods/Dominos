@@ -337,7 +337,7 @@ function ActionBar:ShowButtonCooldowns()
 end
 
 -- hide cooldown frames on transparent buttons by sticking them onto a
--- different parent. We do this because the cooldown flashes still show up on 
+-- different parent. We do this because the cooldown flashes still show up on
 -- bars when they're transparent
 function ActionBar:HideButtonCooldowns()
 	for _, button in pairs(self.buttons) do
@@ -571,7 +571,7 @@ function ActionBarController:UpdateOverrideBar()
 	local overrideBar = Addon:GetOverrideBar()
 
 	for _, button in pairs(overrideBar.buttons) do
-		ActionButton_Update(button)
+		button:Update()
 	end
 end
 

@@ -42,7 +42,7 @@ end
 -- A functional way to fade a frame from one opacity to another without constantly
 -- creating new animation groups for the frame
 do
-    -- set alpha on finished even though we SetToFinalAlpha(true) 
+    -- set alpha on finished even though we SetToFinalAlpha(true)
     -- this is so that the action bars can react to the SetAlpha call and adjust
     -- cooldown appearances when bars are invisible
     local function animationGroup_OnFinished(self)
@@ -71,7 +71,7 @@ do
 
                 -- if we're not done animating, then figure out what alpha level
                 -- we are at and pick up where we left off
-                if not fadeAnimation:IsDone() then                  
+                if not fadeAnimation:IsDone() then
                     local start = fadeAnimation:GetFromAlpha()
                     local delta = fadeAnimation:GetToAlpha() - start
 

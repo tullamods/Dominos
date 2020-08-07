@@ -24,7 +24,7 @@ function MirrorTimer:OnCreate()
     self.props = {}
     self.timer = CreateFrame("Frame", nil, self, "DominosTimerBarTemplate")
 
-    self.timer.OnUpdate = function(timer, elapsed)
+    self.timer.OnUpdate = function(timer)
         if self.timerName then
             local value = (GetMirrorTimerProgress(self.timerName) or 0) / 1000
             timer:SetValue(value)

@@ -35,7 +35,7 @@ local function GetSpellReaction(spellID)
 		if IsHelpfulSpell(name) then
 			return "help"
 		end
-	
+
 		if IsHarmfulSpell(name) then
 			return "harm"
 		end
@@ -98,7 +98,7 @@ function CastBar:GetDefaults()
 		padH = 1,
 		texture = "blizzard",
 		font = "Friz Quadrata TT",
-		
+
 		useSpellReactionColors = true,
 
 		-- default to the spell queue window for latency padding
@@ -394,7 +394,7 @@ function CastBar:GetColorID()
 			return "spell"
 		end
 	end
-	
+
 	return "default"
 end
 
@@ -419,7 +419,7 @@ end
 function CastBar:SetupDemo()
 	local spellID = self:GetRandomSpellID()
 	local name, rank, icon, castTime = GetSpellInfo(spellID)
-	
+
 	-- use the spell cast time if we have it, otherwise set a default one
 	-- of a few seconds
 	if not (castTime and castTime > 0) then
@@ -436,11 +436,11 @@ function CastBar:SetupDemo()
 	self:SetProperty("uninterruptible", nil)
 
 	self.timer:SetCountdown(false)
-	self.timer:SetShowLatency(self:Displaying("latency"))	
+	self.timer:SetShowLatency(self:Displaying("latency"))
 	self.timer:Start(0, 0, castTime)
 
 	-- loop the demo if it is still visible
-	C_Timer.After(castTime, function() 
+	C_Timer.After(castTime, function()
 		if self.menuShown and self:GetProperty("state") == "demo" then
 			self:SetupDemo()
 		end
@@ -451,7 +451,7 @@ function CastBar:GetRandomSpellID()
 	local spells = {}
 
 	for i = 1, GetNumSpellTabs() do
-		local _, _, offset, numSpells = GetSpellTabInfo(i)		
+		local _, _, offset, numSpells = GetSpellTabInfo(i)
 
 		for j = offset, (offset + numSpells) - 1 do
 			local _, spellID = GetSpellBookItemInfo(j, "player")
@@ -570,7 +570,7 @@ function CastBar:CreateMenu()
 		if self:GetProperty("state") == "demo" then
 			self:Stop()
 		end
-	end)	
+	end)
 
 	self.menu = menu
 	return menu
@@ -585,7 +585,7 @@ function CastBar:AddLayoutPanel(menu)
 		name = l["UseSpellReactionColors"],
 		get = function() return panel.owner:UseSpellReactionColors() end,
 		set = function(_, enable) panel.owner:SetUseSpellReactionColors(enable) end
-	}	
+	}
 
 	for _, part in ipairs{"border", "icon", "latency", "spark", "time"} do
 		panel:NewCheckButton{

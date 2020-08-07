@@ -143,7 +143,7 @@ function ActionButton:OnEnter()
 end
 
 --override the old update hotkeys function
-hooksecurefunc("ActionButton_UpdateHotkeys", ActionButton.UpdateHotkey)
+-- hooksecurefunc("ActionButton_UpdateHotkeys", ActionButton.UpdateHotkey)
 
 -- add inventory counts in classic
 if Addon:IsBuild("classic") then
@@ -274,7 +274,7 @@ function ActionButton:SetFlyoutDirection(direction)
 	ActionButton_UpdateFlyout(self)
 end
 
-ActionButton.UpdateState = ActionButton_UpdateState
+-- ActionButton.UpdateState = ActionButton_UpdateState
 
 function ActionButton:UpdateShowEquippedItemBorders()
 	self.Border:SetParent(Addon:ShowEquippedItemBorders() and self or Addon.ShadowUIParent)

@@ -149,7 +149,7 @@ do
 	--[[ constructor ]]--
 
 	local function createOverlay(parent)
-		local overlay = CreateFrame('Button', nextName(), parent)
+		local overlay = CreateFrame('Button', nextName(), parent, "BackdropTemplate")
 
 		overlay:EnableMouseWheel(true)
 		overlay:SetClampedToScreen(true)
@@ -589,7 +589,7 @@ do
 	end
 
 	function ConfigOverlay:CreateHelpDialog()
-		local dialog = CreateFrame('Frame', AddonName .. 'ConfigHelperDialog', self.overlay)
+		local dialog = CreateFrame('Frame', AddonName .. 'ConfigHelperDialog', self.overlay, 'BackdropTemplate')
 
 		dialog:SetMovable(true)
 		dialog:EnableMouse(true)

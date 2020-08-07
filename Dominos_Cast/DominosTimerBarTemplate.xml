@@ -15,7 +15,7 @@
         </Animations>
         <Frames>
             <!-- we use a separate frame to contain the border so that it shows up over the status bars -->
-            <Frame parentKey="border" setAllPoints="true">
+            <Frame parentKey="border" setAllPoints="true" inherits="BackdropTemplate">
                 <Backdrop edgeFile="Interface\DialogFrame\UI-DialogBox-Border" tile="true">
                     <EdgeSize val="16" />
                     <BackgroundInsets left="5" right="5" top="5" bottom="5"/>
