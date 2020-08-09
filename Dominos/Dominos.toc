@@ -38,8 +38,7 @@ bars\stanceBar.lua
 bars\bagBar.lua
 bars\menuBar.lua
 #@retail@
-bars\extraActionBar.lua
-bars\zoneBar.lua
+bars\extraAbilityBar.lua
 #@end-retail@
 bars\vehicleBar.lua
 plugins\multiActionBarFixer.lua
