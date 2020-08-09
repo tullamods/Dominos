@@ -1,33 +1,45 @@
-name: Deploy Prerelease
+# this is derived from https://github.com/BigWigsMods/packager/wiki/GitHub-Actions-workflow
+# the only real modifications I've made are to handle only specific tag formats
+name: Package and build beta/alpha versions
 
-# when a tag is created with the format vx.y.z or x.y.z
+# when a tag is created with the format vx.y.z-thing or x.y.z-thing
 on:
   push:
     tags:
       - "*.*.*-*"
       - "v*.*.*-*"
 
+# a workflow is built up as jobs, and within these jobs are steps
 jobs:
-  build:
+  # "release" here can be anything in one word
+  release:
+    # we can run our steps on pretty much anything, but the "ubuntu-latest" image is a safe bet
     runs-on: ubuntu-latest
 
+    # specify the environment variables used by the packager, matching the secrets from the project on GitHub
+    env:
+      CF_API_KEY: ${{ secrets.CF_API_KEY }}
+      WOWI_API_TOKEN: ${{ secrets.WOWI_API_TOKEN }}
+      GITHUB_OAUTH: ${{ secrets.GITHUB_OAUTH }}
+
+    # "steps" holds a list of all the steps needed to package and release our AddOn
     steps:
-      - uses: actions/checkout@v1
-      - name: Install pandoc
-        run: sudo apt-get install pandoc
-      - name: Run packager for live
-        run: curl -s https://raw.githubusercontent.com/BigWigsMods/packager/master/release.sh | bash -s -- -p $CF_PROJECT_ID -w $WOWI_PROJECT_ID
-        env:
-          CF_API_KEY: ${{ secrets.CF_API_KEY }}
-          GITHUB_OAUTH: ${{ secrets.GITHUB_OAUTH }}
-          WOWI_API_TOKEN: ${{ secrets.WOWI_API_TOKEN }}
-          CF_PROJECT_ID: 6650
-          WOWI_PROJECT_ID: 19110
-      - name: Run packager for classic
-        run: curl -s https://raw.githubusercontent.com/BigWigsMods/packager/master/release.sh | bash -s -- -g 1.13.4 -p $CF_PROJECT_ID -w $WOWI_PROJECT_ID -m .pkgmeta-classic
-        env:
-          CF_API_KEY: ${{ secrets.CF_API_KEY }}
-          GITHUB_OAUTH: ${{ secrets.GITHUB_OAUTH }}
-          WOWI_API_TOKEN: ${{ secrets.WOWI_API_TOKEN }}
-          CF_PROJECT_ID: 6650
-          WOWI_PROJECT_ID: 19110
+
+      # we first have to clone the AddOn project, which is simple enough, and is a required step
+      - name: Clone project
+        uses: actions/checkout@v2
+
+      # once cloned, we just run the GitHub Action for the packager project
+      - name: Package and release
+        uses: BigWigsMods/packager@master
+        with:
+          args: -p 6650 -w 19110
+
+      # TODO: test the 9.x release against classic
+      # another example where we supply additional arguments, this example is specifically to release
+      # for the Classic version of the game
+      # - name: Package and release for Classic
+      #   uses: BigWigsMods/packager@master
+      #   with:
+      #     args: -g 1.13.5 -p 6650 -w 19110
+
