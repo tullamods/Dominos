@@ -5,7 +5,7 @@ manual-changelog:
   markup-type: markdown
 
 ignore:
-  Dominos/Dominos_Encounter
+  - Dominos_Encounter
 
 move-folders:
   Dominos/Dominos: Dominos
