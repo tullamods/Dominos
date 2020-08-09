@@ -1,18 +1,83 @@
---[[
-	bindableButton:
-		An abstract button class used to allow keybound to work transparently
-		on both the stock blizzard bindings, and click bindings
---]]
+-- An interface used to allow KeyBound to work transparently
+-- both the stock blizzard bindings, and click bindings
 
-local _, Addon = ...
+local AddonName, Addon = ...
 local KeyBound = LibStub('LibKeyBound-1.0')
 
-local BindableButton = Addon:CreateClass('CheckButton')
+local BindableButton = { }
 
--- there's a nice assumption here: all hotkey text will use the same naming
--- convention the call here is wacky because this functionality is actually
--- called for the blizzard buttons _before_ I'm able to bind the action button
--- methods to them
+-- used to wrap buttons, so that I can avoid stomping over possible mixin methods
+local BindableButtonProxy = CreateFrame("Frame", AddonName .. "BinderProxy"); BindableButtonProxy:Hide()
+
+-- returns the current hotkey assigned to the given button
+function BindableButtonProxy:GetHotkey()
+	local parent = self:GetParent()
+
+	if parent then
+		return BindableButton.GetHotkey(parent)
+	end
+end
+
+function BindableButtonProxy:SetKey(key)
+	local parent = self:GetParent()
+
+	if parent then
+		return BindableButton.SetKey(parent, key)
+	end
+end
+
+function BindableButtonProxy:GetBindings()
+	local parent = self:GetParent()
+
+	if parent then
+		return BindableButton.GetBindings(parent)
+	end
+end
+
+function BindableButtonProxy:ClearBindings()
+	local parent = self:GetParent()
+
+	if parent then
+		return BindableButton.ClearBindings(parent)
+	end
+end
+
+-- what we're binding to, used for printing
+function BindableButtonProxy:GetActionName()
+	local parent = self:GetParent()
+
+	if parent then
+		local result
+
+		if parent.buttonType then
+			local id = parent:GetAttribute('bindingid') or parent:GetID()
+
+			result = GetBindingName(parent.buttonType .. id)
+		end
+
+		return result or parent:GetName()
+	end
+
+	return UNKNOWN
+end
+
+-- keybound support
+function BindableButton:Register(button)
+	if button.UpdateHotkeys then
+		hooksecurefunc(button, "UpdateHotkeys", BindableButton.UpdateHotkey)
+	end
+
+	button:HookScript("OnEnter", BindableButton.OnEnter)
+end
+
+function BindableButton:OnEnter()
+	BindableButtonProxy:ClearAllPoints()
+	BindableButtonProxy:SetAllPoints(self)
+	BindableButtonProxy:SetParent(self)
+
+	KeyBound:Set(BindableButtonProxy)
+end
+
 function BindableButton:UpdateHotkey(buttonType)
 	local key = BindableButton.GetHotkey(self, buttonType)
 
@@ -64,8 +129,8 @@ do
     function BindableButton:GetBindings()
         wipe(buffer)
 
-        addBindings(buffer, self:GetBlizzBindings())
-        addBindings(buffer, self:GetClickBindings())
+        addBindings(buffer, BindableButton.GetBlizzBindings(self))
+        addBindings(buffer, BindableButton.GetClickBindings(self))
 
         return table.concat(buffer, ", ")
     end
@@ -90,11 +155,19 @@ do
 	end
 
 	function BindableButton:ClearBindings()
-		clearBindings(self:GetBlizzBindings())
-		clearBindings(self:GetClickBindings())
+		clearBindings(BindableButton.GetBlizzBindings(self))
+		clearBindings(BindableButton.GetClickBindings(self))
 	end
 end
 
+-- hook relevant methods
+if ActionButton_UpdateHotkeys then
+	hooksecurefunc("ActionButton_UpdateHotkeys", BindableButton.UpdateHotkey)
+end
+
+if PetActionButton_SetHotkeys then
+	hooksecurefunc('PetActionButton_SetHotkeys', BindableButton.UpdateHotkey)
+end
 
 -- exports
 Addon.BindableButton = BindableButton

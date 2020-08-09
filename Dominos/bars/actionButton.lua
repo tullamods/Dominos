@@ -4,9 +4,9 @@
 --------------------------------------------------------------------------------
 
 local AddonName, Addon = ...
-local KeyBound = LibStub("LibKeyBound-1.0")
+local BindableButton = Addon.BindableButton
 
-local ActionButton = Addon:CreateClass("CheckButton", Addon.BindableButton)
+local ActionButton = Addon:CreateClass("CheckButton")
 
 ActionButton.unused = {}
 ActionButton.active = {}
@@ -100,8 +100,8 @@ function ActionButton:Create(id)
 		button:SetAttribute("useparent-unit", true)
 		button:SetAttribute("statehidden", nil)
 		button:EnableMouseWheel(true)
-		button:HookScript("OnEnter", self.OnEnter)
 
+		BindableButton:Register(button)
 		Addon:GetModule("ButtonThemer"):Register(button, "Action Bar")
 	end
 
@@ -137,107 +137,11 @@ function ActionButton:Free()
 	self.unused[id] = self
 end
 
---keybound support
-function ActionButton:OnEnter()
-	KeyBound:Set(self)
-end
-
---override the old update hotkeys function
--- hooksecurefunc("ActionButton_UpdateHotkeys", ActionButton.UpdateHotkey)
-
--- add inventory counts in classic
-if Addon:IsBuild("classic") then
-	local GetActionReagentUses = Addon.GetActionReagentUses
-
-	hooksecurefunc(
-		"ActionButton_UpdateCount",
-		function(self)
-			local action = self.action
-
-			-- check reagent counts
-			local requiresReagents, usesRemaining = GetActionReagentUses(action)
-			if requiresReagents then
-				self.Count:SetText(usesRemaining)
-				return
-			end
-
-			-- standard inventory counts
-			if IsConsumableAction(action) or IsStackableAction(action) then
-				local count = GetActionCount(action)
-				if count > (self.maxDisplayCount or 9999) then
-					self.Count:SetText("*")
-				elseif count > 0 then
-					self.Count:SetText(count)
-				else
-					self.Count:SetText("")
-				end
-			end
-		end
-	)
-end
-
 function ActionButton:UpdateCount()
 	if Addon:ShowCounts() then
 		self.Count:Show()
 	else
 		self.Count:Hide()
-	end
-end
-
---button visibility
-if Addon:IsBuild("classic") then
-	function ActionButton:ShowGrid()
-		if InCombatLockdown() then
-			return
-		end
-
-		self:SetAttribute("showgrid", (self:GetAttribute("showgrid") or 0) + 1)
-
-		if not self:GetAttribute("statehidden") then
-			self:Show()
-		end
-	end
-
-	function ActionButton:HideGrid()
-		if InCombatLockdown() then
-			return
-		end
-
-		local showgrid = (self:GetAttribute("showgrid") or 0)
-		if showgrid > 0 then
-			self:SetAttribute("showgrid", showgrid - 1)
-		end
-
-		if self:GetAttribute("showgrid") == 0 and not HasAction(self.action) then
-			self:Hide()
-		end
-	end
-else
-	function ActionButton:ShowGrid(reason)
-		if InCombatLockdown() then
-			return
-		end
-
-		self:SetAttribute("showgrid", bit.bor(self:GetAttribute("showgrid"), reason))
-
-		if self:GetAttribute("showgrid") > 0 and not self:GetAttribute("statehidden") then
-			self:Show()
-		end
-	end
-
-	function ActionButton:HideGrid(reason)
-		if InCombatLockdown() then
-			return
-		end
-
-		local showgrid = self:GetAttribute("showgrid")
-		if showgrid > 0 then
-			self:SetAttribute("showgrid", bit.band(showgrid, bit.bnot(reason)))
-		end
-
-		if self:GetAttribute("showgrid") == 0 and not HasAction(self.action) then
-			self:Hide()
-		end
 	end
 end
 
@@ -274,8 +178,6 @@ function ActionButton:SetFlyoutDirection(direction)
 	ActionButton_UpdateFlyout(self)
 end
 
--- ActionButton.UpdateState = ActionButton_UpdateState
-
 function ActionButton:UpdateShowEquippedItemBorders()
 	self.Border:SetParent(Addon:ShowEquippedItemBorders() and self or Addon.ShadowUIParent)
 end
@@ -286,6 +188,70 @@ function ActionButton:LoadAction()
 	local id = state and self:GetAttribute("action--" .. state) or self:GetAttribute("action--base")
 
 	self:SetAttribute("action", id)
+end
+
+
+-- apply classic only fixes
+if Addon:IsBuild("classic") then
+	-- define show and hidegrid
+	function ActionButton:ShowGrid()
+		if InCombatLockdown() then
+			return
+		end
+
+		self:SetAttribute("showgrid", (self:GetAttribute("showgrid") or 0) + 1)
+
+		if not self:GetAttribute("statehidden") then
+			self:Show()
+		end
+	end
+
+	function ActionButton:HideGrid()
+		if InCombatLockdown() then
+			return
+		end
+
+		local showgrid = (self:GetAttribute("showgrid") or 0)
+		if showgrid > 0 then
+			self:SetAttribute("showgrid", showgrid - 1)
+		end
+
+		if self:GetAttribute("showgrid") == 0 and not HasAction(self.action) then
+			self:Hide()
+		end
+	end
+
+	-- define update state
+	ActionButton.UpdateState = ActionButton_UpdateState
+
+	-- add inventory counts in classic
+	local GetActionReagentUses = Addon.GetActionReagentUses
+
+	hooksecurefunc(
+		"ActionButton_UpdateCount",
+		function(self)
+			local action = self.action
+
+			-- check reagent counts
+			local requiresReagents, usesRemaining = GetActionReagentUses(action)
+			if requiresReagents then
+				self.Count:SetText(usesRemaining)
+				return
+			end
+
+			-- standard inventory counts
+			if IsConsumableAction(action) or IsStackableAction(action) then
+				local count = GetActionCount(action)
+				if count > (self.maxDisplayCount or 9999) then
+					self.Count:SetText("*")
+				elseif count > 0 then
+					self.Count:SetText(count)
+				else
+					self.Count:SetText("")
+				end
+			end
+		end
+	)
 end
 
 -- exports

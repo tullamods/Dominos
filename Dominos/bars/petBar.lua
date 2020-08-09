@@ -3,14 +3,14 @@
 
 --[[ Globals ]]--
 
-local Addon = _G[...]
-local KeyBound = LibStub('LibKeyBound-1.0')
+local _, Addon = ...
+local BindableButton = Addon.BindableButton
 local unused = {}
 
 
 --[[ Pet Button ]]--
 
-local PetButton = Addon:CreateClass('CheckButton', Addon.BindableButton)
+local PetButton = Addon:CreateClass('CheckButton')
 
 function PetButton:New(id)
 	local button = self:Restore(id) or self:Create(id)
@@ -27,7 +27,7 @@ function PetButton:Create(id)
 	local button = self:Bind(_G[buttonName])
 	button.buttonType = 'BONUSACTIONBUTTON'
 
-	button:HookScript('OnEnter', self.OnEnter)
+	BindableButton:Register(button)
 
 	Addon:GetModule('ButtonThemer'):Register(button, 'Pet Bar')
 
@@ -54,14 +54,6 @@ function PetButton:Free()
 	self:SetParent(nil)
 	self:Hide()
 end
-
---keybound support
-function PetButton:OnEnter()
-	KeyBound:Set(self)
-end
-
---override keybinding display
-hooksecurefunc('PetActionButton_SetHotkeys', PetButton.UpdateHotkey)
 
 
 --[[ Pet Bar ]]--

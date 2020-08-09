@@ -13,12 +13,12 @@ if not (
 	return
 end
 
-local KeyBound = LibStub('LibKeyBound-1.0')
+local BindableButton = Addon.BindableButton
 
 
 --[[ Button ]]--
 
-local StanceButton = Addon:CreateClass('CheckButton', Addon.BindableButton)
+local StanceButton = Addon:CreateClass('CheckButton')
 
 do
 	local unused = {}
@@ -39,7 +39,8 @@ do
 		local button = self:Bind(_G[buttonName])
 
 		if button then
-			button:HookScript('OnEnter', self.OnEnter)
+			BindableButton:Register(button)
+
 			Addon:GetModule('ButtonThemer'):Register(button, 'Class Bar')
 		end
 
@@ -67,11 +68,6 @@ do
 		Addon.BindingsController:Unregister(self)
 		Addon:GetModule('Tooltips'):Unregister(self)
 	end
-
-	--keybound support
-	function StanceButton:OnEnter()
-		KeyBound:Set(self)
-	end
 end
 
 
@@ -79,52 +75,48 @@ end
 
 local StanceBar = Addon:CreateClass('Frame', Addon.ButtonBar)
 
-do
-	function StanceBar:New()
-		return StanceBar.proto.New(self, 'class')
-	end
+function StanceBar:New()
+	return StanceBar.proto.New(self, 'class')
+end
 
-	function StanceBar:GetDefaults()
-		return {
-			point = 'CENTER',
-			spacing = 2
-		}
-	end
+function StanceBar:GetDefaults()
+	return {
+		point = 'CENTER',
+		spacing = 2
+	}
+end
 
-	function StanceBar:NumButtons()
-		return GetNumShapeshiftForms() or 0
-	end
+function StanceBar:NumButtons()
+	return GetNumShapeshiftForms() or 0
+end
 
-	function StanceBar:GetButton(index)
-		return StanceButton:New(index)
-	end
+function StanceBar:GetButton(index)
+	return StanceButton:New(index)
 end
 
 
 --[[ Module ]]--
 
-do
-	local StanceBarController = Addon:NewModule('StanceBar', 'AceEvent-3.0')
+local StanceBarModule = Addon:NewModule('StanceBar', 'AceEvent-3.0')
 
-	function StanceBarController:Load()
-		self.bar = StanceBar:New()
+function StanceBarModule:Load()
+	self.bar = StanceBar:New()
 
-		self:RegisterEvent('UPDATE_SHAPESHIFT_FORMS', 'UpdateNumForms')
-		self:RegisterEvent('PLAYER_REGEN_ENABLED', 'UpdateNumForms')
-		self:RegisterEvent('PLAYER_ENTERING_WORLD', 'UpdateNumForms')
+	self:RegisterEvent('UPDATE_SHAPESHIFT_FORMS', 'UpdateNumForms')
+	self:RegisterEvent('PLAYER_REGEN_ENABLED', 'UpdateNumForms')
+	self:RegisterEvent('PLAYER_ENTERING_WORLD', 'UpdateNumForms')
+end
+
+function StanceBarModule:Unload()
+	self:UnregisterAllEvents()
+
+	if self.bar then
+		self.bar:Free()
 	end
+end
 
-	function StanceBarController:Unload()
-		self:UnregisterAllEvents()
+function StanceBarModule:UpdateNumForms()
+	if InCombatLockdown() then return end
 
-		if self.bar then
-			self.bar:Free()
-		end
-	end
-
-	function StanceBarController:UpdateNumForms()
-		if InCombatLockdown() then return end
-
-		self.bar:UpdateNumButtons()
-	end
+	self.bar:UpdateNumButtons()
 end

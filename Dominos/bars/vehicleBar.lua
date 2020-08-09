@@ -5,8 +5,8 @@ local _, Addon = ...
 
 local VehicleBar = Addon:CreateClass('Frame', Addon.Frame)
 
-local CanExitVehicle = _G.CanExitVehicle or function() 
-	return UnitOnTaxi("player") 
+local CanExitVehicle = _G.CanExitVehicle or function()
+	return UnitOnTaxi("player")
 end
 
 function VehicleBar:New()
@@ -62,7 +62,7 @@ local VehicleBarController = Addon:NewModule('VehicleBar', 'AceEvent-3.0')
 function VehicleBarController:OnInitialize()
 	-- MainMenuBarVehicleLeaveButton_Update can alter the position of the leave
 	-- button, so put it back on the vehicle bar whenever it is called
-	-- we also show it again, if possible, because it'll be hidden normally if 
+	-- we also show it again, if possible, because it'll be hidden normally if
 	-- the Override UI is enabled.
 	hooksecurefunc(
 		"MainMenuBarVehicleLeaveButton_Update",
@@ -70,7 +70,7 @@ function VehicleBarController:OnInitialize()
 			if self.frame then
 				VehicleLeaveButton:ClearAllPoints()
 				VehicleLeaveButton:SetPoint("CENTER", self.frame)
-				
+
 				if CanExitVehicle() then
 					VehicleLeaveButton:Show()
 				end

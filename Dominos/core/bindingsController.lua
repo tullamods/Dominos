@@ -227,7 +227,7 @@ function BindingsController:Register(button, createSurrogate)
 	end
 
 	button:UnregisterEvent('UPDATE_BINDINGS')
-	button:UpdateHotkey()
+	Addon.BindableButton.UpdateHotkey(button)
 
 	if createSurrogate then
 		self:CreateSurrogate(button)
@@ -338,7 +338,7 @@ function BindingsController:UpdateBindings()
 	self.__NeedsBindingUpdate = nil
 
 	for button in pairs(self.frames) do
-		button:UpdateHotkey()
+		Addon.BindableButton.UpdateHotkey(button)
 
 		if self:HasSurrogate(button) then
 			self:Execute([[ self:RunAttribute('LoadBindings') ]])

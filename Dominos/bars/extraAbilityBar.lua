@@ -98,11 +98,15 @@ function ExtraAbilityBarModule:Load()
 	if not self.initialized then
 		self.initialized = true
 
+		-- setup the container watcher
 		ExtraAbilityContainer.ignoreFramePositionManager = true
 
 		hooksecurefunc(ExtraAbilityContainer, "Layout", function ()
 			self:OnExtraAbilityContainerLayout()
 		end)
+
+		-- hook the extra action button for binding purposes
+		Addon.BindableButton:Register(ExtraActionButton1)
 	end
 
 	self.frame = ExtraAbilityBar:New()
@@ -117,7 +121,7 @@ end
 function ExtraAbilityBarModule:OnExtraAbilityContainerLayout()
 	if InCombatLockdown() then
 		self.dirty = true
-	else
+	elseif self.frame then
 		self.frame:Layout()
 	end
 end
@@ -125,6 +129,9 @@ end
 function ExtraAbilityBarModule:PLAYER_REGEN_ENABLED()
 	if self.dirty then
 		self.dirty = nil
-		self.frame:Layout()
+
+		if self.frame then
+			self.frame:Layout()
+		end
 	end
 end
