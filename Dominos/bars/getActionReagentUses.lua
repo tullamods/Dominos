@@ -175,8 +175,8 @@ local SPELL_REAGENTS = {
     [13399] = {11018, 2, 11022, 1}
 }
 
--- Usage: requiresReagents, usesRemaining = GetActionReagentInfo(action)
-function Addon.GetActionReagentUses(action)
+-- Usage: requiresReagents, usesRemaining = getActionReagentUses(action)
+local function getActionReagentUses(action)
     local actionType, actionID = GetActionInfo(action)
 
     if actionType == "macro" then
@@ -209,3 +209,29 @@ function Addon.GetActionReagentUses(action)
 
     return false, 0
 end
+
+hooksecurefunc(
+    "ActionButton_UpdateCount",
+    function(button)
+        local action = button.action
+
+        -- check reagent counts
+        local requiresReagents, usesRemaining = getActionReagentUses(action)
+        if requiresReagents then
+            button.Count:SetText(usesRemaining)
+            return
+        end
+
+        -- standard inventory counts
+        if IsConsumableAction(action) or IsStackableAction(action) then
+            local count = GetActionCount(action)
+            if count > (button.maxDisplayCount or 9999) then
+                button.Count:SetText("*")
+            elseif count > 0 then
+                button.Count:SetText(count)
+            else
+                button.Count:SetText("")
+            end
+        end
+    end
+)
