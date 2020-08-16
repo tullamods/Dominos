@@ -530,7 +530,7 @@ end
 -- right click selfcast
 function Addon:SetRightClickUnit(unit)
 	self.db.profile.ab.rightClickUnit = unit
-	self.ActionBar:ForAll("UpdateRightClickUnit")
+	self.Frame:ForAll("SetRightClickUnit", unit)
 end
 
 function Addon:GetRightClickUnit()
