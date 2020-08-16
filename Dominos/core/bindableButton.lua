@@ -5,16 +5,19 @@ local KeyBound = LibStub('LibKeyBound-1.0')
 -- binding method definitions
 -- returns the binding action associated with the button
 local function getButtonBindingAction(button)
-	local buttonType = button.buttonType or button:GetAttribute("buttonType")
-
-	if buttonType then
-		local id = math.max(button:GetID(), button:GetAttribute('bindingid') or 0)
-		if id > 0 then
-			return buttonType .. id
-		end
+	local bindingAction = button:GetAttribute("bindingAction")
+	if bindingAction then
+		return bindingAction
 	end
 
-	return ('CLICK %s:LeftButton'):format(button:GetName())
+	local id = button:GetID() or 0
+	if id > 0 and button.buttonType then
+		return (button.buttonType .. id)
+	end
+
+	-- use a virtual button for clicks
+	-- this allows us to separate hotkey presses from mouse clicks on actions
+	return ('CLICK %s:HOTKEY'):format(button:GetName())
 end
 
 local function getButtonActionName(button)
@@ -95,24 +98,99 @@ function BindableButtonProxy:GetActionName()
 end
 
 BindableButtonProxy:SetScript("OnLeave", function(self)
-	print("OnLeave", self:GetName())
-
 	self:ClearAllPoints()
 	self:SetParent(nil)
 end)
 
 -- methods to inject onto a bar to add in common binding functionality
 -- previously, this was a mixin
-local BindableButton = {}
+local BindableButton = Addon:NewModule("Bindings", "AceEvent-3.0")
 
-function BindableButton:Inject(button)
+BindableButton.keyPressHandler = Addon:CreateHiddenFrame('Frame', nil, nil, 'SecureHandlerBaseTemplate')
+
+function BindableButton:OnInitialize()
+	-- migrate any old click bindings to the new format
+	local updatedBindings = false
+
+	for id = 1, 60 do
+		local action = ('CLICK %sActionButton%d:LeftButton'):format(AddonName, id)
+		local newAction = ('CLICK %sActionButton%d:HOTKEY'):format(AddonName, id)
+
+		local key = GetBindingKey(action)
+		while key do
+			SetBinding(key, newAction)
+			key = GetBindingKey(action)
+			updatedBindings = true
+		end
+	end
+
+	if updatedBindings then
+		(SaveBindings or AttemptToSaveBindings)(GetCurrentBindingSet())
+	end
+end
+
+function BindableButton:OnEnable()
+	self:SetCastOnKeyPress(GetCVarBool('ActionButtonUseKeyDown'))
+	self:RegisterEvent("CVAR_UPDATE")
+end
+
+function BindableButton:CVAR_UPDATE(event, cvarName, cvarValue)
+	if cvarName == ACTION_BUTTON_USE_KEY_DOWN then
+		self:SetCastOnKeyPress(cvarValue == "1")
+	end
+end
+
+function BindableButton:PLAYER_REGEN_ENABLED(event)
+	self:SetCastOnKeyPress(GetCVarBool('ActionButtonUseKeyDown'))
+	self:UnregisterEvent(event)
+	self.needsUpdate = nil
+end
+
+-- adds cast on keypress support to custom actions
+function BindableButton:AddCastOnKeyPressSupport(button)
+	-- watch down clicks in addition to up clicks
+	-- we can't stop here, however, as it would cause pressing the mouse button
+	-- down on a button to trigger an action, which isn't something we want
+    button:RegisterForClicks('AnyUp', 'AnyDown')
+
+	-- ...so the solution is to wrap the click handler for buttons
+	-- and filter clicks of the HOTKEY "button" appropiately
+	-- those are then transformed into LeftButton clicks if they pass through
+	-- the filter so we preserve existing action bar behavior
+	self.keyPressHandler:WrapScript(button, 'OnClick', [[
+        if button == 'HOTKEY' then
+			if down ~= control:GetAttribute("CastOnKeyPress") then
+                return 'LeftButton'
+            end
+		elseif down then
+			return false
+		end
+    ]])
+end
+
+-- adds quickbinding support to buttons
+function BindableButton:AddQuickBindingSupport(button, bindingAction)
 	button:HookScript("OnEnter", BindableButton.OnEnter)
+
+	if bindingAction then
+		button:SetAttribute("bindingAction", bindingAction)
+	end
 
 	if button.UpdateHotkeys then
 		hooksecurefunc(button, "UpdateHotkeys", BindableButton.UpdateHotkeys)
 	else
 		button.UpdateHotkeys = BindableButton.UpdateHotkeys
 	end
+end
+
+function BindableButton:SetCastOnKeyPress(enable)
+	if InCombatLockdown() and not self.needsUpdate then
+		self.needsUpdate = true
+		self:RegisterEvent('PLAYER_REGEN_ENABLED')
+		return
+	end
+
+	self.keyPressHandler:SetAttribute('CastOnKeyPress', enable)
 end
 
 function BindableButton:UpdateHotkeys()
