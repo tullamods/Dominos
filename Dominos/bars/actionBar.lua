@@ -541,6 +541,10 @@ end
 
 -- workaround for empty buttons not hiding when dropping a pet action
 function ActionBarsModule:PET_BAR_HIDEGRID()
+    if InCombatLockdown() then
+        return
+    end
+
     ActionBar:ForAll('HideGrid', ACTION_BUTTON_SHOW_GRID_REASON_EVENT)
 end
 
