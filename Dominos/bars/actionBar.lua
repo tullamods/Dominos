@@ -66,7 +66,7 @@ function ActionBar:New(id)
 
     bar:LoadStateController()
     bar:UpdateStateDriver()
-    bar:UpdateRightClickUnit()
+    bar:SetRightClickUnit(Addon:GetRightClickUnit())
     bar:UpdateGrid()
     bar:UpdateTransparent(true)
 
@@ -106,38 +106,38 @@ function ActionBar:MaxLength()
     return floor(MAX_BUTTONS / Addon:NumBars())
 end
 
-function ActionBar:BaseActionID()
-    return self:MaxLength() * (self.id - 1)
-end
-
 function ActionBar:AcquireButton(index)
-    local button = Addon.ActionButtons[index + self:BaseActionID()]
+    local actionID = index + (self.id - 1) * self:MaxLength()
+    local button = Addon.ActionButtons[actionID]
 
-    button:SetAttribute("statehidden", nil)
+    button:SetAttribute('index', index)
+    button:SetAttribute('statehidden', nil)
 
     return button
 end
 
 function ActionBar:ReleaseButton(button)
-	button:SetAttribute("statehidden", true)
-	button:SetParent(Addon.ShadowUIParent)
+    button:SetAttribute('statehidden', true)
+    button:SetParent(Addon.ShadowUIParent)
     button:Hide()
 end
 
 function ActionBar:OnAttachButton(button)
-    button:LoadAction()
+    button:SetActionOffsetInsecure(self:GetAttribute("state-offset"))
+
     button:SetFlyoutDirection(self:GetFlyoutDirection())
     button:SetShowCountText(Addon:ShowCounts())
     button:SetShowMacroText(Addon:ShowMacroText())
     button:SetShowEquippedItemBorders(Addon:ShowEquippedItemBorders())
-    button:SetShowCooldowns(self:GetAlpha() ~= 0)
+    button:SetShowCooldowns(self:GetAlpha() > 0)
+    button:UpdateHotkeys()
 
-    Addon:GetModule("ButtonThemer"):Register(button, self:GetDisplayName())
+    Addon:GetModule('ButtonThemer'):Register(button, self:GetDisplayName())
     Addon:GetModule('Tooltips'):Register(button)
 end
 
 function ActionBar:OnDetachButton(button)
-    Addon:GetModule("ButtonThemer"):Unregister(button, self:GetDisplayName())
+    Addon:GetModule('ButtonThemer'):Unregister(button, self:GetDisplayName())
     Addon:GetModule('Tooltips'):Unregister(button)
 end
 
@@ -151,104 +151,67 @@ function ActionBar:GetOffset(stateId)
     return self.pages[stateId]
 end
 
--- note to self:
--- if you leave a ; on the end of a statebutton string, it causes evaluation
--- issues, especially if you're doing right click selfcast on the base state
 function ActionBar:UpdateStateDriver()
-    UnregisterStateDriver(self, 'page', 0)
+    local conditions
 
-    local header = ''
-    for i, state in Addon.BarStates:getAll() do
-        local stateId = state.id
-        local condition
-        if type(state.value) == 'function' then
-            condition = state.value()
-        else
-            condition = state.value
-        end
+    for _, state in Addon.BarStates:getAll() do
+        local offset = self:GetOffset(state.id)
 
-        if condition and self:GetOffset(stateId) then
-            header = header .. condition .. 'S' .. i .. ';'
-        end
-    end
-
-    if header ~= '' then
-        RegisterStateDriver(self, 'page', header .. 0)
-    end
-
-    self:UpdateActions()
-    self:RefreshActions()
-end
-
-do
-    local function ToValidID(id)
-        return (id - 1) % MAX_BUTTONS + 1
-    end
-
-    --updates the actionID of a given button for all states
-    function ActionBar:UpdateAction(index)
-        local button = self.buttons[index]
-        local maxSize = self:MaxLength()
-
-        button:SetAttribute('button--index', index)
-
-        for i, state in Addon.BarStates:getAll() do
-            local offset = self:GetOffset(state.id)
+        if offset then
             local condition
+
             if type(state.value) == 'function' then
                 condition = state.value()
             else
                 condition = state.value
             end
 
-            local actionId = nil
-            if condition and offset then
-                actionId = ToValidID(button:GetAttribute('action--base') + offset * maxSize)
-            end
+            if condition then
+                local page = Wrap(self.id + offset, Addon:NumBars())
 
-            button:SetAttribute('action--S' .. i, actionId)
+                if conditions then
+                    conditions = strjoin(';', conditions, (condition .. page))
+                else
+                    conditions = (condition .. page)
+                end
+            end
         end
     end
-end
 
---updates the actionID of all buttons for all states
-function ActionBar:UpdateActions()
-    for i = 1, #self.buttons do
-        self:UpdateAction(i)
+    if conditions then
+        RegisterStateDriver(self, 'page', strjoin(';', conditions, self.id))
+    else
+        UnregisterStateDriver(self, 'page')
+        self:SetAttribute('state-page', self.id)
     end
 end
 
 function ActionBar:LoadStateController()
-    self:SetAttribute('_onstate-overridebar', [[
-		self:RunAttribute('updateState')
-	]])
+    self:SetAttribute('barLength', self:MaxLength())
+    self:SetAttribute('overrideBarLength', NUM_ACTIONBAR_BUTTONS)
 
-    self:SetAttribute('_onstate-overridepage', [[
-		self:RunAttribute('updateState')
-	]])
+    self:SetAttribute('_onstate-overridebar', [[ self:RunAttribute('UpdateOffset') ]])
+    self:SetAttribute('_onstate-overridepage', [[ self:RunAttribute('UpdateOffset') ]])
+    self:SetAttribute('_onstate-page', [[ self:RunAttribute('UpdateOffset') ]])
 
-    self:SetAttribute('_onstate-page', [[
-		self:RunAttribute('updateState')
-	]])
+    self:SetAttribute(
+        'UpdateOffset',
+        [[
+            local offset = 0
 
-    self:SetAttribute('updateState', [[
-		local overridePage = self:GetAttribute('state-overridepage')
+            local overridePage = self:GetAttribute('state-overridepage') or 0
+            if overridePage > 10 and self:GetAttribute('state-overridebar') then
+                offset = (overridePage - 1) * self:GetAttribute('overrideBarLength')
+            else
+                local page = self:GetAttribute('state-page') or 1
+                offset = (page - 1) * self:GetAttribute('barLength')
+            end
 
-		local state
-		if overridePage and overridePage > 10 and self:GetAttribute('state-overridebar') then
-			state = 'override'
-		else
-			state = self:GetAttribute('state-page')
-		end
-
-		control:ChildUpdate('action', state)
-	]])
+            control:ChildUpdate('offset', offset)
+        ]]
+    )
 
     self:UpdateOverrideBar()
-end
-
-function ActionBar:RefreshActions()
-    self:Execute([[ self:RunAttribute('updateState') ]])
 end
 
 function ActionBar:UpdateOverrideBar()
@@ -268,7 +231,7 @@ function ActionBar:ShowGrid(reason)
         return
     end
 
-    self:ForButtons("ShowGridInsecure", reason)
+    self:ForButtons('ShowGridInsecure', reason)
 end
 
 function ActionBar:HideGrid(reason)
@@ -276,7 +239,7 @@ function ActionBar:HideGrid(reason)
         return
     end
 
-    self:ForButtons("HideGridInsecure", reason)
+    self:ForButtons('HideGridInsecure', reason)
 end
 
 function ActionBar:UpdateGrid()
@@ -297,21 +260,18 @@ function ActionBar:KEYBOUND_DISABLED()
 end
 
 -- right click targeting support
-function ActionBar:UpdateRightClickUnit()
-    local unit = Addon:GetRightClickUnit() or 'none'
+function ActionBar:SetRightClickUnit(unit)
+    unit = unit or 'none'
 
-    if unit ~= 'none' then
-        self:SetAttribute('*unit2', unit)
-    else
+    if unit == 'none' then
         self:SetAttribute('*unit2', nil)
+    else
+        self:SetAttribute('*unit2', unit)
     end
 end
 
--- utility functions
-function ActionBar:ForAll(method, ...)
-    for _, bar in pairs(active) do
-        bar:MaybeCallMethod(method, ...)
-    end
+function ActionBar:GetRightClickUnit()
+    return self:SetAttribute('*unit2') or 'none'
 end
 
 function ActionBar:OnSetAlpha(alpha)
@@ -324,7 +284,7 @@ function ActionBar:UpdateTransparent(force)
     if self.__transparent ~= isTransparent or force then
         self.__transparent = isTransparent
 
-        self:ForButtons("SetShowCooldowns", not isTransparent)
+        self:ForButtons('SetShowCooldowns', not isTransparent)
     end
 end
 
@@ -366,7 +326,7 @@ function ActionBar:SetFlyoutDirection(direction)
 end
 
 function ActionBar:UpdateFlyoutDirection()
-    self:ForButtons("SetFlyoutDirection", self:GetFlyoutDirection())
+    self:ForButtons('SetFlyoutDirection', self:GetFlyoutDirection())
 end
 
 function ActionBar:Layout(...)
@@ -379,6 +339,13 @@ function ActionBar:SaveFramePosition(...)
     ActionBar.proto.SaveFramePosition(self, ...)
 
     self:UpdateFlyoutDirection()
+end
+
+-- utility methods
+function ActionBar:ForAll(method, ...)
+    for _, bar in pairs(active) do
+        bar:MaybeCallMethod(method, ...)
+    end
 end
 
 -- the right click menu for an action bar
@@ -421,7 +388,6 @@ do
 
         panel:NewHeader(categoryName)
 
-        -- local items = getDropdownItems()
         for _, state in ipairs(states) do
             local id = state.id
             local name = state.text
@@ -441,7 +407,7 @@ do
                     end
                     return offset
                 end,
-                set = function(self, value)
+                set = function(_, value)
                     local offset
 
                     if value == -1 then
@@ -536,7 +502,7 @@ function ActionBarsModule:UpdateOverrideBar()
         return
     end
 
-    Addon:GetOverrideBar():ForButtons("Update")
+    Addon:GetOverrideBar():ForButtons('Update')
 end
 
 -- workaround for empty buttons not hiding when dropping a pet action

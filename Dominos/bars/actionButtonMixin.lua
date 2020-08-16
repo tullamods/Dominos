@@ -6,6 +6,20 @@
 local _, Addon = ...
 local ActionButtonMixin = {}
 
+function ActionButtonMixin:SetActionOffsetInsecure(offset)
+	if InCombatLockdown() then
+		return
+	end
+
+	local oldActionId = self:GetAttribute('action')
+	local newActionId = self:GetAttribute('index') + (offset or 0)
+
+	if oldActionId ~= newActionId then
+		self:SetAttribute('action', newActionId)
+		self:UpdateState()
+	end
+end
+
 function ActionButtonMixin:ShowGridInsecure(reason)
 	if InCombatLockdown() then
 		return
@@ -68,6 +82,8 @@ function ActionButtonMixin:SetShowEquippedItemBorders(show)
 	end
 end
 
+-- we hide cooldowns when action buttons are transparent
+-- so that the sparks don't appear
 function ActionButtonMixin:SetShowCooldowns(show)
     if show then
         if self.cooldown:GetParent() ~= self then
@@ -77,14 +93,6 @@ function ActionButtonMixin:SetShowCooldowns(show)
     else
         self.cooldown:SetParent(Addon.ShadowUIParent)
 	end
-end
-
--- resyncs the button's current action, modified by state
-function ActionButtonMixin:LoadAction()
-	local state = self:GetParent():GetAttribute("state-page")
-	local id = state and self:GetAttribute("action--" .. state) or self:GetAttribute("action--base")
-
-	self:SetAttribute("action", id)
 end
 
 -- in classic, blizzard action buttons don't use a mixin

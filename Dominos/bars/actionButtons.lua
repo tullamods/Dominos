@@ -6,25 +6,18 @@ local AddonName, Addon = ...
 local ActionButtons = {}
 
 local function CreateActionButton(id)
-    local button = CreateFrame('CheckButton', ('%sActionButton%d'):format(AddonName, id), nil, 'ActionBarButtonTemplate')
+    local name = ('%sActionButton%d'):format(AddonName, id)
 
-    Addon.CastOnKeyPressHandler:Register(button)
+    local button = CreateFrame('CheckButton', name, nil, 'ActionBarButtonTemplate')
 
-    return button
-end
-
-local function GetMainActionBarButton(id)
-    local button = _G[('ActionButton%d'):format(id)]
-
-    -- store the button type, since the main bar doesn't define one
-    button:SetAttribute('buttonType', 'ACTIONBUTTON')
+    Addon.BindableButton:AddCastOnKeyPressSupport(button)
 
     return button
 end
 
 local function AcquireActionButton(id)
     if id <= 12 then
-        return GetMainActionBarButton(id)
+        return _G[('ActionButton%d'):format(id)]
     elseif id <= 24 then
         return CreateActionButton(id - 12)
     elseif id <= 36 then
@@ -40,6 +33,14 @@ local function AcquireActionButton(id)
     end
 end
 
+local function getBindingAction(button)
+    local id = button:GetID()
+
+    if id > 0 then
+        return (button.buttonType or 'ACTIONBUTTON') .. id
+    end
+end
+
 -- do one time setup on all action buttons
 for id = 1, 120 do
     local button = AcquireActionButton(id)
@@ -47,34 +48,23 @@ for id = 1, 120 do
     -- apply our extra action button methods
     Mixin(button, Addon.ActionButtonMixin)
 
-    -- set the base action ID fo the button for use later
-    button:SetAttribute('action--base', id)
+    -- apply hooks for quick binding
+    Addon.BindableButton:AddQuickBindingSupport(button, getBindingAction(button))
 
     -- set a handler for updating the action from a parent frame
-    button:SetAttribute('_childupdate-action', [[
-        local state = message
-        local overridePage = self:GetParent():GetAttribute('state-overridepage')
-        local newActionID
+    button:SetAttribute(
+        '_childupdate-offset',
+        [[
+            local offset = message or 0
+            local id = self:GetAttribute('index') + offset
 
-        if state == 'override' then
-            newActionID = (self:GetAttribute('button--index') or 1) + (overridePage - 1) * 12
-        else
-            newActionID = state and self:GetAttribute('action--' .. state) or self:GetAttribute('action--base')
-        end
+            if self:GetAttribute('action') ~= id then
+                self:SetAttribute('action', id)
+                self:CallMethod('UpdateState')
+            end
+        ]]
+    )
 
-        if newActionID ~= self:GetAttribute('action') then
-            self:SetAttribute('action', newActionID)
-            self:CallMethod('UpdateState')
-        end
-    ]])
-
-    -- keep track of our old button id, if we have one
-    button:SetAttribute("bindingid", button:GetID())
-
-    -- this is used to preserve the button's old id
-    -- we cannot simply keep a button's id at > 0 or blizzard code will take
-    -- control of paging
-    -- but we need the button's id for the old bindings system
     button:SetID(0)
 
     -- clear current position to avoid forbidden frame issues
@@ -85,9 +75,6 @@ for id = 1, 120 do
 
     -- enable mousewheel clicks
     button:EnableMouseWheel(true)
-
-    -- apply hooks for button binding
-    Addon.BindableButton:Inject(button)
 
     ActionButtons[id] = button
 end
