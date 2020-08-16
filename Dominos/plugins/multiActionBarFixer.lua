@@ -63,7 +63,7 @@ if Addon:IsBuild("classic") then
 				local button = _G[buttonName]
 				if button then
 					button:SetAttribute("showgrid", showgrid)
-					Addon.ActionButton.UpdateGrid(button)
+					-- Addon.ActionButton.UpdateGrid(button)
 				end
 			end
 		end
