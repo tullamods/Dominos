@@ -4,9 +4,9 @@
 --]]
 
 local _, Addon = ...
-local TooltipController = Addon:NewModule('Tooltips')
+local TooltipsModule = Addon:NewModule('Tooltips')
 
-function TooltipController:OnInitialize()
+function TooltipsModule:OnInitialize()
 	local header = CreateFrame('Frame', nil, nil, 'SecureHandlerStateTemplate')
 
 	RegisterStateDriver(header, 'combat', '[combat]1;nil')
@@ -26,12 +26,12 @@ function TooltipController:OnInitialize()
 	end)
 end
 
-function TooltipController:OnEnable()
+function TooltipsModule:OnEnable()
 	self:SetShowTooltips(Addon:ShowTooltips())
 	self:SetShowTooltipsInCombat(Addon:ShowCombatTooltips())
 end
 
-function TooltipController:Register(frame)
+function TooltipsModule:Register(frame)
 	self.header:WrapScript(frame, 'OnEnter', [[
 		if control:GetAttribute('keybound-enabled') then
 			return true
@@ -45,14 +45,14 @@ function TooltipController:Register(frame)
 	]])
 end
 
-function TooltipController:Unregister(frame)
+function TooltipsModule:Unregister(frame)
 	self.header:UnwrapScript(frame, 'OnEnter')
 end
 
-function TooltipController:SetShowTooltips(enable)
+function TooltipsModule:SetShowTooltips(enable)
 	self.header:SetAttribute('tooltips-enabled', enable and true or false)
 end
 
-function TooltipController:SetShowTooltipsInCombat(enable)
+function TooltipsModule:SetShowTooltipsInCombat(enable)
 	self.header:SetAttribute('tooltips-enabled-combat', enable and true or false)
 end
