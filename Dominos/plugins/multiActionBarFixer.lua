@@ -9,8 +9,7 @@ local _, Addon = ...
 	each MultiActionBar whenever the showgrid value changes
 --]]
 
-local MultiBarFixer = CreateFrame("Frame", nil, nil, "SecureHandlerBaseTemplate")
-MultiBarFixer:Hide()
+local MultiBarFixer = Addon:CreateHiddenFrame("Frame", nil, nil, "SecureHandlerBaseTemplate")
 
 if Addon:IsBuild("classic") then
 	local bars = {
