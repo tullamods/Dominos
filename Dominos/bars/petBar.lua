@@ -5,12 +5,12 @@ local _, Addon = ...
 -- a table that stores all the pet buttons
 local PetButtons = {}
 
-for i = 1, NUM_PET_ACTION_SLOTS do
-	local button = _G[('PetActionButton%d'):format(i)]
+for id = 1, NUM_PET_ACTION_SLOTS do
+	local button = _G[('PetActionButton%d'):format(id)]
 
-	Addon.BindableButton:Inject(button, 'BONUSACTIONBUTTON')
+	Addon.BindableButton:AddQuickBindingSupport(button, 'BONUSACTIONBUTTON' .. id)
 
-	PetButtons[i] = button
+	PetButtons[id] = button
 end
 
 
@@ -49,6 +49,7 @@ function PetBar:AcquireButton(index)
 end
 
 function PetBar:OnAttachButton(button)
+	button:UpdateHotkeys()
 	Addon:GetModule('ButtonThemer'):Register(button, 'Pet Bar')
 	Addon:GetModule('Tooltips'):Register(button)
 end
@@ -79,15 +80,23 @@ function PetBar:KEYBOUND_DISABLED()
 end
 
 -- the module
-local PetBarModule = Addon:NewModule('PetBar')
+local PetBarModule = Addon:NewModule('PetBar', 'AceEvent-3.0')
 
 function PetBarModule:Load()
-	self.frame = PetBar:New()
+	self.bar = PetBar:New()
+
+	self:RegisterEvent('UPDATE_BINDINGS')
 end
 
 function PetBarModule:Unload()
-	if self.frame then
-		self.frame:Free()
-		self.frame = nil
+	self:UnregisterAllEvents()
+
+	if self.bar then
+		self.bar:Free()
+		self.bar = nil
 	end
+end
+
+function PetBarModule:UPDATE_BINDINGS()
+	self.bar:ForButtons('UpdateHotkeys')
 end
