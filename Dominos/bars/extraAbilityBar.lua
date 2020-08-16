@@ -106,7 +106,7 @@ function ExtraAbilityBarModule:Load()
 		end)
 
 		-- hook the extra action button for binding purposes
-		Addon.BindableButton:Register(ExtraActionButton1)
+		Addon.BindableButton:Inject(ExtraActionButton1)
 	end
 
 	self.frame = ExtraAbilityBar:New()
