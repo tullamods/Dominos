@@ -148,6 +148,35 @@ do
 		addState("class", "battle", "[bonusbar:1]", GetSpellInfo(2457))
 		addState("class", "defensive", "[bonusbar:2]", GetSpellInfo(71))
 		addState("class", "berserker", "[bonusbar:3]", GetSpellInfo(2458))
+	-- paladin auras
+	elseif class == "PALADIN" and Addon:IsBuild("retail") then
+		addState(
+			"class",
+			"crusader",
+			newFormConditionLookup(32223),
+			GetSpellInfo(32223)
+		)
+
+		addState(
+			"class",
+			"devotion",
+			newFormConditionLookup(465),
+			GetSpellInfo(465)
+		)
+
+		addState(
+			"class",
+			"retribution",
+			newFormConditionLookup(183435),
+			GetSpellInfo(183435)
+		)
+
+		addState(
+			"class",
+			"retribution",
+			newFormConditionLookup(317920),
+			GetSpellInfo(317920)
+		)
 	elseif class == "PRIEST" and Addon:IsBuild("classic") then
 		addState("class", "shadowform", "[form:1]", GetSpellInfo(16592))
 	end
