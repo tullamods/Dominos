@@ -315,7 +315,7 @@ function Addon:CreateOptionsFrame()
 	local frame = CreateFrame("Frame"); frame:Hide()
 
 	frame.name = AddonName
-	
+
 	-- if a user shows this frame and we've not yet loaded  the config addon,
 	-- then load it
 	frame:SetScript("OnShow", function(f)
@@ -324,7 +324,7 @@ function Addon:CreateOptionsFrame()
 	end)
 
 	InterfaceOptions_AddCategory(frame)
-	
+
 	self.OptionsFrame = frame
 	return frame
 end
@@ -540,16 +540,7 @@ end
 -- binding text
 function Addon:SetShowBindingText(enable)
 	self.db.profile.showBindingText = enable or false
-
-	for _, f in self.Frame:GetAll() do
-		if f.buttons then
-			for _, b in pairs(f.buttons) do
-				if b.UpdateHotkey then
-					b:UpdateHotkey()
-				end
-			end
-		end
-	end
+	self.Frame:ForAll("ForButtons", "UpdateHotkeys")
 end
 
 function Addon:ShowBindingText()
@@ -559,16 +550,7 @@ end
 -- macro text
 function Addon:SetShowMacroText(enable)
 	self.db.profile.showMacroText = enable or false
-
-	for _, f in self.Frame:GetAll() do
-		if f.buttons then
-			for _, b in pairs(f.buttons) do
-				if b.UpdateMacro then
-					b:UpdateMacro()
-				end
-			end
-		end
-	end
+	self.Frame:ForAll("ForButtons", "SetShowMacroText", enable)
 end
 
 function Addon:ShowMacroText()
@@ -578,16 +560,7 @@ end
 -- border
 function Addon:SetShowEquippedItemBorders(enable)
 	self.db.profile.showEquippedItemBorders = enable or false
-
-	for _, f in self.Frame:GetAll() do
-		if f.buttons then
-			for _, b in pairs(f.buttons) do
-				if b.UpdateShowEquippedItemBorders then
-					b:UpdateShowEquippedItemBorders()
-				end
-			end
-		end
-	end
+	self.Frame:ForAll("ForButtons", "SetShowEquippedItemBorders", enable)
 end
 
 function Addon:ShowEquippedItemBorders()
@@ -641,7 +614,7 @@ function Addon:SetNumBars(count)
 	count = max(min(count, 120), 1)
 
 	if count ~= self:NumBars() then
-		self.ActionBar:ForAll("Delete")
+		self.ActionBar:ForAll("Free")
 		self.db.profile.ab.count = count
 
 		for i = 1, self:NumBars() do
@@ -720,7 +693,6 @@ end
 
 function Addon:SetThemeButtons(enable)
 	self.db.profile.applyButtonTheme = enable or false
-
 	self:GetModule("ButtonThemer"):Reskin()
 end
 
@@ -731,16 +703,7 @@ end
 
 function Addon:SetShowCounts(enable)
 	self.db.profile.showCounts = enable or false
-
-	for _, f in self.Frame:GetAll() do
-		if f.buttons then
-			for _, b in pairs(f.buttons) do
-				if b.UpdateCount then
-					b:UpdateCount()
-				end
-			end
-		end
-	end
+	self.Frame:ForAll("ForButtons", "SetShowCountText",  enable)
 end
 
 --------------------------------------------------------------------------------
@@ -758,11 +721,13 @@ function Addon:GetWowBuild()
 
 	if project == WOW_PROJECT_CLASSIC then
 		return "classic"
-	elseif project == WOW_PROJECT_MAINLINE then
-		return "retail"
-	else
-		return "unknown"
 	end
+
+	if project == WOW_PROJECT_MAINLINE then
+		return "retail"
+	end
+
+	return "unknown"
 end
 
 -- check if we're running the addon on one of a given set of wow versions

@@ -28,10 +28,13 @@ core\bindableButton.lua
 core\fadeManager.lua
 core\overrideController.lua
 core\tooltipController.lua
-core\bindingsController.lua
+core\castOnKeyPressHandler.lua
 bars\barStates.lua
-bars\getActionReagentUses.lua
-bars\actionButton.lua
+#@non-retail@
+# bars\getActionReagentUses.lua
+#@end-non-retail@
+bars\actionButtonMixin.lua
+bars\actionButtons.lua
 bars\actionBar.lua
 bars\petBar.lua
 bars\stanceBar.lua
