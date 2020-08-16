@@ -28,7 +28,6 @@ core\bindableButton.lua
 core\fadeManager.lua
 core\overrideController.lua
 core\tooltipController.lua
-core\castOnKeyPressHandler.lua
 bars\barStates.lua
 #@non-retail@
 # bars\getActionReagentUses.lua
