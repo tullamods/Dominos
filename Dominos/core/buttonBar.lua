@@ -30,16 +30,25 @@ function ButtonBar:Free()
 	return ButtonBar.proto.Free(self)
 end
 
--- retrives the button that should be placed at index
-function ButtonBar:GetButton(index) end
+function ButtonBar:AcquireButton(index) end
+
+function ButtonBar:ReleaseButton(button)
+	if type(button.Free) == 'function' then
+		button:Free()
+	else
+		button:SetParent(nil)
+		button:Hide()
+	end
+end
 
 -- adds the specified button to the bar
 function ButtonBar:AttachButton(index)
-	local button = self:GetButton(index)
+	local button = self:AcquireButton(index)
 
 	if button then
 		button:SetParent(self)
 		button:EnableMouse(not self:GetClickThrough())
+		self:OnAttachButton(button)
 		button:Show()
 
 		self.buttons[index] = button
@@ -51,16 +60,18 @@ function ButtonBar:DetachButton(index)
 	local button = self.buttons[index]
 
 	if button then
-		if type(button.Free) == 'function' then
-			button:Free()
-		else
-			button:SetParent(nil)
-			button:Hide()
-		end
-
+		self:OnDetachButton(button, index)
+		self:ReleaseButton(button)
 		self.buttons[index] = nil
 	end
 end
+
+function ButtonBar:OnAttachButton(button, index)
+end
+
+function ButtonBar:OnDetachButton(button, index)
+end
+
 
 function ButtonBar:ReloadButtons()
 	local oldNumButtons = #self.buttons
@@ -119,9 +130,8 @@ function ButtonBar:GetSpacing()
 	return self.sets.spacing or 0
 end
 
---[[ Layout ]]--
-
---the wackiness here is for backward compaitbility reasons, since I did not implement true defaults
+-- the wackiness here is for backward compaitbility reasons, since I did not
+-- implement true defaults
 function ButtonBar:SetLeftToRight(isLeftToRight)
 	local isRightToLeft = not isLeftToRight
 
@@ -163,20 +173,18 @@ function ButtonBar:GetButtonSize()
 	return 0, 0
 end
 
---[[
-	A rough model of a bar for doing calculations
-	^
-	| Padding
-	v
-	<--Padding-->[Button]<--Spacing-->[Button]<--Padding-->
-	^
-	| Spacing
-	v
-	<--Padding-->[Button]<--Spacing-->[Button]<--Padding-->
-	^
-	| Padding
-	v
---]]
+-- A rough model of a bar for doing calculations
+-- ^
+-- | Padding
+-- v
+-- <--Padding--> [Button]<--Spacing-->[Button] <--Padding-->
+-- ^
+-- | Spacing
+-- v
+-- <--Padding--> [Button]<--Spacing-->[Button] <--Padding-->
+-- ^
+-- | Padding
+-- v
 function ButtonBar:Layout()
 	local numButtons = #self.buttons
 	if numButtons < 1 then
@@ -235,6 +243,22 @@ function ButtonBar:UpdateClickThrough()
 			button:EnableMouse(false)
 		else
 			button:EnableMouse(true)
+		end
+	end
+end
+
+function ButtonBar:ForButtons(methodOrFunc, ...)
+	if type(methodOrFunc) == "function" then
+		for _, button in pairs(self.buttons) do
+			methodOrFunc(button, ...)
+		end
+	elseif type(methodOrFunc) == "string" then
+		for _, button in pairs(self.buttons) do
+			local func = button[methodOrFunc]
+
+			if type(func) == "function" then
+				func(button, ...)
+			end
 		end
 	end
 end

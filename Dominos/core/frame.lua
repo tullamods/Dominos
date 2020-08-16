@@ -447,7 +447,7 @@ function Frame:Fade(targetAlpha, delay, duration)
 	if Addon:IsLinkedOpacityEnabled() then
 		self:ForDocked("Fade", targetAlpha, delay, duration)
 	end
-end 
+end
 
 --[[ Visibility ]]--
 
@@ -867,7 +867,7 @@ function Frame:ForDocked(method, ...)
 		for _, frame in pairs(docked) do
 			frame:CallMethod(method, ...)
 		end
-	end	
+	end
 end
 
 --takes a frameId, and performs the specified action on that frame
