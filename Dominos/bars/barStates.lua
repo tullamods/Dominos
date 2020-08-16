@@ -1,11 +1,9 @@
---[[
-	barStates.lua
-		A thingy for mapping stateIds to macro states
---]]
+-- BarStates is a utility defining ids that map to certain macro conditions
+
 local _, Addon = ...
 local states = {}
 
-local getStateIterator = function(type, i)
+local function getStateIterator(type, i)
 	for j = i + 1, #states do
 		local state = states[j]
 		if state and ((not type) or state.type == type) then
@@ -71,6 +69,9 @@ end
 do
     local class = select(2, UnitClass("player"))
 
+	-- some class states are a bit dynamic
+	-- druid forms, for instance, can vary based on how many different abilities
+	-- are known
     local function newFormConditionLookup(spellID)
         return function()
             for i = 1, GetNumShapeshiftForms() do
@@ -142,7 +143,6 @@ do
 		if GetSpellInfo(185313) then
 			addState("class", "shadowdance", "[form:2]", GetSpellInfo(185313))
 		end
-
 		addState("class", "stealth", "[bonusbar:1]", GetSpellInfo(1784))
 	elseif class == "WARRIOR" and Addon:IsBuild("classic") then
 		addState("class", "battle", "[bonusbar:1]", GetSpellInfo(2457))
@@ -166,18 +166,3 @@ end
 addState("target", "help", "[help]")
 addState("target", "harm", "[harm]")
 addState("target", "notarget", "[noexists]")
-
--- automatic updating for UPDATE_SHAPESHIFT_FORMS
-do
-	local f = CreateFrame("Frame")
-	f:Hide()
-	f:SetScript(
-		"OnEvent",
-		function()
-			if not InCombatLockdown() then
-				Addon.ActionBar:ForAll("UpdateStateDriver")
-			end
-		end
-	)
-	f:RegisterEvent("UPDATE_SHAPESHIFT_FORMS")
-end
