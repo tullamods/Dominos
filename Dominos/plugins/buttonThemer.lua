@@ -1,5 +1,5 @@
 local AddonName, Addon = ...
-local ButtonThemer = LibStub("AceAddon-3.0"):GetAddon(AddonName):NewModule("ButtonThemer")
+local ButtonThemer = Addon:NewModule("ButtonThemer")
 
 local round = _G.Round
 local ActionButtonWidth = round(_G["ActionButton1"]:GetWidth())
