@@ -1,76 +1,136 @@
--- An interface used to allow KeyBound to work transparently
--- both the stock blizzard bindings, and click bindings
-
+-- Binding code that's shared between the various flavors of action buttons
 local AddonName, Addon = ...
 local KeyBound = LibStub('LibKeyBound-1.0')
 
-local BindableButton = { }
+-- binding method definitions
+-- returns the binding action associated with the button
+local function getButtonBindingAction(button)
+	local buttonType = button.buttonType or button:GetAttribute("buttonType")
 
--- used to wrap buttons, so that I can avoid stomping over possible mixin methods
-local BindableButtonProxy = CreateFrame("Frame", AddonName .. "BinderProxy"); BindableButtonProxy:Hide()
-
--- returns the current hotkey assigned to the given button
-function BindableButtonProxy:GetHotkey()
-	local parent = self:GetParent()
-
-	if parent then
-		return BindableButton.GetHotkey(parent)
+	if buttonType then
+		local id = math.max(button:GetID(), button:GetAttribute('bindingid') or 0)
+		if id > 0 then
+			return buttonType .. id
+		end
 	end
+
+	return ('CLICK %s:LeftButton'):format(button:GetName())
+end
+
+local function getButtonActionName(button)
+	local action = getButtonBindingAction(button)
+	local bindingName = GetBindingName(action)
+
+	if bindingName and bindingName ~= action then
+		return bindingName
+	end
+
+	return button:GetName()
+end
+
+local function getButtonBindings(button)
+	return GetBindingKey(getButtonBindingAction(button))
+end
+
+-- returns what hotkey to display for the button
+local function getButtonHotkey(button)
+	local key = (getButtonBindings(button))
+
+	if key then
+		return KeyBound:ToShortKey(key)
+	end
+
+	return ''
+end
+
+-- returns a space separated list of all bindings for the given button
+local function getButtonBindingsList(button)
+	return strjoin(' ', getButtonBindings(button))
+end
+
+-- set bindings
+local function setButtonBinding(button, key)
+	return SetBinding(key, getButtonBindingAction(button))
+end
+
+-- clears all bindings from the button
+local function clearButtonBindings(button)
+	local key = (getButtonBindings(button))
+
+	while key do
+		SetBinding(key, nil)
+		key = (getButtonBindings(button))
+	end
+end
+
+-- used to implement keybinding support without applying all of the LibKeyBound
+-- interface methods via a mixin
+local BindableButtonProxy = Addon:CreateHiddenFrame("Frame", AddonName .. "BindableButtonProxy")
+
+-- call a thing if the thing exists
+local function whenExists(obj, func, ...)
+	if obj then
+		return func(obj, ...)
+	end
+end
+
+function BindableButtonProxy:GetHotkey()
+	return whenExists(self:GetParent(), getButtonHotkey)
 end
 
 function BindableButtonProxy:SetKey(key)
-	local parent = self:GetParent()
-
-	if parent then
-		return BindableButton.SetKey(parent, key)
-	end
+	return whenExists(self:GetParent(), setButtonBinding, key)
 end
 
 function BindableButtonProxy:GetBindings()
-	local parent = self:GetParent()
-
-	if parent then
-		return BindableButton.GetBindings(parent)
-	end
+	return whenExists(self:GetParent(), getButtonBindingsList)
 end
 
 function BindableButtonProxy:ClearBindings()
-	local parent = self:GetParent()
-
-	if parent then
-		return BindableButton.ClearBindings(parent)
-	end
+	return whenExists(self:GetParent(), clearButtonBindings)
 end
 
--- what we're binding to, used for printing
 function BindableButtonProxy:GetActionName()
-	local parent = self:GetParent()
-
-	if parent then
-		local result
-
-		if parent.buttonType then
-			local id = parent:GetAttribute('bindingid') or parent:GetID()
-
-			result = GetBindingName(parent.buttonType .. id)
-		end
-
-		return result or parent:GetName()
-	end
-
-	return UNKNOWN
+	return whenExists(self:GetParent(), getButtonActionName) or UNKNOWN
 end
 
--- keybound support
-function BindableButton:Register(button)
-	if button.UpdateHotkeys then
-		hooksecurefunc(button, "UpdateHotkeys", BindableButton.UpdateHotkey)
-	end
+BindableButtonProxy:SetScript("OnLeave", function(self)
+	print("OnLeave", self:GetName())
 
+	self:ClearAllPoints()
+	self:SetParent(nil)
+end)
+
+-- methods to inject onto a bar to add in common binding functionality
+-- previously, this was a mixin
+local BindableButton = {}
+
+function BindableButton:Inject(button)
 	button:HookScript("OnEnter", BindableButton.OnEnter)
+
+	if button.UpdateHotkeys then
+		hooksecurefunc(button, "UpdateHotkeys", BindableButton.UpdateHotkeys)
+	else
+		button.UpdateHotkeys = BindableButton.UpdateHotkeys
+	end
+end
+
+function BindableButton:UpdateHotkeys()
+	local key = getButtonHotkey(self)
+
+	if key ~= ''  and Addon:ShowBindingText() then
+		self.HotKey:SetText(key)
+		self.HotKey:Show()
+	else
+		-- blank out non blank text, such as RANGE_INDICATOR
+		self.HotKey:SetText('')
+		self.HotKey:Hide()
+	end
 end
 
 function BindableButton:OnEnter()
+	if not KeyBound:IsShown() then return end
+
 	BindableButtonProxy:ClearAllPoints()
 	BindableButtonProxy:SetAllPoints(self)
 	BindableButtonProxy:SetParent(self)
@@ -78,96 +138,6 @@ function BindableButton:OnEnter()
 	KeyBound:Set(BindableButtonProxy)
 end
 
-function BindableButton:UpdateHotkey(buttonType)
-	local key = BindableButton.GetHotkey(self, buttonType)
-
-	if key ~= ''  and Addon:ShowBindingText() then
-		self.HotKey:SetText(key)
-		self.HotKey:Show()
-	else
-		--blank out non blank text, such as RANGE_INDICATOR
-		self.HotKey:SetText('')
-		self.HotKey:Hide()
-	end
-end
-
---returns what hotkey to display for the button
-function BindableButton:GetHotkey(buttonType)
-	local key = BindableButton.GetBlizzBindings(self, buttonType)
-			 or BindableButton.GetClickBindings(self)
-
-	return key and KeyBound:ToShortKey(key) or ''
-end
-
--- returns all blizzard bindings assigned to the button
-function BindableButton:GetBlizzBindings(buttonType)
-	buttonType = buttonType or self.buttonType
-
-	if buttonType then
-		local id = self:GetAttribute('bindingid') or self:GetID()
-		return GetBindingKey(buttonType .. id)
-	end
-end
-
--- returns all click bindings assigned to the button
-function BindableButton:GetClickBindings()
-	return GetBindingKey(('CLICK %s:LeftButton'):format(self:GetName()))
-end
-
--- returns a comma separated list of all bindings for the given action button
--- used for keybound support
-do
-    local buffer = {}
-
-    local function addBindings(t, ...)
-        for i = 1, select("#", ...) do
-            local binding = select(i, ...)
-            table.insert(t, GetBindingText(binding))
-        end
-    end
-
-    function BindableButton:GetBindings()
-        wipe(buffer)
-
-        addBindings(buffer, BindableButton.GetBlizzBindings(self))
-        addBindings(buffer, BindableButton.GetClickBindings(self))
-
-        return table.concat(buffer, ", ")
-    end
-end
-
---set bindings (more keybound support)
-function BindableButton:SetKey(key)
-	if self.buttonType then
-		local id = self:GetAttribute('bindingid') or self:GetID()
-		SetBinding(key, self.buttonType .. id)
-	else
-		SetBindingClick(key, self:GetName(), 'LeftButton')
-	end
-end
-
---clears all bindings from the button (keybound support again)
-do
-	local function clearBindings(...)
-		for i = 1, select('#', ...) do
-			SetBinding(select(i, ...), nil)
-		end
-	end
-
-	function BindableButton:ClearBindings()
-		clearBindings(BindableButton.GetBlizzBindings(self))
-		clearBindings(BindableButton.GetClickBindings(self))
-	end
-end
-
--- hook relevant methods
-if ActionButton_UpdateHotkeys then
-	hooksecurefunc("ActionButton_UpdateHotkeys", BindableButton.UpdateHotkey)
-end
-
-if PetActionButton_SetHotkeys then
-	hooksecurefunc('PetActionButton_SetHotkeys', BindableButton.UpdateHotkey)
-end
-
 -- exports
 Addon.BindableButton = BindableButton
+
