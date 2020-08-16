@@ -127,7 +127,7 @@ function MenuBar:GetDefaults()
 	}
 end
 
-function MenuBar:GetButton(index)
+function MenuBar:AcquireButton(index)
 	return self.activeButtons[index]
 end
 

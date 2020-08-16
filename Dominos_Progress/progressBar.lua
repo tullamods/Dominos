@@ -648,7 +648,7 @@ end
 do
 	local segmentPool = CreateFramePool('Frame')
 
-	function ProgressBar:GetButton(index)
+	function ProgressBar:AcquireButton()
 		local segment = segmentPool:Acquire()
 
 		if not segment.value then
@@ -684,6 +684,10 @@ do
 		segment.bonus:SetStatusBarColor(self:GetBonusColor())
 
 		return segment
+	end
+
+	function ProgressBar:ReleaseButton(button)
+		segmentPool:Release(button)
 	end
 end
 
