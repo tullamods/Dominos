@@ -1,63 +1,20 @@
 -- A bar that contains pet actions
 
-
---[[ Globals ]]--
-
 local _, Addon = ...
-local BindableButton = Addon.BindableButton
-local unused = {}
 
+-- a table that stores all the pet buttons
+local PetButtons = {}
 
---[[ Pet Button ]]--
+for i = 1, NUM_PET_ACTION_SLOTS do
+	local button = _G[('PetActionButton%d'):format(i)]
 
-local PetButton = Addon:CreateClass('CheckButton')
+	Addon.BindableButton:Inject(button, 'BONUSACTIONBUTTON')
 
-function PetButton:New(id)
-	local button = self:Restore(id) or self:Create(id)
-
-	Addon.BindingsController:Register(button)
-	Addon:GetModule('Tooltips'):Register(button)
-
-	return button
-end
-
-function PetButton:Create(id)
-	local buttonName = ('PetActionButton%d'):format(id)
-
-	local button = self:Bind(_G[buttonName])
-	button.buttonType = 'BONUSACTIONBUTTON'
-
-	BindableButton:Register(button)
-
-	Addon:GetModule('ButtonThemer'):Register(button, 'Pet Bar')
-
-	return button
-end
-
-function PetButton:Restore(id)
-	local b = unused and unused[id]
-	if b then
-		unused[id] = nil
-		b:Show()
-
-		return b
-	end
-end
-
---saving them thar memories
-function PetButton:Free()
-	unused[self:GetID()] = self
-
-	Addon.BindingsController:Unregister(self)
-	Addon:GetModule('Tooltips'):Unregister(self)
-
-	self:SetParent(nil)
-	self:Hide()
+	PetButtons[i] = button
 end
 
 
---[[ Pet Bar ]]--
-
+-- the pet bar class
 local PetBar = Addon:CreateClass('Frame', Addon.ButtonBar)
 
 function PetBar:New()
@@ -87,18 +44,24 @@ function PetBar:NumButtons()
 	return NUM_PET_ACTION_SLOTS
 end
 
-function PetBar:GetButton(index)
-	return PetButton:New(index)
+function PetBar:AcquireButton(index)
+	return PetButtons[index]
 end
 
---[[ keybound support ]]--
+function PetBar:OnAttachButton(button)
+	Addon:GetModule('ButtonThemer'):Register(button, 'Pet Bar')
+	Addon:GetModule('Tooltips'):Register(button)
+end
 
+function PetBar:OnDetachButton(button)
+	Addon:GetModule('ButtonThemer'):Unregister(button, 'Pet Bar')
+	Addon:GetModule('Tooltips'):Unregister(button)
+end
+
+-- keybound events
 function PetBar:KEYBOUND_ENABLED()
 	self:SetAttribute('state-visibility', 'display')
-
-	for _, button in pairs(self.buttons) do
-		button:Show()
-	end
+	self:ForButtons("Show")
 end
 
 function PetBar:KEYBOUND_DISABLED()
@@ -115,15 +78,14 @@ function PetBar:KEYBOUND_DISABLED()
 	end
 end
 
---[[ controller good times ]]--
+-- the module
+local PetBarModule = Addon:NewModule('PetBar')
 
-local PetBarController = Addon:NewModule('PetBar')
-
-function PetBarController:Load()
+function PetBarModule:Load()
 	self.frame = PetBar:New()
 end
 
-function PetBarController:Unload()
+function PetBarModule:Unload()
 	if self.frame then
 		self.frame:Free()
 		self.frame = nil

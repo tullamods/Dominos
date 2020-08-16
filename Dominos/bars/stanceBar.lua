@@ -1,9 +1,10 @@
--- stanceBar - a bar for displaying class specific buttons for things like stances/forms/etc
+-- a bar for displaying class specific buttons for things like stances/forms/etc
 
 local _, Addon = ...
 local playerClass = select(2, UnitClass('player'))
 
--- don't bother loading the module if the player is currently playing something without a stance
+-- don't bother loading the module if the player is currently playing something
+-- without a stance
 if not (
 	playerClass == 'DRUID'
 	or playerClass == 'ROGUE'
@@ -13,66 +14,18 @@ if not (
 	return
 end
 
-local BindableButton = Addon.BindableButton
+-- buttons
+local StanceButtons = {}
 
+for id = 1, NUM_STANCE_SLOTS do
+	local button = _G[('StanceButton%d'):format(id)]
 
---[[ Button ]]--
+	Addon.BindableButton:Inject(button, 'SHAPESHIFTBUTTON', id)
 
-local StanceButton = Addon:CreateClass('CheckButton')
-
-do
-	local unused = {}
-
-	StanceButton.buttonType = 'SHAPESHIFTBUTTON'
-
-	function StanceButton:New(id)
-		local button = self:Restore(id) or self:Create(id)
-
-		Addon.BindingsController:Register(button)
-		Addon:GetModule('Tooltips'):Register(button)
-
-		return button
-	end
-
-	function StanceButton:Create(id)
-		local buttonName = ('StanceButton%d'):format(id)
-		local button = self:Bind(_G[buttonName])
-
-		if button then
-			BindableButton:Register(button)
-
-			Addon:GetModule('ButtonThemer'):Register(button, 'Class Bar')
-		end
-
-		return button
-	end
-
-	function StanceButton:Restore(id)
-		local button = unused[id]
-
-		if button then
-			unused[id] = nil
-			button:Show()
-
-			return button
-		end
-	end
-
-	--saving them thar memories
-	function StanceButton:Free()
-		unused[self:GetID()] = self
-
-		self:SetParent(nil)
-		self:Hide()
-
-		Addon.BindingsController:Unregister(self)
-		Addon:GetModule('Tooltips'):Unregister(self)
-	end
+	StanceButtons[id] = button
 end
 
-
---[[ Bar ]]--
-
+-- bar
 local StanceBar = Addon:CreateClass('Frame', Addon.ButtonBar)
 
 function StanceBar:New()
@@ -90,13 +43,21 @@ function StanceBar:NumButtons()
 	return GetNumShapeshiftForms() or 0
 end
 
-function StanceBar:GetButton(index)
-	return StanceButton:New(index)
+function StanceBar:AcquireButton(index)
+	return StanceButtons[index]
 end
 
+function StanceBar:OnAttachButton(button)
+	Addon:GetModule('ButtonThemer'):Register(button, 'Class Bar')
+	Addon:GetModule('Tooltips'):Register(button)
+end
 
---[[ Module ]]--
+function StanceBar:OnDetachButton(button)
+	Addon:GetModule('ButtonThemer'):Unregister(button, 'Class Bar')
+	Addon:GetModule('Tooltips'):Unregister(button)
+end
 
+-- module
 local StanceBarModule = Addon:NewModule('StanceBar', 'AceEvent-3.0')
 
 function StanceBarModule:Load()
