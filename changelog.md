@@ -1,5 +1,10 @@
 # Dominos Changelog
 
+9.0.0-beta2
+
+* Fixed missing bag bar
+* Fixed some compatibility issues with WoW Classic
+
 9.0.0-beta1
 
 * Added support for Paladin auras on the class bar in 9.0

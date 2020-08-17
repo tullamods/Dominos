@@ -42,8 +42,8 @@ function BagBar:ShowKeyRing()
 	end
 end
 
--- Frame Overrides 
-function BagBar:GetButton(index)
+-- Frame Overrides
+function BagBar:AcquireButton(index)
 	if index < 1 then
 		return nil
 	end
@@ -130,7 +130,7 @@ function BagBarController:OnInitialize()
 	if Addon:IsBuild("Classic") then
 		-- force hide the old keyring button
 		KeyRingButton:Hide()
-		
+
 		hooksecurefunc("MainMenuBar_UpdateKeyRing", function()
 			KeyRingButton:Hide()
 		end)
