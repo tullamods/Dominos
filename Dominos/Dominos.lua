@@ -47,23 +47,11 @@ end
 
 -- keybound events
 function Addon:LIBKEYBOUND_ENABLED()
-	self.callbacks:Fire("BINDING_MODE_ENABLED")
-
-	for _, frame in self.Frame:GetAll() do
-		if frame.KEYBOUND_ENABLED then
-			frame:KEYBOUND_ENABLED()
-		end
-	end
+	self.Frame:ForAll("KEYBOUND_ENABLED")
 end
 
 function Addon:LIBKEYBOUND_DISABLED()
-	self.callbacks:Fire("BINDING_MODE_DISABLED")
-
-	for _, frame in self.Frame:GetAll() do
-		if frame.KEYBOUND_DISABLED then
-			frame:KEYBOUND_DISABLED()
-		end
-	end
+	self.Frame:ForAll("KEYBOUND_DISABLED")
 end
 
 -- profile events
@@ -379,18 +367,23 @@ end
 -- configuration mode
 Addon.locked = true
 
-function Addon:SetLock(enable)
-	if InCombatLockdown() and (not enable) then
+function Addon:SetLock(locked)
+	if InCombatLockdown() and (not locked) then
 		return
 	end
 
-	self.locked = enable or false
+	if locked and (not self.locked) then
+		self.locked = true
 
-	if self:Locked() then
-		self:GetModule("ConfigOverlay"):Hide()
-	else
-		LibStub("LibKeyBound-1.0"):Deactivate()
-		self:GetModule("ConfigOverlay"):Show()
+		self.callbacks:Fire("CONFIG_MODE_DISABLED")
+	elseif (not locked) and self.locked then
+		self.locked = false
+
+		if not IsAddOnLoaded(CONFIG_ADDON_NAME) then
+			LoadAddOn(CONFIG_ADDON_NAME)
+		end
+
+		self.callbacks:Fire("CONFIG_MODE_ENABLED")
 	end
 end
 

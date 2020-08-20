@@ -18,3 +18,4 @@ options\dsl.lua
 options\main.lua
 options\general.lua
 options\profiles.lua
+options\overlay.lua

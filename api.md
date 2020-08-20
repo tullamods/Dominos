@@ -2,6 +2,8 @@
 
 As of Dominos 8.4, I've started implementing callbacks into the addon.
 
+## Callbacks
+
 ### LAYOUT_LOADING
 
 Called before a new Dominos layout is loaded

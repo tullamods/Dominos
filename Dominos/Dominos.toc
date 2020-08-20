@@ -23,7 +23,6 @@ core\helpers.lua
 core\shadowUIParent.lua
 core\frame.lua
 core\buttonBar.lua
-core\configOverlay.lua
 core\bindableButton.lua
 core\fadeManager.lua
 core\overrideController.lua
