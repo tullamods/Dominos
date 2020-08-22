@@ -22,10 +22,7 @@ jobs:
     env:
       CF_API_KEY: ${{ secrets.CF_API_KEY }}
       WOWI_API_TOKEN: ${{ secrets.WOWI_API_TOKEN }}
-      GITHUB_OAUTH: ${{ secrets.GITHUB_OAUTH }}
-      WOW_CLASSIC_VERSION: ${{ secrets.WOW_CLASSIC_VERSION }}
-      CF_PROJECT_ID: 26753
-      WOWI_PROJECT_ID: 15636
+      GITHUB_OAUTH: ${{ secrets.GITHUB_TOKEN }}
 
     # "steps" holds a list of all the steps needed to package and release our AddOn
     steps:
