@@ -19,7 +19,8 @@ end
 
 function ActionBarsModule:Unload()
     self:UnregisterAllEvents()
-    self:SetBarCount(0)
+    self:ForAll('Free')
+    self.active = nil
 end
 
 -- events
@@ -56,18 +57,23 @@ function ActionBarsModule:UPDATE_SHAPESHIFT_FORMS()
 end
 
 function ActionBarsModule:SetBarCount(count)
-    if self.active then
-        for _, bar in pairs(self.active) do
-            bar:Free()
-        end
-    end
+    self:ForAll('Free')
 
     if count > 0 then
         self.active = {}
+
         for i = 1, count do
             self.active[i] = Addon.ActionBar:New(i)
         end
     else
         self.active = nil
+    end
+end
+
+function ActionBarsModule:ForAll(method, ...)
+    if self.active then
+        for _, bar in pairs(self.active) do
+            bar:CallMethod(method, ...)
+        end
     end
 end
