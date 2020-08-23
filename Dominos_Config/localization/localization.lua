@@ -83,6 +83,7 @@ L.State_CTRLSHIFT = strjoin("-", CTRL_KEY_TEXT, SHIFT_KEY_TEXT)
 L.State_HARM = "Harm"
 L.State_HELP = "Help"
 L.State_NOTARGET = "No Target"
+L.State_SHIELD = "Shield Equipped"
 L.StickyBars = "Sticky Bars"
 L.Targeting = "Targeting"
 L.ThemeActionButtons = "Theme Action Buttons (Requires Reload)"
