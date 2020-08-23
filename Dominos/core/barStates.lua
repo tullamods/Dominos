@@ -85,6 +85,12 @@ do
         end
     end
 
+    local function getEquippedConditional(classId, subclassId)
+        local name = GetItemSubClassInfo(classId, subclassId)
+
+        return ('[equipped:%s]'):format(name)
+    end
+
     if class == 'DRUID' then
         addState('class', 'bear', '[bonusbar:3]', GetSpellInfo(5487))
         addState('class', 'prowl', '[bonusbar:1,stealth]', GetSpellInfo(5215))
@@ -117,7 +123,7 @@ do
             addState('class', 'defensive', '[bonusbar:2]', GetSpellInfo(71))
             addState('class', 'berserker', '[bonusbar:3]', GetSpellInfo(2458))
         else
-            addState('class', 'shield', '[equipped:Shields]')
+            addState('class', 'shield', getEquippedConditional(LE_ITEM_CLASS_ARMOR, LE_ITEM_ARMOR_SHIELD))
         end
     elseif class == 'PALADIN' then
         if Addon:IsBuild('retail') then
@@ -125,7 +131,8 @@ do
             addState('class', 'devotion', newFormConditionLookup(465), GetSpellInfo(465))
             addState('class', 'retribution', newFormConditionLookup(183435), GetSpellInfo(183435))
             addState('class', 'concentration', newFormConditionLookup(317920), GetSpellInfo(317920))
-            addState('class', 'shield', '[equipped:Shields]')
+
+            addState('class', 'shield', getEquippedConditional(LE_ITEM_CLASS_ARMOR, LE_ITEM_ARMOR_SHIELD))
         end
     elseif class == 'PRIEST' and Addon:IsBuild('classic') then
         addState('class', 'shadowform', '[form:1]', GetSpellInfo(16592))
