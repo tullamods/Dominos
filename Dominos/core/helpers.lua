@@ -50,7 +50,8 @@ do
         end
     end
 
-    Addon.Fade = setmetatable(
+    Addon.Fade =
+        setmetatable(
         {},
         {
             __call = function(self, addon, frame, toAlpha, delay, duration)
@@ -117,7 +118,7 @@ function Addon:Defer(func, delay, arg1)
     end
 end
 
--- do a thing once a thing happens
+-- do a thing once a thing happens, then unsubscribe
 function Addon:Once(event, objectOrCallback, ...)
     if type(event) ~= 'string' then
         error(('Usage: %s:Once("event", objectOrCallback [, "method")'):format(AddonName), 2)
@@ -135,7 +136,7 @@ function Addon:Once(event, objectOrCallback, ...)
     elseif type(objectOrCallback) == 'table' then
         local object = objectOrCallback
 
-        local method = ...
+        local method = (...)
         if method == nil then
             method = event
         end
@@ -145,6 +146,8 @@ function Addon:Once(event, objectOrCallback, ...)
                 object[method](object, e, ...)
                 Addon.UnregisterCallback(h, e)
             end
+        else
+            error(('Usage: %s:Once("event", object, "method")'):format(AddonName), 2)
         end
     else
         error(('Usage: %s:Once("event", objectOrCallback [, "method")'):format(AddonName), 2)

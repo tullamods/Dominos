@@ -4,6 +4,8 @@ local Addon = LibStub('AceAddon-3.0'):NewAddon(AddonTable, AddonName, 'AceEvent-
 local L = LibStub('AceLocale-3.0'):GetLocale(AddonName)
 local KeyBound = LibStub('LibKeyBound-1.0')
 
+Addon.callbacks = LibStub('CallbackHandler-1.0'):New(Addon)
+
 local ADDON_VERSION = GetAddOnMetadata(AddonName, 'Version')
 local ADDON_BUILD = GetAddOnMetadata(AddonName, 'X-Build') or UNKNOWN
 local CONFIG_ADDON_NAME = AddonName .. '_Config'
@@ -14,8 +16,6 @@ local CONFIG_VERSION = 1
 --------------------------------------------------------------------------------
 
 function Addon:OnInitialize()
-    self.callbacks = LibStub('CallbackHandler-1.0'):New(self)
-
     -- setup db
     self:CreateDatabase()
     self:UpgradeDatabase()

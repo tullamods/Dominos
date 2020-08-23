@@ -11,7 +11,7 @@ local overrideBarStates = {
 	modifier = '[mod]1;0'
 }
 
-function OverrideController:Load()
+function OverrideController:OnLoad()
 	-- Override UI Detection
 	local overrideUIWatcher = CreateFrame('Frame', nil, OverrideActionBar, 'SecureHandlerShowHideTemplate')
 	overrideUIWatcher:SetFrameRef('controller', self)
@@ -24,7 +24,6 @@ function OverrideController:Load()
 	overrideUIWatcher:SetAttribute('_onhide', [[
 		self:GetFrameRef('controller'):SetAttribute('state-isoverrideuishown', false)
 	]])
-
 
 	self:SetAttribute('_onstate-isoverrideuishown', [[
 		self:RunAttribute('updateOverrideUI')
@@ -46,7 +45,6 @@ function OverrideController:Load()
 		self:SetAttribute('state-overrideui', isOverrideUIVisible)
 	]])
 
-
 	--[[
 		Pet Battle UI Detection
 	--]]
@@ -58,7 +56,6 @@ function OverrideController:Load()
 			frame:SetAttribute('state-petbattleui', hasPetBattleUI)
 		end
 	]])
-
 
 	--[[
 		Override Page State Detection
@@ -94,7 +91,6 @@ function OverrideController:Load()
 		self:SetAttribute('state-overridepage', newPage)
 	]])
 
-
 	--[[
 		Initialization
 	--]]
@@ -108,6 +104,8 @@ function OverrideController:Load()
 	for state, values in pairs(overrideBarStates) do
 		RegisterStateDriver(self, state, values)
 	end
+
+	self.OnLoad = nil
 end
 
 function OverrideController:Add(frame)
@@ -118,7 +116,7 @@ function OverrideController:Add(frame)
 		table.insert(myFrames, frame)
 	]])
 
-	--load states
+	-- OnLoad states
 	frame:SetAttribute('state-overrideui', self:GetAttribute('state-overrideui'))
 	frame:SetAttribute('state-petbattleui', tonumber(self:GetAttribute('state-petbattleui')) == 1)
 	frame:SetAttribute('state-overridepage', self:GetAttribute('state-overridepage') or 0)
@@ -137,29 +135,13 @@ function OverrideController:Remove(frame)
 	]])
 end
 
-function OverrideController:DumpStates()
-	Addon:Print('Active States:')
-
-	print('------------------------------')
-	for state in pairs(overrideBarStates) do
-		local stateValue = self:GetAttribute('state-' .. state) == 1
-		if stateValue then
-			print(state)
-		end
-	end
-
-	print('------------------------------')
-	print('effective actionpage', self:GetAttribute('state-overridepage'))
-end
-
 -- returns true if the player is in a state where they should be using actions
 -- normally found on the override bar
 function OverrideController:OverrideBarActive()
 	return (self:GetAttribute('state-overridepage') or 0) > 10
 end
 
-OverrideController:Load()
+OverrideController:OnLoad()
 
---[[ exports ]]--
-
+-- exports
 Addon.OverrideController = OverrideController

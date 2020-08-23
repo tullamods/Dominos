@@ -1,10 +1,9 @@
---[[
-	fadeManager.lua
-		Handles fading out frames when not moused over
-		Necessary since using the blizzard fading functions can cause issues in combat
---]]
+--------------------------------------------------------------------------------
+-- Handles fading out frames when not moused over
+-- Necessary since using the blizzard fading functions can cause issues in combat
+--------------------------------------------------------------------------------
+
 local _, Addon = ...
-local After = C_Timer.After
 
 local MouseOverWatcher = {}
 local watched = {}
@@ -39,7 +38,7 @@ function MouseOverWatcher:RequestUpdate()
 
 	if not self.__Waiting then
 		self.__Waiting = true
-		After(0.15, self.__Update)
+		C_Timer.After(0.15, self.__Update)
 	end
 end
 
