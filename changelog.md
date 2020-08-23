@@ -1,5 +1,11 @@
 # Dominos Changelog
 
+9.0.0-beta3
+
+* Added a Shield Equipped paging option for Paladins/Warriors
+* Moved the overlay interface code to Dominos_Config, trimmming the main file size a slight bit
+* More random acts of code cleanup
+
 9.0.0-beta2
 
 * Fixed missing bag bar
