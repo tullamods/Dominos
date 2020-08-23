@@ -44,6 +44,7 @@ L.OneBag = "One Bag"
 L.Opacity = OPACITY
 L.OutOfCombat = "Out of Combat"
 L.Padding = "Padding"
+L.Paging = "Paging"
 L.PossessBar = "Override Bar"
 L.PossessBarDesc = "What action bar to display special actions on when possessing an enemy and in certain encounters"
 L.Profiles = "Profiles"

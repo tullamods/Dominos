@@ -2,8 +2,7 @@ local _, Addon = ...
 local Dominos = LibStub("AceAddon-3.0"):GetAddon("Dominos")
 local LSM = LibStub("LibSharedMedia-3.0")
 
-
--- local aliaes for some globals
+-- local aliases for some globals
 local GetSpellInfo = _G.GetSpellInfo
 local GetTime = _G.GetTime
 
@@ -57,24 +56,20 @@ function CastBar:New(id, units, ...)
 	return bar
 end
 
-function CastBar:OnCreate()
-	CastBar.proto.OnCreate(self)
-
+CastBar:Extend("OnCreate", function(self)
 	self:SetFrameStrata("HIGH")
 	self:SetScript("OnEvent", self.OnEvent)
 
 	self.props = {}
 	self.timer = CreateFrame("Frame", nil, self, "DominosTimerBarTemplate")
-end
+end)
 
-function CastBar:OnFree()
-	CastBar.proto.OnFree(self)
-
+CastBar:Extend("OnRelease", function(self)
 	self:UnregisterAllEvents()
 	LSM.UnregisterAllCallbacks(self)
-end
+end)
 
-function CastBar:OnLoadSettings()
+CastBar:Extend("OnLoadSettings", function(self)
 	if not self.sets.display then
 		self.sets.display = {
 			icon = false,
@@ -87,7 +82,7 @@ function CastBar:OnLoadSettings()
 	self:SetProperty("font", self:GetFontID())
 	self:SetProperty("texture", self:GetTextureID())
 	self:SetProperty("reaction", "neutral")
-end
+end)
 
 function CastBar:GetDefaults()
 	return {
@@ -549,9 +544,7 @@ end
 -- Cast Bar Right Click Menu
 --------------------------------------------------------------------------------
 
-function CastBar:CreateMenu()
-	local menu = Dominos:NewMenu(self.id)
-
+function CastBar:OnCreateMenu(menu)
 	self:AddLayoutPanel(menu)
 	self:AddTexturePanel(menu)
 	self:AddFontPanel(menu)
@@ -571,9 +564,6 @@ function CastBar:CreateMenu()
 			self:Stop()
 		end
 	end)
-
-	self.menu = menu
-	return menu
 end
 
 function CastBar:AddLayoutPanel(menu)

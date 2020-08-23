@@ -39,8 +39,7 @@ do
 		self:SetSize(317 + pW, 119 + pH)
 	end
 
-	function ContainerFrame:CreateMenu()
-		local menu = Dominos:NewMenu(self.id)
+	function ContainerFrame:OnCreateMenu(menu)
 		local l = LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')
 
 		local panel = menu:NewPanel(l.Layout)
@@ -49,8 +48,6 @@ do
 		panel.paddingSlider = panel:NewPaddingSlider()
 
 		menu:AddFadingPanel()
-
-		self.menu = menu
 	end
 end
 

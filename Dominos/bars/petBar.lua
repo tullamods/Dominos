@@ -1,26 +1,37 @@
--- A bar that contains pet actions
+--------------------------------------------------------------------------------
+-- Pet Bar
+-- A movable action bar for pets
+--------------------------------------------------------------------------------
 
 local _, Addon = ...
 
--- a table that stores all the pet buttons
-local PetButtons = {}
+--------------------------------------------------------------------------------
+-- Pet Button Setup
+--------------------------------------------------------------------------------
 
-for id = 1, NUM_PET_ACTION_SLOTS do
-	local button = _G[('PetActionButton%d'):format(id)]
-
-	Addon.BindableButton:AddQuickBindingSupport(button, 'BONUSACTIONBUTTON' .. id)
-
-	PetButtons[id] = button
+local function getPetButton(id)
+	return _G[('PetActionButton%d'):format(id)]
 end
 
+for id = 1, NUM_PET_ACTION_SLOTS do
+	Addon.BindableButton:AddQuickBindingSupport(
+		getPetButton(id),
+		('BONUSACTIONBUTTON%d'):format(id)
+	)
+end
 
--- the pet bar class
+--------------------------------------------------------------------------------
+-- The Pet Bar
+--------------------------------------------------------------------------------
+
 local PetBar = Addon:CreateClass('Frame', Addon.ButtonBar)
 
 function PetBar:New()
 	return PetBar.proto.New(self, 'pet')
 end
 
+-- TODO: Not this. Right now, its hard for a user to setup custom fade actions
+-- for the pet bar, because we ignore whatever has been set for it
 if Addon:IsBuild("classic") then
 	function PetBar:GetShowStates()
 		return '[pet]show;hide'
@@ -45,7 +56,7 @@ function PetBar:NumButtons()
 end
 
 function PetBar:AcquireButton(index)
-	return PetButtons[index]
+	return getPetButton(index)
 end
 
 function PetBar:OnAttachButton(button)
@@ -79,7 +90,10 @@ function PetBar:KEYBOUND_DISABLED()
 	end
 end
 
+--------------------------------------------------------------------------------
 -- the module
+--------------------------------------------------------------------------------
+
 local PetBarModule = Addon:NewModule('PetBar', 'AceEvent-3.0')
 
 function PetBarModule:Load()

@@ -11,23 +11,45 @@ function Addon:CreateHiddenFrame(...)
 end
 
 -- A utility function for extending blizzard widget types (Frames, Buttons, etc)
-function Addon:CreateClass(frameType, prototype)
-    local class = self:CreateHiddenFrame(frameType)
-    local class_mt = {__index = class}
+do
+    -- extend basically just does a post hook of an existing object method
+    -- its here so that I can not forget to do class.proto.thing when hooking
+    -- thing
+    local function class_Extend(class, method, func)
+        if not (type(method) == 'string' and type(func) == 'function') then
+            error('Usage: Class:Extend("method", func)', 2)
+        end
 
-    class.Bind = function(_, obj)
-        return setmetatable(obj, class_mt)
+        if type(class.proto[method]) ~= 'function' then
+            error(('Parent has no method named %q'):format(method), 2)
+        end
+
+        class[method] = function(self, ...)
+            class.proto[method](self, ...)
+
+            return func(self, ...)
+        end
     end
 
-    if prototype then
-        class.proto = prototype
+    function Addon:CreateClass(frameType, prototype)
+        local class = self:CreateHiddenFrame(frameType)
 
-        return setmetatable(class, {__index = prototype})
+        local class_mt = {__index = class}
+
+        class.Bind = function(_, object)
+            return setmetatable(object, class_mt)
+        end
+
+        if type(prototype) == 'table' then
+            class.proto = prototype
+            class.Extend = class_Extend
+
+            setmetatable(class, {__index = prototype})
+        end
+
+        return class
     end
-
-    return class
 end
-
 -- returns a function that generates unique names for frames
 -- in the format <AddonName>_<Prefix>[1, 2, ...]
 function Addon:CreateNameGenerator(prefix)
@@ -116,42 +138,4 @@ function Addon:Defer(func, delay, arg1)
             C_Timer.After(delay or 0, callback)
         end
     end
-end
-
--- do a thing once a thing happens, then unsubscribe
-function Addon:Once(event, objectOrCallback, ...)
-    if type(event) ~= 'string' then
-        error(('Usage: %s:Once("event", objectOrCallback [, "method")'):format(AddonName), 2)
-    end
-
-    local handler = {}
-
-    if type(objectOrCallback) == 'function' then
-        local callback = objectOrCallback
-
-        handler[event] = function(h, e, ...)
-            callback(e, ...)
-            Addon.UnregisterCallback(h, e)
-        end
-    elseif type(objectOrCallback) == 'table' then
-        local object = objectOrCallback
-
-        local method = (...)
-        if method == nil then
-            method = event
-        end
-
-        if type(object[method]) == 'function' then
-            handler[event] = function(h, e, ...)
-                object[method](object, e, ...)
-                Addon.UnregisterCallback(h, e)
-            end
-        else
-            error(('Usage: %s:Once("event", object, "method")'):format(AddonName), 2)
-        end
-    else
-        error(('Usage: %s:Once("event", objectOrCallback [, "method")'):format(AddonName), 2)
-    end
-
-    Addon.RegisterCallback(handler, event)
 end

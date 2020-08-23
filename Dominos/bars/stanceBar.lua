@@ -1,39 +1,50 @@
--- a bar for displaying class specific buttons for things like stances/forms/etc
+--------------------------------------------------------------------------------
+-- Stance bar
+-- Lets you move around the bar for displaying forms/stances/etc
+--------------------------------------------------------------------------------
+
 local _, Addon = ...
 
-local HAS_STANCE_BAR = {
-	WARRIOR = Addon:IsBuild('classic'),
-	PALADIN = true,
-	HUNTER = false,
-	ROGUE = true,
-	PRIEST = Addon:IsBuild('retail'),
-	DEATHKNIGHT = false,
-	SHAMAN = false,
-	MAGE = false,
-	WARLOCK = false,
-	MONK = false,
-	DRUID = true,
-	DEMONHUNTER = false
-}
-
--- don't bother loading the module if the player is currently playing something
--- without a stance
-if not HAS_STANCE_BAR[UnitClassBase('player')] then
-	return
+-- test to see if the player has a stance bar
+-- not the best looking, but I also don't need to keep it after I do the check
+if
+    not ({
+        DEATHKNIGHT = false,
+        DEMONHUNTER = false,
+        DRUID = true,
+        HUNTER = false,
+        MAGE = false,
+        MONK = false,
+        PALADIN = true,
+        PRIEST = Addon:IsBuild('retail'),
+        ROGUE = true,
+        SHAMAN = false,
+        WARLOCK = false,
+        WARRIOR = Addon:IsBuild('classic')
+    })[UnitClassBase('player')]
+ then
+    return
 end
 
--- buttons
-local StanceButtons = {}
+--------------------------------------------------------------------------------
+-- Button setup
+--------------------------------------------------------------------------------
+
+local function getStanceButton(id)
+    return _G[('StanceButton%d'):format(id)]
+end
 
 for id = 1, NUM_STANCE_SLOTS do
-    local button = _G[('StanceButton%d'):format(id)]
-
-    Addon.BindableButton:AddQuickBindingSupport(button, 'SHAPESHIFTBUTTON' .. id)
-
-    StanceButtons[id] = button
+    Addon.BindableButton:AddQuickBindingSupport(
+        getStanceButton(id),
+        ('SHAPESHIFTBUTTON%s'):format(id)
+    )
 end
 
--- bar
+--------------------------------------------------------------------------------
+-- Bar setup
+--------------------------------------------------------------------------------
+
 local StanceBar = Addon:CreateClass('Frame', Addon.ButtonBar)
 
 function StanceBar:New()
@@ -52,7 +63,7 @@ function StanceBar:NumButtons()
 end
 
 function StanceBar:AcquireButton(index)
-    return StanceButtons[index]
+    return getStanceButton(index)
 end
 
 function StanceBar:OnAttachButton(button)
@@ -66,7 +77,13 @@ function StanceBar:OnDetachButton(button)
     Addon:GetModule('Tooltips'):Unregister(button)
 end
 
--- module
+-- export
+Addon.StanceBar = StanceBar
+
+--------------------------------------------------------------------------------
+-- Module
+--------------------------------------------------------------------------------
+
 local StanceBarModule = Addon:NewModule('StanceBar', 'AceEvent-3.0')
 
 function StanceBarModule:Load()

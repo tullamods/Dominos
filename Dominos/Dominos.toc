@@ -32,6 +32,8 @@ core\tooltipController.lua
 bars\actionButtonMixin.lua
 bars\actionButtons.lua
 bars\actionBar.lua
+bars\actionBarMenu.lua
+bars\actionBarModule.lua
 bars\petBar.lua
 bars\stanceBar.lua
 bars\bagBar.lua

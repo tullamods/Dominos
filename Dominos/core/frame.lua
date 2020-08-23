@@ -19,7 +19,8 @@ local function frame_OnSetScale(frame, scale)
     frame:OnSetScale(scale)
 end
 
-local frame_UpdateShown = [[
+local frame_UpdateShown =
+    [[
     if self:GetAttribute("state-hidden") then
         self:Hide()
         return
@@ -147,7 +148,7 @@ end
 -- called when a frame is acquired from the pool
 function Frame:OnAcquire(id)
     if self.OnEnable then
-        Addon:Printf("Bar %q called deprecated method OnEnable", id)
+        Addon:Printf('Bar %q called deprecated method OnEnable', id)
         self:OnEnable()
     end
 end
@@ -163,7 +164,7 @@ end
 -- called when a frame is sent to the inactive pool
 function Frame:OnRelease(id, deleteSettings)
     if self.OnFree then
-        Addon:Printf("Bar %q called deprecated method OnFree", id)
+        Addon:Printf('Bar %q called deprecated method OnFree', id)
         self:OnFree()
     end
 end
@@ -183,8 +184,7 @@ end
 
 function Frame:LoadSettings()
     -- get defaults must be provided by anything implementing the Frame type
-    self.sets = Addon:GetFrameSets(self.id)
-             or Addon:SetFrameSets(self.id, self:GetDefaults())
+    self.sets = Addon:GetFrameSets(self.id) or Addon:SetFrameSets(self.id, self:GetDefaults())
 
     self:Reposition()
 
@@ -816,15 +816,12 @@ end
 --------------------------------------------------------------------------------
 
 function Frame:CreateMenu()
-    if not Addon:IsConfigAddonEnabled() then
-        return
-    end
-
     local menu = Addon:NewMenu()
 
-    self:OnCreateMenu(menu)
-
-    return menu
+    if menu then
+        self:OnCreateMenu(menu)
+        return menu
+    end
 end
 
 function Frame:OnCreateMenu(menu)

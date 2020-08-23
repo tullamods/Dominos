@@ -1,14 +1,19 @@
--- action bars
--- bars that contain ... actions
+--------------------------------------------------------------------------------
+-- Action Bar
+-- A pool of action bars
+--------------------------------------------------------------------------------
 
 local AddonName, Addon = ...
 
-local MAX_BUTTONS = #Addon.ActionButtons
+local L = LibStub('AceLocale-3.0'):GetLocale(AddonName)
 local ACTION_BUTTON_SHOW_GRID_REASON_ADDON = 1024
 local ACTION_BUTTON_SHOW_GRID_REASON_KEYBOUND = 2048
 
+local MAX_BUTTONS = #Addon.ActionButtons
+
 local ActionBar = Addon:CreateClass('Frame', Addon.ButtonBar)
-Addon.ActionBar = ActionBar
+
+ActionBar.class = UnitClassBase('player')
 
 -- Metatable magic.  Basically this says, 'create a new table for this index'
 -- I do this so that I only create page tables for classes the user is actually
@@ -54,26 +59,24 @@ ActionBar.mainbarOffsets = {
     end
 }
 
-ActionBar.class = select(2, UnitClass('player'))
+ActionBar:Extend(
+    'OnLoadSettings',
+    function(self, id)
+        self.sets.pages = setmetatable(self.sets.pages, id == 1 and self.mainbarOffsets or self.defaultOffsets)
+        self.pages = self.sets.pages[self.class]
+    end
+)
 
-local active = {}
-
-function ActionBar:New(id)
-    local bar = ActionBar.proto.New(self, id)
-
-    bar.sets.pages = setmetatable(bar.sets.pages, bar.id == 1 and self.mainbarOffsets or self.defaultOffsets)
-    bar.pages = bar.sets.pages[bar.class]
-
-    bar:LoadStateController()
-    bar:UpdateStateDriver()
-    bar:SetRightClickUnit(Addon:GetRightClickUnit())
-    bar:UpdateGrid()
-    bar:UpdateTransparent(true)
-
-    active[id] = bar
-
-    return bar
-end
+ActionBar:Extend(
+    'OnAcquire',
+    function(self)
+        self:LoadStateController()
+        self:UpdateStateDriver()
+        self:SetRightClickUnit(Addon:GetRightClickUnit())
+        self:UpdateGrid()
+        self:UpdateTransparent(true)
+    end
+)
 
 --TODO: change the position code to be based more on the number of action bars
 function ActionBar:GetDefaults()
@@ -90,18 +93,10 @@ function ActionBar:GetDefaults()
 end
 
 function ActionBar:GetDisplayName()
-    local L = LibStub('AceLocale-3.0'):GetLocale(AddonName)
-
     return L.ActionBarDisplayName:format(self.id)
 end
 
-function ActionBar:Free()
-    active[self.id] = nil
-
-    ActionBar.proto.Free(self)
-end
-
---returns the maximum possible size for a given bar
+-- returns the maximum possible size for a given bar
 function ActionBar:MaxLength()
     return floor(MAX_BUTTONS / Addon:NumBars())
 end
@@ -123,7 +118,7 @@ function ActionBar:ReleaseButton(button)
 end
 
 function ActionBar:OnAttachButton(button)
-    button:SetActionOffsetInsecure(self:GetAttribute("state-offset"))
+    button:SetActionOffsetInsecure(self:GetAttribute('state-offset'))
 
     button:SetFlyoutDirection(self:GetFlyoutDirection())
     button:SetShowCountText(Addon:ShowCounts())
@@ -220,12 +215,11 @@ function ActionBar:UpdateOverrideBar()
     self:SetAttribute('state-overridebar', isOverrideBar)
 end
 
---returns true if the possess bar, false otherwise
 function ActionBar:IsOverrideBar()
     return Addon:GetOverrideBar() == self
 end
 
---Empty button display
+-- Empty button display
 function ActionBar:ShowGrid(reason)
     if InCombatLockdown() then
         return
@@ -250,7 +244,7 @@ function ActionBar:UpdateGrid()
     end
 end
 
----keybound support
+-- keybound support
 function ActionBar:KEYBOUND_ENABLED()
     self:ShowGrid(ACTION_BUTTON_SHOW_GRID_REASON_KEYBOUND)
 end
@@ -288,7 +282,7 @@ function ActionBar:UpdateTransparent(force)
     end
 end
 
--- flyout direciton calculations
+-- flyout direction calculations
 function ActionBar:GetFlyoutDirection()
     local direction = self.sets.flyoutDirection or 'auto'
 
@@ -329,195 +323,8 @@ function ActionBar:UpdateFlyoutDirection()
     self:ForButtons('SetFlyoutDirection', self:GetFlyoutDirection())
 end
 
-function ActionBar:Layout(...)
-    ActionBar.proto.Layout(self, ...)
+ActionBar:Extend("Layout", ActionBar.UpdateFlyoutDirection)
+ActionBar:Extend("SaveFramePosition", ActionBar.UpdateFlyoutDirection)
 
-    self:UpdateFlyoutDirection()
-end
-
-function ActionBar:SaveFramePosition(...)
-    ActionBar.proto.SaveFramePosition(self, ...)
-
-    self:UpdateFlyoutDirection()
-end
-
--- utility methods
-function ActionBar:ForAll(method, ...)
-    for _, bar in pairs(active) do
-        bar:MaybeCallMethod(method, ...)
-    end
-end
-
--- the right click menu for an action bar
-do
-    local dropdownItems = {}
-    local lastNumBars = -1
-
-    local function getDropdownItems()
-        local numBars = Addon:NumBars()
-
-        if lastNumBars ~= numBars then
-            dropdownItems = {
-                {value = -1, text = _G.DISABLE}
-            }
-
-            for i = 1, numBars do
-                dropdownItems[i + 1] = {
-                    value = i,
-                    text = ('Action Bar %d'):format(i)
-                }
-            end
-
-            lastNumBars = numBars
-        end
-
-        return dropdownItems
-    end
-
-    local function AddStateGroup(panel, categoryName, stateType, l)
-        local states =
-            Addon.BarStates:map(
-            function(s)
-                return s.type == stateType
-            end
-        )
-
-        if #states == 0 then
-            return
-        end
-
-        panel:NewHeader(categoryName)
-
-        for _, state in ipairs(states) do
-            local id = state.id
-            local name = state.text
-            if type(name) == 'function' then
-                name = name()
-            elseif not name then
-                name = l['State_' .. id:upper()]
-            end
-
-            panel:NewDropdown {
-                name = name,
-                items = getDropdownItems,
-                get = function()
-                    local offset = panel.owner:GetOffset(state.id) or -1
-                    if offset > -1 then
-                        return (panel.owner.id + offset - 1) % Addon:NumBars() + 1
-                    end
-                    return offset
-                end,
-                set = function(_, value)
-                    local offset
-
-                    if value == -1 then
-                        offset = nil
-                    elseif value < panel.owner.id then
-                        offset = (Addon:NumBars() - panel.owner.id) + value
-                    else
-                        offset = value - panel.owner.id
-                    end
-
-                    panel.owner:SetOffset(state.id, offset)
-                end
-            }
-        end
-    end
-
-    function ActionBar:CreateMenu()
-        local menu = Addon:NewMenu(self.id)
-
-        self:AddLayoutPanel(menu)
-        self:AddPagingPanel(menu)
-        menu:AddAdvancedPanel()
-        menu:AddFadingPanel()
-
-        self.menu = menu
-    end
-
-    function ActionBar:AddLayoutPanel(menu)
-        local l = LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')
-        local panel = menu:NewPanel(l.Layout)
-
-        panel.sizeSlizer =
-            panel:NewSlider {
-            name = l.Size,
-            min = 1,
-            max = function()
-                return panel.owner:MaxLength()
-            end,
-            get = function()
-                return panel.owner:NumButtons()
-            end,
-            set = function(_, value)
-                panel.owner:SetNumButtons(value)
-                panel.colsSlider:UpdateValue()
-            end
-        }
-
-        panel:AddLayoutOptions()
-
-        return panel
-    end
-
-    function ActionBar:AddPagingPanel(menu)
-        local l = LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')
-        local panel = menu:NewPanel('Paging')
-
-        AddStateGroup(panel, UnitClass('player'), 'class', l)
-        AddStateGroup(panel, l.QuickPaging, 'page', l)
-        AddStateGroup(panel, l.Modifiers, 'modifier', l)
-        AddStateGroup(panel, l.Targeting, 'target', l)
-
-        return panel
-    end
-end
-
-local ActionBarsModule = Addon:NewModule('ActionBars', 'AceEvent-3.0')
-
-function ActionBarsModule:Load()
-    self:RegisterEvent('UPDATE_SHAPESHIFT_FORMS')
-    self:RegisterEvent('UPDATE_BONUS_ACTIONBAR', 'UpdateOverrideBar')
-
-    if _G.OverrideActionBar then
-        self:RegisterEvent('UPDATE_VEHICLE_ACTIONBAR', 'UpdateOverrideBar')
-        self:RegisterEvent('UPDATE_OVERRIDE_ACTIONBAR', 'UpdateOverrideBar')
-    end
-
-    self:RegisterEvent('PET_BAR_HIDEGRID')
-
-    for i = 1, Addon:NumBars() do
-        ActionBar:New(i)
-    end
-end
-
-function ActionBarsModule:Unload()
-    self:UnregisterAllEvents()
-
-    ActionBar:ForAll('Free')
-end
-
-function ActionBarsModule:UpdateOverrideBar()
-    if InCombatLockdown() or (not Addon.OverrideController:OverrideBarActive()) then
-        return
-    end
-
-    Addon:GetOverrideBar():ForButtons('Update')
-end
-
--- workaround for empty buttons not hiding when dropping a pet action
-function ActionBarsModule:PET_BAR_HIDEGRID()
-    if InCombatLockdown() then
-        return
-    end
-
-    ActionBar:ForAll('HideGrid', ACTION_BUTTON_SHOW_GRID_REASON_EVENT)
-end
-
-function ActionBarsModule:UPDATE_SHAPESHIFT_FORMS()
-    if InCombatLockdown() then
-        return
-    end
-
-    ActionBar:ForAll('UpdateStateDriver')
-end
+-- exports
+Addon.ActionBar = ActionBar

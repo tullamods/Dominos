@@ -289,6 +289,7 @@ function Addon:MatchProfile(name)
             match = k
         end
     end
+
     return match
 end
 
@@ -406,20 +407,20 @@ end
 
 -- binding mode
 function Addon:SetBindingMode(enable)
-	if enable and (not self:IsBindingModeEnabled()) then
-		self:SetLock(true)
-		KeyBound:Activate()
-	elseif (not enable) and self:IsBindingModeEnabled() then
-		KeyBound:Deactivate()
-	end
+    if enable and (not self:IsBindingModeEnabled()) then
+        self:SetLock(true)
+        KeyBound:Activate()
+    elseif (not enable) and self:IsBindingModeEnabled() then
+        KeyBound:Deactivate()
+    end
 end
 
 function Addon:IsBindingModeEnabled()
-	return KeyBound:IsShown()
+    return KeyBound:IsShown()
 end
 
 function Addon:ToggleBindingMode()
-	self:SetBindingMode(not self:IsBindingModeEnabled())
+    self:SetBindingMode(not self:IsBindingModeEnabled())
 end
 
 -- scale
@@ -530,7 +531,7 @@ end
 
 function Addon:SetShowGrid(enable)
     self.db.profile.showgrid = enable or false
-    self.ActionBar:ForAll('UpdateGrid')
+    self.Frame:ForAll('UpdateGrid')
 end
 
 function Addon:ShowGrid()
@@ -621,20 +622,16 @@ end
 
 -- action bar counts
 function Addon:SetNumBars(count)
-    count = max(min(count, 120), 1)
+    count = Clamp(count, 1, #Addon.ActionButtons)
 
     if count ~= self:NumBars() then
-        self.ActionBar:ForAll('Free')
         self.db.profile.ab.count = count
-
-        for i = 1, self:NumBars() do
-            self.ActionBar:New(i)
-        end
+        self.callbacks:Fire('ACTIONBAR_COUNT_UPDATED', count)
     end
 end
 
 function Addon:SetNumButtons(count)
-    self:SetNumBars(120 / count)
+    self:SetNumBars(#Addon.ActionButtons / count)
 end
 
 function Addon:NumBars()

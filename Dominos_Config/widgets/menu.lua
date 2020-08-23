@@ -8,8 +8,9 @@ local MENU_WIDTH = 428
 local MENU_HEIGHT = 320
 
 function Menu:New(parent)
-	local menu = self:Bind(CreateFrame('Frame', nextName(), parent or UIParent, BackdropTemplateMixin and "UIPanelDialogTemplate, BackdropTemplate" or "UIPanelDialogTemplate"))
+	local menu = self:Bind(CreateFrame('Frame', nextName(), parent or UIParent, "UIPanelDialogTemplate"))
 
+	menu:Hide()
 	menu:SetSize(MENU_WIDTH, MENU_HEIGHT)
 	menu:EnableMouse(true)
 	menu:SetToplevel(true)
@@ -45,7 +46,7 @@ function Menu:New(parent)
 	return menu
 end
 
---tells the panel what frame we're pointed to
+-- tells the panel what frame we're pointed to
 function Menu:SetOwner(owner)
 	if self.panels then
 		for _, panel in pairs(self.panels) do

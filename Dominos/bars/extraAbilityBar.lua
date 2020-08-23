@@ -8,12 +8,15 @@ local _, Addon = ...
 local ExtraAbilityBar = Addon:CreateClass('Frame', Addon.Frame)
 
 function ExtraAbilityBar:New()
-    local bar = ExtraAbilityBar.proto.New(self, 'extra')
-
-    bar:Layout()
-
-    return bar
+    return ExtraAbilityBar.proto.New(self, 'extra')
 end
+
+ExtraAbilityBar:Extend(
+    'OnAcquire',
+    function(self)
+        self:Layout()
+    end
+)
 
 function ExtraAbilityBar:GetDefaults()
     return {
@@ -42,13 +45,10 @@ function ExtraAbilityBar:Layout()
     self:SetSize(w + pW, h + pH)
 end
 
-function ExtraAbilityBar:CreateMenu()
-    local menu = Addon:NewMenu()
-
+function ExtraAbilityBar:OnCreateMenu(menu)
     self:AddLayoutPanel(menu)
-    menu:AddFadingPanel()
 
-    self.menu = menu
+    menu:AddFadingPanel()
 end
 
 function ExtraAbilityBar:AddLayoutPanel(menu)

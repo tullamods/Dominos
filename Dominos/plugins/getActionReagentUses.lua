@@ -1,7 +1,9 @@
 -- GetActionReagentUses
 -- An API to figure out how many times you can cast a spell that requires reagents
 local _, Addon = ...
-if not Addon:IsBuild("classic") then return end
+if not Addon:IsBuild('classic') then
+    return
+end
 
 -- a map of spells to necessary reagents
 -- spells that use a single reagent are specified like this:
@@ -19,7 +21,6 @@ local SPELL_REAGENTS = {
     [20742] = 17036,
     [20747] = 17037,
     [20748] = 17038,
-
     -- Mage
     -- Arcane Brilliance
     [23028] = 17020,
@@ -49,7 +50,6 @@ local SPELL_REAGENTS = {
     [3566] = 17031,
     -- Teleport: Undercity
     [3563] = 17031,
-
     -- Paladin
     -- Divine Intervention
     [19752] = 17033,
@@ -67,7 +67,6 @@ local SPELL_REAGENTS = {
     -- Greater Blessing of Wisdom
     [25894] = 21177,
     [25918] = 21177,
-
     -- Priest Abilities
     -- Levitate
     [1706] = 17056,
@@ -78,7 +77,6 @@ local SPELL_REAGENTS = {
     [27683] = 17029,
     -- Prayer of Spirit
     [27681] = 17029,
-
     -- Rogue Abilities
     -- Blind
     [2094] = 5530,
@@ -112,7 +110,6 @@ local SPELL_REAGENTS = {
     [13228] = {2930, 1, 5173, 2, 3372, 1},
     [13229] = {8923, 1, 5173, 2, 8925, 1},
     [13230] = {8923, 2, 5173, 2, 8925, 1},
-
     -- Shaman
     -- Reincarnation
     [20608] = 17030,
@@ -120,7 +117,6 @@ local SPELL_REAGENTS = {
     [131] = 17057,
     -- Water Walking
     [546] = 17058,
-
     -- Warlock
     -- Create Firestone
     [17951] = 6265,
@@ -169,7 +165,6 @@ local SPELL_REAGENTS = {
     [18869] = 6265,
     [18870] = 6265,
     [18871] = 6265,
-
     -- Other stuff
     -- Cultivate Packet of Seeds
     [13399] = {11018, 2, 11022, 1}
@@ -179,19 +174,21 @@ local SPELL_REAGENTS = {
 local function getActionReagentUses(action)
     local actionType, actionID = GetActionInfo(action)
 
-    if actionType == "macro" then
+    if actionType == 'macro' then
         actionID = GetMacroSpell(actionID)
-        if not actionID then return false, 0 end
-        actionType = "spell"
+        if not actionID then
+            return false, 0
+        end
+        actionType = 'spell'
     end
 
-    if actionType == "spell" then
+    if actionType == 'spell' then
         local reagents = SPELL_REAGENTS[actionID]
         -- single reagent, just return the count
-        if type(reagents) == "number" then
+        if type(reagents) == 'number' then
+            -- multiple reagents, pick the one we have least of
             return true, GetItemCount(reagents)
-        -- multiple reagents, pick the one we have least of
-        elseif type(reagents) == "table" then
+        elseif type(reagents) == 'table' then
             local count = math.huge
 
             for i = 1, #reagents - 1, 2 do
@@ -211,7 +208,7 @@ local function getActionReagentUses(action)
 end
 
 hooksecurefunc(
-    "ActionButton_UpdateCount",
+    'ActionButton_UpdateCount',
     function(button)
         local action = button.action
 
@@ -226,11 +223,11 @@ hooksecurefunc(
         if IsConsumableAction(action) or IsStackableAction(action) then
             local count = GetActionCount(action)
             if count > (button.maxDisplayCount or 9999) then
-                button.Count:SetText("*")
+                button.Count:SetText('*')
             elseif count > 0 then
                 button.Count:SetText(count)
             else
-                button.Count:SetText("")
+                button.Count:SetText('')
             end
         end
     end

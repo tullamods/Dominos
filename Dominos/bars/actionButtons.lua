@@ -3,7 +3,8 @@
 --------------------------------------------------------------------------------
 
 local AddonName, Addon = ...
-local ActionButtons = {}
+
+local NUM_ACTION_BUTTONS = 120
 
 local function CreateActionButton(id)
     local name = ('%sActionButton%d'):format(AddonName, id)
@@ -41,8 +42,10 @@ local function getBindingAction(button)
     end
 end
 
+local ActionButtons = {}
+
 -- do one time setup on all action buttons
-for id = 1, 120 do
+for id = 1, NUM_ACTION_BUTTONS do
     local button = AcquireActionButton(id)
 
     -- apply our extra action button methods
@@ -79,4 +82,5 @@ for id = 1, 120 do
     ActionButtons[id] = button
 end
 
+-- exports
 Addon.ActionButtons = ActionButtons
