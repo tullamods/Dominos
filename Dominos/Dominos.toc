@@ -28,9 +28,7 @@ core\bindableButton.lua
 core\fadeManager.lua
 core\overrideController.lua
 core\tooltipController.lua
-#@non-retail@
-# bars\getActionReagentUses.lua
-#@end-non-retail@
+
 bars\actionButtonMixin.lua
 bars\actionButtons.lua
 bars\actionBar.lua
@@ -47,3 +45,6 @@ plugins\slashCommands.lua
 plugins\launcher.lua
 plugins\blizzardHider.lua
 plugins\buttonThemer.lua
+#@non-retail@
+# plugins\getActionReagentUses.lua
+#@end-non-retail@
