@@ -56,19 +56,21 @@ local frame_UpdateShown = [[
     self:Show()
 ]]
 
+local frame_CallUpdateShown = "self:RunAttribute('UpdateShown')"
+
 -- constructor
 function Frame:New(id, tooltipText)
     id = tonumber(id) or id
 
     local frame = self:Restore(id) or self:Create(id)
+
     frame:LoadSettings()
     frame:SetTooltipText(tooltipText)
 
     Addon.OverrideController:Add(frame)
 
+    frame:OnAcquire(id)
     active[id] = frame
-
-    frame:OnEnable()
 
     return frame
 end
@@ -81,40 +83,22 @@ function Frame:Create(id)
     frame:SetMovable(true)
 
     -- compatibility:
-    -- artfically increase the frame level of the bar to account for the header
+    -- in old versions of dominos, frames had an extra header frame to control
+    -- visibility, which pushed things up by one frame level
+    -- so increase the frame level of frames to account for that
     frame:SetFrameLevel(frame:GetFrameLevel() + 1)
 
     frame.id = id
 
     frame:SetAttribute('id', id)
 
-    frame:SetAttribute('_onstate-alpha', [[
-		self:CallMethod('FadeOut')
-	]])
-
-    frame:SetAttribute('_onstate-overrideui', [[
-		self:RunAttribute('UpdateShown')
-	]])
-
-    frame:SetAttribute('_onstate-showinoverrideui', [[
-		self:RunAttribute('UpdateShown')
-	]])
-
-    frame:SetAttribute('_onstate-petbattleui', [[
-		self:RunAttribute('UpdateShown')
-	]])
-
-    frame:SetAttribute('_onstate-showinpetbattleui', [[
-		self:RunAttribute('UpdateShown')
-	]])
-
-    frame:SetAttribute('_onstate-display', [[
-		self:RunAttribute('UpdateShown')
-	]])
-
-    frame:SetAttribute('_onstate-hidden', [[
-		self:RunAttribute("UpdateShown")
-	]])
+    frame:SetAttribute('_onstate-alpha', "self:CallMethod('FadeOut')")
+    frame:SetAttribute('_onstate-display', frame_CallUpdateShown)
+    frame:SetAttribute('_onstate-hidden', frame_CallUpdateShown)
+    frame:SetAttribute('_onstate-overrideui', frame_CallUpdateShown)
+    frame:SetAttribute('_onstate-petbattleui', frame_CallUpdateShown)
+    frame:SetAttribute('_onstate-showinoverrideui', frame_CallUpdateShown)
+    frame:SetAttribute('_onstate-showinpetbattleui', frame_CallUpdateShown)
 
     frame:SetAttribute('UpdateShown', frame_UpdateShown)
     hooksecurefunc(frame, 'SetAlpha', frame_OnSetAlpha)
@@ -151,7 +135,7 @@ function Frame:Free(deleteSettings)
     self:SetUserPlaced(nil)
     self:Hide()
 
-    self:OnFree(deleteSettings)
+    self:OnRelease(self.id, deleteSettings)
 
     unused[self.id] = self
 end
@@ -160,16 +144,28 @@ end
 -- Lifecycle Hooks
 --------------------------------------------------------------------------------
 
-function Frame:OnEnable()
+-- called when a frame is acquired from the pool
+function Frame:OnAcquire(id)
+    if self.OnEnable then
+        Addon:Printf("Bar %q called deprecated method OnEnable", id)
+        self:OnEnable()
+    end
 end
 
-function Frame:OnCreate()
+-- called when a frame is first created
+function Frame:OnCreate(id)
 end
 
-function Frame:OnRestore()
+-- called when a frame is pulled in from the inactive pool
+function Frame:OnRestore(id)
 end
 
-function Frame:OnFree(deleteSettings)
+-- called when a frame is sent to the inactive pool
+function Frame:OnRelease(id, deleteSettings)
+    if self.OnFree then
+        Addon:Printf("Bar %q called deprecated method OnFree", id)
+        self:OnFree()
+    end
 end
 
 function Frame:OnLoadSettings()
@@ -820,22 +816,29 @@ end
 --------------------------------------------------------------------------------
 
 function Frame:CreateMenu()
-    self.menu = Addon:NewMenu(self.id)
-    self.menu:AddLayoutPanel()
-    self.menu:AddAdvancedPanel()
-    self.menu:AddFadingPanel()
-end
-
-function Frame:ShowMenu()
     if not Addon:IsConfigAddonEnabled() then
         return
     end
 
-    if not self.menu then
-        self:CreateMenu()
-    end
+    local menu = Addon:NewMenu()
 
+    self:OnCreateMenu(menu)
+
+    return menu
+end
+
+function Frame:OnCreateMenu(menu)
+    menu:AddLayoutPanel()
+    menu:AddAdvancedPanel()
+    menu:AddFadingPanel()
+end
+
+function Frame:ShowMenu()
     local menu = self.menu
+    if not menu then
+        menu = self:CreateMenu()
+        self.menu = menu
+    end
 
     if menu then
         menu:Hide()
