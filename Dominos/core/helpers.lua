@@ -1,5 +1,4 @@
 -- functions I call at least three(ish) times
-
 local AddonName, Addon = ...
 
 -- create a frame, and then hide it
@@ -35,7 +34,7 @@ function Addon:CreateNameGenerator(prefix)
     local id = 0
     return function()
         id = id + 1
-        return ("%s_%s_%d"):format(AddonName, prefix, id)
+        return ('%s_%s_%d'):format(AddonName, prefix, id)
     end
 end
 
@@ -51,48 +50,50 @@ do
         end
     end
 
-    Addon.Fade = setmetatable({}, {
-        __call = function(self, addon, frame, toAlpha, delay, duration)
-            return self[frame](toAlpha, delay, duration)
-        end,
+    Addon.Fade = setmetatable(
+        {},
+        {
+            __call = function(self, addon, frame, toAlpha, delay, duration)
+                return self[frame](toAlpha, delay, duration)
+            end,
+            __index = function(self, frame)
+                local animationGroup = frame:CreateAnimationGroup()
+                animationGroup:SetLooping('NONE')
+                animationGroup:SetToFinalAlpha(true)
+                animationGroup:SetScript('OnFinished', animationGroup_OnFinished)
 
-        __index = function(self, frame)
-            local animationGroup = frame:CreateAnimationGroup()
-            animationGroup:SetLooping("NONE")
-            animationGroup:SetToFinalAlpha(true)
-            animationGroup:SetScript("OnFinished", animationGroup_OnFinished)
+                local fadeAnimation = animationGroup:CreateAnimation('Alpha')
+                fadeAnimation:SetSmoothing('IN_OUT')
+                fadeAnimation:SetOrder(0)
 
-            local fadeAnimation = animationGroup:CreateAnimation("Alpha")
-            fadeAnimation:SetSmoothing("IN_OUT")
-            fadeAnimation:SetOrder(0)
+                local function func(toAlpha, delay, duration)
+                    local fromAlpha
 
-            local function func(toAlpha, delay, duration)
-                local fromAlpha
+                    -- if we're not done animating, then figure out what alpha level
+                    -- we are at and pick up where we left off
+                    if not fadeAnimation:IsDone() then
+                        local start = fadeAnimation:GetFromAlpha()
+                        local delta = fadeAnimation:GetToAlpha() - start
 
-                -- if we're not done animating, then figure out what alpha level
-                -- we are at and pick up where we left off
-                if not fadeAnimation:IsDone() then
-                    local start = fadeAnimation:GetFromAlpha()
-                    local delta = fadeAnimation:GetToAlpha() - start
+                        fromAlpha = start + delta * fadeAnimation:GetSmoothProgress()
+                    else
+                        fromAlpha = frame:GetAlpha()
+                    end
 
-                    fromAlpha = start + delta * fadeAnimation:GetSmoothProgress()
-                else
-                    fromAlpha  = frame:GetAlpha()
+                    fadeAnimation:SetFromAlpha(fromAlpha)
+                    fadeAnimation:SetToAlpha(toAlpha)
+                    fadeAnimation:SetStartDelay(delay)
+                    fadeAnimation:SetDuration(duration)
+
+                    animationGroup.toAlpha = toAlpha
+                    animationGroup:Restart()
                 end
 
-                fadeAnimation:SetFromAlpha(fromAlpha)
-                fadeAnimation:SetToAlpha(toAlpha)
-                fadeAnimation:SetStartDelay(delay)
-                fadeAnimation:SetDuration(duration)
-
-                animationGroup.toAlpha = toAlpha
-                animationGroup:Restart()
+                self[frame] = func
+                return func
             end
-
-            self[frame] = func
-            return func
-        end
-    })
+        }
+    )
 end
 
 -- somewhere between a debounce and a throttle
@@ -114,4 +115,40 @@ function Addon:Defer(func, delay, arg1)
             C_Timer.After(delay or 0, callback)
         end
     end
+end
+
+-- do a thing once a thing happens
+function Addon:Once(event, objectOrCallback, ...)
+    if type(event) ~= 'string' then
+        error(('Usage: %s:Once("event", objectOrCallback [, "method")'):format(AddonName), 2)
+    end
+
+    local handler = {}
+
+    if type(objectOrCallback) == 'function' then
+        local callback = objectOrCallback
+
+        handler[event] = function(h, e, ...)
+            callback(e, ...)
+            Addon.UnregisterCallback(h, e)
+        end
+    elseif type(objectOrCallback) == 'table' then
+        local object = objectOrCallback
+
+        local method = ...
+        if method == nil then
+            method = event
+        end
+
+        if type(object[method]) == 'function' then
+            handler[event] = function(h, e, ...)
+                object[method](object, e, ...)
+                Addon.UnregisterCallback(h, e)
+            end
+        end
+    else
+        error(('Usage: %s:Once("event", objectOrCallback [, "method")'):format(AddonName), 2)
+    end
+
+    Addon.RegisterCallback(handler, event)
 end
