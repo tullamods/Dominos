@@ -20,6 +20,7 @@ embeds.xml
 localization.xml
 Dominos.lua
 core\helpers.lua
+core\barStates.lua
 core\shadowUIParent.lua
 core\frame.lua
 core\buttonBar.lua
@@ -27,7 +28,6 @@ core\bindableButton.lua
 core\fadeManager.lua
 core\overrideController.lua
 core\tooltipController.lua
-bars\barStates.lua
 #@non-retail@
 # bars\getActionReagentUses.lua
 #@end-non-retail@
