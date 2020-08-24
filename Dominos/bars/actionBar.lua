@@ -6,10 +6,10 @@
 local AddonName, Addon = ...
 
 local L = LibStub('AceLocale-3.0'):GetLocale(AddonName)
+
+local ACTION_BUTTON_COUNT = Addon.ACTION_BUTTON_COUNT
 local ACTION_BUTTON_SHOW_GRID_REASON_ADDON = 1024
 local ACTION_BUTTON_SHOW_GRID_REASON_KEYBOUND = 2048
-
-local MAX_BUTTONS = #Addon.ActionButtons
 
 local ActionBar = Addon:CreateClass('Frame', Addon.ButtonBar)
 
@@ -98,12 +98,12 @@ end
 
 -- returns the maximum possible size for a given bar
 function ActionBar:MaxLength()
-    return floor(MAX_BUTTONS / Addon:NumBars())
+    return floor(ACTION_BUTTON_COUNT / Addon:NumBars())
 end
 
 function ActionBar:AcquireButton(index)
-    local actionID = index + (self.id - 1) * self:MaxLength()
-    local button = Addon.ActionButtons[actionID]
+    local id = index + (self.id - 1) * self:MaxLength()
+    local button = Addon.ActionButtons[id]
 
     button:SetAttribute('index', index)
     button:SetAttribute('statehidden', nil)

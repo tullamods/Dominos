@@ -4,12 +4,16 @@ local Addon = LibStub('AceAddon-3.0'):NewAddon(AddonTable, AddonName, 'AceEvent-
 local L = LibStub('AceLocale-3.0'):GetLocale(AddonName)
 local KeyBound = LibStub('LibKeyBound-1.0')
 
-Addon.callbacks = LibStub('CallbackHandler-1.0'):New(Addon)
-
 local ADDON_VERSION = GetAddOnMetadata(AddonName, 'Version')
 local ADDON_BUILD = GetAddOnMetadata(AddonName, 'X-Build') or UNKNOWN
 local CONFIG_ADDON_NAME = AddonName .. '_Config'
 local CONFIG_VERSION = 1
+
+-- setup custom callbacks
+Addon.callbacks = LibStub('CallbackHandler-1.0'):New(Addon)
+
+-- how many action buttons we support
+Addon.ACTION_BUTTON_COUNT = 120
 
 --------------------------------------------------------------------------------
 -- Events
@@ -622,7 +626,7 @@ end
 
 -- action bar counts
 function Addon:SetNumBars(count)
-    count = Clamp(count, 1, #Addon.ActionButtons)
+    count = Clamp(count, 1, self.ACTION_BUTTON_COUNT)
 
     if count ~= self:NumBars() then
         self.db.profile.ab.count = count
@@ -631,7 +635,7 @@ function Addon:SetNumBars(count)
 end
 
 function Addon:SetNumButtons(count)
-    self:SetNumBars(#Addon.ActionButtons / count)
+    self:SetNumBars(self.ACTION_BUTTON_COUNT / count)
 end
 
 function Addon:NumBars()
