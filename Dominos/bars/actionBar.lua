@@ -113,7 +113,6 @@ end
 
 function ActionBar:ReleaseButton(button)
     button:SetAttribute('statehidden', true)
-    button:SetParent(Addon.ShadowUIParent)
     button:Hide()
 end
 
