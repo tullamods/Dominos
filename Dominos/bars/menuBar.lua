@@ -255,10 +255,11 @@ function MenuBar:FixButtonPositions()
     for i, button in ipairs(self.overrideButtons) do
         if i > 1 then
             button:ClearAllPoints()
+
             if i == 7 then
-                button:SetPoint('TOPLEFT', self.overrideButtons[1], 'BOTTOMLEFT', 0, 4 + (t - b))
+                button:SetPoint('TOPLEFT', self.overrideButtons[1], 'BOTTOMLEFT', 0, (t - b) - 3)
             else
-                button:SetPoint('BOTTOMLEFT', self.overrideButtons[i - 1], 'BOTTOMRIGHT', (l - r), 0)
+                button:SetPoint('BOTTOMLEFT', self.overrideButtons[i - 1], 'BOTTOMRIGHT', (l - r) - 1, 0)
             end
         end
 
