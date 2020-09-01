@@ -170,7 +170,7 @@ function BindableButton:AddCastOnKeyPressSupport(button)
         'OnClick',
         [[
 			if button == 'HOTKEY' then
-				if down ~= control:GetAttribute("CastOnKeyPress") then
+				if down == control:GetAttribute("CastOnKeyPress") then
 					return 'LeftButton'
 				end
 			elseif down then
