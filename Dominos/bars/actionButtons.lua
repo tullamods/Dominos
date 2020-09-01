@@ -10,6 +10,8 @@ local function createActionButton(id)
 
     local button = CreateFrame('CheckButton', name, nil, 'ActionBarButtonTemplate')
 
+    button.commandName = ('CLICK:%s:HOTKEY'):format(name)
+
     Addon.BindableButton:AddCastOnKeyPressSupport(button)
 
     return button
@@ -44,7 +46,7 @@ end
 -- handle notifications from our parent bar about whate the action button
 -- ID offset should be
 local actionButton_OnUpdateOffset =
-[[
+    [[
     local offset = message or 0
     local id = self:GetAttribute('index') + offset
 
@@ -56,8 +58,9 @@ local actionButton_OnUpdateOffset =
 
 -- action button creation is deferred so that we can avoid creating buttons for
 -- bars set to show less than the maximum
-local ActionButtons = setmetatable(
-    { },
+local ActionButtons =
+    setmetatable(
+    {},
     {
         -- index creates & initializes buttons as we need them
         __index = function(self, id)
@@ -65,7 +68,7 @@ local ActionButtons = setmetatable(
             -- our expected range
             id = tonumber(id) or 0
             if id < 1 or id > ACTION_BUTTON_COUNT then
-                error(("Usage: %s.ActionButtons[1-%d]"):format(AddonName, ACTION_BUTTON_COUNT), 2)
+                error(('Usage: %s.ActionButtons[1-%d]'):format(AddonName, ACTION_BUTTON_COUNT), 2)
             end
 
             local button = acquireActionButton(id)
@@ -97,10 +100,9 @@ local ActionButtons = setmetatable(
             rawset(self, id, button)
             return button
         end,
-
         -- newindex is set to block writes to prevent errors
-        __newindex = function ()
-            error(("%s.ActionButtons does not support writes"):format(AddonName), 2)
+        __newindex = function()
+            error(('%s.ActionButtons does not support writes'):format(AddonName), 2)
         end
     }
 )

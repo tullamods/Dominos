@@ -5,217 +5,230 @@ local KeyBound = LibStub('LibKeyBound-1.0')
 -- binding method definitions
 -- returns the binding action associated with the button
 local function getButtonBindingAction(button)
-	local bindingAction = button:GetAttribute("bindingAction")
-	if bindingAction then
-		return bindingAction
-	end
+    local bindingAction = button:GetAttribute('bindingAction')
+    if bindingAction then
+        return bindingAction
+    end
 
-	local id = button:GetID() or 0
-	if id > 0 and button.buttonType then
-		return (button.buttonType .. id)
-	end
+    local id = button:GetID() or 0
+    if id > 0 and button.buttonType then
+        return (button.buttonType .. id)
+    end
 
-	-- use a virtual button for clicks
-	-- this allows us to separate hotkey presses from mouse clicks on actions
-	return ('CLICK %s:HOTKEY'):format(button:GetName())
+    -- use a virtual button for clicks
+    -- this allows us to separate hotkey presses from mouse clicks on actions
+    return ('CLICK %s:HOTKEY'):format(button:GetName())
 end
 
 local function getButtonActionName(button)
-	local action = getButtonBindingAction(button)
-	local bindingName = GetBindingName(action)
+    local commandName = button.commandName
+    if commandName then
+        return GetBindingName(commandName)
+    end
 
-	if bindingName and bindingName ~= action then
-		return bindingName
-	end
+    local action = getButtonBindingAction(button)
+    local bindingName = GetBindingName(action)
 
-	return button:GetName()
+    if bindingName and bindingName ~= action then
+        return bindingName
+    end
+
+    return button:GetName()
 end
 
 local function getButtonBindings(button)
-	return GetBindingKey(getButtonBindingAction(button))
+    return GetBindingKey(getButtonBindingAction(button))
 end
 
 -- returns what hotkey to display for the button
 local function getButtonHotkey(button)
-	local key = (getButtonBindings(button))
+    local key = (getButtonBindings(button))
 
-	if key then
-		return KeyBound:ToShortKey(key)
-	end
+    if key then
+        return KeyBound:ToShortKey(key)
+    end
 
-	return ''
+    return ''
 end
 
 -- returns a space separated list of all bindings for the given button
 local function getButtonBindingsList(button)
-	return strjoin(' ', getButtonBindings(button))
+    return strjoin(' ', getButtonBindings(button))
 end
 
 -- set bindings
 local function setButtonBinding(button, key)
-	return SetBinding(key, getButtonBindingAction(button))
+    return SetBinding(key, getButtonBindingAction(button))
 end
 
 -- clears all bindings from the button
 local function clearButtonBindings(button)
-	local key = (getButtonBindings(button))
+    local key = (getButtonBindings(button))
 
-	while key do
-		SetBinding(key, nil)
-		key = (getButtonBindings(button))
-	end
+    while key do
+        SetBinding(key, nil)
+        key = (getButtonBindings(button))
+    end
 end
 
 -- used to implement keybinding support without applying all of the LibKeyBound
 -- interface methods via a mixin
-local BindableButtonProxy = Addon:CreateHiddenFrame("Frame", AddonName .. "BindableButtonProxy")
+local BindableButtonProxy = Addon:CreateHiddenFrame('Frame', AddonName .. 'BindableButtonProxy')
 
 -- call a thing if the thing exists
 local function whenExists(obj, func, ...)
-	if obj then
-		return func(obj, ...)
-	end
+    if obj then
+        return func(obj, ...)
+    end
 end
 
 function BindableButtonProxy:GetHotkey()
-	return whenExists(self:GetParent(), getButtonHotkey)
+    return whenExists(self:GetParent(), getButtonHotkey)
 end
 
 function BindableButtonProxy:SetKey(key)
-	return whenExists(self:GetParent(), setButtonBinding, key)
+    return whenExists(self:GetParent(), setButtonBinding, key)
 end
 
 function BindableButtonProxy:GetBindings()
-	return whenExists(self:GetParent(), getButtonBindingsList)
+    return whenExists(self:GetParent(), getButtonBindingsList)
 end
 
 function BindableButtonProxy:ClearBindings()
-	return whenExists(self:GetParent(), clearButtonBindings)
+    return whenExists(self:GetParent(), clearButtonBindings)
 end
 
 function BindableButtonProxy:GetActionName()
-	return whenExists(self:GetParent(), getButtonActionName) or UNKNOWN
+    return whenExists(self:GetParent(), getButtonActionName) or UNKNOWN
 end
 
-BindableButtonProxy:SetScript("OnLeave", function(self)
-	self:ClearAllPoints()
-	self:SetParent(nil)
-end)
+BindableButtonProxy:SetScript(
+    'OnLeave',
+    function(self)
+        self:ClearAllPoints()
+        self:SetParent(nil)
+    end
+)
 
 -- methods to inject onto a bar to add in common binding functionality
 -- previously, this was a mixin
-local BindableButton = Addon:NewModule("Bindings", "AceEvent-3.0")
+local BindableButton = Addon:NewModule('Bindings', 'AceEvent-3.0')
 
 BindableButton.keyPressHandler = Addon:CreateHiddenFrame('Frame', nil, nil, 'SecureHandlerBaseTemplate')
 
 function BindableButton:OnInitialize()
-	-- migrate any old click bindings to the new format
-	local updatedBindings = false
+    -- migrate any old click bindings to the new format
+    local updatedBindings = false
 
-	for id = 1, 60 do
-		local action = ('CLICK %sActionButton%d:LeftButton'):format(AddonName, id)
-		local newAction = ('CLICK %sActionButton%d:HOTKEY'):format(AddonName, id)
+    for id = 1, 60 do
+        local action = ('CLICK %sActionButton%d:LeftButton'):format(AddonName, id)
+        local newAction = ('CLICK %sActionButton%d:HOTKEY'):format(AddonName, id)
 
-		local key = GetBindingKey(action)
-		while key do
-			SetBinding(key, newAction)
-			key = GetBindingKey(action)
-			updatedBindings = true
-		end
-	end
+        local key = GetBindingKey(action)
+        while key do
+            SetBinding(key, newAction)
+            key = GetBindingKey(action)
+            updatedBindings = true
+        end
+    end
 
-	if updatedBindings then
-		(SaveBindings or AttemptToSaveBindings)(GetCurrentBindingSet())
-	end
+    if updatedBindings then
+        (SaveBindings or AttemptToSaveBindings)(GetCurrentBindingSet())
+    end
 end
 
 function BindableButton:OnEnable()
-	self:SetCastOnKeyPress(GetCVarBool('ActionButtonUseKeyDown'))
-	self:RegisterEvent("CVAR_UPDATE")
+    self:SetCastOnKeyPress(GetCVarBool('ActionButtonUseKeyDown'))
+    self:RegisterEvent('CVAR_UPDATE')
 end
 
 function BindableButton:CVAR_UPDATE(event, cvarName, cvarValue)
-	if cvarName == ACTION_BUTTON_USE_KEY_DOWN then
-		self:SetCastOnKeyPress(cvarValue == "1")
-	end
+    if cvarName == ACTION_BUTTON_USE_KEY_DOWN then
+        self:SetCastOnKeyPress(cvarValue == '1')
+    end
 end
 
 function BindableButton:PLAYER_REGEN_ENABLED(event)
-	self:SetCastOnKeyPress(GetCVarBool('ActionButtonUseKeyDown'))
-	self:UnregisterEvent(event)
-	self.needsUpdate = nil
+    self:SetCastOnKeyPress(GetCVarBool('ActionButtonUseKeyDown'))
+    self:UnregisterEvent(event)
+    self.needsUpdate = nil
 end
 
 -- adds cast on keypress support to custom actions
 function BindableButton:AddCastOnKeyPressSupport(button)
-	-- watch down clicks in addition to up clicks
-	-- we can't stop here, however, as it would cause pressing the mouse button
-	-- down on a button to trigger an action, which isn't something we want
+    -- watch down clicks in addition to up clicks
+    -- we can't stop here, however, as it would cause pressing the mouse button
+    -- down on a button to trigger an action, which isn't something we want
     button:RegisterForClicks('AnyUp', 'AnyDown')
 
-	-- ...so the solution is to wrap the click handler for buttons
-	-- and filter clicks of the HOTKEY "button" appropiately
-	-- those are then transformed into LeftButton clicks if they pass through
-	-- the filter so we preserve existing action bar behavior
-	self.keyPressHandler:WrapScript(button, 'OnClick', [[
-        if button == 'HOTKEY' then
-			if down ~= control:GetAttribute("CastOnKeyPress") then
-                return 'LeftButton'
-            end
-		elseif down then
-			return false
-		end
-    ]])
+    -- ...so the solution is to wrap the click handler for buttons
+    -- and filter clicks of the HOTKEY "button" appropiately
+    -- those are then transformed into LeftButton clicks if they pass through
+    -- the filter so we preserve existing action bar behavior
+    self.keyPressHandler:WrapScript(
+        button,
+        'OnClick',
+        [[
+			if button == 'HOTKEY' then
+				if down ~= control:GetAttribute("CastOnKeyPress") then
+					return 'LeftButton'
+				end
+			elseif down then
+				return false
+			end
+		]]
+    )
 end
 
 -- adds quickbinding support to buttons
 function BindableButton:AddQuickBindingSupport(button, bindingAction)
-	button:HookScript("OnEnter", BindableButton.OnEnter)
+    button:HookScript('OnEnter', BindableButton.OnEnter)
 
-	if bindingAction then
-		button:SetAttribute("bindingAction", bindingAction)
-	end
+    if bindingAction then
+        button:SetAttribute('bindingAction', bindingAction)
+    end
 
-	if button.UpdateHotkeys then
-		hooksecurefunc(button, "UpdateHotkeys", BindableButton.UpdateHotkeys)
-	else
-		button.UpdateHotkeys = BindableButton.UpdateHotkeys
-	end
+    if button.UpdateHotkeys then
+        hooksecurefunc(button, 'UpdateHotkeys', BindableButton.UpdateHotkeys)
+    else
+        button.UpdateHotkeys = BindableButton.UpdateHotkeys
+    end
 end
 
 function BindableButton:SetCastOnKeyPress(enable)
-	if InCombatLockdown() and not self.needsUpdate then
-		self.needsUpdate = true
-		self:RegisterEvent('PLAYER_REGEN_ENABLED')
-		return
-	end
+    if InCombatLockdown() and not self.needsUpdate then
+        self.needsUpdate = true
+        self:RegisterEvent('PLAYER_REGEN_ENABLED')
+        return
+    end
 
-	self.keyPressHandler:SetAttribute('CastOnKeyPress', enable)
+    self.keyPressHandler:SetAttribute('CastOnKeyPress', enable)
 end
 
 function BindableButton:UpdateHotkeys()
-	local key = getButtonHotkey(self)
+    local key = getButtonHotkey(self)
 
-	if key ~= ''  and Addon:ShowBindingText() then
-		self.HotKey:SetText(key)
-		self.HotKey:Show()
-	else
-		-- blank out non blank text, such as RANGE_INDICATOR
-		self.HotKey:SetText('')
-		self.HotKey:Hide()
-	end
+    if key ~= '' and Addon:ShowBindingText() then
+        self.HotKey:SetText(key)
+        self.HotKey:Show()
+    else
+        -- blank out non blank text, such as RANGE_INDICATOR
+        self.HotKey:SetText('')
+        self.HotKey:Hide()
+    end
 end
 
 function BindableButton:OnEnter()
-	if not KeyBound:IsShown() then return end
+    if not KeyBound:IsShown() then
+        return
+    end
 
-	BindableButtonProxy:ClearAllPoints()
-	BindableButtonProxy:SetAllPoints(self)
-	BindableButtonProxy:SetParent(self)
+    BindableButtonProxy:ClearAllPoints()
+    BindableButtonProxy:SetAllPoints(self)
+    BindableButtonProxy:SetParent(self)
 
-	KeyBound:Set(BindableButtonProxy)
+    KeyBound:Set(BindableButtonProxy)
 end
 
 -- exports
 Addon.BindableButton = BindableButton
-
