@@ -62,21 +62,11 @@ function SlashCommands:OnCmd(args)
         Addon:PrintVersion()
     elseif cmd == 'help' or cmd == '?' then
         self:PrintHelp()
-    elseif cmd == 'statedump' then
-        Addon.OverrideController:DumpStates()
-    elseif cmd == 'configstatus' then
-        self:PrintConfigModeStatus()
     else
         if not Addon:ShowOptionsFrame() then
             self:PrintHelp()
         end
     end
-end
-
-function SlashCommands:PrintConfigModeStatus()
-    local status = Addon:IsConfigAddonEnabled() and 'ENABLED' or 'DISABLED'
-
-    Addon:Printf('Config Mode Status: %s', status)
 end
 
 function SlashCommands:PrintHelp(cmd)
