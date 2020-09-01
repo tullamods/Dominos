@@ -1,5 +1,11 @@
 # Dominos Changelog
 
+9.0.0-beta4
+
+* Added initial support for the new Blizzard Quick Keybinding mode
+* Added a standard Bindings.xml for action buttons created by Dominos
+* Fixed an issue with cast on keypress on action buttons created by Dominos
+
 9.0.0-beta3
 
 * Added a Shield Equipped paging option for Paladins/Warriors
