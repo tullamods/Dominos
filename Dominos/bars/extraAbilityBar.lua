@@ -8,7 +8,14 @@ local _, Addon = ...
 local ExtraAbilityBar = Addon:CreateClass('Frame', Addon.Frame)
 
 function ExtraAbilityBar:New()
-    return ExtraAbilityBar.proto.New(self, 'extra')
+    local bar = ExtraAbilityBar.proto.New(self, 'extra')
+
+    -- drop need for showstates for this case
+    if bar:GetShowStates() == '[extrabar]show;hide' then
+        bar:SetShowStates(nil)
+    end
+
+    return bar
 end
 
 ExtraAbilityBar:Extend(
