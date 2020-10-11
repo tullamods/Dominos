@@ -44,14 +44,15 @@ bars\extraAbilityBar.lua
 #@end-retail@
 bars\vehicleBar.lua
 # stuff you should be able to comment out and still have Dominos work
-plugins\multiActionBarFixer.lua
 plugins\slashCommands.lua
 plugins\launcher.lua
 plugins\blizzardHider.lua
 plugins\buttonThemer.lua
 #@retail@
 plugins\quickBindings.lua
+plugins\multiActionBarFixer.lua
 #@end-retail@
 #@non-retail@
 # plugins\getActionReagentUses.lua
+# plugins\multiActionBarFixer.classic.lua
 #@end-non-retail@
