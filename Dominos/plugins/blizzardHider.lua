@@ -125,10 +125,20 @@ if VerticalMultiBarsContainer then
 end
 
 -- set the stock action buttons to hidden by default
+local function disableActionButton(name)
+    local button = _G[name]
+    if button then
+        button:SetAttribute('statehidden', true)
+        button:Hide()
+    else
+        Addon:Printf('Action Button %q could not be found', name)
+    end
+end
+
 for id = 1, NUM_ACTIONBAR_BUTTONS do
-    _G[('ActionButton%d'):format(id)]:SetAttribute('statehidden', true)
-    _G[('MultiBarRightButton%d'):format(id)]:SetAttribute('statehidden', true)
-    _G[('MultiBarLeftButton%d'):format(id)]:SetAttribute('statehidden', true)
-    _G[('MultiBarBottomRightButton%d'):format(id)]:SetAttribute('statehidden', true)
-    _G[('MultiBarBottomLeftButton%d'):format(id)]:SetAttribute('statehidden', true)
+    disableActionButton(('ActionButton%d'):format(id))
+    disableActionButton(('MultiBarRightButton%d'):format(id))
+    disableActionButton(('MultiBarLeftButton%d'):format(id))
+    disableActionButton(('MultiBarBottomRightButton%d'):format(id))
+    disableActionButton(('MultiBarBottomLeftButton%d'):format(id))
 end
