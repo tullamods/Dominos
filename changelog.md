@@ -1,5 +1,12 @@
 # Dominos Changelog
 
+9.0.0-beta5
+
+* Resize pet and stance button hotkey text to fit better within the buttons
+* Resolve some WoW classic compatibility issues
+* Remove the unnecessary extrabar show state from the extra ability bar
+* Fix an issue with hiding actions currently assigned to an action bar
+
 9.0.0-beta4
 
 * Added initial support for the new Blizzard Quick Keybinding mode

@@ -15,6 +15,7 @@ move-folders:
   Dominos/Dominos_Roll: Dominos_Roll
 
 externals:
+  # core dominos libraries
   Dominos/libs/AceAddon-3.0: https://repos.wowace.com/wow/ace3/trunk/AceAddon-3.0
   Dominos/libs/AceConsole-3.0: https://repos.wowace.com/wow/ace3/trunk/AceConsole-3.0
   Dominos/libs/AceDB-3.0: https://repos.wowace.com/wow/ace3/trunk/AceDB-3.0
