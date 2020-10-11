@@ -35,11 +35,10 @@ jobs:
         with:
           args: -p 6650 -w 19110
 
-      # TODO: test the 9.x release against classic
       # another example where we supply additional arguments, this example is specifically to release
       # for the Classic version of the game
-      # - name: Package and release for Classic
-      #   uses: BigWigsMods/packager@master
-      #   with:
-      #     args: -g 1.13.5 -p 6650 -w 19110
+      - name: Package and release for Classic
+        uses: BigWigsMods/packager@master
+        with:
+          args: -g 1.13.5 -p 6650 -w 19110
 
