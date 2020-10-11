@@ -2,27 +2,24 @@
 -- Stance bar
 -- Lets you move around the bar for displaying forms/stances/etc
 --------------------------------------------------------------------------------
-
 local _, Addon = ...
 
 -- test to see if the player has a stance bar
 -- not the best looking, but I also don't need to keep it after I do the check
-if
-    not ({
-        DEATHKNIGHT = false,
-        DEMONHUNTER = false,
-        DRUID = true,
-        HUNTER = false,
-        MAGE = false,
-        MONK = false,
-        PALADIN = true,
-        PRIEST = Addon:IsBuild('retail'),
-        ROGUE = true,
-        SHAMAN = false,
-        WARLOCK = false,
-        WARRIOR = Addon:IsBuild('classic')
-    })[UnitClassBase('player')]
- then
+if not ({
+    DEATHKNIGHT = false,
+    DEMONHUNTER = false,
+    DRUID = true,
+    HUNTER = false,
+    MAGE = false,
+    MONK = false,
+    PALADIN = true,
+    PRIEST = Addon:IsBuild('retail'),
+    ROGUE = true,
+    SHAMAN = false,
+    WARLOCK = false,
+    WARRIOR = Addon:IsBuild('classic')
+})[UnitClassBase('player')] then
     return
 end
 
@@ -35,10 +32,21 @@ local function getStanceButton(id)
 end
 
 for id = 1, NUM_STANCE_SLOTS do
-    Addon.BindableButton:AddQuickBindingSupport(
-        getStanceButton(id),
-        ('SHAPESHIFTBUTTON%s'):format(id)
-    )
+    local button = getStanceButton(id)
+
+    -- fix hotkey text extending outside of the button itself
+    -- and make it consistent with the button size
+    if button.HotKey:GetWidth() > button:GetWidth() then
+        button.HotKey:SetWidth(button:GetWidth())
+
+        local font, size, flags = button.HotKey:GetFont()
+        size = Round(size * button:GetWidth() / ActionButton1:GetWidth())
+
+        button.HotKey:SetFont(font, size, flags)
+    end
+
+    -- add quick binding support
+    Addon.BindableButton:AddQuickBindingSupport(button, ('SHAPESHIFTBUTTON%s'):format(id))
 end
 
 --------------------------------------------------------------------------------
