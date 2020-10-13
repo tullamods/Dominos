@@ -1,41 +1,28 @@
 # Dominos Changelog
 
-9.0.0-beta5
+## 9.0.0
 
-* Resize pet and stance button hotkey text to fit better within the buttons
-* Resolve some WoW classic compatibility issues
-* Remove the unnecessary extrabar show state from the extra ability bar
-* Fix an issue with hiding actions currently assigned to an action bar
+### Enhancments
 
-9.0.0-beta4
-
-* Added initial support for the new Blizzard Quick Keybinding mode
-* Added a standard Bindings.xml for action buttons created by Dominos
-* Fixed an issue with cast on keypress on action buttons created by Dominos
-
-9.0.0-beta3
-
-* Added a Shield Equipped paging option for Paladins/Warriors
-* Moved the overlay interface code to Dominos_Config, trimmming the main file size a slight bit
-* More random acts of code cleanup
-
-9.0.0-beta2
-
-* Fixed missing bag bar
-* Fixed some compatibility issues with WoW Classic
-
-9.0.0-beta1
-
+* Added support for WoW 9.0.1 (Shadowlands Prepatch)
+* Added support for the new Blizzard Quick Keybinding mode
+* Added standard Blizzard binidngs for all action buttons created by Dominos
 * Added support for Paladin auras on the class bar in 9.0
 * Added paging support for Paladin auras (they're \[form\] macro conditions)
-* Action Bars now have individual groups in Masque (though Masque isn't 9.0 compatible quite yet)
-* Rewrote the action button portion of Dominos to be more compatibile with 9.0. Among other things, empty slots should now show up when expected.
-* Rewrote the keybindings handler. Cast on key down should work better on the DominosActionButtonXX buttons.
-* Generally just cleaned up code a whole bunch
-
-9.0.0-beta
-
-* This update is currently only compatible with World of Warcraft 9.0 (Shadowlands)
+* Added a Shield Equipped paging option for Paladins and Warriors
+* Action Bars now have individual groups in Masque
 * The zone and extra action bars have been merged into the extra bar
-* By default, Dominos no longer shows the Artifact/Azerite bar
-* Removed Dominos_Roll from the beta build
+
+### Fixes
+
+* Removed the unnecessary extrabar show state from the extra ability bar
+* Resized pet and stance button hotkey text to fit better within the buttons
+* Fixed an issue with hiding actions currently assigned to an action bar
+* Rewrote the keybindings handler. Cast on key down should work better on the DominosActionButtonXX buttons.
+
+### Other
+
+* Rewrote the action button portion of Dominos to be more compatibile with 9.0. Among other things, empty slots should now show up when expected.
+* Moved the overlay interface code to Dominos_Config, trimmming the main file size a slight bit
+* By default, Dominos no longer shows the Artifact/Azerite bar. You can change this the main options menu
+* Dominos_Roll isn't provided in the main build for now.
