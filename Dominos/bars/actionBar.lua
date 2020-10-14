@@ -2,7 +2,6 @@
 -- Action Bar
 -- A pool of action bars
 --------------------------------------------------------------------------------
-
 local AddonName, Addon = ...
 
 local L = LibStub('AceLocale-3.0'):GetLocale(AddonName)
@@ -59,26 +58,20 @@ ActionBar.mainbarOffsets = {
     end
 }
 
-ActionBar:Extend(
-    'OnLoadSettings',
-    function(self, id)
-        self.sets.pages = setmetatable(self.sets.pages, id == 1 and self.mainbarOffsets or self.defaultOffsets)
-        self.pages = self.sets.pages[self.class]
-    end
-)
+ActionBar:Extend('OnLoadSettings', function(self, id)
+    self.sets.pages = setmetatable(self.sets.pages, id == 1 and self.mainbarOffsets or self.defaultOffsets)
+    self.pages = self.sets.pages[self.class]
+end)
 
-ActionBar:Extend(
-    'OnAcquire',
-    function(self)
-        self:LoadStateController()
-        self:UpdateStateDriver()
-        self:SetRightClickUnit(Addon:GetRightClickUnit())
-        self:UpdateGrid()
-        self:UpdateTransparent(true)
-    end
-)
+ActionBar:Extend('OnAcquire', function(self)
+    self:LoadStateController()
+    self:UpdateStateDriver()
+    self:SetRightClickUnit(Addon:GetRightClickUnit())
+    self:UpdateGrid()
+    self:UpdateTransparent(true)
+end)
 
---TODO: change the position code to be based more on the number of action bars
+-- TODO: change the position code to be based more on the number of action bars
 function ActionBar:GetDefaults()
     return {
         point = 'BOTTOM',
@@ -188,30 +181,26 @@ function ActionBar:LoadStateController()
     self:SetAttribute('_onstate-overridepage', [[ self:RunAttribute('UpdateOffset') ]])
     self:SetAttribute('_onstate-page', [[ self:RunAttribute('UpdateOffset') ]])
 
-    self:SetAttribute(
-        'UpdateOffset',
-        [[
-            local offset = 0
+    self:SetAttribute('UpdateOffset', [[
+        local offset = 0
 
-            local overridePage = self:GetAttribute('state-overridepage') or 0
-            if overridePage > 10 and self:GetAttribute('state-overridebar') then
-                offset = (overridePage - 1) * self:GetAttribute('overrideBarLength')
-            else
-                local page = self:GetAttribute('state-page') or 1
-                offset = (page - 1) * self:GetAttribute('barLength')
-            end
+        local overridePage = self:GetAttribute('state-overridepage') or 0
+        if overridePage > 10 and self:GetAttribute('state-overridebar') then
+            offset = (overridePage - 1) * self:GetAttribute('overrideBarLength')
+        else
+            local page = self:GetAttribute('state-page') or 1
+            offset = (page - 1) * self:GetAttribute('barLength')
+        end
 
-            control:ChildUpdate('offset', offset)
-        ]]
-    )
+        control:ChildUpdate('offset', offset)
+    ]])
 
     self:UpdateOverrideBar()
 end
 
 function ActionBar:UpdateOverrideBar()
-    local isOverrideBar = self:IsOverrideBar()
-
-    self:SetAttribute('state-overridebar', isOverrideBar)
+    self:SetAttribute('state-overridebar', self:IsOverrideBar())
+    self:Execute('self:RunAttribute("UpdateOffset")')
 end
 
 function ActionBar:IsOverrideBar()

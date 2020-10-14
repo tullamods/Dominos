@@ -315,13 +315,10 @@ function Addon:CreateOptionsFrame()
 
     -- if a user shows this frame and we've not yet loaded  the config addon,
     -- then load it
-    frame:SetScript(
-        'OnShow',
-        function(f)
-            f:SetScript('OnShow', nil)
-            LoadAddOn(CONFIG_ADDON_NAME)
-        end
-    )
+    frame:SetScript('OnShow', function(f)
+        f:SetScript('OnShow', nil)
+        LoadAddOn(CONFIG_ADDON_NAME)
+    end)
 
     InterfaceOptions_AddCategory(frame)
 
@@ -613,6 +610,7 @@ end
 -- override action bar selection
 function Addon:SetOverrideBar(id)
     local prevBar = self:GetOverrideBar()
+
     self.db.profile.possessBar = id
     local newBar = self:GetOverrideBar()
 

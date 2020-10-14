@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 9.0.1
+
+* Fixed an issue causing the bindings migration code to not save. Bindings should be visible again
+
 ## 9.0.0
 
 ### Enhancments
