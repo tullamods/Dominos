@@ -1,5 +1,10 @@
 # Dominos Changelog
 
+## 9.0.4
+
+* Add support for paging based upon cmd/meta keys
+* Fix an issue preventing the click through setting from applying after reloading your UI
+
 ## 9.0.3
 
 * Updated the IsActiveBattlefield check used by the honor bar
