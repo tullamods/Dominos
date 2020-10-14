@@ -102,13 +102,10 @@ function BindableButtonProxy:GetActionName()
     return whenExists(self:GetParent(), getButtonActionName) or UNKNOWN
 end
 
-BindableButtonProxy:SetScript(
-    'OnLeave',
-    function(self)
-        self:ClearAllPoints()
-        self:SetParent(nil)
-    end
-)
+BindableButtonProxy:SetScript('OnLeave', function(self)
+    self:ClearAllPoints()
+    self:SetParent(nil)
+end)
 
 -- methods to inject onto a bar to add in common binding functionality
 -- previously, this was a mixin
@@ -116,7 +113,10 @@ local BindableButton = Addon:NewModule('Bindings', 'AceEvent-3.0')
 
 BindableButton.keyPressHandler = Addon:CreateHiddenFrame('Frame', nil, nil, 'SecureHandlerBaseTemplate')
 
-function BindableButton:OnInitialize()
+function BindableButton:OnEnable()
+    self:RegisterEvent('CVAR_UPDATE')
+    self:SetCastOnKeyPress(GetCVarBool('ActionButtonUseKeyDown'))
+
     -- migrate any old click bindings to the new format
     local updatedBindings = false
 
@@ -135,11 +135,6 @@ function BindableButton:OnInitialize()
     if updatedBindings then
         (SaveBindings or AttemptToSaveBindings)(GetCurrentBindingSet())
     end
-end
-
-function BindableButton:OnEnable()
-    self:SetCastOnKeyPress(GetCVarBool('ActionButtonUseKeyDown'))
-    self:RegisterEvent('CVAR_UPDATE')
 end
 
 function BindableButton:CVAR_UPDATE(event, cvarName, cvarValue)
@@ -165,21 +160,17 @@ function BindableButton:AddCastOnKeyPressSupport(button)
     -- and filter clicks of the HOTKEY "button" appropiately
     -- those are then transformed into LeftButton clicks if they pass through
     -- the filter so we preserve existing action bar behavior
-    self.keyPressHandler:WrapScript(
-        button,
-        'OnClick',
-        [[
-			if button == 'HOTKEY' then
-				if down == control:GetAttribute("CastOnKeyPress") then
-					return 'LeftButton'
-                else
-                    return false
-                end
-            elseif down then
+    self.keyPressHandler:WrapScript(button, 'OnClick', [[
+        if button == 'HOTKEY' then
+            if down == control:GetAttribute("CastOnKeyPress") then
+                return 'LeftButton'
+            else
                 return false
             end
-		]]
-    )
+        elseif down then
+            return false
+        end
+    ]])
 end
 
 -- adds quickbinding support to buttons
