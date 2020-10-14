@@ -10,7 +10,7 @@
 
 ## 9.0.0
 
-### Enhancments
+### Enhancements
 
 * Added support for WoW 9.0.1 (Shadowlands Prepatch)
 * Added support for the new Blizzard Quick Keybinding mode
