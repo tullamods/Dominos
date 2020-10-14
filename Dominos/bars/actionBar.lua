@@ -200,11 +200,12 @@ end
 
 function ActionBar:UpdateOverrideBar()
     self:SetAttribute('state-overridebar', self:IsOverrideBar())
-    self:Execute('self:RunAttribute("UpdateOffset")')
 end
 
 function ActionBar:IsOverrideBar()
-    return Addon:GetOverrideBar() == self
+    -- TODO: make overrideBar a property of the bar itself instead of a global
+    -- setting
+    return Addon.db.profile.possessBar == self.id
 end
 
 -- Empty button display
