@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 9.0.3
+
+* Updated the IsActiveBattlefield check used by the honor bar
+
 ## 9.0.2
 
 * Fixed an issue with override bar detection
