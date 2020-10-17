@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 9.0.5
+
+* Added Dominos_Roll back to retail build
+
 ## 9.0.4
 
 * Add support for paging based upon cmd/meta keys
