@@ -1,5 +1,10 @@
 # Dominos Changelog
 
+## 9.0.6-beta
+
+* Fix hide extra ability bar artwork option not applying if after reloading your UI with the bar active
+* Only reposition the ExtraAbilityContainer when initializing the extra bar
+
 ## 9.0.5
 
 * Added Dominos_Roll back to retail build
