@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 9.0.7
+
+* Disable mouse interaction on ExtraActionBarFrame to prevent issues with interacting with actions on the extra bar
+
 ## 9.0.6
 
 * Fix hide extra ability bar artwork option not applying if after reloading your UI with the bar active
