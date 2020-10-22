@@ -33,6 +33,37 @@ ExtraAbilityBar:Extend(
     end
 )
 
+function ExtraAbilityBar:ThemeBar(isTheme)
+    if HasExtraActionBar() then
+        local button = ExtraActionBarFrame and ExtraActionBarFrame.button
+        if button then
+            if isTheme then
+                Addon:GetModule('ButtonThemer'):Register(button, 'Extra Button')
+            else
+                Addon:GetModule('ButtonThemer'):Unregister(button, 'Extra Button')
+            end
+        end
+    end
+
+    local zoneAbilities = C_ZoneAbility.GetActiveAbilities();
+    if #zoneAbilities > 0 then
+        local ButtonContainer = ZoneAbilityFrame and ZoneAbilityFrame.SpellButtonContainer
+        for button in ButtonContainer:EnumerateActive() do
+            if button then
+                if isTheme then
+                    Addon:GetModule('ButtonThemer'):Register(button, 'Zone Button')
+                else
+                    Addon:GetModule('ButtonThemer'):Unregister(button, 'Zone Button')
+                end
+            end
+        end
+    end
+end
+
+function ExtraAbilityBar:OnCreate()
+    ExtraAbilityBar:ThemeBar(true)
+end
+
 function ExtraAbilityBar:GetDefaults()
     return {
         point = 'BOTTOM',
@@ -98,9 +129,11 @@ function ExtraAbilityBar:UpdateShowBlizzardTexture()
     if self:ShowingBlizzardTexture() then
         ExtraActionBarFrame.button.style:Show()
         ZoneAbilityFrame.Style:Show()
+        ExtraAbilityBar:ThemeBar(false)
     else
         ExtraActionBarFrame.button.style:Hide()
         ZoneAbilityFrame.Style:Hide()
+        ExtraAbilityBar:ThemeBar(true)
     end
 end
 
