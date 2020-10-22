@@ -4,11 +4,12 @@ if not ExtraAbilityContainer then
 end
 
 local _, Addon = ...
+local BarID = 'extra'
 
 local ExtraAbilityBar = Addon:CreateClass('Frame', Addon.Frame)
 
 function ExtraAbilityBar:New()
-    local bar = ExtraAbilityBar.proto.New(self, 'extra')
+    local bar = ExtraAbilityBar.proto.New(self, BarID)
 
     -- drop need for showstates for this case
     if bar:GetShowStates() == '[extrabar]show;hide' then
@@ -60,9 +61,9 @@ function ExtraAbilityBar:ThemeBar(isTheme)
     end
 end
 
-function ExtraAbilityBar:OnCreate()
-    ExtraAbilityBar:ThemeBar(true)
-end
+hooksecurefunc(ExtraAbilityContainer, "AddFrame", function(self, frame, priority)
+    ExtraAbilityBar:ThemeBar(Addon.db.profile.frames[BarID].hideBlizzardTeture)
+end)
 
 function ExtraAbilityBar:GetDefaults()
     return {
