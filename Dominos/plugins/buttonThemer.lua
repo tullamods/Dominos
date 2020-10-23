@@ -24,7 +24,7 @@ local function theme(button)
     end
 
     -- resize normal texture for buttons of non action bar size
-    local normalTexture = button.NormalTexture or button:GetNormalTexture()
+    local normalTexture = button:GetNormalTexture()
     if normalTexture then
         local abRatio = round(button:GetWidth()) / ActionButtonWidth
 
