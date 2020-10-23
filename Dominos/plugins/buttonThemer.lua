@@ -30,7 +30,7 @@ local function theme(button)
     nt:SetPoint('BOTTOMRIGHT', 15 * r, -15 * r)
     nt:SetVertexColor(1, 1, 1, 0.5)
 
-    local floatingBG = _G[button:GetName() or 'DominosExtraActionBar' .. 'FloatingBG']
+    local floatingBG = _G[button:GetName() .. 'FloatingBG']
     if floatingBG then
         floatingBG:Hide()
     end
