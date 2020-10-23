@@ -4,12 +4,12 @@ if not ExtraAbilityContainer then
 end
 
 local _, Addon = ...
-local BarID = 'extra'
+local BAR_ID = 'extra'
 
 local ExtraAbilityBar = Addon:CreateClass('Frame', Addon.Frame)
 
 function ExtraAbilityBar:New()
-    local bar = ExtraAbilityBar.proto.New(self, BarID)
+    local bar = ExtraAbilityBar.proto.New(self, BAR_ID)
 
     -- drop need for showstates for this case
     if bar:GetShowStates() == '[extrabar]show;hide' then
@@ -34,36 +34,33 @@ ExtraAbilityBar:Extend(
     end
 )
 
-function ExtraAbilityBar:ThemeBar(isTheme)
+function ExtraAbilityBar:ThemeBar(enable)
     if HasExtraActionBar() then
         local button = ExtraActionBarFrame and ExtraActionBarFrame.button
         if button then
-            if isTheme then
-                Addon:GetModule('ButtonThemer'):Register(button, 'Extra Button')
+            if enable then
+                Addon:GetModule('ButtonThemer'):Register(button, 'Extra Bar')
             else
-                Addon:GetModule('ButtonThemer'):Unregister(button, 'Extra Button')
+                Addon:GetModule('ButtonThemer'):Unregister(button, 'Extra Bar')
             end
         end
     end
 
-    local zoneAbilities = C_ZoneAbility.GetActiveAbilities();
+    local zoneAbilities = C_ZoneAbility.GetActiveAbilities()
+
     if #zoneAbilities > 0 then
-        local ButtonContainer = ZoneAbilityFrame and ZoneAbilityFrame.SpellButtonContainer
-        for button in ButtonContainer:EnumerateActive() do
+        local container = ZoneAbilityFrame and ZoneAbilityFrame.SpellButtonContainer
+        for button in container:EnumerateActive() do
             if button then
-                if isTheme then
-                    Addon:GetModule('ButtonThemer'):Register(button, 'Zone Button')
+                if enable then
+                    Addon:GetModule('ButtonThemer'):Register(button, 'Extra Bar')
                 else
-                    Addon:GetModule('ButtonThemer'):Unregister(button, 'Zone Button')
+                    Addon:GetModule('ButtonThemer'):Unregister(button, 'Extra Bar')
                 end
             end
         end
     end
 end
-
-hooksecurefunc(ExtraAbilityContainer, "AddFrame", function(self, frame, priority)
-    ExtraAbilityBar:ThemeBar(Addon.db.profile.frames[BarID].hideBlizzardTeture)
-end)
 
 function ExtraAbilityBar:GetDefaults()
     return {
@@ -158,6 +155,10 @@ function ExtraAbilityBarModule:Load()
                 self:OnExtraAbilityContainerSizeChanged()
             end
         )
+
+        hooksecurefunc(ExtraAbilityContainer, "AddFrame", function()
+            ExtraAbilityBar:ThemeBar(Addon.db.profile.frames[BAR_ID].hideBlizzardTeture)
+        end)
 
         Addon.BindableButton:AddQuickBindingSupport(ExtraActionButton1)
     end
