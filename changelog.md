@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 9.0.10
+
+* Yep, one more buttonThemer fix for the stance/pet bar
+
 ## 9.0.9
 
 * Fix an issue with button theming that caused the bag bar to disappear
