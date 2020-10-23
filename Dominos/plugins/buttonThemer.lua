@@ -11,7 +11,7 @@ local function theme(button)
 
     if button.Icon then
         button.Icon:SetTexCoord(0.06, 0.94, 0.06, 0.94)
-    else
+    elseif button.icon then
         button.icon:SetTexCoord(0.06, 0.94, 0.06, 0.94)
     end
 
