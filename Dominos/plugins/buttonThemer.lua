@@ -9,13 +9,17 @@ local function theme(button)
         return
     end
 
-    button.icon:SetTexCoord(0.06, 0.94, 0.06, 0.94)
+    if button.Icon then
+        button.Icon:SetTexCoord(0.06, 0.94, 0.06, 0.94)
+    else
+        button.icon:SetTexCoord(0.06, 0.94, 0.06, 0.94)
+    end
 
     -- reposition the cooldown on the extra action button
     -- to handle the cooldown not properly covering the icon
     if button.buttonType == 'EXTRAACTIONBUTTON' then
         button.cooldown:ClearAllPoints()
-        button.cooldown:SetAllPoints(button.icon)
+        button.cooldown:SetAllPoints(button.icon or button.Icon)
     end
 
     local r = round(button:GetWidth()) / ActionButtonWidth
@@ -26,7 +30,7 @@ local function theme(button)
     nt:SetPoint('BOTTOMRIGHT', 15 * r, -15 * r)
     nt:SetVertexColor(1, 1, 1, 0.5)
 
-    local floatingBG = _G[button:GetName() .. 'FloatingBG']
+    local floatingBG = _G[button:GetName() or 'DominosExtraActionBar' .. 'FloatingBG']
     if floatingBG then
         floatingBG:Hide()
     end

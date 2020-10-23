@@ -4,11 +4,12 @@ if not ExtraAbilityContainer then
 end
 
 local _, Addon = ...
+local BarID = 'extra'
 
 local ExtraAbilityBar = Addon:CreateClass('Frame', Addon.Frame)
 
 function ExtraAbilityBar:New()
-    local bar = ExtraAbilityBar.proto.New(self, 'extra')
+    local bar = ExtraAbilityBar.proto.New(self, BarID)
 
     -- drop need for showstates for this case
     if bar:GetShowStates() == '[extrabar]show;hide' then
@@ -32,6 +33,37 @@ ExtraAbilityBar:Extend(
         self:UpdateShowBlizzardTexture()
     end
 )
+
+function ExtraAbilityBar:ThemeBar(isTheme)
+    if HasExtraActionBar() then
+        local button = ExtraActionBarFrame and ExtraActionBarFrame.button
+        if button then
+            if isTheme then
+                Addon:GetModule('ButtonThemer'):Register(button, 'Extra Button')
+            else
+                Addon:GetModule('ButtonThemer'):Unregister(button, 'Extra Button')
+            end
+        end
+    end
+
+    local zoneAbilities = C_ZoneAbility.GetActiveAbilities();
+    if #zoneAbilities > 0 then
+        local ButtonContainer = ZoneAbilityFrame and ZoneAbilityFrame.SpellButtonContainer
+        for button in ButtonContainer:EnumerateActive() do
+            if button then
+                if isTheme then
+                    Addon:GetModule('ButtonThemer'):Register(button, 'Zone Button')
+                else
+                    Addon:GetModule('ButtonThemer'):Unregister(button, 'Zone Button')
+                end
+            end
+        end
+    end
+end
+
+hooksecurefunc(ExtraAbilityContainer, "AddFrame", function(self, frame, priority)
+    ExtraAbilityBar:ThemeBar(Addon.db.profile.frames[BarID].hideBlizzardTeture)
+end)
 
 function ExtraAbilityBar:GetDefaults()
     return {
@@ -98,9 +130,11 @@ function ExtraAbilityBar:UpdateShowBlizzardTexture()
     if self:ShowingBlizzardTexture() then
         ExtraActionBarFrame.button.style:Show()
         ZoneAbilityFrame.Style:Show()
+        ExtraAbilityBar:ThemeBar(false)
     else
         ExtraActionBarFrame.button.style:Hide()
         ZoneAbilityFrame.Style:Hide()
+        ExtraAbilityBar:ThemeBar(true)
     end
 end
 

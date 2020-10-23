@@ -83,6 +83,11 @@ function ActionBar:GetDefaults()
         padH = 2,
         numButtons = self:MaxLength()
     }
+
+    if self.id == 1 then
+        self.mainbarOffsets.__index(defaults.pages, self.class)
+    end
+
 end
 
 function ActionBar:GetDisplayName()
