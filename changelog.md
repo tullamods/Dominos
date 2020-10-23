@@ -1,5 +1,10 @@
 # Dominos Changelog
 
+## 9.0.8
+
+* Fix an issue causing paging settings to not be applied to new characters (thanks Kuletco)
+* The extra action bar can now be skinned by Masque (thanks Kuletco)
+
 ## 9.0.7
 
 * Disable mouse interaction on ExtraActionBarFrame to prevent issues with interacting with actions on the extra bar
