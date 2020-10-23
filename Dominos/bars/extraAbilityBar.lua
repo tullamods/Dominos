@@ -53,9 +53,9 @@ function ExtraAbilityBar:ThemeBar(enable)
         for button in container:EnumerateActive() do
             if button then
                 if enable then
-                    Addon:GetModule('ButtonThemer'):Register(button, 'Extra Bar')
+                    Addon:GetModule('ButtonThemer'):Register(button, 'Extra Bar', { Icon = button.Icon })
                 else
-                    Addon:GetModule('ButtonThemer'):Unregister(button, 'Extra Bar')
+                    Addon:GetModule('ButtonThemer'):Unregister(button, 'Extra Bar', { Icon = button.Icon })
                 end
             end
         end
