@@ -58,8 +58,13 @@ ActionBar.mainbarOffsets = {
     end
 }
 
-ActionBar:Extend('OnLoadSettings', function(self, id)
-    self.sets.pages = setmetatable(self.sets.pages, id == 1 and self.mainbarOffsets or self.defaultOffsets)
+ActionBar:Extend('OnLoadSettings', function(self)
+    if self.id == 1 then
+        setmetatable(self.sets.pages, self.mainbarOffsets)
+    else
+        setmetatable(self.sets.pages, self.defaultOffsets)
+    end
+
     self.pages = self.sets.pages[self.class]
 end)
 
@@ -83,11 +88,6 @@ function ActionBar:GetDefaults()
         padH = 2,
         numButtons = self:MaxLength()
     }
-
-    if self.id == 1 then
-        self.mainbarOffsets.__index(defaults.pages, self.class)
-    end
-
 end
 
 function ActionBar:GetDisplayName()
