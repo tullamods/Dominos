@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 9.0.9
+
+* Fix an issue with button theming that caused the bag bar to disappear
+
 ## 9.0.8
 
 * Fix an issue causing paging settings to not be applied to new characters (thanks Kuletco)
