@@ -5,7 +5,9 @@
 # ## Interface: 11305
 #@end-non-retail@
 ## Title: Dominos
+## Title-zhCN: |cFF0099FFDominos|r
 ## Notes: A main actionbar replacement
+## Notes-zhCN: 一种动作条替换方案
 ## Author: Tuller
 ## Version: @project-version@
 #@retail@
