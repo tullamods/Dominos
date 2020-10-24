@@ -302,7 +302,9 @@ local function MenuButtonCheckbox_Create(panel, button, name)
 end
 
 local function Menu_AddDisableMenuButtonsPanel(menu)
-    local panel = menu:NewPanel('Buttons')
+    local L = LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')
+    
+    local panel = menu:NewPanel(L.Buttons)
     local prev = nil
     local width, height = 0, 0
 
