@@ -1,5 +1,13 @@
 # Dominos Changelog
 
+## 9.0.11
+
+* Update Chinese localization (thanks Kuletco)
+* Fixed an issue causing the columns silder to not adjust properly when resizing an action bar
+* Fixed an issue with action buttons not initializing properly when increasing the size of an action bar after shrinking it
+* The extra ability bar now has a static size. This should hopefully allow it to show up in cases where it wasn't before
+* Disabled the hotkey text resizing bits for pet and stance buttons if Masque is enabled for those bars
+
 ## 9.0.10
 
 * Yep, one more buttonThemer fix for the stance/pet bar
