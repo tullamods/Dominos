@@ -132,7 +132,7 @@ function ExtraAbilityBar:UpdateShowBlizzardTexture()
     end
 end
 
-local ExtraAbilityBarModule = Addon:NewModule('ExtraAbilityBar', 'AceEvent-3.0')
+local ExtraAbilityBarModule = Addon:NewModule('ExtraAbilityBar')
 
 function ExtraAbilityBarModule:Load()
     if not self.initialized then
@@ -146,6 +146,11 @@ function ExtraAbilityBarModule:Load()
 
         -- prevent the stock UI from messing with the extra ability bar position
         ExtraAbilityContainer.ignoreFramePositionManager = true
+
+        -- onshow/hide call UpdateManagedFramePositions on the blizzard end so
+        -- turn that bit off
+        ExtraAbilityContainer:SetScript("OnShow", nil)
+        ExtraAbilityContainer:SetScript("OnHide", nil)
 
         -- watch for new frames to be added to the container as we will want to
         -- possibly theme them later (if they're new buttons)

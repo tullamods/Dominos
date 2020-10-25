@@ -1,12 +1,12 @@
 ## Interface: 90001
-## Title: Dominos Encounter
-## Title-zhCN: |cFF0099FFDominos|r Encounter 模块
-## Notes: Makes the PlayerPowerBarAlt movable
+## Title: Dominos Extras
+## Title-zhCN: |cFF0099FFDominos|r Extras 模块
+## Notes: Makes additional frames movable
 ## Notes-zhCN: 使玩家高级能量条(PlayerPowerBarAlt)可移动
 ## Author: Tuller (with help from Goranaws)
 ## Dependencies: Dominos
 #@non-retail@
 ## DefaultState: disabled
 #@end-non-retail@
-bar.lua
-controller.lua
+encounterBar.lua
+talkingHeadBar.lua
