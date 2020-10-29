@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 9.0.12
+
+* Added a workaround for Titan Panel messing with the extra ability container
+
 ## 9.0.11
 
 * Update Chinese localization (thanks Kuletco)
