@@ -134,6 +134,10 @@ end
 
 local ExtraAbilityBarModule = Addon:NewModule('ExtraAbilityBar')
 
+function ExtraAbilityBarModule:OnEnable()
+    self:ApplyTitanPanelWorkarounds()
+end
+
 function ExtraAbilityBarModule:Load()
     if not self.initialized then
         self.initialized = true
@@ -172,4 +176,19 @@ function ExtraAbilityBarModule:Unload()
     if self.frame then
         self.frame:Free()
     end
+end
+
+-- Titan panel will attempt to take control of the ExtraActionBarFrame and break
+-- its position and ability to be usable. This is because Titan Panel doesn't
+-- check to see if another addon has taken control of the bar
+--
+-- To resolve this, we call TitanMovable_AddonAdjust() for the extra ability bar
+-- frames to let titan panel know we are handling positions for the extra bar
+function ExtraAbilityBarModule:ApplyTitanPanelWorkarounds()
+    local adjust = _G.TitanMovable_AddonAdjust
+    if not adjust then return end
+
+    adjust('ExtraAbilityContainer', true)
+    adjust("ExtraActionBarFrame", true)
+    return true
 end
