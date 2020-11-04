@@ -85,5 +85,7 @@ function TalkingHeadBarModule:OnTalkingHeadUILoaded()
     TalkingHeadFrame:SetScript("OnShow", nil)
     TalkingHeadFrame:SetScript("OnHide", nil)
 
-    self.frame:Layout()
+    if not InCombatLockdown() then
+        self.frame:Layout()
+    end
 end
