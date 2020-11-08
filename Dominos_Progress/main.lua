@@ -119,7 +119,7 @@ function ProgressBarModule:HONOR_XP_UPDATE()
 	self:UpdateAllBars()
 end
 
-function ProgressBarModule:PLAYER_MONEY_UPDATE()
+function ProgressBarModule:PLAYER_MONEY()
      self:UpdateAllBars()
 end
 
