@@ -39,4 +39,4 @@ end
 -- register this as a possible progress bar mode
 Addon.progressBarModes = Addon.progressBarModes or {}
 Addon.progressBarModes["gold"] = GoldBar
-Addon.ExperienceBar = GoldBar
+Addon.GoldBar = GoldBar
