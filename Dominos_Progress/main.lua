@@ -36,6 +36,11 @@ function ProgressBarModule:OnEnable()
 		self:RegisterEvent("AZERITE_ITEM_EXPERIENCE_CHANGED")
 	end
 
+     -- gold events
+     if Addon.GoldBar then
+           self:RegisterEvent("PLAYER_MONEY")
+     end
+
 	-- addon and library callbacks
 	Dominos.RegisterCallback(self, "OPTIONS_MENU_LOADING")
 	LibStub("LibSharedMedia-3.0").RegisterCallback(self, 'LibSharedMedia_Registered')
@@ -48,11 +53,11 @@ function ProgressBarModule:Load()
 		}
 	elseif Addon.Config:OneBarMode() then
 		self.bars = {
-			Addon.ProgressBar:New("exp", {"xp", "reputation", "honor", "artifact", "azerite"})
+			Addon.ProgressBar:New("exp", {"xp", "reputation", "honor", "artifact", "azerite", "gold"})
 		}
 	else
 		self.bars = {
-			Addon.ProgressBar:New("exp", {"xp", "reputation", "honor"}),
+			Addon.ProgressBar:New("exp", {"xp", "reputation", "honor", "gold"}),
 			Addon.ProgressBar:New("artifact", {"azerite", "artifact"})
 		}
 	end
@@ -114,6 +119,10 @@ function ProgressBarModule:HONOR_XP_UPDATE()
 	self:UpdateAllBars()
 end
 
+function ProgressBarModule:PLAYER_MONEY()
+     self:UpdateAllBars()
+end
+
 function ProgressBarModule:LibSharedMedia_Registered()
 	self:UpdateAllBars()
 end
@@ -157,10 +166,26 @@ function ProgressBarModule:AddOptionsPanel()
 				end		
 			},			
 
+                range(L.GoldGoal) {
+                     min = 0,
+                     max = 10000000,
+                     softMin = 0,
+                     softMax = 100000,
+                     step = 100,
+                     bigStep = 1000,
+                     get = function()
+                           return Addon.Config:GoldGoal()
+                     end,
+                     set = function(_, value)
+                           Addon.Config:SetGoldGoal(value)
+                           self:UpdateAllBars()
+                     end,
+                },
+
 			h(COLORS)
 		}		
 
-		for _, key in ipairs{ "xp", "xp_bonus", "honor", "artifact", "azerite" } do
+		for _, key in ipairs{ "xp", "xp_bonus", "honor", "artifact", "azerite", "gold", "gold_realm" } do
 			tinsert(options, color(L["Color_" .. key]) {
 				hasAlpha = true,
 	

@@ -20,4 +20,5 @@ reputationBar.lua
 artifactBar.lua
 azeriteBar.lua
 honorBar.lua
+goldBar.lua
 #@end-retail@
