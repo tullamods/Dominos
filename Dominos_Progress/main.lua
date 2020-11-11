@@ -49,7 +49,7 @@ end
 function ProgressBarModule:Load()
 	if Dominos:IsBuild("classic") then
 		self.bars = {
-			Addon.ProgressBar:New("exp", {"xp", "reputation"})
+			Addon.ProgressBar:New("exp", {"xp", "reputation", "gold"})
 		}
 	elseif Addon.Config:OneBarMode() then
 		self.bars = {
@@ -148,23 +148,23 @@ function ProgressBarModule:AddOptionsPanel()
 				get = function()
 					return Addon.Config:OneBarMode()
 				end,
-		
+
 				set = function(_, enable)
 					Addon.Config:SetOneBarMode(enable)
 					self:Unload()
 					self:Load()
-				end				
+				end
 			},
 
 			check(L.SkipInactiveModes) {
 				get = function()
 					return Addon.Config:SkipInactiveModes()
 				end,
-		
+
 				set = function(_, enable)
 					Addon.Config:SetSkipInactiveModes(enable)
-				end		
-			},			
+				end
+			},
 
                 range(L.GoldGoal) {
                      min = 0,
@@ -183,23 +183,23 @@ function ProgressBarModule:AddOptionsPanel()
                 },
 
 			h(COLORS)
-		}		
+		}
 
 		for _, key in ipairs{ "xp", "xp_bonus", "honor", "artifact", "azerite", "gold", "gold_realm" } do
 			tinsert(options, color(L["Color_" .. key]) {
 				hasAlpha = true,
-	
+
 				get = function()
 					return Addon.Config:GetColor(key)
 				end,
-	
+
 				set = function(_, ...)
 					Addon.Config:SetColor(key, ...)
-	
+
 					for _, bar in pairs(self.bars) do
 						bar:Init()
 					end
-				end				
+				end
 			})
 		end
 
