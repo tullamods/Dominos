@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 9.0.13
+
+* Added gold tracking as an option for the progess bar (thanks WanderingFox)
+
 ## 9.0.12
 
 * Added a workaround for Titan Panel messing with the extra ability container
