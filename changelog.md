@@ -3,6 +3,9 @@
 ## 9.0.13
 
 * Added gold tracking as an option for the progess bar (thanks WanderingFox)
+* The possess bar should now be properly hidden
+* Fixed some issues when smoothly transitioning between different bar opacities with fade in/out delays
+* Prevent the talking head bar from resizing in combat
 
 ## 9.0.12
 

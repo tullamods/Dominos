@@ -20,7 +20,7 @@ local function frame_OnSetScale(frame, scale)
 end
 
 local frame_UpdateShown =
-    [[
+[[
     if self:GetAttribute("state-hidden") then
         self:Hide()
         return
@@ -463,10 +463,6 @@ function Frame:FadeOut()
 end
 
 function Frame:Fade(targetAlpha, delay, duration)
-    if floor(abs(targetAlpha * 100 - self:GetAlpha() * 100)) == 0 then
-        return
-    end
-
     Addon:Fade(self, targetAlpha, delay, duration)
 
     if Addon:IsLinkedOpacityEnabled() then
