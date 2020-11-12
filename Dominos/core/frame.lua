@@ -127,7 +127,7 @@ function Frame:Free(deleteSettings)
     active[self.id] = nil
 
     UnregisterStateDriver(self, 'display', 'show')
-    Addon.MouseOverWatcher:Remove(self)
+    Addon.FadeManager:Remove(self)
     Addon.OverrideController:Remove(self)
 
     self.docked = nil
@@ -867,9 +867,9 @@ function Frame:UpdateWatched()
         not (Addon:IsLinkedOpacityEnabled() and self:GetAnchor())
 
     if shouldWatch then
-        Addon.MouseOverWatcher:Add(self)
+        Addon.FadeManager:Add(self)
     else
-        Addon.MouseOverWatcher:Remove(self)
+        Addon.FadeManager:Remove(self)
     end
 end
 
