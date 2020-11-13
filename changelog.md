@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 9.0.14
+
+* Add a mute option to the talking head bar's context menu
+
 ## 9.0.13
 
 * Added gold tracking as an option for the progess bar (thanks WanderingFox)
