@@ -6,7 +6,7 @@
 local AddonName, Addon = ...
 local Frame = Addon:CreateClass('Frame')
 local L = LibStub('AceLocale-3.0'):GetLocale(AddonName)
-local FlyPaper = LibStub('LibFlyPaper-1.0')
+local FlyPaper = LibStub('LibFlyPaper-1.1')
 
 local active = {}
 local unused = {}
@@ -71,6 +71,7 @@ function Frame:New(id, tooltipText)
     Addon.OverrideController:Add(frame)
 
     frame:OnAcquire(id)
+    FlyPaper.AddFrame(AddonName, id, frame)
     active[id] = frame
 
     return frame
@@ -129,6 +130,7 @@ function Frame:Free(deleteSettings)
     UnregisterStateDriver(self, 'display', 'show')
     Addon.FadeManager:Remove(self)
     Addon.OverrideController:Remove(self)
+    FlyPaper.RemoveFrame(AddonName, self.id, self)
 
     self.docked = nil
 
@@ -137,6 +139,7 @@ function Frame:Free(deleteSettings)
     self:Hide()
 
     self:OnRelease(self.id, deleteSettings)
+
 
     unused[self.id] = self
 end
@@ -622,24 +625,15 @@ end
 
 -- bar anchoring
 function Frame:Stick()
-    local rTolerance = self.stickyTolerance / self:GetFrameScale()
-
     self:ClearAnchor()
 
     -- only do sticky code if the alt key is not currently down
     if Addon:Sticky() and not IsAltKeyDown() then
-        -- try to stick to a bar, then try to stick to a screen edge
-        for _, f in self:GetAll() do
-            if f ~= self then
-                local point = FlyPaper.Stick(self, f, rTolerance)
-                if point then
-                    self:SetAnchor(f, point)
-                    break
-                end
-            end
-        end
+        local point, id = FlyPaper.StickToClosestAddonFrame(self, AddonName)
 
-        if not self:GetAnchor() then
+        if point then
+            self:SetAnchor(active[id], point)
+        else
             self:StickToEdge()
         end
     end

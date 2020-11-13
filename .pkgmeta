@@ -22,7 +22,7 @@ externals:
   Dominos/libs/CallbackHandler-1.0: https://repos.wowace.com/wow/callbackhandler/trunk/CallbackHandler-1.0
   Dominos/libs/LibDataBroker-1.1: https://github.com/tekkub/libdatabroker-1-1.git
   Dominos/libs/LibDBIcon-1.0: https://repos.wowace.com/wow/libdbicon-1-0/trunk/LibDBIcon-1.0
-  Dominos/libs/LibFlyPaper-1.0: https://github.com/Tuller/FlyPaper.git
+  Dominos/libs/LibFlyPaper-1.1: https://github.com/Tuller/FlyPaper.git
   Dominos/libs/LibKeyBound-1.0: https://repos.wowace.com/wow/libkeybound-1-0/trunk/LibKeyBound-1.0
   Dominos/libs/LibSharedMedia-3.0: https://repos.curseforge.com/wow/libsharedmedia-3-0/trunk/LibSharedMedia-3.0
   Dominos/libs/LibStub: https://repos.wowace.com/wow/libstub/tags/1.0
