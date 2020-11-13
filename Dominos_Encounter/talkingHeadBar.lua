@@ -51,8 +51,29 @@ function TalkingHeadBar:AddLayoutPanel(menu)
 
     local panel = menu:NewPanel(l.Layout)
 
+    panel.muteButton = panel:NewCheckButton
+    {
+		name = _G.MUTE,
+		get = function() return panel.owner:MuteSounds() end,
+		set = function(_, enable) panel.owner:SetMuteSounds(enable) end
+	}
+
     panel.scaleSlider = panel:NewScaleSlider()
     panel.paddingSlider = panel:NewPaddingSlider()
+end
+
+function TalkingHeadBar:SetMuteSounds(enable)
+    self.sets.muteSounds = (enable and true) or nil
+
+    -- mute if currently playing
+    if enable and TalkingHeadFrame and TalkingHeadFrame.voHandle then
+        StopSound(TalkingHeadFrame.voHandle, 0)
+        TalkingHeadFrame.voHandle = nil
+    end
+end
+
+function TalkingHeadBar:MuteSounds()
+    return self.sets.muteSounds or false
 end
 
 -- module
@@ -84,6 +105,17 @@ function TalkingHeadBarModule:OnTalkingHeadUILoaded()
     -- turn that bit off
     TalkingHeadFrame:SetScript("OnShow", nil)
     TalkingHeadFrame:SetScript("OnHide", nil)
+
+    hooksecurefunc("TalkingHeadFrame_PlayCurrent", function()
+        if not self.frame:MuteSounds() then
+            return
+        end
+
+        if TalkingHeadFrame.voHandle then
+            StopSound(TalkingHeadFrame.voHandle, 0)
+            TalkingHeadFrame.voHandle = nil
+        end
+    end)
 
     if not InCombatLockdown() then
         self.frame:Layout()
