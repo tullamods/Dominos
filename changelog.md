@@ -1,5 +1,11 @@
 # Dominos Changelog
 
+## 9.0.15
+
+* Fixed a typo that prevented binding Dominos action buttons via the standard keybinding UI
+* Cleared a showstate from the vehicle bar, if one exists. This should hopefully fix issues with the exit vehicle button not showing up
+* Sticky bars should be a bit better about picking the nearest point
+
 ## 9.0.14
 
 * Add a mute option to the talking head bar's context menu
