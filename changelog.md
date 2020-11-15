@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 9.0.16
+
+* Fixed a typo that caused the vehicle bar fail to load
+
 ## 9.0.15
 
 * Fixed a typo that prevented binding Dominos action buttons via the standard keybinding UI
