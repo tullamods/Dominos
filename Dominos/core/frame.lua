@@ -629,10 +629,10 @@ function Frame:Stick()
 
     -- only do sticky code if the alt key is not currently down
     if Addon:Sticky() and not IsAltKeyDown() then
-        local point, id = FlyPaper.StickToClosestFrameInGroup(self, AddonName)
+        local anchor, id = FlyPaper.StickToClosestFrameInGroup(self, AddonName)
 
-        if point then
-            self:SetAnchor(active[id], point)
+        if anchor then
+            self:SetAnchor(active[id], anchor)
         else
             self:StickToEdge()
         end
