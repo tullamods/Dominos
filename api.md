@@ -27,3 +27,11 @@ Called when the options menu starts loading
 ### OPTIONS_MENU_LOADED
 
 Called when the options menu finishes loading
+
+### ALIGNMENT_GRID_ENABLED (enable)
+
+Called when the alignment grid is enabled or disabled
+
+### ALIGNMENT_GRID_SIZE_CHANGED (size)
+
+Called when the alignment grid size is changed

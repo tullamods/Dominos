@@ -171,7 +171,6 @@ end
 
 function Addon:GetDatabaseDefaults()
     return {
-        global = {},
         profile = {
             possessBar = 1,
             -- if true, applies a default dominos skin to buttons
@@ -186,14 +185,17 @@ function Addon:GetDatabaseDefaults()
             showTooltips = true,
             showTooltipsCombat = true,
             useOverrideUI = not self:IsBuild('classic'),
+
             minimap = {
                 hide = false
             },
+
             ab = {
                 count = 10,
                 showgrid = true,
                 rightClickUnit = 'player'
             },
+
             frames = {
                 bags = {
                     point = 'BOTTOMRIGHT',
@@ -202,6 +204,12 @@ function Addon:GetDatabaseDefaults()
                     spacing = 2
                 }
             },
+
+            alignmentGrid = {
+                enabled = true,
+                size = 32
+            },
+
             -- what modules are enabled
             -- module[id] = enabled
             modules = {
@@ -713,6 +721,25 @@ end
 function Addon:SetShowCounts(enable)
     self.db.profile.showCounts = enable or false
     self.Frame:ForAll('ForButtons', 'SetShowCountText', enable)
+end
+
+-- alignment grid
+function Addon:SetAlignmentGridEnabled(enable)
+    self.db.profile.alignmentGrid.enabled = enable
+    self.callbacks:Fire('ALIGNMENT_GRID_ENABLED', self:GetAlignmentGridEnabled())
+end
+
+function Addon:GetAlignmentGridEnabled()
+    return self.db.profile.alignmentGrid.enabled and true or false
+end
+
+function Addon:SetAlignmentGridSize(size)
+    self.db.profile.alignmentGrid.size = tonumber(size)
+    self.callbacks:Fire('ALIGNMENT_GRID_SIZE_CHANGED', self:GetAlignmentGridSize())
+end
+
+function Addon:GetAlignmentGridSize()
+    return self.db.profile.alignmentGrid.size
 end
 
 --------------------------------------------------------------------------------

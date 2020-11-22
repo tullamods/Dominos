@@ -14,9 +14,12 @@
 ## LoadOnDemand: 1
 embeds.xml
 localization.xml
+utility.lua
 widgets\include.xml
 options\dsl.lua
 options\main.lua
 options\general.lua
 options\profiles.lua
-options\overlay.lua
+overlay\ui.lua
+overlay\frames.lua
+overlay\help.lua

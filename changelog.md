@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 9.0.18
+
+* Added an alignment grid when configuring bars
+
 ## 9.0.17
 
 * Updated TOCs for 9.0.2
