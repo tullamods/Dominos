@@ -6,7 +6,7 @@ end
 local _, Addon = ...
 local BAR_ID = 'extra'
 
-local ExtraAbilityBar = Addon:CreateClass('Frame', Addon.Frame)
+local ExtraAbilityBar = Addon:CreateClass('Frame', Addon.ButtonBar)
 
 function ExtraAbilityBar:New()
     local bar = ExtraAbilityBar.proto.New(self, BAR_ID)
@@ -15,22 +15,26 @@ function ExtraAbilityBar:New()
     if bar:GetShowStates() == '[extrabar]show;hide' then
         bar:SetShowStates(nil)
     end
-
+    
+	bar.buttons = ExtraAbilityContainer.frames
+	self.sets = Addon:GetFrameSets(BAR_ID) or Addon:SetFrameSets(BAR_ID, bar:GetDefaults())
+	hooksecurefunc(ExtraAbilityContainer, "LayoutChildren", function() bar:QueueLayoutUpdate() end)
+   -- bar:QueueLayoutUpdate()
     return bar
 end
 
 ExtraAbilityBar:Extend(
     'OnAcquire', function(self)
-        local container = ExtraAbilityContainer
+        -- local container = ExtraAbilityContainer
 
-        container:ClearAllPoints()
-        container:SetPoint('CENTER', self)
-        container:SetParent(self)
+        -- container:ClearAllPoints()
+        -- container:SetPoint('CENTER', self)
+        -- container:SetParent(self)
 
-        self.container = container
+        -- self.container = container
 
-        self:Layout()
-        self:UpdateShowBlizzardTexture()
+        self:QueueLayoutUpdate()
+        -- self:UpdateShowBlizzardTexture()
     end
 )
 
@@ -52,13 +56,19 @@ function ExtraAbilityBar:ThemeBar(enable)
         local container = ZoneAbilityFrame and ZoneAbilityFrame.SpellButtonContainer
         for button in container:EnumerateActive() do
             if button then
+				button.icon = button.Icon
+				
+				function button:GetName()
+					return "ZoneAbilityFrame"
+				end
+				
                 if enable then
                     Addon:GetModule('ButtonThemer'):Register(
                         button, 'Extra Bar', {Icon = button.Icon}
                     )
                 else
                     Addon:GetModule('ButtonThemer'):Unregister(
-                        button, 'Extra Bar'
+                        button, 'Extra Bar', {Icon = button.Icon}
                     )
                 end
             end
@@ -68,6 +78,8 @@ end
 
 function ExtraAbilityBar:GetDefaults()
     return {
+		columns = 2,
+		spacing = 0,
         point = 'BOTTOM',
         x = 0,
         y = 160,
@@ -76,11 +88,105 @@ function ExtraAbilityBar:GetDefaults()
     }
 end
 
-function ExtraAbilityBar:Layout()
-    local w, h = 256, 120
-    local pW, pH = self:GetPadding()
 
-    self:SetSize(w + pW, h + pH)
+function ExtraAbilityBar:QueueLayoutUpdate()
+	local numButtons = #ExtraAbilityContainer.frames
+	if InCombatLockdown() then
+		self:RegisterEvent("PLAYER_LEAVE_COMBAT")
+		self:SetScript("OnEvent", function()
+			self:Layout()
+			self:SetScript("OnEvent")
+		end)
+	else
+		self:Layout()
+	end
+end
+
+-- Frame Overrides
+function ExtraAbilityBar:AcquireButton(i)
+	return ExtraAbilityContainer.frames[i] and ExtraAbilityContainer.frames[i].frame
+end
+
+function ExtraAbilityBar:NumButtons()
+    return #ExtraAbilityContainer.frames
+end
+
+function ExtraAbilityBar:SetColumns(columns)
+    self.sets.columns =  columns or nil
+    self:Layout()
+end
+
+function ExtraAbilityBar:GetButtonInsets()
+    if #self.buttons >= 1 then
+        return self.buttons[1].frame:GetHitRectInsets()
+    end
+
+    return 0, 0, 0, 0
+end
+
+function ExtraAbilityBar:GetButtonSize()
+    if #self.buttons >= 1 then
+        local w, h = self.buttons[1].frame:GetSize()
+        local l, r, t, b = self:GetButtonInsets()
+
+        return w - (l + r), h - (t + b)
+    end
+
+    return 0, 0
+end
+function ExtraAbilityBar:Layout()
+	self.buttons = ExtraAbilityContainer.frames
+    local numButtons = #self.buttons
+    if numButtons < 1 then
+        ExtraAbilityBar.proto.Layout(self)
+        return
+    end
+
+    local cols = max(1, min(self:NumColumns(), numButtons))
+    local rows = ceil(numButtons / cols)
+
+    local isLeftToRight = self:GetLeftToRight()
+    local isTopToBottom = self:GetTopToBottom()
+
+    -- grab base button sizes
+    local l, _, t, _ = self:GetButtonInsets()
+    local bW, bH = self:GetButtonSize()
+	
+	local wOffset = not self:ShowingBlizzardTexture() and 198 or 0
+	local hOffset = not self:ShowingBlizzardTexture() and 70 or 0
+	
+    local pW, pH = self:GetPadding()
+    local spacing = self:GetSpacing()
+
+    local buttonWidth = bW + spacing - wOffset
+    local buttonHeight = bH + spacing - hOffset
+
+    local xOff = pW - l
+    local yOff = pH - t
+
+    for i, button in ipairs(self.buttons) do
+        local row = floor((i - 1) / cols)
+        if not isTopToBottom then
+            row = rows - (row + 1)
+        end
+
+        local col = (i - 1) % cols
+        if not isLeftToRight then
+            col = cols - (col + 1)
+        end
+
+        local x = xOff + buttonWidth * col
+        local y = yOff + buttonHeight * row
+
+        button.frame:ClearAllPoints()
+        button.frame:SetParent(self)
+        button.frame:SetPoint('TOPLEFT', x - (wOffset/2), -(y - (hOffset/2)))
+    end
+
+    local barWidth = (buttonWidth * cols) + (pW * 2) - spacing
+    local barHeight = (buttonHeight * rows) + (pH * 2) - spacing
+    self:TrySetSize(barWidth, barHeight)
+	self:UpdateShowBlizzardTexture()
 end
 
 function ExtraAbilityBar:OnCreateMenu(menu)
@@ -94,16 +200,22 @@ function ExtraAbilityBar:AddLayoutPanel(menu)
 
     local panel = menu:NewPanel(l.Layout)
 
-    panel:NewCheckButton{
+
+    panel:NewCheckButton {
         name = l.ExtraBarShowBlizzardTexture,
         get = function()
             return panel.owner:ShowingBlizzardTexture()
         end,
         set = function(_, enable)
             panel.owner:ShowBlizzardTexture(enable)
+			panel.owner:Layout()
         end
     }
 
+	panel:NewLeftToRightCheckbox()
+	panel:NewTopToBottomCheckbox()
+    panel:NewColumnsSlider()
+    panel:NewSpacingSlider()
     panel.scaleSlider = panel:NewScaleSlider()
     panel.paddingSlider = panel:NewPaddingSlider()
 end
