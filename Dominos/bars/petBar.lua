@@ -2,7 +2,9 @@
 -- Pet Bar
 -- A movable action bar for pets
 --------------------------------------------------------------------------------
-local _, Addon = ...
+
+local AddonName, Addon = ...
+local L = LibStub('AceLocale-3.0'):GetLocale(AddonName)
 
 --------------------------------------------------------------------------------
 -- Pet Button Setup
@@ -26,6 +28,10 @@ local PetBar = Addon:CreateClass('Frame', Addon.ButtonBar)
 
 function PetBar:New()
     return PetBar.proto.New(self, 'pet')
+end
+
+function PetBar:GetDisplayName()
+    return L.PetBarDisplayName
 end
 
 -- TODO: Not this. Right now, its hard for a user to setup custom fade actions

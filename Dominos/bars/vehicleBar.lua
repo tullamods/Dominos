@@ -3,7 +3,8 @@ if not VehicleLeaveButton then
     return
 end
 
-local _, Addon = ...
+local AddonName, Addon = ...
+local L = LibStub('AceLocale-3.0'):GetLocale(AddonName)
 
 local CanExitVehicle = _G.CanExitVehicle
 if not CanExitVehicle then
@@ -24,6 +25,10 @@ function VehicleBar:New()
     end
 
     return bar
+end
+
+function VehicleBar:GetDisplayName()
+    return L.VehicleBarDisplayName
 end
 
 VehicleBar:Extend('OnAcquire', function(self)
