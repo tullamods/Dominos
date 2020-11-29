@@ -68,11 +68,20 @@ L.ConfigModeHelp = 'Drag any bar to move it. Right Click to configure. Middle Cl
 L.ShowAlignmentGrid = "Show Alignment Grid"
 
 -- bar tooltips
-L.TipRollBar = 'Displays frames for rolling on items, when in a group.'
+L.TipRollBar = 'Displays frames for rolling on items when in a group.'
 L.TipVehicleBar = [[Displays controls to aim and exit a vehicle.\nAll other vehicle actions are displayed on the possess bar.]]
 
 L.BarDisplayName = "%s Bar"
+L.AlertsBarDisplayName = "Alerts"
 L.ActionBarDisplayName = "Action Bar %s"
+L.BagBarDisplayName = "Bags"
+L.ClassBarDisplayName = "Class Bar"
+L.ExtraBarDisplayName = "Extra Bar"
+L.ExtraBarDescription = "Displays zone and encounter specific abilities"
+L.MenuBarDisplayName = "Menu"
+L.PetBarDisplayName = "Pet Action Bar"
+L.RollBarDisplayName = "Rolls"
+L.VehicleBarDisplayName = _G.BINDING_NAME_VEHICLEEXIT
 
 -- binding names
 _G[('BINDING_CATEGORY_%s'):format(AddonName)] = AddonName
@@ -84,3 +93,4 @@ end
 for id = 1, 60 do
     _G[('BINDING_NAME_CLICK %sActionButton%d:HOTKEY'):format(AddonName, id)] = ('%s Action Button %d'):format(AddonName, id)
 end
+

@@ -61,13 +61,13 @@ local frame_CallUpdateShown = 'self:RunAttribute(\'UpdateShown\')'
 -- Constructor / Destructor
 --------------------------------------------------------------------------------
 
-function Frame:New(id, tooltipText)
+-- constructor
+function Frame:New(id)
     id = tonumber(id) or id
 
     local frame = self:Restore(id) or self:Create(id)
 
     frame:LoadSettings()
-    frame:SetTooltipText(tooltipText)
 
     Addon.OverrideController:Add(frame)
 
@@ -895,19 +895,19 @@ function Frame:ShowMenu()
 end
 
 --------------------------------------------------------------------------------
--- Tooltip Text
+-- Display Information
 --------------------------------------------------------------------------------
 
 function Frame:GetDisplayName()
     return L.BarDisplayName:format(tostring(self.id):gsub('^%l', string.upper))
 end
 
-function Frame:SetTooltipText(text)
-    self.tooltipText = text
+function Frame:GetDescription()
+    return
 end
 
-function Frame:GetTooltipText()
-    return self.tooltipText
+function Frame:GetDisplayLevel()
+    return 'MEDIUM'
 end
 
 --------------------------------------------------------------------------------

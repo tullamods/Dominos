@@ -3,7 +3,9 @@ if not ExtraAbilityContainer then
     return
 end
 
-local _, Addon = ...
+local AddonName, Addon = ...
+local L = LibStub("AceLocale-3.0"):GetLocale(AddonName)
+
 local BAR_ID = 'extra'
 
 local ExtraAbilityBar = Addon:CreateClass('Frame', Addon.Frame)
@@ -17,6 +19,14 @@ function ExtraAbilityBar:New()
     end
 
     return bar
+end
+
+function ExtraAbilityBar:GetDisplayLevel()
+    return 'HIGH'
+end
+
+function ExtraAbilityBar:GetDisplayName()
+    return L.ExtraBarDisplayName
 end
 
 ExtraAbilityBar:Extend(

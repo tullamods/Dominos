@@ -23,6 +23,14 @@ function TalkingHeadBar:GetDefaults()
     }
 end
 
+function TalkingHeadBar:GetDisplayName()
+	return 'Talking Heads'
+end
+
+function TalkingHeadBar:GetDisplayLevel()
+    return 'LOW'
+end
+
 function TalkingHeadBar:Layout()
     local frame = TalkingHeadFrame
     local width, height
