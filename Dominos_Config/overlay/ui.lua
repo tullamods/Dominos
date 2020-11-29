@@ -9,12 +9,15 @@ local function GetMultiple(value, factor)
     return _G.Round(value / factor) * factor
 end
 
-local BACKGROUND_COLOR = _G.CreateColor(0, 0, 0, 0.3)
-local GRID_COLOR = _G.CreateColor(1, 1, 1, 0.1)
-local GRID_HIGHLIGHT_COLOR = _G.CreateColor(0.6, 0.3, 0.68, 0.5)
+local BACKGROUND_COLOR = _G.CreateColor(0, 0, 0, 0.5)
+local GRID_COLOR = _G.CreateColor(0.5, 0.5, 0.5, 0.5)
+
+-- #731abc
+local GRID_HIGHLIGHT_COLOR = _G.CreateColor(0.451, 0.102, 0.737, 1)
+
 local GRID_THICKNESS = 1
 
-local OverlayUI = ParentAddon:NewModule('OverlayUI', 'AceEvent-3.0')
+local OverlayUI = Addon:NewModule('OverlayUI', 'AceEvent-3.0')
 
 --------------------------------------------------------------------------------
 -- Events
@@ -243,7 +246,7 @@ function OverlayUI:AcquireGridLine()
     if line then
         inactiveLines[#inactiveLines] = nil
     else
-        line = self.frame:CreateLine(nil, 'BACKGROUND')
+        line = self.frame:CreateLine(nil, 'BACKGROUND', 10)
     end
 
     -- add
@@ -271,12 +274,52 @@ end
 
 function OverlayUI:ShowDragFrames()
     for _, frame in ParentAddon.Frame:GetAll() do
-        Addon.FrameOverlay:New(self.frame, frame)
+        self:AcquireDragFrame():SetOwner(frame)
     end
 end
 
 function OverlayUI:HideDragFrames()
-    Addon.FrameOverlay:FreeAll()
+    local activeDragFrames = self.activeDragFrames
+
+    if activeDragFrames then
+        for i = #activeDragFrames, 1, -1 do
+            self:ReleaseDragFrame(activeDragFrames[i])
+            activeDragFrames[i] = nil
+        end
+    end
+end
+
+function OverlayUI:AcquireDragFrame()
+    local inactiveDragFrames = self.inactiveDragFrames
+
+    -- restore
+    local frame = inactiveDragFrames and inactiveDragFrames[#inactiveDragFrames]
+    if frame then
+        inactiveDragFrames[#inactiveDragFrames] = nil
+    else
+        frame = Addon.DragFrame:Create(self.frame)
+    end
+
+    -- add
+    local activeDragFrames = self.activeDragFrames
+    if activeDragFrames then
+        activeDragFrames[#activeDragFrames+1] = frame
+    else
+        self.activeDragFrames = { frame }
+    end
+
+    return frame
+end
+
+function OverlayUI:ReleaseDragFrame(frame)
+    frame:SetOwner(nil)
+
+    local inactiveFrames = self.inactiveDragFrames
+    if inactiveFrames then
+        inactiveFrames[#inactiveFrames+1] = frame
+    else
+        self.inactiveDragFrames = { frame }
+    end
 end
 
 --------------------------------------------------------------------------------
