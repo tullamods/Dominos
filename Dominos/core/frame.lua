@@ -601,6 +601,19 @@ end
 -- how far away a frame can be from another frame/edge to trigger anchoring
 Frame.stickyTolerance = 16
 
+-- gets the scaled rect values for frame
+-- basically here to work around classic maybe not having GetScaledRect
+local function GetScaledRect(frame)
+	if frame.GetScaledRect then
+		return frame:GetScaledRect()
+	end
+
+	local l, b, w, h = frame:GetRect()
+	local s = frame:GetEffectiveScale()
+
+	return l * s, b * s, w * s, h * s
+end
+
 -- edge anchoring
 function Frame:StickToEdge()
     local point, x, y = self:GetRelativeFramePosition()
@@ -620,7 +633,95 @@ function Frame:StickToEdge()
     --save this junk if we've done something
     if changed then
         self:SetAndSaveFramePosition(point, x, y)
+	else
+		self:StickToGrid()
     end
+end-- edge anchoring
+
+
+local gridPoints = {}
+
+-- two dimensional distance
+local function GetSquaredDistance(x1, y1, x2, y2)
+	return (x1 - x2) ^ 2 + (y1 - y2) ^ 2
+end
+
+function Frame:StickToGrid()
+	if not (Addon.horizontalLines and Addon.verticalLines) then return end
+
+	local left, bottom, width, height = GetScaledRect(self)
+	local right, top = left + width, bottom + height
+	local x, y = left + (width/2), bottom + (height/2)
+
+	wipe(gridPoints)
+
+	for i, vLine in pairs(Addon.verticalLines) do
+		local horizontal = GetScaledRect(vLine)
+		for j, hLine in pairs(Addon.horizontalLines) do
+			local _, vertical = GetScaledRect(hLine)			
+			
+			tinsert(gridPoints, {horizontal, vertical})
+		end
+	end
+
+	local stick = self.stickyTolerance/2
+
+	local s = self:GetEffectiveScale()
+	
+	local options = {}
+	
+	for i, point in pairs(gridPoints) do
+		--find viable points
+		local hori, vert = unpack(point)
+		
+		hori, vert = hori, vert
+		
+		local h, v
+		
+		if (left >= hori - stick) and (left <= hori + stick) then
+			h = "Left"
+		-- elseif (x >= hori - stick) and (x <= hori + stick) then
+			-- h = ""
+		elseif (right >= hori - stick) and (right <= hori + stick) then
+			h = "Right"
+		end
+		
+		if (bottom >= vert - stick) and (bottom <= vert + stick) then
+			v = "Bottom"
+		-- elseif (y >= vert - stick) and (y <= vert + stick) then
+			-- v = ""
+		elseif (top >= vert - stick) and (top <= vert + stick) then
+			v = "Top"
+		end
+		
+		if h and v then
+			h = (h == v) and "Center" or h
+			
+			point = v..h
+			tinsert(options, {point, hori, vert, s})
+		end
+	end
+	
+	local last = math.huge
+	local point
+	for i, option in pairs(options) do
+		--find the point closest to the cursor.
+		local _, x, y, s = unpack(option)
+		local mX, mY = GetCursorPosition()
+		local range = GetSquaredDistance(x, y, mX, mY)
+		if range < last then
+			last = range
+			point = option
+		end
+	end
+	
+	if point then
+		--stick to 
+		local _point, x, y, s = unpack(point)
+		self:ClearAllPoints()
+		self:SetPoint(_point, UIParent, "BottomLeft", x/s, y/s)
+		self:SaveRelativeFramePosition()
+	end
 end
 
 -- bar anchoring
