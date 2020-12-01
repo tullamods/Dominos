@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 9.0.20
+
+* Updated TOCs for 1.13.6
+
 ## 9.0.19
 
 * Fixed a potential error when attemping to view azerite item xp info for an item in the bank
