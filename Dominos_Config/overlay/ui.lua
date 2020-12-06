@@ -183,23 +183,15 @@ function OverlayUI:UpdateGrid()
     end
 end
 
-ParentAddon.horizontalLines = {}
-ParentAddon.verticalLines = {}
-
 -- this is derived from Ben Walker's Alignment Grid addon
 function OverlayUI:DrawGrid()
     self:ClearGrid()
 
-    local gridSize = ParentAddon:GetAlignmentGridSize()
+    local verticalLines, horizontalLines = ParentAddon:GetAlignmentGridScale()
     local width, height = self.frame:GetSize()
-    local aspectRatio = width / height
-    local verticalLines = gridSize
     -- convert to an even number, so that we can highlight the middle point
-    local horizontalLines = GetMultiple(gridSize / aspectRatio, 2)
     local xOffset = width / verticalLines
     local yOffset = height / horizontalLines
-	
-	wipe(ParentAddon.verticalLines)
 
     for i = 0, verticalLines do
         local line = self:AcquireGridLine()
@@ -214,10 +206,7 @@ function OverlayUI:DrawGrid()
 
         line:SetStartPoint("TOPLEFT", xOffset * i, 0)
         line:SetEndPoint("BOTTOMLEFT", xOffset * i, 0)
-		tinsert(ParentAddon.verticalLines, line)
     end
-	
-	wipe(ParentAddon.horizontalLines)
 
     for i = 0, horizontalLines do
         local line = self:AcquireGridLine()
@@ -232,7 +221,6 @@ function OverlayUI:DrawGrid()
 
         line:SetStartPoint("BOTTOMLEFT", 0, yOffset * i)
         line:SetEndPoint("BOTTOMRIGHT", 0, yOffset * i)
-		tinsert(ParentAddon.horizontalLines, line)
     end
 end
 
