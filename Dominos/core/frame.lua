@@ -6,7 +6,7 @@
 local AddonName, Addon = ...
 local Frame = Addon:CreateClass('Frame')
 local L = LibStub('AceLocale-3.0'):GetLocale(AddonName)
-local FlyPaper = LibStub('LibFlyPaper-1.1')
+local FlyPaper = LibStub('LibFlyPaper-2.0')
 
 local active = {}
 local unused = {}
@@ -195,6 +195,22 @@ function Frame:LoadSettings()
         self:HideFrame()
     else
         self:ShowFrame()
+    end
+
+    -- convert from flypaper 1.x anchor IDs into points
+    -- todo: move this into an upgrade path instead of every time we load sets
+    local anchor = self.sets.anchor
+    if type(anchor) == "string" then
+        local pointStart = #anchor - 1
+        local anchorId = anchor:sub(1, pointStart - 1)
+        local anchorFrame = anchorId:sub(pointStart)
+        local point, relPoint = FlyPaper.ConvertAnchorId(anchorId)
+
+        self.sets.anchor = {
+            point = point,
+            relPoint = relPoint,
+            relTo = anchorFrame
+        }
     end
 
     self:UpdateShowStates()
@@ -601,19 +617,6 @@ end
 -- how far away a frame can be from another frame/edge to trigger anchoring
 Frame.stickyTolerance = 16
 
--- gets the scaled rect values for frame
--- basically here to work around classic maybe not having GetScaledRect
-local function GetScaledRect(frame)
-	if frame.GetScaledRect then
-		return frame:GetScaledRect()
-	end
-
-	local l, b, w, h = frame:GetRect()
-	local s = frame:GetEffectiveScale()
-
-	return l * s, b * s, w * s, h * s
-end
-
 -- edge anchoring
 function Frame:StickToEdge()
     local point, x, y = self:GetRelativeFramePosition()
@@ -636,92 +639,18 @@ function Frame:StickToEdge()
 	else
 		self:StickToGrid()
     end
-end-- edge anchoring
-
-
-local gridPoints = {}
-
--- two dimensional distance
-local function GetSquaredDistance(x1, y1, x2, y2)
-	return (x1 - x2) ^ 2 + (y1 - y2) ^ 2
 end
 
+-- grid anchoring
 function Frame:StickToGrid()
-	if not (Addon.horizontalLines and Addon.verticalLines) then return end
+    local xScale, yScale = Addon:GetAlignmentGridScale()
+    local point, relPoint, x, y = FlyPaper.GetBestAnchorForParentGrid(self, xScale, yScale, self.stickyTolerance)
 
-	local left, bottom, width, height = GetScaledRect(self)
-	local right, top = left + width, bottom + height
-	local x, y = left + (width/2), bottom + (height/2)
-
-	wipe(gridPoints)
-
-	for i, vLine in pairs(Addon.verticalLines) do
-		local horizontal = GetScaledRect(vLine)
-		for j, hLine in pairs(Addon.horizontalLines) do
-			local _, vertical = GetScaledRect(hLine)			
-			
-			tinsert(gridPoints, {horizontal, vertical})
-		end
-	end
-
-	local stick = self.stickyTolerance/2
-
-	local s = self:GetEffectiveScale()
-	
-	local options = {}
-	
-	for i, point in pairs(gridPoints) do
-		--find viable points
-		local hori, vert = unpack(point)
-		
-		hori, vert = hori, vert
-		
-		local h, v
-		
-		if (left >= hori - stick) and (left <= hori + stick) then
-			h = "Left"
-		-- elseif (x >= hori - stick) and (x <= hori + stick) then
-			-- h = ""
-		elseif (right >= hori - stick) and (right <= hori + stick) then
-			h = "Right"
-		end
-		
-		if (bottom >= vert - stick) and (bottom <= vert + stick) then
-			v = "Bottom"
-		-- elseif (y >= vert - stick) and (y <= vert + stick) then
-			-- v = ""
-		elseif (top >= vert - stick) and (top <= vert + stick) then
-			v = "Top"
-		end
-		
-		if h and v then
-			h = (h == v) and "Center" or h
-			
-			point = v..h
-			tinsert(options, {point, hori, vert, s})
-		end
-	end
-	
-	local last = math.huge
-	local point
-	for i, option in pairs(options) do
-		--find the point closest to the cursor.
-		local _, x, y, s = unpack(option)
-		local mX, mY = GetCursorPosition()
-		local range = GetSquaredDistance(x, y, mX, mY)
-		if range < last then
-			last = range
-			point = option
-		end
-	end
-	
-	if point then
-		--stick to 
-		local _point, x, y, s = unpack(point)
+    if point then
 		self:ClearAllPoints()
-		self:SetPoint(_point, UIParent, "BottomLeft", x/s, y/s)
-		self:SaveRelativeFramePosition()
-	end
+		self:SetPoint(point, self:GetParent(), relPoint, x, y)
+        self:SaveRelativeFramePosition()
+    end
 end
 
 -- bar anchoring
@@ -730,10 +659,10 @@ function Frame:Stick()
 
     -- only do sticky code if the alt key is not currently down
     if Addon:Sticky() and not IsAltKeyDown() then
-        local anchor, id = FlyPaper.StickToClosestFrameInGroup(self, AddonName)
+        local point, relFrame, relPoint = FlyPaper.GetBestAnchorForGroup(self, AddonName, self.stickyTolerance)
 
-        if anchor then
-            self:SetAnchor(active[id], anchor)
+        if point then
+            self:SetAnchor(relFrame, point, relPoint)
         else
             self:StickToEdge()
         end
@@ -743,52 +672,65 @@ function Frame:Stick()
 end
 
 function Frame:Reanchor()
-    local frame, anchor = self:GetAnchor()
+    local relFrame, point, relPoint = self:GetAnchor()
 
-    if not (frame and FlyPaper.StickToPoint(self, frame, anchor)) then
+    if relFrame then
+        self:ClearAllPoints()
+        self:SetPoint(point, relFrame, relPoint)
+    else
         self:ClearAnchor()
         self:Reposition()
-    else
-        self:SetAnchor(frame, anchor)
     end
 end
 
-function Frame:SetAnchor(frame, anchor)
+function Frame:SetAnchor(relFrame, point, relPoint)
     self:ClearAnchor()
 
-    if frame.docked then
+    if relFrame.docked then
         local found = false
-        for i, f in pairs(frame.docked) do
+
+        for i, f in pairs(relFrame.docked) do
             if f == self then
                 found = i
                 break
             end
         end
+
         if not found then
-            table.insert(frame.docked, self)
+            table.insert(relFrame.docked, self)
         end
     else
-        frame.docked = {self}
+        relFrame.docked = { self }
     end
 
-    self.sets.anchor = frame.id .. anchor
+    local anchor = self.sets.anchor
+    if not anchor then
+        anchor = { }
+
+        self.sets.anchor = anchor
+    end
+
+    anchor.point = point
+    anchor.relFrame = relFrame.id
+    anchor.relPoint = relPoint
+
     self:UpdateWatched()
     self:UpdateAlpha()
 end
 
 function Frame:ClearAnchor()
-    local anchor = self:GetAnchor()
+    local relFrame = self:GetAnchor()
 
-    if anchor and anchor.docked then
-        for i, f in pairs(anchor.docked) do
+    if relFrame and relFrame.docked then
+        for i, f in pairs(relFrame.docked) do
             if f == self then
-                tremove(anchor.docked, i)
+                table.remove(relFrame.docked, i)
                 break
             end
         end
 
-        if not next(anchor.docked) then
-            anchor.docked = nil
+        if not next(relFrame.docked) then
+            relFrame.docked = nil
         end
     end
 
@@ -798,11 +740,14 @@ function Frame:ClearAnchor()
 end
 
 function Frame:GetAnchor()
-    local anchorString = self.sets.anchor
+    local anchor = self.sets.anchor
 
-    if anchorString then
-        local pointStart = #anchorString - 1
-        return self:Get(anchorString:sub(1, pointStart - 1)), anchorString:sub(pointStart)
+    if type(anchor) == "table" then
+        local point = anchor.point
+        local relFrameId = anchor.relFrame
+        local relPoint = anchor.relPoint
+
+        return Frame:Get(relFrameId), point, relPoint
     end
 end
 
