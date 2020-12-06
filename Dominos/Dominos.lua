@@ -742,6 +742,19 @@ function Addon:GetAlignmentGridSize()
     return self.db.profile.alignmentGrid.size
 end
 
+function Addon:GetAlignmentGridScale()
+    local gridSize = self:GetAlignmentGridSize()
+    if gridSize <= 0 then
+        return 0, 0
+    end
+
+    local width, height = _G.GetScreenWidth(), _G.GetScreenHeight()
+    local aspectRatio = (width / height)
+    local xScale = _G.Round(gridSize / 2) * 2
+    local yScale = _G.Round(xScale / aspectRatio / 2) * 2
+
+    return xScale, yScale
+end
 --------------------------------------------------------------------------------
 -- Utility Methods
 --------------------------------------------------------------------------------
