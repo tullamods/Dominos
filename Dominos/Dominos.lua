@@ -748,10 +748,9 @@ function Addon:GetAlignmentGridScale()
         return 0, 0
     end
 
-    local width, height = _G.GetScreenWidth(), _G.GetScreenHeight()
-    local aspectRatio = (width / height)
+    local aspectRatio = GetScreenWidth() / GetScreenHeight()
     local xScale = _G.Round(gridSize / 2) * 2
-    local yScale = _G.Round(xScale / aspectRatio / 2) * 2
+    local yScale = _G.Round((xScale / aspectRatio) / 2) * 2
 
     return xScale, yScale
 end

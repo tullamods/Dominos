@@ -264,22 +264,21 @@ end
 function Frame:SetFrameScale(newScale, scaleAnchored)
     newScale = tonumber(newScale) or 1
 
-    local oldScale = self:GetFrameScale()
-    local ratio = oldScale / newScale
-
     self.sets.scale = newScale
-    self:Rescale()
 
-    if not self:GetAnchor() then
-        local point, x, y = self:GetSavedFramePosition()
-
-        self:SetAndSaveFramePosition(point, x * ratio, y * ratio)
-    end
+    FlyPaper.SetScale(self, newScale)
+    self:SaveRelativeFramePosition()
 
     if scaleAnchored then
         for _, f in self:GetAll() do
             if f:GetAnchor() == self then
                 f:SetFrameScale(newScale, true)
+            end
+        end
+    else
+        for _, f in self:GetAll() do
+            if f:GetAnchor() == self then
+                f:SaveRelativeFramePosition()
             end
         end
     end
@@ -615,42 +614,61 @@ end
 --------------------------------------------------------------------------------
 
 -- how far away a frame can be from another frame/edge to trigger anchoring
-Frame.stickyTolerance = 16
+Frame.stickyTolerance = 8
 
--- edge anchoring
-function Frame:StickToEdge()
-    local point, x, y = self:GetRelativeFramePosition()
-    local rTolerance = self.stickyTolerance / self:GetFrameScale()
-    local changed = false
+function Frame:StickToFrame()
+    local point, relFrame, relPoint = FlyPaper.GetBestAnchorForGroup(self, AddonName, self.stickyTolerance)
 
-    if math.abs(x) <= rTolerance then
-        x = 0
-        changed = true
-    end
-
-    if math.abs(y) <= rTolerance then
-        y = 0
-        changed = true
-    end
-
-    --save this junk if we've done something
-    if changed then
-        self:SetAndSaveFramePosition(point, x, y)
-	else
-		self:StickToGrid()
+    if point then
+        self:SetAnchor(relFrame, point, relPoint)
+        return true
     end
 end
 
 -- grid anchoring
 function Frame:StickToGrid()
+    if not Addon:GetAlignmentGridEnabled() then
+        return
+    end
+
     local xScale, yScale = Addon:GetAlignmentGridScale()
     local point, relPoint, x, y = FlyPaper.GetBestAnchorForParentGrid(self, xScale, yScale, self.stickyTolerance)
 
     if point then
-		self:ClearAllPoints()
-		self:SetPoint(point, self:GetParent(), relPoint, x, y)
-        self:SaveRelativeFramePosition()
+        self:SetFramePosition(point, self:GetParent(), relPoint, x, y)
+        return true
     end
+end
+
+-- screen edge and center point anchoring
+function Frame:StickToEdge()
+    local point, relPoint, x, y = FlyPaper.GetBestAnchorForParent(self)
+    local scale = self:GetScale()
+
+    if point then
+        local stick = false
+
+        if math.abs(x * scale) <= self.stickyTolerance then
+            x = 0
+            stick = true
+        end
+
+        if math.abs(y * scale) <= self.stickyTolerance then
+            y = 0
+            stick = true
+        end
+
+        if stick then
+            self:SetFramePosition(point, self:GetParent(), relPoint, x, y)
+            return true
+        end
+    end
+end
+
+function Frame:StickToAnything()
+    return self:StickToFrame()
+        or self:StickToEdge()
+        or self:StickToGrid()
 end
 
 -- bar anchoring
@@ -659,13 +677,7 @@ function Frame:Stick()
 
     -- only do sticky code if the alt key is not currently down
     if Addon:Sticky() and not IsAltKeyDown() then
-        local point, relFrame, relPoint = FlyPaper.GetBestAnchorForGroup(self, AddonName, self.stickyTolerance)
-
-        if point then
-            self:SetAnchor(relFrame, point, relPoint)
-        else
-            self:StickToEdge()
-        end
+        self:StickToAnything()
     end
 
     self:SaveRelativeFramePosition()
@@ -683,7 +695,7 @@ function Frame:Reanchor()
     end
 end
 
-function Frame:SetAnchor(relFrame, point, relPoint)
+function Frame:SetAnchor(relFrame, point, relPoint, x, y)
     self:ClearAnchor()
 
     if relFrame.docked then
@@ -713,7 +725,11 @@ function Frame:SetAnchor(relFrame, point, relPoint)
     anchor.point = point
     anchor.relFrame = relFrame.id
     anchor.relPoint = relPoint
+    anchor.x = x
+    anchor.y = y
 
+    self:ClearAllPoints()
+    self:SetPoint(point, relFrame, relPoint, x, y)
     self:UpdateWatched()
     self:UpdateAlpha()
 end
@@ -746,20 +762,22 @@ function Frame:GetAnchor()
         local point = anchor.point
         local relFrameId = anchor.relFrame
         local relPoint = anchor.relPoint
+        local x = anchor.x or 0
+        local y = anchor.y or 0
 
-        return Frame:Get(relFrameId), point, relPoint
+        return Frame:Get(relFrameId), point, relPoint, x, y
     end
 end
 
 -- absolute positioning
-function Frame:SetFramePosition(...)
+function Frame:SetFramePosition(point, relFrame, relPoint, x, y)
     self:ClearAllPoints()
-    self:SetPoint(...)
+    self:SetPoint(point, relFrame, relPoint, x, y)
 end
 
-function Frame:SetAndSaveFramePosition(point, x, y)
-    self:SetFramePosition(point, x, y)
-    self:SaveFramePosition(point, x, y)
+function Frame:SetAndSaveFramePosition(point, relFrame, relPoint, x, y)
+    self:SetFramePosition(point, relFrame, relPoint, x, y)
+    self:SaveFramePosition(self:GetRelativeFramePosition())
 end
 
 -- relative positioning
@@ -768,83 +786,69 @@ function Frame:SaveRelativeFramePosition()
 end
 
 function Frame:GetRelativeFramePosition()
-    local scale = self:GetScale() or 1
-    local left = self:GetLeft() or 0
-    local top = self:GetTop() or 0
-    local right = self:GetRight() or 0
-    local bottom = self:GetBottom() or 0
+    local point, relPoint, x, y = FlyPaper.GetBestAnchorForParent(self)
 
-    local parent = self:GetParent() or _G.UIParent
-    local pwidth = parent:GetWidth() / scale
-    local pheight = parent:GetHeight() / scale
-
-    local x, y, point
-    if left < (pwidth - right) and left < math.abs((left + right) / 2 - pwidth / 2) then
-        x = left
-        point = 'LEFT'
-    elseif (pwidth - right) < math.abs((left + right) / 2 - pwidth / 2) then
-        x = right - pwidth
-        point = 'RIGHT'
-    else
-        x = (left + right) / 2 - pwidth / 2
-        point = ''
-    end
-
-    if bottom < (pheight - top) and bottom < math.abs((bottom + top) / 2 - pheight / 2) then
-        y = bottom
-        point = 'BOTTOM' .. point
-    elseif (pheight - top) < math.abs((bottom + top) / 2 - pheight / 2) then
-        y = top - pheight
-        point = 'TOP' .. point
-    else
-        y = (bottom + top) / 2 - pheight / 2
-    end
-
-    if point == '' then
-        point = 'CENTER'
-    end
-
-    return point, x, y
+    return point, relPoint, x, y
 end
 
 -- loading and positionin
-local function roundPoint(point)
-    point = point or 0
-
-    if point > 0 then
-        point = floor(point + 0.5)
-    else
-        point = ceil(point - 0.5)
-    end
-
-    return point
-end
-
 function Frame:Reposition()
-    self:Rescale()
-    self:SetFramePosition(self:GetSavedFramePosition())
+    local point, relPoint, x, y = self:GetSavedFramePosition()
+    local scale = self:GetFrameScale()
+
+    self:ClearAllPoints()
+    self:SetScale(scale)
+    self:SetFramePosition(point, self:GetParent(), relPoint, x, y)
 end
 
-function Frame:SaveFramePosition(point, x, y)
+function Frame:SaveFramePosition(point, relPoint, x, y)
     point = point or 'CENTER'
-    x = roundPoint(x)
-    y = roundPoint(y)
+    relPoint = relPoint or point
+    x = tonumber(x) or 0
+    y = tonumber(y) or 0
 
     local sets = self.sets
-    sets.point = point ~= 'CENTER' and point or nil
-    sets.x = x ~= 0 and x or nil
-    sets.y = y ~= 0 and y or nil
+
+    if point == 'CENTER' then
+        sets.point = nil
+    else
+        sets.point = point
+    end
+
+    if relPoint == point then
+        sets.relPoint = nil
+    else
+        sets.relPoint = relPoint
+    end
+
+    if x == 0 then
+        sets.x = nil
+    else
+        sets.x = x
+    end
+
+    if y == 0 then
+        sets.y = nil
+    else
+        sets.y = y
+    end
 
     self:SetUserPlaced(true)
 end
 
 function Frame:GetSavedFramePosition()
     local sets = self.sets
+
+    if not sets then
+        return 'CENTER'
+    end
+
     local point = sets.point or 'CENTER'
+    local relPoint = sets.relPoint or point
     local x = sets.x or 0
     local y = sets.y or 0
 
-    return point, x, y
+    return point, relPoint, x, y
 end
 
 --------------------------------------------------------------------------------
