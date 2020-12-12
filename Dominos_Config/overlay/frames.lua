@@ -425,7 +425,7 @@ function FrameOverlay:GetColor()
         l = l * 0.5
     end
 
-    if self.owner:GetAnchor() then
+    if self.owner:IsAnchored() then
         l = math.max(l * 0.1, 0)
     end
 
