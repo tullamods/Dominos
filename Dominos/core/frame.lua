@@ -617,8 +617,9 @@ end
 Frame.stickyTolerance = 8
 
 function Frame:StickToFrame()
-    local point, relFrame, relPoint = FlyPaper.GetBestAnchorForGroup(self, AddonName, self.stickyTolerance)
-
+    local point, relFrame, relPoint = FlyPaper.GetBestAnchor(self, AddonName, self.stickyTolerance)
+    --This seeems to be playing nicely with unrelatd frames from different addons
+    
     if point then
         self:SetAnchor(relFrame, point, relPoint)
         return true
@@ -721,9 +722,13 @@ function Frame:SetAnchor(relFrame, point, relPoint, x, y)
 
         self.sets.anchor = anchor
     end
-
+	
+	local group, groupID = FlyPaper.GetFrameInfo(relFrame)
+    --must know and save groupName, for cosistent anchoring between addons.
+	anchor.relFrameGroup = group
+	anchor.relFrame = groupID
+	
     anchor.point = point
-    anchor.relFrame = relFrame.id
     anchor.relPoint = relPoint
     anchor.x = x
     anchor.y = y
@@ -756,17 +761,19 @@ function Frame:ClearAnchor()
 end
 
 function Frame:GetAnchor()
-    local anchor = self.sets.anchor
+	local anchor = self.sets.anchor
 
-    if type(anchor) == "table" then
-        local point = anchor.point
-        local relFrameId = anchor.relFrame
-        local relPoint = anchor.relPoint
-        local x = anchor.x or 0
-        local y = anchor.y or 0
+	if type(anchor) == "table" then
+		local point = anchor.point
+		
+		local group, groupID = anchor.relFrameGroup, anchor.relFrame
+		--must know and save groupName, for cosistent anchoring between addons.
+		local relPoint = anchor.relPoint
+		local x = anchor.x or 0
+		local y = anchor.y or 0
 
-        return Frame:Get(relFrameId), point, relPoint, x, y
-    end
+		return FlyPaper.GetFrame(group or AddonName, groupID), point, relPoint, x, y
+	end
 end
 
 -- absolute positioning
