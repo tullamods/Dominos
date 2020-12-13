@@ -5,15 +5,11 @@
 local _, Addon = ...
 local ParentAddon = Addon:GetParent()
 
-local function GetMultiple(value, factor)
-    return _G.Round(value / factor) * factor
-end
-
-local BACKGROUND_COLOR = _G.CreateColor(0, 0, 0, 0.5)
-local GRID_COLOR = _G.CreateColor(0.5, 0.5, 0.5, 0.5)
+local BACKGROUND_COLOR = _G.CreateColor(0, 0, 0, 0.7)
+local GRID_COLOR = _G.CreateColor(0.4, 0.4, 0.4, 0.5)
 
 -- #731abc
-local GRID_HIGHLIGHT_COLOR = _G.CreateColor(0.451, 0.102, 0.737, 1)
+local GRID_HIGHLIGHT_COLOR = _G.CreateColor(0.451, 0.102, 0.737, 0.5)
 
 local GRID_THICKNESS = 1
 
@@ -257,7 +253,8 @@ function OverlayUI:AcquireGridLine()
     if line then
         inactiveLines[#inactiveLines] = nil
     else
-        line = self.frame:CreateLine(nil, 'BACKGROUND', 10)
+        line = self.frame:CreateLine()
+        line:SetDrawLayer('BACKGROUND', 7)
     end
 
     -- add

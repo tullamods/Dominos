@@ -43,7 +43,7 @@ local DRAG_FRAME_LEVELS = {
 }
 
 -- drag frame background settings
-local BACKGROUND_OPACITY = 0.8
+local BACKGROUND_OPACITY = 0.5
 
 local BACKGROUND_COLORS = {
     -- #114079
