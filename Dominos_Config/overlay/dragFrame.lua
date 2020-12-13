@@ -6,6 +6,7 @@
 --------------------------------------------------------------------------------
 
 local AddonName, Addon = ...
+local L = LibStub('AceLocale-3.0'):GetLocale(Addon:GetParent():GetName())
 
 local DragFrame = {}
 
@@ -48,8 +49,8 @@ local BACKGROUND_COLORS = {
     -- #114079
     [DRAG_FRAME_STATE.DEFAULT] = CreateColor(0.067, 0.251, 0.475, BACKGROUND_OPACITY),
 
-    -- #0b284c
-    [DRAG_FRAME_STATE.ANCHORED] = CreateColor(0.043, 0.157, 0.298, BACKGROUND_OPACITY),
+    -- #071c34
+    [DRAG_FRAME_STATE.ANCHORED] = CreateColor(0.027, 0.11, 0.204, BACKGROUND_OPACITY),
 
     -- #292f31
     [DRAG_FRAME_STATE.HIDDEN] = CreateColor(0.161, 0.184, 0.192, BACKGROUND_OPACITY),
@@ -126,8 +127,8 @@ local OPACITY_INCREMENT = 0.05
 local DragFrameLabelFont = CreateFont(AddonName .. 'DragFrameFont')
 
 DragFrameLabelFont:CopyFontObject('GameFontNormal')
-DragFrameLabelFont:SetJustifyH('LEFT')
-DragFrameLabelFont:SetJustifyV('TOP')
+DragFrameLabelFont:SetJustifyH('CENTER')
+DragFrameLabelFont:SetJustifyV('CENTER')
 
 local DragFrameLabelHighlightFont = CreateFont(AddonName .. 'DragFrameHighlightFont')
 
@@ -166,8 +167,8 @@ function DragFrame:OnLoad(parent)
     self.frame:SetScript("OnClick", function(_, button) self:OnClick(button) end)
     self.frame:SetScript("OnEnter", function() self:OnEnter() end)
     self.frame:SetScript("OnLeave", function() self:OnLeave() end)
-    self.frame:SetScript("OnMouseDown", function() self:SetMoving(true) end)
-    self.frame:SetScript("OnMouseUp", function() self:SetMoving(false) end)
+    self.frame:SetScript("OnMouseDown", function(_, button) self:OnMouseDown(button) end)
+    self.frame:SetScript("OnMouseUp", function() self:OnMouseUp() end)
     self.frame:SetScript("OnMouseWheel", function(_, delta) self:OnMouseWheel(delta) end)
     self.frame.UpdateTooltip = function() self:UpdateTooltip() end
 
@@ -184,8 +185,9 @@ function DragFrame:OnLoad(parent)
 
     -- contextual text background (to make it easier to see)
     self.textBg = self.frame:CreateTexture(nil, 'OVERLAY', 1)
-    self.textBg:SetAllPoints(self.text)
-    self.textBg:SetColorTexture(0, 0, 0, 0.8)
+    self.textBg:SetPoint('TOPLEFT', self.text, 'TOPLEFT', -BORDER_THICKNESS * 2, BORDER_THICKNESS * 2)
+    self.textBg:SetPoint('BOTTOMRIGHT', self.text, 'BOTTOMRIGHT', BORDER_THICKNESS * 2, -BORDER_THICKNESS * 2)
+    self.textBg:SetColorTexture(0, 0, 0, 0.6)
     self.textBg:Hide()
 
     -- add a background
@@ -280,12 +282,32 @@ function DragFrame:OnKeyDown(key)
     self.frame:SetPropagateKeyboardInput(not handled)
 end
 
+function DragFrame:OnMouseDown(button)
+    if button == 'LeftButton' then
+        self:SetMoving(true)
+    end
+end
+
+function DragFrame:OnMouseUp()
+    self:SetMoving(false)
+end
+
+function DragFrame:OnClick(button)
+    if button == 'RightButton' then
+        if IsModifierKeyDown() then
+            self:SetOwnerShown(not self:IsOwnerShown())
+        else
+            self:ShowOwnerContextMenu()
+        end
+    elseif button == 'MiddleButton' then
+        self:SetOwnerShown(not self:IsOwnerShown())
+    end
+
+    self:UpdateState()
+end
+
 function DragFrame:OnMouseWheel(delta)
-    -- if IsModifierKeyDown() then
-    --     self:CycleFocus(delta)
-    -- else
     self:IncrementOpacity(delta)
-    -- end
 end
 
 function DragFrame:OnMovingChanged(isMoving)
@@ -399,7 +421,7 @@ function DragFrame:UpdateState()
         return
     end
 
-    if self.owner:GetAnchor() then
+    if self.owner:IsAnchored() then
         self:AddState(DRAG_FRAME_STATE.ANCHORED)
     else
         self:RemoveState(DRAG_FRAME_STATE.ANCHORED)
@@ -413,7 +435,7 @@ function DragFrame:UpdateState()
 end
 
 function DragFrame:UpdateTooltip()
-    local tooltip = GameTooltip
+    local tooltip = _G.GameTooltip
 
     GameTooltip_SetTitle(tooltip, ('%s %s(%s)%s'):format(self.owner:GetDisplayName(), NORMAL_FONT_COLOR_CODE, self.owner.id, FONT_COLOR_CODE_CLOSE))
 
@@ -424,10 +446,19 @@ function DragFrame:UpdateTooltip()
 
     GameTooltip_AddBlankLinesToTooltip(tooltip, 1)
 
-    GameTooltip_AddInstructionLine(tooltip, "Right Click to configure.")
-    GameTooltip_AddInstructionLine(tooltip, "Middle Click or Shift-Right Click to show/hide.")
-    GameTooltip_AddInstructionLine(tooltip, "Mousewheel to adjust opacity.")
-    GameTooltip_AddInstructionLine(tooltip, "Use movement keys to adjust position.")
+    GameTooltip_AddInstructionLine(tooltip, L.MouseMovementTip)
+
+    GameTooltip_AddInstructionLine(tooltip, L.ShowConfig)
+
+    if self:IsOwnerShown() then
+        GameTooltip_AddInstructionLine(tooltip, L.HideBar)
+    else
+        GameTooltip_AddInstructionLine(tooltip, L.ShowBar)
+    end
+
+    GameTooltip_AddInstructionLine(tooltip, L.SetAlpha:format(Round(self.owner:GetFrameAlpha() * 100)))
+
+    GameTooltip_AddInstructionLine(tooltip, L.KeyboardMovementTip)
 
     tooltip:Show()
 end
@@ -440,10 +471,10 @@ function DragFrame:SetOwnerShown(isShown)
 
     if isShown then
         self.owner:ShowFrame()
-        self:ShowTemporaryText(0.5, "Shown")
+        self:ShowTemporaryText(0.5, L.Shown)
     else
         self.owner:HideFrame()
-        self:ShowTemporaryText(0.5, "Hidden")
+        self:ShowTemporaryText(0.5, L.Hidden)
     end
 end
 
@@ -484,23 +515,17 @@ end
 function DragFrame:NudgeFrame(dx, dy)
     local ox, oy, ow, oh = self.owner:GetRect()
     local _, _, pw, ph = self.owner:GetParent():GetRect()
-
-    if self.owner:GetAnchor() then
-        self.owner:ClearAnchor()
-    end
-
     local x = Clamp(Round(ox + dx), 0, pw - ow)
     local y = Clamp(Round(oy + dy), 0, ph - oh)
 
+    self.owner:ClearSavedAnchor()
     self.owner:ClearAllPoints()
     self.owner:SetPoint("BOTTOMLEFT", x, y)
-    self.owner:SaveRelativeFramePosition()
+    self.owner:SaveRelativePostiion()
+    self.owner:RestorePosition()
 
     self:ShowTemporaryText(0.5, "(%d, %d)", self.owner:GetRect())
 end
-
--- scale
-
 
 -- preview
 function DragFrame:ShowTemporaryText(duration, text, ...)
@@ -510,6 +535,7 @@ function DragFrame:ShowTemporaryText(duration, text, ...)
         self.text:SetText(text)
     end
 
+    self.label:Hide()
     self.text:Show()
     self.textBg:Show()
 
@@ -520,11 +546,12 @@ function DragFrame:ShowTemporaryText(duration, text, ...)
             if self._tempTextEndTime and self._tempTextEndTime <= GetTime() then
                 self.text:Hide()
                 self.textBg:Hide()
+                self.label:Show()
             end
         end
     end
 
-    C_Timer.After(duration, self._hideTempText)
+    _G.C_Timer.After(duration, self._hideTempText)
 end
 
 function DragFrame:ShowTemporaryPreview(duration)
@@ -540,7 +567,7 @@ function DragFrame:ShowTemporaryPreview(duration)
         end
     end
 
-    C_Timer.After(duration, self._hidePreview)
+    _G.C_Timer.After(duration, self._hidePreview)
 end
 
 function DragFrame:ShowPreview()

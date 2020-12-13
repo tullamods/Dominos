@@ -80,6 +80,8 @@ function OverlayUI:OnEnable()
     ParentAddon.RegisterCallback(self, 'ALIGNMENT_GRID_SIZE_CHANGED')
     ParentAddon.RegisterCallback(self, 'CONFIG_MODE_ENABLED')
     ParentAddon.RegisterCallback(self, 'CONFIG_MODE_DISABLED')
+    ParentAddon.RegisterCallback(self, 'LAYOUT_UNLOADED')
+    ParentAddon.RegisterCallback(self, 'LAYOUT_LOADED')
 
     -- self:UpdateGrid()
     self:SetVisible(not (ParentAddon:Locked() or _G.InCombatLockdown()))
@@ -129,6 +131,16 @@ function OverlayUI:ALIGNMENT_GRID_SIZE_CHANGED()
     if ParentAddon:GetAlignmentGridEnabled() then
         self:DrawGrid()
     end
+end
+
+function OverlayUI:LAYOUT_LOADED()
+    if self.visible then
+        self:ShowDragFrames()
+    end
+end
+
+function OverlayUI:LAYOUT_UNLOADED()
+    self:HideDragFrames()
 end
 
 function OverlayUI:OnVisibilityChanged(visible)

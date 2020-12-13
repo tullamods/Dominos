@@ -28,7 +28,7 @@ function VehicleBar:New()
 end
 
 function VehicleBar:GetDisplayName()
-    return L.VehicleBarDisplayName
+    return _G.BINDING_NAME_VEHICLEEXIT
 end
 
 VehicleBar:Extend('OnAcquire', function(self)
