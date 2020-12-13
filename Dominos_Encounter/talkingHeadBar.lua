@@ -52,6 +52,7 @@ end
 function TalkingHeadBar:OnCreateMenu(menu)
     self:AddLayoutPanel(menu)
     menu:AddFadingPanel()
+    menu:AddAdvancedPanel(true)
 end
 
 function TalkingHeadBar:AddLayoutPanel(menu)
