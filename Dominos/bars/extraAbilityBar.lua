@@ -97,7 +97,7 @@ function ExtraAbilityBar:OnCreateMenu(menu)
     self:AddLayoutPanel(menu)
 
     menu:AddFadingPanel()
-    menu:AddAdvancedPanel()
+    menu:AddAdvancedPanel(true)
 end
 
 function ExtraAbilityBar:AddLayoutPanel(menu)

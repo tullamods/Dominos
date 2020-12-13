@@ -51,7 +51,7 @@ function VehicleBar:OnCreateMenu(menu)
     self:AddLayoutPanel(menu)
 
     menu:AddFadingPanel()
-    menu:AddAdvancedPanel()
+    menu:AddAdvancedPanel(true)
 end
 
 function VehicleBar:AddLayoutPanel(menu)

@@ -340,8 +340,8 @@ end
 function MenuBar:OnCreateMenu(menu)
     Menu_AddLayoutPanel(menu)
     Menu_AddDisableMenuButtonsPanel(menu)
-    menu:AddAdvancedPanel()
     menu:AddFadingPanel()
+    menu:AddAdvancedPanel()
 end
 
 --------------------------------------------------------------------------------

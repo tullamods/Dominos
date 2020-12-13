@@ -118,8 +118,8 @@ function BagBar:OnCreateMenu(menu)
 
     layoutPanel:AddLayoutOptions()
 
-    menu:AddAdvancedPanel()
     menu:AddFadingPanel()
+    menu:AddAdvancedPanel()
 end
 
 --------------------------------------------------------------------------------

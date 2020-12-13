@@ -61,7 +61,7 @@ end
 
 function EncounterBar:OnCreateMenu(menu)
 	self:AddLayoutPanel(menu)
-	self:AddAdvancedPanel(menu)
+	menu:AddAdvancedPanel(true)
 	menu:AddFadingPanel()
 end
 
@@ -70,14 +70,6 @@ function EncounterBar:AddLayoutPanel(menu)
 
 	panel.scaleSlider = panel:NewScaleSlider()
 	panel.paddingSlider = panel:NewPaddingSlider()
-
-	return panel
-end
-
-function EncounterBar:AddAdvancedPanel(menu)
-	local panel = menu:NewPanel(LibStub('AceLocale-3.0'):GetLocale('Dominos-Config').Advanced)
-
-	panel:NewClickThroughCheckbox()
 
 	return panel
 end

@@ -700,7 +700,7 @@ do
 		self:AddFontPanel(menu)
 
 		menu:AddFadingPanel()
-		menu:AddAdvancedPanel()
+		menu:AddAdvancedPanel(true)
 	end
 
 	function ProgressBar:AddLayoutPanel(menu)
