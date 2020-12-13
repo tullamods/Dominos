@@ -239,7 +239,7 @@ end
 function DragFrame:OnEnter()
     self:AddState(DRAG_FRAME_STATE.FOCUSED)
 
-    GameTooltip:SetOwner(self.frame, 'ANCHOR_TOPLEFT')
+    GameTooltip:SetOwner(self.frame, 'ANCHOR_LEFT')
 
     self:UpdateTooltip()
 end
