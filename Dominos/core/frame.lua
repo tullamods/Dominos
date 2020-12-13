@@ -24,14 +24,13 @@ local frame_UpdateShown = [[
         return
     end
 
-    local isOverrideUIShown = self:GetAttribute('state-overrideui') and true or false
     local isPetBattleUIShown = self:GetAttribute('state-petbattleui') and true or false
-
     if isPetBattleUIShown and not self:GetAttribute('state-showinpetbattleui') then
         self:Hide()
         return
     end
 
+    local isOverrideUIShown = self:GetAttribute('state-overrideui') and true or false
     if isOverrideUIShown and not self:GetAttribute('state-showinoverrideui') then
         self:Hide()
         return
@@ -61,7 +60,7 @@ local frame_UpdateShown = [[
     self:Show()
 ]]
 
-local frame_CallUpdateShown = 'self:RunAttribute(\'UpdateShown\')'
+local frame_CallUpdateShown = 'self:RunAttribute("UpdateShown")'
 
 --------------------------------------------------------------------------------
 -- Constructor / Destructor
@@ -109,6 +108,7 @@ function Frame:Create(id)
     frame:SetAttribute('_onstate-petbattleui', frame_CallUpdateShown)
     frame:SetAttribute('_onstate-showinoverrideui', frame_CallUpdateShown)
     frame:SetAttribute('_onstate-showinpetbattleui', frame_CallUpdateShown)
+    frame:SetAttribute('_onstate-userDisplay', frame_CallUpdateShown)
 
     frame:SetAttribute('UpdateShown', frame_UpdateShown)
     hooksecurefunc(frame, 'SetAlpha', frame_OnSetAlpha)
@@ -563,7 +563,7 @@ end
 
 function Frame:SetUserDisplayConditions(states)
     self.sets.showstates = states
-    self:UpdateShowStates()
+    self:UpdateUserDisplayConditions()
 end
 
 function Frame:GetUserDisplayConditions()
@@ -901,8 +901,8 @@ end
 
 function Frame:OnCreateMenu(menu)
     menu:AddLayoutPanel()
-    menu:AddAdvancedPanel()
     menu:AddFadingPanel()
+    menu:AddAdvancedPanel(true)
 end
 
 function Frame:ShowMenu()
