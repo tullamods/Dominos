@@ -26,6 +26,7 @@
 * Added as "is the azerite item in the bank?" check to the Azerite mode of progress bars
 * Bar positions should be a bit more consistent when scaling
 * Fixed some issue with binding display names
+* Increased the specificity of the Shadowstate conditional to hopefully prevent conflicts with Shadowlands abilities
 
 ## 9.0.19
 
