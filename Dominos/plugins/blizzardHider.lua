@@ -51,7 +51,8 @@ apply(
     MultiBarRight,
     MultiCastActionBarFrame,
     PetActionBarFrame,
-    StanceBarFrame
+    StanceBarFrame,
+    PossessBarFrame
 )
 
 apply(disableSlideOutAnimations, MainMenuBar, MultiBarLeft, MultiBarRight, OverrideActionBar)
@@ -122,11 +123,6 @@ if VerticalMultiBarsContainer then
             VerticalMultiBarsContainer:SetWidth(width)
         end
     )
-end
-
-if PossessBarFrame then
-    PossessBarFrame:UnregisterAllEvents()
-    hide(PossessBarFrame)
 end
 
 -- set the stock action buttons to hidden by default

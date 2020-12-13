@@ -38,6 +38,7 @@ L.ListDesc = 'Lists all profiles'
 L.MenuBarDisplayName = "Menu"
 L.MouseMovementTip = 'Drag with the Left Button to move.'
 L.NewPlayer = 'Created new profile for %s'
+L.PossessBarDisplayName = 'Possess Bar'
 L.PetBarDisplayName = "Pet Action Bar"
 L.PrintVersionDesc = 'Prints the current version'
 L.ProfileCopied = 'Copied settings from "%s"'

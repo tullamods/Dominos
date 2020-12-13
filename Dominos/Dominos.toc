@@ -41,6 +41,7 @@ bars\petBar.lua
 bars\stanceBar.lua
 bars\bagBar.lua
 bars\menuBar.lua
+bars\possessBar.lua
 #@retail@
 bars\extraAbilityBar.lua
 #@end-retail@
