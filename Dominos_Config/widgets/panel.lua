@@ -373,10 +373,12 @@ function Panel:AddLayoutOptions()
 	self.scaleSlider = self:NewScaleSlider()
 end
 
-function Panel:AddAdvancedOptions()
-	self:NewLeftToRightCheckbox()
-	self:NewTopToBottomCheckbox()
-	self:NewClickThroughCheckbox()
+function Panel:AddAdvancedOptions(displayConditionsOnly)
+	if not displayConditionsOnly then
+		self:NewLeftToRightCheckbox()
+		self:NewTopToBottomCheckbox()
+		self:NewClickThroughCheckbox()
+	end
 
 	if ParentAddon:IsBuild("retail") then
 		self:NewShowInOverrideUICheckbox()
