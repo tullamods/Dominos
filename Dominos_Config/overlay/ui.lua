@@ -83,7 +83,6 @@ function OverlayUI:OnEnable()
     ParentAddon.RegisterCallback(self, 'LAYOUT_UNLOADED')
     ParentAddon.RegisterCallback(self, 'LAYOUT_LOADED')
 
-    -- self:UpdateGrid()
     self:SetVisible(not (ParentAddon:Locked() or _G.InCombatLockdown()))
 end
 
@@ -134,13 +133,13 @@ function OverlayUI:ALIGNMENT_GRID_SIZE_CHANGED()
 end
 
 function OverlayUI:LAYOUT_LOADED()
-    if self.visible then
-        self:ShowDragFrames()
+    if not (ParentAddon:Locked() or _G.InCombatLockdown()) then
+        self.frame:Show()
     end
 end
 
 function OverlayUI:LAYOUT_UNLOADED()
-    self:HideDragFrames()
+    self.frame:Hide()
 end
 
 function OverlayUI:OnVisibilityChanged(visible)
