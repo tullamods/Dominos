@@ -51,5 +51,5 @@ end
 
 local addonActionButtonName = AddonName .. ' ' .. L.ActionButtonDisplayName
 for id = 1, 60 do
-    _G[('BINDING_NAME_CLICK %sActionButton%d:HOTKEY'):format(AddonName, id)] = addonActionButtonName:format(id)
+    _G[('BINDING_NAME_CLICK:%sActionButton%d:HOTKEY'):format(AddonName, id)] = addonActionButtonName:format(id)
 end
