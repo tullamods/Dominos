@@ -74,13 +74,10 @@ end
 
 -- keybound events
 function PetBar:KEYBOUND_ENABLED()
-    self:SetAttribute('state-visibility', 'display')
     self:ForButtons("Show")
 end
 
 function PetBar:KEYBOUND_DISABLED()
-    self:UpdateShowStates()
-
     local petBarShown = PetHasActionBar()
 
     for _, button in pairs(self.buttons) do
