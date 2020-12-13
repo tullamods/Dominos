@@ -1,4 +1,5 @@
-if not _G.PossessBarFrame then return end
+local PossessBarFrame = _G.PossessBarFrame
+if not PossessBarFrame then return end
 
 --------------------------------------------------------------------------------
 -- Possess bar
@@ -33,18 +34,56 @@ function PossessBar:New()
     return PossessBar.proto.New(self, 'possess')
 end
 
+PossessBar:Extend(
+    'OnCreate',
+    function(self)
+        -- set display states for when the PossessBarFrame is shown/hidden
+        local watcher = _G.CreateFrame('Frame', nil, PossessBarFrame, 'SecureHandlerShowHideTemplate')
+
+        watcher:SetFrameRef('owner', self)
+
+        watcher:SetAttribute('_onshow', [[
+            self:GetFrameRef('owner'):SetAttribute('state-display', 'show')
+        ]])
+
+        watcher:SetAttribute('_onhide', [[
+            self:GetFrameRef('owner'):SetAttribute('state-display', 'hide')
+        ]])
+
+        self.watcher = watcher
+
+        -- also check when entering/leaving combat
+        -- this works as a delayed initializer as well
+        self:SetFrameRef('PossessBarFrame', PossessBarFrame)
+
+        self:SetAttribute('_onstate-combat', [[
+            if self:GetFrameRef('PossessBarFrame'):IsShown() then
+                self:SetAttribute('state-display', 'show')
+            else
+                self:SetAttribute('state-display', 'hide')
+            end
+        ]])
+
+        RegisterStateDriver(self, 'combat', '[combat]1;0')
+    end
+)
+
+
 function PossessBar:GetDisplayName()
     return L.PossessBarDisplayName
 end
 
-function PossessBar:GetDisplayConditions()
-    return '[possessbar]show;hide'
-end
+-- disable UpdateDisplayConditions as we're not using showstates for this
+function PossessBar:UpdateDisplayConditions() end
 
 function PossessBar:GetDefaults()
     return {
         point = 'CENTER',
-        spacing = 2
+        x = 244,
+        y = 0,
+        spacing = 4,
+        padW = 2,
+        padH = 2
     }
 end
 
@@ -78,6 +117,11 @@ Addon.PossessBar = PossessBar
 local PossessBarModule = Addon:NewModule('PossessBar', 'AceEvent-3.0')
 
 function PossessBarModule:Load()
+    if not self.initialized then
+        self:DisablePossessBarFrame()
+        self.initialized = true
+    end
+
     self.bar = PossessBar:New()
     self:RegisterEvent('UPDATE_BINDINGS')
 end
@@ -92,4 +136,11 @@ end
 
 function PossessBarModule:UPDATE_BINDINGS()
     self.bar:ForButtons('UpdateHotkeys')
+end
+
+function PossessBarModule:DisablePossessBarFrame()
+    PossessBarFrame.ignoreFramePositionManager = true
+    PossessBarFrame:EnableMouse(false)
+    PossessBarFrame:ClearAllPoints()
+    PossessBarFrame:SetParent(nil)
 end

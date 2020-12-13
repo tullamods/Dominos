@@ -51,8 +51,7 @@ apply(
     MultiBarRight,
     MultiCastActionBarFrame,
     PetActionBarFrame,
-    StanceBarFrame,
-    PossessBarFrame
+    StanceBarFrame
 )
 
 apply(disableSlideOutAnimations, MainMenuBar, MultiBarLeft, MultiBarRight, OverrideActionBar)
