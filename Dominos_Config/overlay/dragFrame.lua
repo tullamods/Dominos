@@ -205,8 +205,8 @@ function DragFrame:OnLoad(parent)
 
     self.borderLeft = self.frame:CreateTexture(nil, 'BACKGROUND', 2)
     self.borderLeft:SetColorTexture(BORDER_COLORS[self.state]:GetRGBA())
-    self.borderLeft:SetPoint("TOPLEFT")
-    self.borderLeft:SetPoint("BOTTOMLEFT")
+    self.borderLeft:SetPoint("TOPLEFT", 0, -BORDER_THICKNESS)
+    self.borderLeft:SetPoint("BOTTOMLEFT", 0, BORDER_THICKNESS)
     self.borderLeft:SetWidth(BORDER_THICKNESS)
 
     self.borderBottom = self.frame:CreateTexture(nil, 'BACKGROUND', 2)
@@ -217,8 +217,8 @@ function DragFrame:OnLoad(parent)
 
     self.borderRight = self.frame:CreateTexture(nil, 'BACKGROUND', 2)
     self.borderRight:SetColorTexture(BORDER_COLORS[self.state]:GetRGBA())
-    self.borderRight:SetPoint("TOPRIGHT")
-    self.borderRight:SetPoint("BOTTOMRIGHT")
+    self.borderRight:SetPoint("TOPRIGHT", 0, -BORDER_THICKNESS)
+    self.borderRight:SetPoint("BOTTOMRIGHT", 0, BORDER_THICKNESS)
     self.borderRight:SetWidth(BORDER_THICKNESS)
 end
 
