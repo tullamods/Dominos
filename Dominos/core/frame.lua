@@ -37,8 +37,14 @@ local frame_UpdateShown = [[
         return
     end
 
-    local displayState = self:GetAttribute('state-display')
-    if displayState == 'hide' then
+    local requiredState = self:GetAttribute('state-display')
+    if requiredState == 'hide' then
+        self:Hide()
+        return
+    end
+
+    local userState = self:GetAttribute('state-userDisplay')
+    if userState == 'hide' then
         if self:GetAttribute('state-alpha') then
             self:SetAttribute('state-alpha', nil)
         end
@@ -47,9 +53,9 @@ local frame_UpdateShown = [[
         return
     end
 
-    local stateAlpha = tonumber(displayState)
-    if self:GetAttribute('state-alpha') ~= stateAlpha then
-        self:SetAttribute('state-alpha', stateAlpha)
+    local userAlpha = tonumber(userState)
+    if self:GetAttribute('state-alpha') ~= userAlpha then
+        self:SetAttribute('state-alpha', userAlpha)
     end
 
     self:Show()
@@ -199,8 +205,8 @@ function Frame:LoadSettings()
         self:ShowFrame()
     end
 
-    self:UpdateShowStates()
-
+    self:UpdateDisplayConditions()
+    self:UpdateUserDisplayConditions()
     self:ShowInOverrideUI(self:ShowingInOverrideUI())
     self:ShowInPetBattleUI(self:ShowingInPetBattleUI())
 
@@ -489,33 +495,6 @@ function Frame:FrameIsShown()
 end
 
 --------------------------------------------------------------------------------
--- Override UI Visibility
---------------------------------------------------------------------------------
-
-function Frame:ShowInOverrideUI(enable)
-    self.sets.showInOverrideUI = enable and true or false
-
-    self:SetAttribute('state-showinoverrideui', enable)
-end
-
-function Frame:ShowingInOverrideUI()
-    return self.sets.showInOverrideUI
-end
-
---------------------------------------------------------------------------------
--- Pet Battle UI Visibility
---------------------------------------------------------------------------------
-
-function Frame:ShowInPetBattleUI(enable)
-    self.sets.showInPetBattleUI = enable and true or false
-    self:SetAttribute('state-showinpetbattleui', enable)
-end
-
-function Frame:ShowingInPetBattleUI()
-    return self.sets.showInPetBattleUI
-end
-
---------------------------------------------------------------------------------
 -- Click Through
 --------------------------------------------------------------------------------
 
@@ -532,15 +511,62 @@ function Frame:UpdateClickThrough()
 end
 
 --------------------------------------------------------------------------------
--- Show States
+-- Display Conditions - Override UI
 --------------------------------------------------------------------------------
 
-function Frame:SetShowStates(states)
+function Frame:ShowInOverrideUI(enable)
+    self.sets.showInOverrideUI = enable and true or false
+
+    self:SetAttribute('state-showinoverrideui', enable)
+end
+
+function Frame:ShowingInOverrideUI()
+    return self.sets.showInOverrideUI
+end
+
+--------------------------------------------------------------------------------
+-- Display Conditions - Pet Battle UI
+--------------------------------------------------------------------------------
+
+function Frame:ShowInPetBattleUI(enable)
+    self.sets.showInPetBattleUI = enable and true or false
+    self:SetAttribute('state-showinpetbattleui', enable)
+end
+
+function Frame:ShowingInPetBattleUI()
+    return self.sets.showInPetBattleUI
+end
+
+--------------------------------------------------------------------------------
+-- Display Conditions
+--------------------------------------------------------------------------------
+
+function Frame:GetDisplayConditions() end
+
+function Frame:UpdateDisplayConditions()
+    local conditions = self:GetDisplayConditions()
+
+    if conditions and conditions ~= '' then
+        RegisterStateDriver(self, 'display', conditions)
+    else
+        UnregisterStateDriver(self, 'display')
+
+        if self:GetAttribute('state-display') then
+            self:SetAttribute('state-display', nil)
+        end
+    end
+end
+
+--------------------------------------------------------------------------------
+-- Display Conditions - User Set
+--------------------------------------------------------------------------------
+
+function Frame:SetUserDisplayConditions(states)
     self.sets.showstates = states
     self:UpdateShowStates()
 end
 
-function Frame:GetShowStates()
+function Frame:GetUserDisplayConditions()
     local states = self.sets.showstates
 
     -- hack to convert [combat] into [combat]show;hide in case a user is using
@@ -555,16 +581,16 @@ function Frame:GetShowStates()
     return states
 end
 
-function Frame:UpdateShowStates()
-    local showstates = self:GetShowStates()
+function Frame:UpdateUserDisplayConditions()
+    local states = self:GetUserDisplayConditions()
 
-    if showstates and showstates ~= '' then
-        RegisterStateDriver(self, 'display', showstates)
+    if states and states ~= '' then
+        RegisterStateDriver(self, 'userDisplay', states)
     else
-        UnregisterStateDriver(self, 'display')
+        UnregisterStateDriver(self, 'userDisplay')
 
-        if self:GetAttribute('state-display') then
-            self:SetAttribute('state-display', nil)
+        if self:GetAttribute('state-userDisplay') then
+            self:SetAttribute('state-userDisplay', nil)
         end
     end
 end

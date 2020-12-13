@@ -34,14 +34,12 @@ function PetBar:GetDisplayName()
     return L.PetBarDisplayName
 end
 
--- TODO: Not this. Right now, its hard for a user to setup custom fade actions
--- for the pet bar, because we ignore whatever has been set for it
 if Addon:IsBuild("classic") then
-    function PetBar:GetShowStates()
+    function PetBar:GetDisplayConditions()
         return '[pet]show;hide'
     end
 else
-    function PetBar:GetShowStates()
+    function PetBar:GetDisplayConditions()
         return '[@pet,exists,nopossessbar]show;hide'
     end
 end

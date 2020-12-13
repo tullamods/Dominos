@@ -14,8 +14,8 @@ function ExtraAbilityBar:New()
     local bar = ExtraAbilityBar.proto.New(self, BAR_ID)
 
     -- drop need for showstates for this case
-    if bar:GetShowStates() == '[extrabar]show;hide' then
-        bar:SetShowStates(nil)
+    if bar:GetUserDisplayConditions() == '[extrabar]show;hide' then
+        bar:SetUserDisplayConditions(nil)
     end
 
     return bar
@@ -97,6 +97,7 @@ function ExtraAbilityBar:OnCreateMenu(menu)
     self:AddLayoutPanel(menu)
 
     menu:AddFadingPanel()
+    menu:AddAdvancedPanel()
 end
 
 function ExtraAbilityBar:AddLayoutPanel(menu)

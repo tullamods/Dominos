@@ -17,14 +17,7 @@ end
 local VehicleBar = Addon:CreateClass('Frame', Addon.Frame)
 
 function VehicleBar:New()
-    local bar = VehicleBar.proto.New(self, "vehicle")
-
-    -- drop need for showstates for this case
-    if bar:GetShowStates() == '[@vehicle,exists]show;hide' then
-        bar:SetShowStates(nil)
-    end
-
-    return bar
+    return VehicleBar.proto.New(self, "vehicle")
 end
 
 function VehicleBar:GetDisplayName()
@@ -58,6 +51,7 @@ function VehicleBar:OnCreateMenu(menu)
     self:AddLayoutPanel(menu)
 
     menu:AddFadingPanel()
+    menu:AddAdvancedPanel()
 end
 
 function VehicleBar:AddLayoutPanel(menu)
