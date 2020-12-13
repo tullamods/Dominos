@@ -374,7 +374,10 @@ function DragFrame:SetOwner(owner)
 end
 
 function DragFrame:SetMoving(isMoving)
-    local wasMoving = self.isMoving
+    isMoving = isMoving and true or false
+
+    local wasMoving = self.isMoving and true or false
+
     if wasMoving ~= isMoving then
         self.isMoving = isMoving
         self:OnMovingChanged(isMoving)
