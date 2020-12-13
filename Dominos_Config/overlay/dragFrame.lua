@@ -449,8 +449,6 @@ function DragFrame:UpdateTooltip()
 
     GameTooltip_AddBlankLinesToTooltip(tooltip, 1)
 
-    GameTooltip_AddInstructionLine(tooltip, L.MouseMovementTip)
-
     GameTooltip_AddInstructionLine(tooltip, L.ShowConfig)
 
     if self:IsOwnerShown() then
