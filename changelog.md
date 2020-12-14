@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 9.0.21
+
+* Work around an issue with the stock UI expecting the possess bar to be positioned on the screen somewhere
+
 ## 9.0.20
 
 ### New Features

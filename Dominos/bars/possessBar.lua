@@ -139,8 +139,18 @@ function PossessBarModule:UPDATE_BINDINGS()
 end
 
 function PossessBarModule:DisablePossessBarFrame()
+    -- make the bar not movable/clickable
     PossessBarFrame.ignoreFramePositionManager = true
     PossessBarFrame:EnableMouse(false)
-    PossessBarFrame:ClearAllPoints()
     PossessBarFrame:SetParent(nil)
+
+    -- hide artwork
+    hooksecurefunc('PossessBar_UpdateState', function()
+        _G.PossessBackground1:Hide()
+        _G.PossessBackground2:Hide()
+    end)
+
+    -- note, don't clear points on the possess bar because the stock UI has
+    -- logic that depends on the bar having a position
+    -- PossessBarFrame:ClearAllPoints()
 end
