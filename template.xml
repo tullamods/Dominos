@@ -58,6 +58,15 @@
 				<BlingTexture file="Interface\Cooldown\star4">
 					<Color r="0.3" g="0.6" b="1" a="0.8"/>
 				</BlingTexture>
+				<Layers>
+					<Layer level="OVERLAY">
+						<FontString parentKey="text" inherits="GameFontNormal">
+							<Anchors>
+								<Anchor point="CENTER" x="0" y="0"/>
+							</Anchors>
+						</FontString>
+					</Layer>
+				</Layers>
 			</Cooldown>
 		</Frames>
 		<Layers>

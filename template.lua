@@ -530,11 +530,22 @@ local function addCDPanel(menu)
 	NewCheckButton(p, "Hide Countdown", "hideCooldownText")
 	NewCheckButton(p, "Reverse Spin", "counter")
 	
-	NewDropdown(p, "Position", "cdAnchor", {
-		{text = "Above", value = '1'},
-		{text = "Center", value = '2'},
-		{text = "Below", value = '3'},
-	})
+	if not _G["OmniCC"] then
+		NewDropdown(p, "Position", "cdAnchor", {
+			{text = "Above", value = '1'},
+			{text = "Center", value = '2'},
+			{text = "Below", value = '3'},
+		})
+	else
+        local text = p:NewHeader("OmniCC detected. |n Use OmniCC settings to adjust cooldown text.")
+		
+		local b = CreateFrame("Button", "DomAuras_OmniCCButton", p, "OptionsListButtonTemplate")
+		b:SetText("OmniCC Settings")
+		b:SetPoint("TopLeft", text, "BottomLeft", 0 , -10)
+		b:SetScript("OnClick", function()
+			OmniCC:ShowOptionsFrame()
+		end)
+	end
 end
 
 local function AddLayoutPanel(menu)
