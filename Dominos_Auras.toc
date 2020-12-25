@@ -1,0 +1,11 @@
+## Version: 6
+## Interface: 80000
+## Title: Dominos_Auras
+## Author: Goranaws
+## Notes: Configurable buff and debuff bars for Dominos. Replicates the default buff and debuffs, just allowing Dominos to manipulate them.
+## Dependencies: Dominos
+## OptionalDeps: LibSharedMedia-3.0
+
+template.xml
+buffs.lua
+debuffs.lua
