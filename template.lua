@@ -51,36 +51,41 @@ function temp:NumRows()
 end
 
 function temp:UpdateAuraLayout(spacing, cols, rows, LR, TB, method, direction)
-	local self = self.headerAura
+	local head = self.headerAura
 	local base = (30 + spacing)
-	self:SetAttribute("minWidth", base);
-	self:SetAttribute("minHeight", base);
-	self:SetAttribute("wrapAfter", cols);
-	self:SetAttribute("maxWraps", rows);
+	head:SetAttribute("minWidth", base);
+	head:SetAttribute("minHeight", base);
+	head:SetAttribute("wrapAfter", cols);
+	head:SetAttribute("maxWraps", rows);
 	local hori, vert
 	if not LR then
 		vert = "Left"
-		self:SetAttribute("xOffset", base);
-		self:SetAttribute("yOffset", 0);
+		head:SetAttribute("xOffset", base);
+		head:SetAttribute("yOffset", 0);
 	else
 		vert = "Right"
-		self:SetAttribute("xOffset", -base);
-		self:SetAttribute("yOffset", 0);
+		head:SetAttribute("xOffset", -base);
+		head:SetAttribute("yOffset", 0);
 	end
+	
+	if tonumber(self.sets.cdAnchor) ~= 2 then
+		base = base + 12
+	end
+		
 	if not TB then
 		hori = "Top"
-		self:SetAttribute("wrapXOffset", 0);
-		self:SetAttribute("wrapYOffset", -base);
+		head:SetAttribute("wrapXOffset", 0);
+		head:SetAttribute("wrapYOffset", -base);
 	else
 		hori = "Bottom"
-		self:SetAttribute("wrapXOffset", 0);
-		self:SetAttribute("wrapYOffset", base);
+		head:SetAttribute("wrapXOffset", 0);
+		head:SetAttribute("wrapYOffset", base);
 	end
-	self:SetAttribute("point", hori..vert);
+	head:SetAttribute("point", hori..vert);
 	local items = {["1"] = "Time", ["2"] = "Index", ["3"] = "Name"}
 	local m = items[tostring(method)] or method
-	self:SetAttribute("sortMethod", string.upper(m)); -- INDEX or NAME or TIME
-	self:SetAttribute("sortDirection", direction); -- - to reverse
+	head:SetAttribute("sortMethod", string.upper(m)); -- INDEX or NAME or TIME
+	head:SetAttribute("sortDirection", direction); -- - to reverse
 end
 
 function temp:CreateHeader()
@@ -131,6 +136,8 @@ local function GetOverlay(self)
 	overlay.index = index
 	overlay.cooldown:SetHideCountdownNumbers(true)
 	overlay.cooldown:SetAllPoints(overlay.icon)
+	
+	
 	overlay.txt:ClearAllPoints()
 	tinsert(self.allOverlays, overlay)
 	index = index + 1
@@ -163,6 +170,8 @@ end
 local r, b, g, a = 1,1,1,1
 local texture = "Interface\\Addons\\Dominos_Auras\\cooldown"
 
+local anchs = {[1] = {"Bottom", "Top"}, [2] = {"Center", "Center"}, [3] = {"Top", "Bottom"}}
+
 function temp:ToggleCoolDownTexture()
 	local sets = self.sets
 	sets.anchorText = sets.anchorText or "Bottom"
@@ -179,11 +188,8 @@ function temp:ToggleCoolDownTexture()
 			overlay.cooldown:SetDrawSwipe(true)
 			overlay.cooldown:SetDrawEdge(false)
 		end
-		if hideCooldownText or  _G["OmniCC"] then
 			overlay.cooldown:SetHideCountdownNumbers(true)
-		else
-			overlay.cooldown:SetHideCountdownNumbers(false)
-		end
+
 
 		if counter then
 			overlay.cooldown:SetReverse(false)
@@ -192,6 +198,14 @@ function temp:ToggleCoolDownTexture()
 		end
 		overlay.txt:ClearAllPoints()
 		overlay.txt:SetPoint(anchorText, overlay.icon, textX, textY)
+		
+		
+		overlay.cooldown.text:SetWidth(overlay:GetWidth())
+		
+		local val = tonumber(self.sets.cdAnchor)
+	
+		local point, oPoint = unpack(anchs[val] or anchs[2])
+		overlay.cooldown.text:SetPoint(point, overlay, oPoint, self.sets.cdX or 0, self.sets.cdY or 0)
 	end
 end
 
@@ -243,27 +257,71 @@ function temp:UpdateAuras()
 		local aura = self.headerAura:GetAttribute("child" .. i)
 		if aura and aura:IsShown() then
 			overlay:SetAllPoints(aura)
-			local name, icon, count, debuffType, dura, expirationTime = UnitAura(self.headerAura:GetAttribute("unit"), aura:GetID(), self.headerAura:GetAttribute("filter"))
+			local name, icon, count, debuffType, dura, expirationTime, _, _, _, _, _, _, _, _, timeMod = UnitAura(self.headerAura:GetAttribute("unit"), aura:GetID(), self.headerAura:GetAttribute("filter"))
 			if name then
 				if (name ~= overlay.name) or (icon ~= overlay.Icon) or (count ~= overlay.count) or (debuffType ~= overlay.debuffType) or (dura ~= overlay.dura) or (expirationTime ~= overlay.expirationTime) then
 					overlay.icon:SetTexture(icon);
-					if self.sets.hideCooldownText or  _G["OmniCC"] then
+					--if self.sets.hideCooldownText or  _G["OmniCC"] then
 						overlay.cooldown:SetHideCountdownNumbers(true)
-					else
-						overlay.cooldown:SetHideCountdownNumbers(false)
-					end
+					--else
+						--overlay.cooldown:SetHideCountdownNumbers(false)
+					--end
 
-					
+					-- Update our timeLeft
+					local timeLeft = expirationTime - GetTime();
+					if ( timeMod > 0 ) then
+						timeLeft = timeLeft / timeMod;
+					end
+					timeLeft = max( timeLeft, 0 );
+
 					if (dura or expirationTime) and ((dura>0) or (expirationTime>0)) then
 						overlay.cooldown:SetCooldown(expirationTime - dura, dura);
 					else
 						overlay.cooldown:SetCooldown(0, 0)
 						overlay.cooldown:Hide()
+						timeLeft = ""
 					end
-					if not (count>1)then count=""end
+					
+					if not _G["OmniCC"] then
+						
+						-- Update our timeLeft
+						local timeLeft = expirationTime - GetTime();
+						if ( timeMod > 0 ) then
+							timeLeft = timeLeft / timeMod;
+						end
+						timeLeft = max( timeLeft, 0 );
+
+						overlay.cooldown.text:SetFormattedText(SecondsToTimeAbbrev(timeLeft));
+						if ( timeLeft < BUFF_DURATION_WARNING_TIME ) then
+							overlay.cooldown.text:SetVertexColor(HIGHLIGHT_FONT_COLOR.r, HIGHLIGHT_FONT_COLOR.g, HIGHLIGHT_FONT_COLOR.b);
+						else
+							overlay.cooldown.text:SetVertexColor(NORMAL_FONT_COLOR.r, NORMAL_FONT_COLOR.g, NORMAL_FONT_COLOR.b);
+						end
+						
+						local font = overlay.cooldown.text:GetFont()
+						overlay.cooldown.text:SetWordWrap(false)
+						
+						-- --Auto size cooldown text to always fit.		
+						-- local length = overlay.cooldown.text:GetStringWidth()
+						-- overlay.cooldown.text:SetFont(font, 15)
+						-- local width = overlay.cooldown:GetWidth()
+						-- if length > width then
+							-- local size = 59
+							-- while length > width do
+								-- if size/4 < 5 then
+									-- break
+								-- end
+								-- overlay.cooldown.text:SetFont(font, size/4)
+								-- length = overlay.cooldown.text:GetStringWidth()
+								-- size = size - .25
+							-- end
+						-- end						
+					end
+					if not (count>1)then count="" end
 					overlay.txt:SetText(count);
 					overlay:Show()
 				end
+					
 					
 					local t = expirationTime - GetTime()
 					
@@ -323,12 +381,82 @@ function temp:OnEvent(event, ...)
 end
 
 
+local showStates = {
+	Hide = "hide;show",
+	Show = "show;hide",
+}
+
+--advanced showstates
+function temp:GetDisplayStateID()
+	for i, b in pairs(Dominos.BarStates.coversion) do
+		if self.sets.showcondition and b == self.sets.showcondition[1] then
+			return i
+		end
+	end
+end
+
+function temp:SetDisplayStateID(stateId)
+	stateId = type(stateId) == "string" and stateId or stateId()
+
+	stateId = Dominos.BarStates.coversion[stateId] or stateId
+
+	self.sets.showcondition = self.sets.showcondition or {}
+	
+	self.sets.showcondition[1] = stateId
+
+	if self.sets.showcondition then
+		local condition
+		local stateId, displayState = unpack(self.sets.showcondition)
+			if not displayState then
+				displayState = "show"
+			end
+			if stateId and showStates[displayState] then
+				condition = stateId..showStates[displayState]
+			end
+		self:SetShowStates(condition)
+	end
+end
+
+function temp:SetDisplayStateValue(state)
+
+	self.sets.showcondition = self.sets.showcondition or {}
+	
+	self.sets.showcondition[2] = state
+
+	if self.sets.showcondition then
+		local condition
+		local state, displayState = unpack(self.sets.showcondition)
+			
+		if not displayState then
+			displayState = "Show"
+		end
+		if state and showStates[displayState] then
+			condition = state..showStates[displayState]
+		end		
+		self:SetShowStates(condition)
+	end
+end
+
+function temp:GetDisplayStateValue()
+	return self.sets.showcondition and self.sets.showcondition[2]
+end
+
 function temp:Layout()
 	if not InCombatLockdown() then
 		local sets = self.sets
 		local w,h = 30, 30
+		
+		
+		
 		local newWidth = max((((30 + sets.spacing) * sets.columns) - sets.spacing) +(sets.padding*2), 8)
-		local newHeight = max((((30 + sets.spacing) * sets.rows) - sets.spacing) +(sets.padding*2), 8)
+		
+		local space = sets.spacing
+			
+		if tonumber(sets.cdAnchor) ~= 2 then
+			space = space + 12
+		end
+		
+		local newHeight = max((((30 + space) * sets.rows) - space) +(sets.padding*2), 8)
 		self:SetSize(newWidth, newHeight)
 		local hori, vert, padhori, padvert = "Left", "Top", sets.padding, -sets.padding
 		if  sets.isRightToLeft then
@@ -402,7 +530,11 @@ local function addCDPanel(menu)
 	NewCheckButton(p, "Hide Countdown", "hideCooldownText")
 	NewCheckButton(p, "Reverse Spin", "counter")
 	
-	
+	NewDropdown(p, "Position", "cdAnchor", {
+		{text = "Above", value = '1'},
+		{text = "Center", value = '2'},
+		{text = "Below", value = '3'},
+	})
 end
 
 local function AddLayoutPanel(menu)
@@ -623,391 +755,7 @@ function temp:OnCreateMenu(menu)
 	addCDPanel(menu)
 	AddStacksPanel(menu)
 	AddSortPanel(menu)
-	addShowStatePanel(menu)
+--	addShowStatePanel(menu) --dependant on possible new show states style
 	AddAdvancedOptions(menu)
 	self.menu = menu
 end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
--- --------------------------------------------------------------------------------
--- --	
--- --------------------------------------------------------------------------------
-
--- local AddonName, Addon = ...
-
--- -- register buttons for use later
--- local BagButtons = {}
-
--- local Template = Addon:CreateClass('Frame', Addon.ButtonBar)
-
--- function Template:New()
-    -- return Template.proto.New(self, 'bags')
--- end
-
--- function Template:GetDefaults()
-    -- return {
-        -- point = 'BOTTOMRIGHT',
-        -- oneBag = false,
-        -- keyRing = true,
-        -- spacing = 2
-    -- }
--- end
-
-
-
--- --advanced showstates
--- local showStates = {
-	-- Hide = "hide;show",
-	-- Show = "show;hide",
--- }
-
--- function Template:GetDisplayStateID()
-	-- if not self.sets.showcondition then return end
-	-- for i, b in pairs(Addon.BarStates.coversion) do
-		-- if b == self.sets.showcondition[1] then
-			-- return i
-		-- end
-	-- end
--- end
-
--- function Template:SetDisplayStateID(stateId)
-	-- stateId = type(stateId) == "string" and stateId or stateId()
-
-	-- stateId = Addon.BarStates.coversion[stateId] or stateId
-
-	-- self.sets.showcondition = self.sets.showcondition or {}
-	
-	-- self.sets.showcondition[1] = stateId
-
-	-- if self.sets.showcondition then
-		-- local condition
-		-- local stateId, displayState = unpack(self.sets.showcondition)
-			-- if not displayState then
-				-- displayState = "show"
-			-- end
-			-- if stateId and showStates[displayState] then
-				-- condition = stateId..showStates[displayState]
-			-- end
-		-- self:SetShowStates(condition)
-	-- end
--- end
-
--- function Template:SetDisplayStateValue(state)
-
-	-- self.sets.showcondition = self.sets.showcondition or {}
-	
-	-- self.sets.showcondition[2] = state
-
-	-- if self.sets.showcondition then
-		-- local condition
-		-- local state, displayState = unpack(self.sets.showcondition)
-			
-		-- if not displayState then
-			-- displayState = "Show"
-		-- end
-		-- if state and showStates[displayState] then
-			-- condition = state..showStates[displayState]
-		-- end		
-		-- self:SetShowStates(condition)
-	-- end
--- end
-
--- function Template:GetDisplayStateValue()
-	-- return self.sets.showcondition and self.sets.showcondition[2]
--- end
-
--- -- Frame Overrides
--- function Template:AcquireButton(index)
-    -- if index < 1 then
-        -- return nil
-    -- end
-
-    -- local keyRingIndex = self:ShowKeyRing() and 1 or 0
-
-    -- local backpackIndex
-    -- if self:ShowBags() then
-        -- backpackIndex = keyRingIndex + NUM_BAG_SLOTS + 1
-    -- else
-        -- backpackIndex = keyRingIndex + 1
-    -- end
-
-    -- if index == keyRingIndex then
-        -- return _G[AddonName .. 'KeyRingButton']
-    -- elseif index == backpackIndex then
-        -- return MainMenuBarBackpackButton
-    -- elseif index > keyRingIndex and index < backpackIndex then
-        -- return _G[('CharacterBag%dSlot'):format(NUM_BAG_SLOTS - (index - keyRingIndex))]
-    -- end
--- end
-
--- function Template:NumButtons()
-    -- local count = 1
-
-    -- if self:ShowKeyRing() then
-        -- count = count + 1
-    -- end
-
-    -- if self:ShowBags() then
-        -- count = count + NUM_BAG_SLOTS
-    -- end
-
-    -- return count
--- end
-
--- local L 
--- local showStates = {}
--- local function addStates(categoryName, stateType)
-	-- L = L or LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')
-	-- local states =
-		-- Addon.BarStates:map(
-		-- function(s)
-			-- return s.type == stateType
-		-- end
-	-- )
-
-	-- if #states == 0 then
-		-- return
-	-- end
-	
-	-- for _, state in ipairs(states) do
-		-- local id = state.id
-		-- local name = state.text
-		-- if type(name) == 'function' then
-			-- name = name()
-		-- elseif not name then
-			-- name = L['State_' .. id:upper()]
-		-- end			
-		-- tinsert(showStates,  {value = id, text = name})
-	-- end
--- end
-
--- local function addShowStatePanel(menu)
-	-- L = L or LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')
-	-- local panel = menu:NewPanel("Show States")
-
-	-- addStates( UnitClass('player'), 'class')
-	-- addStates( L.Modifiers, 'modifier')
-	-- addStates( L.Targeting, 'target')
-	-- addStates( "Combat", 'combat')
-
-	-- panel:NewDropdown {
-		-- name = "State",
-		-- items = showStates,
-		-- get = function()	
-			-- return panel.owner:GetDisplayStateID()
-		-- end,
-		-- set = function(_, value)
-			-- panel.owner:SetDisplayStateID(value)
-			-- panel.showStatesEditBox.editBox:OnShow()
-		-- end
-	-- }
-
-	-- panel:NewDropdown {
-		-- name = "Display",
-		-- items = {
-			-- {value = "disable", text = _G.DISABLE},
-			-- {value = "Hide", text = _G.HIDE},
-			-- {value = "Show", text = _G.SHOW},
-		-- },
-		-- get = function()				
-			-- return panel.owner:GetDisplayStateValue()
-		-- end,
-		-- set = function(_, value)
-			-- panel.owner:SetDisplayStateValue(value)
-			-- panel.showStatesEditBox.editBox:OnShow()
-		-- end
-	-- }
-
-	-- panel.showStatesEditBox = panel:NewTextInput{
-		-- name = L.ShowStates,
-		-- multiline = true,
-		-- width = 268,
-		-- height = 64,
-		-- get = function() return panel.owner:GetShowStates() end,
-		-- set = function(_, value) panel.owner:SetShowStates(value) end
-	-- }
-
-	-- return panel
--- end
-
-
--- function Template:OnCreateMenu(menu)
-    -- local L = LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')
-
-    -- local layoutPanel = menu:NewPanel(L.Layout)
-
-    -- layoutPanel:NewCheckButton {
-        -- name = L.BagBarShowBags,
-        -- get = function()
-            -- return layoutPanel.owner:ShowBags()
-        -- end,
-        -- set = function(_, enable)
-            -- return layoutPanel.owner:SetShowBags(enable)
-        -- end
-    -- }
-
-    -- if Addon:IsBuild('Classic') then
-        -- layoutPanel:NewCheckButton {
-            -- name = L.BagBarShowKeyRing,
-            -- get = function()
-                -- return layoutPanel.owner:ShowKeyRing()
-            -- end,
-            -- set = function(_, enable)
-                -- return layoutPanel.owner:SetShowKeyRing(enable)
-            -- end
-        -- }
-    -- end
-
-    -- layoutPanel:AddLayoutOptions()
-
-	-- addShowStatePanel(menu)
-    -- menu:AddAdvancedPanel()
-    -- menu:AddFadingPanel()
--- end
-
-
--- --------------------------------------------------------------------------------
--- --	module
--- --------------------------------------------------------------------------------
-
--- local Module = Addon:NewModule('Template')
-
--- function Module:OnInitialize()
-    -- for slot = (NUM_BAG_SLOTS - 1), 0, -1 do
-        -- self:RegisterButton(('CharacterBag%dSlot'):format(slot))
-    -- end
-
-    -- if Addon:IsBuild('Classic') then
-        -- -- force hide the old keyring button
-        -- KeyRingButton:Hide()
-
-        -- hooksecurefunc(
-            -- 'MainMenuBar_UpdateKeyRing',
-            -- function()
-                -- KeyRingButton:Hide()
-            -- end
-        -- )
-
-        -- -- setup the dominos specific one
-        -- local keyring = CreateFrame('CheckButton', AddonName .. 'KeyRingButton', UIParent, 'ItemButtonTemplate')
-        -- keyring:RegisterForClicks('LeftButtonUp', 'RightButtonUp')
-        -- keyring:SetID(KEYRING_CONTAINER)
-
-        -- keyring:SetScript(
-            -- 'OnClick',
-            -- function(_, button)
-                -- if CursorHasItem() then
-                    -- PutKeyInKeyRing()
-                -- else
-                    -- ToggleBag(KEYRING_CONTAINER)
-                -- end
-            -- end
-        -- )
-
-        -- keyring:SetScript(
-            -- 'OnReceiveDrag',
-            -- function(_)
-                -- if CursorHasItem() then
-                    -- PutKeyInKeyRing()
-                -- end
-            -- end
-        -- )
-
-        -- keyring:SetScript(
-            -- 'OnEnter',
-            -- function(self)
-                -- GameTooltip:SetOwner(self, 'ANCHOR_LEFT')
-
-                -- local color = HIGHLIGHT_FONT_COLOR
-                -- GameTooltip:SetText(KEYRING, color.r, color.g, color.b)
-                -- GameTooltip:AddLine()
-            -- end
-        -- )
-
-        -- keyring:SetScript(
-            -- 'OnLeave',
-            -- function()
-                -- GameTooltip:Hide()
-            -- end
-        -- )
-
-        -- keyring.icon:SetTexture([[Interface\Icons\INV_Misc_Bag_16]])
-
-        -- self:RegisterButton(keyring:GetName())
-
-        -- MainMenuBarBackpackButton:HookScript(
-            -- 'OnClick',
-            -- function(_, button)
-                -- if IsControlKeyDown() then
-                    -- ToggleBag(KEYRING_CONTAINER)
-                -- end
-            -- end
-        -- )
-    -- end
-
-    -- self:RegisterButton('MainMenuBarBackpackButton')
--- end
-
--- function Module:OnEnable()
-    -- for _, button in pairs(BagButtons) do
-        -- Addon:GetModule('ButtonThemer'):Register(
-            -- button,
-            -- 'Bag Bar',
-            -- {
-                -- Icon = button.icon
-            -- }
-        -- )
-    -- end
--- end
-
--- function Module:Load()
-    -- self.frame = Template:New()
--- end
-
--- function Module:Unload()
-    -- if self.frame then
-        -- self.frame:Free()
-        -- self.frame = nil
-    -- end
--- end
-
--- local function resize(o, size)
-    -- o:SetSize(size, size)
--- end
-
--- function Module:RegisterButton(name)
-    -- local button = _G[name]
-    -- if not button then
-        -- return
-    -- end
-
-    -- button:Hide()
-
-    -- if Addon:IsBuild('Retail') then
-        -- resize(button, 36)
-        -- resize(button.IconBorder, 37)
-        -- resize(button.IconOverlay, 37)
-        -- resize(_G[button:GetName() .. 'NormalTexture'], 64)
-    -- end
-
-    -- tinsert(BagButtons, button)
--- end
