@@ -73,7 +73,7 @@ function mixin:OnHide()
 	self.name, self.Icon, self.QTY, self.debuffType, self.dura, self.expirationTime = nil, nil, nil, nil, nil, nil
 end
 
-function mixin:OnMouseUp()
+function mixin:OnMouseUp(button)
 	--allows a Shift-Left click to send the
 	--name of a buff to the chat window edit box.
 	--Useful for mount collecting! See someone on 
@@ -92,6 +92,46 @@ function mixin:OnMouseUp()
 	end
 end
 
+local GetRelPos = function(self)
+	local width, height = GetScreenWidth()/self:GetScale(), GetScreenHeight()/self:GetScale();
+	local x, y = self:GetCenter()
+	local xOffset, yOffset
+	local Hori = (x > width/2) and 'RIGHT' or 'LEFT'
+	if Hori == 'RIGHT' then
+		xOffset = self:GetRight() - width
+	else
+		xOffset = self:GetLeft()
+	end
+	local Vert = (y > height/2) and 'TOP' or 'BOTTOM'
+	if Vert == 'TOP' then
+		yOffset = self:GetTop() - height
+	else
+		yOffset = self:GetBottom()
+	end
+	return Vert, Hori, xOffset, yOffset
+end
+
+local function SelectProperSide(self)
+	local width = GetScreenWidth()
+	
+	local Vert, Hori, xOffset, yOffset = GetRelPos(self)
+	local vert , hori
+	
+	if Vert == "TOP" then
+		vert = "BOTTOM"
+	elseif Vert == "BOTTOM" then
+		vert = "TOP"
+	end		
+	
+	if Hori == "LEFT" then
+		hori = "RIGHT"
+	elseif Hori == "RIGHT" then
+		hori = "LEFT"
+	end
+	
+	return Vert..Hori, vert..hori
+end
+
 function mixin:OnEnter()
 	GameTooltip:SetOwner(self,"ANCHOR_BOTTOMLEFT")
 	GameTooltip:SetFrameLevel(self:GetFrameLevel() + 2)
@@ -102,6 +142,11 @@ function mixin:OnEnter()
 			GameTooltip:SetUnitDebuff(self:GetParent():GetAttribute("unit"), self:GetID())
 		end
 	end
+	
+	--Always show the tooltip towards to screen center.
+	GameTooltip:ClearAllPoints()
+	local p1, p2 = SelectProperSide(self)
+	GameTooltip:SetPoint(p1, self, p2)
 end
 
 function mixin:OnLeave()

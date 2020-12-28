@@ -39,8 +39,8 @@
 			<OnLoad    method="OnLoad"/>
 			<OnMouseUp method="OnMouseUp"/>
 			<OnEnter   method="OnEnter"/>
-			<OnEnter   method="OnLeave"/>
-			<OnHide   method="OnHide"/>
+			<OnLeave   method="OnLeave"/>
+			<OnHide    method="OnHide"/>
 		</Scripts>
 	</Button>
 

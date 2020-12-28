@@ -11,7 +11,7 @@ function Dominos_TemplateManager.Merge(source, destination)
 	end
 	for i, b in pairs(source) do
 		if (type(b) == 'table') then
-			destination[i] = Merge(b, destination[i])
+			destination[i] = Dominos_TemplateManager.Merge(b, destination[i])
 		else
 			destination[i] = b
 		end
@@ -215,67 +215,6 @@ function temp:Layout()
 	end
 end
 
-do--advanced showstates
-	local showStates = {
-		Hide = "hide;show",
-		Show = "show;hide",
-	}
-
-	function temp:GetDisplayStateID()
-		for i, b in pairs(Dominos.BarStates.coversion) do
-			if self.sets.showcondition and b == self.sets.showcondition[1] then
-				return i
-			end
-		end
-	end
-
-	function temp:SetDisplayStateID(stateId)
-		stateId = type(stateId) == "string" and stateId or stateId()
-
-		stateId = Dominos.BarStates.coversion[stateId] or stateId
-
-		self.sets.showcondition = self.sets.showcondition or {}
-		
-		self.sets.showcondition[1] = stateId
-
-		if self.sets.showcondition then
-			local condition
-			local stateId, displayState = unpack(self.sets.showcondition)
-				if not displayState then
-					displayState = "show"
-				end
-				if stateId and showStates[displayState] then
-					condition = stateId..showStates[displayState]
-				end
-			self:SetShowStates(condition)
-		end
-	end
-
-	function temp:SetDisplayStateValue(state)
-
-		self.sets.showcondition = self.sets.showcondition or {}
-		
-		self.sets.showcondition[2] = state
-
-		if self.sets.showcondition then
-			local condition
-			local state, displayState = unpack(self.sets.showcondition)
-				
-			if not displayState then
-				displayState = "Show"
-			end
-			if state and showStates[displayState] then
-				condition = state..showStates[displayState]
-			end		
-			self:SetShowStates(condition)
-		end
-	end
-
-	function temp:GetDisplayStateValue()
-		return self.sets.showcondition and self.sets.showcondition[2]
-	end
-end
-
 local function NewSlider(panel, name, low, high, arg)
 	local slider = panel:NewSlider({
 		name = name,
@@ -324,81 +263,6 @@ end
 
 local hideBlizz
 
-local L 
-local showStates = {}
-local function addStates(categoryName, stateType)
-	L = L or LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')
-	local states =
-		Dominos.BarStates:map(
-		function(s)
-			return s.type == stateType
-		end
-	)
-
-	if #states == 0 then
-		return
-	end
-	
-	for _, state in ipairs(states) do
-		local id = state.id
-		local name = state.text
-		if type(name) == 'function' then
-			name = name()
-		elseif not name then
-			name = L['State_' .. id:upper()]
-		end			
-		tinsert(showStates,  {value = id, text = name})
-	end
-end
-
-local function addShowStates(panel)
-	L = L or LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')
-
-	-- addStates( UnitClass('player'), 'class')
-	-- addStates( L.Modifiers, 'modifier')
-	-- addStates( L.Targeting, 'target')
-	-- addStates( "Combat", 'combat')
-
-	-- panel:NewDropdown {
-		-- name = "State",
-		-- items = showStates,
-		-- get = function()	
-			-- return panel.owner:GetDisplayStateID()
-		-- end,
-		-- set = function(_, value)
-			-- panel.owner:SetDisplayStateID(value)
-			-- panel.showStatesEditBox.editBox:OnShow()
-		-- end
-	-- }
-
-	-- panel:NewDropdown {
-		-- name = "Display",
-		-- items = {
-			-- {value = "disable", text = _G.DISABLE},
-			-- {value = "Hide", text = _G.HIDE},
-			-- {value = "Show", text = _G.SHOW},
-		-- },
-		-- get = function()				
-			-- return panel.owner:GetDisplayStateValue()
-		-- end,
-		-- set = function(_, value)
-			-- panel.owner:SetDisplayStateValue(value)
-			-- panel.showStatesEditBox.editBox:OnShow()
-		-- end
-	-- }
-
-	panel.showStatesEditBox = panel:NewTextInput{
-		name = L.ShowStates,
-		multiline = true,
-		width = 268,
-		height = 64,
-		get = function() return panel.owner:GetShowStates() end,
-		set = function(_, value) panel.owner:SetShowStates(value) end
-	}
-
-	return panel
-end
-	
 function temp:OnCreateMenu(menu)
 	do local panel = menu:NewPanel("Layout")
 		NewSlider(panel, "Columns", 1, 20, "columns")
@@ -411,7 +275,7 @@ function temp:OnCreateMenu(menu)
 	do local panel = menu:NewPanel("Visibility")
 		panel:NewFadeSlider()
 		panel:NewOpacitySlider()
-		addShowStates(panel)
+		menu:AddDisplayPanel(panel)
 	end
 
 	do local panel = menu:NewPanel("Cooldown")
