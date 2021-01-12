@@ -749,7 +749,7 @@ function Addon:GetAlignmentGridScale()
     end
 
     local aspectRatio = GetScreenWidth() / GetScreenHeight()
-    local xScale = _G.Round(gridSize / 2) * 2
+    local xScale = gridSize * 2 --no need to divide by 2 and round. Grid adjusts more cleanly this way. the grid size slider stepValue can be set to 1 with this adjusment
     local yScale = _G.Round((xScale / aspectRatio) / 2) * 2
 
     return xScale, yScale
