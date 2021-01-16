@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## Unreleased
+
+* Fixed an issue where flyout locations (ex Warlock minion/Hunter pet) would be used for fading detection, even if the flyout was closed
+
 ## 9.0.21
 
 * Work around an issue with the stock UI expecting the possess bar to be positioned on the screen somewhere
