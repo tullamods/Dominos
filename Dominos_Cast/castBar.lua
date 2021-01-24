@@ -550,6 +550,15 @@ function CastBar:UseSpellReactionColors(enable)
 	return state
 end
 
+-- force the casting bar to show with the override ui/pet battle ui
+function CastBar:ShowingInOverrideUI()
+	return true
+end
+
+function CastBar:ShowingInPetBattleUI()
+	return true
+end
+
 --------------------------------------------------------------------------------
 -- Cast Bar Right Click Menu
 --------------------------------------------------------------------------------
@@ -558,6 +567,8 @@ function CastBar:OnCreateMenu(menu)
 	self:AddLayoutPanel(menu)
 	self:AddTexturePanel(menu)
 	self:AddFontPanel(menu)
+
+	menu:AddFadingPanel()
 
 	menu:HookScript("OnShow", function()
 		self.menuShown = true
