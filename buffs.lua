@@ -1,6 +1,6 @@
 local addonName, Addon = ...
-local parentAddon = _G[Addon.parent]
-local AuraModule, AuraFrame = parentAddon:NewModule('Buff'), parentAddon:CreateClass('Frame', parentAddon.Frame)
+local AuraModule  = _G[Addon.parent]:NewModule('Buff')
+local AuraFrame   = _G[Addon.parent]:CreateClass('Frame', Addon.template)
 
 function AuraModule:Load()
 	self.frame = AuraFrame:New("buff")
@@ -13,8 +13,7 @@ end
 function AuraFrame:New(name)
 	local f = AuraFrame.proto.New(self, name)
 	f:SetFrameStrata('LOW')
-	Addon:New(f, "Buffs")
-
+	f:OnNew("Buffs")
 	return f
 end
 

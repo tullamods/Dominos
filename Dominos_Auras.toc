@@ -1,7 +1,6 @@
-## Version: 8
+## Version: 9
 ## Interface: 90002
 ## Title: Dominos_Auras
-## Author: Goranaws
 ## Notes: Configurable buff and debuff bars for Dominos.
 ## Dependencies: Dominos
 
@@ -9,3 +8,4 @@ auras.xml
 template.lua
 buffs.lua
 debuffs.lua
+tempEnchant.lua

@@ -15,40 +15,43 @@ local function GetAlpha(seconds, low, high)
 end
 
 local elapsed
-local pulsing = {}
+local pulsing = {HELPFUL = {}, HARMFUL = {},}
 local isPulsing
 local pulseTotal = 0
 
-local function PulseIcons()
+local Pulsing = {}
+
+local function PulseIcons(filter)
+	if not filter then return end
 	elapsed = elapsed or GetTime()
-	if #pulsing > 0 and not Pulsing then --don't pulse if function is already being run.
-		Pulsing = true
+	if #pulsing[filter] > 0 and not Pulsing[filter] then --don't pulse if function is already being run.
+		Pulsing[filter] = true
 		local seconds = GetTime() - elapsed		
 		if seconds > duration then
-			elapsed,Pulsing  = nil, nil
+			elapsed, Pulsing[filter]  = nil, nil
 			return PulseIcons()
 		end
 		local alpha = GetAlpha(seconds, 30, 100)
 		local swipe = GetAlpha(seconds, 20, 50)
-		for i, aura in pairs(pulsing) do
+		for i, aura in pairs(pulsing[filter]) do
 			aura:SetAlpha(alpha)
 			aura.cooldown:SetSwipeColor(1,1,1,swipe)--swipeAlpha)
 		end
-		Pulsing = nil
+		Pulsing[filter] = nil
 	end		
 end
 
 Addon.PulseIcons = PulseIcons
 
-local function StartPulse(aura)
-	if not tContains(pulsing, aura) then
-		tinsert(pulsing, aura)
+local function StartPulse(aura, filter)
+	if not tContains(pulsing[filter], aura) then
+		tinsert(pulsing[filter], aura)
 	end
 end
 
-local function EndPulse(aura)
-	if tContains(pulsing, aura) then
-		tDeleteItem(pulsing, aura)
+local function EndPulse(aura, filter)
+	if tContains(pulsing[filter], aura) then
+		tDeleteItem(pulsing[filter], aura)
 		aura:SetAlpha(1)
 		aura.cooldown:SetSwipeColor(1,1,1,.5)
 	end
@@ -96,9 +99,12 @@ end
 
 local WarnTime = BUFF_DURATION_WARNING_TIME
 
-local mixin = {}
 
-function mixin:OnLoad()
+
+
+DominosAuraMixin = {} --must be in the global space, so it can be mixed in
+
+function DominosAuraMixin:OnLoad()
 	local filter = self:GetParent():GetParent():GetFilter()
 	
 	self:RegisterForClicks("AnyUp");
@@ -111,7 +117,7 @@ function mixin:OnLoad()
 	end
 end
 
-function mixin:OnHide()
+function DominosAuraMixin:OnHide()
 	--reset appearance: prevent previous content from displaying
 	self.icon:SetTexture("");
 	self.cooldown:SetCooldown(0, 0)
@@ -120,7 +126,7 @@ function mixin:OnHide()
 	self.name, self.Icon, self.QTY, self.debuffType, self.dura, self.expTime = nil, nil, nil, nil, nil, nil
 end
 
-function mixin:OnMouseUp(button)
+function DominosAuraMixin:OnMouseUp(button)
 	--allows a Shift-Left click to send the
 	--name of a buff to the chat window edit box.
 	--Useful for mount collecting! See someone on 
@@ -139,7 +145,7 @@ function mixin:OnMouseUp(button)
 	end
 end
 
-function mixin:OnEnter()
+function DominosAuraMixin:OnEnter()
 	GameTooltip:SetOwner(self,"ANCHOR_BOTTOMLEFT")
 	GameTooltip:SetFrameLevel(self:GetFrameLevel() + 2)
 	if ( GameTooltip:IsOwned(self) ) then
@@ -156,22 +162,22 @@ function mixin:OnEnter()
 	GameTooltip:SetPoint(p1, self, p2)
 end
 
-function mixin:OnLeave()
+function DominosAuraMixin:OnLeave()
 	GameTooltip:Hide()
 end
 
-function mixin:OnUpdate(elapsed)
+function DominosAuraMixin:OnUpdate(elapsed)
 	if self:IsShown() then
 		local name, icon, count, debuffType, dura, expTime, _, _, _, _, _, _, _, _, timeMod = UnitAura(self:GetParent():GetAttribute("unit"), self:GetID(), self:GetAttribute("filter"))
 		if name then
 			local dura = (dura and dura > 0) and dura or 0
 			local expTime = (expTime and expTime > 0) and expTime or 0
-			self.cooldown:SetCooldown(expTime - dura, dura or 0)	
-		
 			local remaining = (dura and expTime) and expTime - elapsed or 0
-			
+
+			self.cooldown:SetCooldown(expTime - dura, dura or 0)	
+
 			--because i can.
-			local _ = (((remaining > 0) and (remaining <= 10)) and StartPulse or EndPulse)(self) --apparently, functions can b expressed this way.
+			local _ = (((remaining > 0) and (remaining <= 10)) and StartPulse or EndPulse)(self, self:GetParent():GetParent():GetFilter()) --apparently, functions can b expressed this way.
 			local _ = (icon ~= self.Icon) and self.icon:SetTexture(icon)
 			local _ = (count ~= self.QTY) and self.count:SetText(count > 1 and count or "")
 
@@ -196,8 +202,6 @@ function mixin:OnUpdate(elapsed)
 			self.name, self.Icon, self.QTY, self.debuffType, self.dura, self.expTime = name, icon, count, debuffType, dura, expTime
 		end
 	else
-		EndPulse(self)
+		EndPulse(self, self:GetParent():GetParent():GetFilter())
 	end
 end
-
-DominosAurasMixin = mixin --must be in the global space, so it can be mixed in

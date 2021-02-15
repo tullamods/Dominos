@@ -1,25 +1,11 @@
 local addonName, Addon = ...
-local template = {}
+Addon.parent = GetAddOnDependencies(addonName)
+Addon.template = _G[Addon.parent]:CreateClass('Frame', _G[Addon.parent].Frame)
 
-local function AddMixin(source, destination)
-	destination = destination or {}
-
-	if not source then
-		return destination
-	end
-
-	for i, b in pairs(source) do
-		destination[i] = (type(b) == 'table') and AddMixin(b, destination[i]) or b
-	end
-	return destination
-end
-
-function Addon:New(self, kind)
-	AddMixin(template, self)
+function Addon.template:OnNew(kind)
 	self.kind = kind
-
 	self.headerAura = CreateFrame("Frame", Addon.parent.."_"..self.kind.."_Bar", self, "SecureAuraHeaderTemplate")
-	self.headerAura:SetAttribute("template", Addon.parent.."AuraTemplate") --template must be defined in xml
+	self.headerAura:SetAttribute("template", Addon.parent.."AuraTemplate") --Addon.template must be defined in xml
 	RegisterUnitWatch(self.headerAura) --seems to be required
 
 	self:SetScript("OnUpdate", function(s, event, ...)
@@ -30,7 +16,7 @@ function Addon:New(self, kind)
 				aura:OnUpdate(_time)
 			end
 		end
-		Addon.PulseIcons()
+		Addon.PulseIcons(self:GetFilter())
 	end)
 	
 	self:Layout()
@@ -38,7 +24,7 @@ function Addon:New(self, kind)
 	self:UpdateTarget()
 end
 
-function template:NumButtons()
+function Addon.template:NumButtons()
 	return self.sets.columns * self.sets.rows
 end
 
@@ -47,7 +33,7 @@ local texture    = "Interface\\Cooldown\\starburst" --might make user setting to
 
 local anchors    = {[1] = {"Bottom", "Top"}, [2] = {"Center", "Center"}, [3] = {"Top", "Bottom"}}
 
-function template:ToggleCoolDownTexture()
+function Addon.template:ToggleCoolDownTexture()
 	self.sets.anchorText = self.sets.anchorText or "Bottom"
 	self.sets.textX      = self.sets.textX or 0
 	self.sets.textY      = self.sets.textY or 0
@@ -85,34 +71,34 @@ function template:ToggleCoolDownTexture()
 	end
 end
 
-function template:UpdateFilter()
+function Addon.template:UpdateFilter()
 	self.headerAura:SetAttribute("filter", self:GetFilter()); -- to activate UNITAURA event refresh
 end
 
-function template:GetSpacing()
+function Addon.template:GetSpacing()
 	return self.sets.spacing
 end
 
-function template:SetSpacing(value)
+function Addon.template:SetSpacing(value)
 	self.sets.spacing = value
 	self:Layout()
 end
 
-function template:UpdateTarget()
+function Addon.template:UpdateTarget()
 	self:RegisterUnitEvent("UNIT_AURA", self:GetTarget());
 	self.headerAura:SetAttribute("unit", self:GetTarget())
 end
 
-function template:SetTarget(unit)
+function Addon.template:SetTarget(unit)
 	self.sets.target = unit or "player"
 	self:UpdateTarget()
 end
 
-function template:GetTarget()
+function Addon.template:GetTarget()
 	return self.sets.target or "player"
 end
 
-function template:Layout()
+function Addon.template:Layout()
 	if not InCombatLockdown() then
 		local sets = self.sets
 		local w,h = 30, 30
@@ -235,7 +221,8 @@ end
 
 local hideBlizz --only add this option panel to buffs.
 
-function template:OnCreateMenu(menu)
+function Addon.template:OnCreateMenu(menu)
+	menu.owner = self.owner
 	do local panel = menu:NewPanel("Layout")
 		NewSlider(panel, "Columns", 1, 20, "columns")
 		NewSlider(panel, "Rows", 1, 20, "rows")
