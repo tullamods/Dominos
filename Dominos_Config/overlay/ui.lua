@@ -193,45 +193,28 @@ function OverlayUI:UpdateGrid()
     end
 end
 
--- this is derived from Ben Walker's Alignment Grid addon
 function OverlayUI:DrawGrid()
-    self:ClearGrid()
+	local hLines = ParentAddon:GetAlignmentGridSize() * 2  --How many times each quadrant is split vertically to create horizontal lines.
+	local gridSize = GetScreenHeight() / hLines	--size of each grid square.
+	local vLines = floor((GetScreenWidth())/gridSize) * 2 --total number of vertical lines to be displayed
+	local gridOffset = (GetScreenWidth() - (vLines * gridSize)) / 2 --centers vertical lines to the screen
 
-    local verticalLines, horizontalLines = ParentAddon:GetAlignmentGridScale()
-    local width, height = self.frame:GetSize()
-    -- convert to an even number, so that we can highlight the middle point
-    local xOffset = width / verticalLines
-    local yOffset = height / horizontalLines
-
-    for i = 0, verticalLines do
-        local line = self:AcquireGridLine()
-
-        line:SetThickness(GRID_THICKNESS)
-
-        if i == (verticalLines / 2) then
-            line:SetColorTexture(GRID_HIGHLIGHT_COLOR:GetRGBA())
-        else
-            line:SetColorTexture(GRID_COLOR:GetRGBA())
-        end
-
-        line:SetStartPoint("TOPLEFT", xOffset * i, 0)
-        line:SetEndPoint("BOTTOMLEFT", xOffset * i, 0)
-    end
-
-    for i = 0, horizontalLines do
-        local line = self:AcquireGridLine()
-
-        line:SetThickness(GRID_THICKNESS)
-
-        if i == (horizontalLines / 2) then
-            line:SetColorTexture(GRID_HIGHLIGHT_COLOR:GetRGBA())
-        else
-            line:SetColorTexture(GRID_COLOR:GetRGBA())
-        end
-
-        line:SetStartPoint("BOTTOMLEFT", 0, yOffset * i)
-        line:SetEndPoint("BOTTOMRIGHT", 0, yOffset * i)
-    end
+	local line = self:ClearGrid() --why waste a line? save a line and do something important
+	for i = 1, max(hLines, vLines) do --one loop is better than two
+		local vertex = gridSize * i
+		if i <= vLines then
+			line = self:AcquireGridLine()
+			line:SetColorTexture(((i == ceil(vLines / 2)) and GRID_HIGHLIGHT_COLOR or GRID_COLOR):GetRGBA()) --oddly, functions can be written this way...
+			line:SetStartPoint("BOTTOMLEFT", vertex + gridOffset, 0)
+			line:SetEndPoint     ("TOPLEFT", vertex + gridOffset, 0)
+		end
+		if i <= hLines then
+			line = self:AcquireGridLine()
+			line:SetColorTexture(((i == ceil(hLines / 2)) and GRID_HIGHLIGHT_COLOR or GRID_COLOR):GetRGBA())
+			line:SetStartPoint("BOTTOMLEFT", 0, vertex)
+			line:SetEndPoint ("BOTTOMRIGHT", 0, vertex)
+		end
+	end
 end
 
 function OverlayUI:ClearGrid()
