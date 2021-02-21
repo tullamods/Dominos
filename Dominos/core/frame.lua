@@ -805,7 +805,9 @@ Frame.stickyTolerance = 8
 function Frame:Stick()
     -- only do sticky code if the alt key is not currently down
     if Addon:Sticky() and not IsModifiedClick("DOMINOS_IGNORE_STICKY_FRAMES") then
-        return self:StickToFrame() or self:StickToGrid() or self:StickToEdge()
+        if self:StickToFrame() or self:StickToGrid() or self:StickToEdge() then
+            return true
+        end
     end
 
     self:ClearSavedAnchor()
