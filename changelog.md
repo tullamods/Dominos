@@ -1,5 +1,12 @@
 # Dominos Changelog
 
+## 9.0.23
+
+* The alignment grid is now drawn from the center, and uses a square grid instead of rectangles (thanks Swanarog)
+* Fix issues with calculating which way flyout button should open
+* Fix issues with saving bar positions when not anchoring to an edge, grid point, or other bar
+* Prevent the Talking Head and Group Loot frames from moving to unexpected places (Needs more testing)
+
 ## 9.0.22
 
 * Fixed an issue where flyout locations (ex Warlock minion/Hunter pet) would be used for fading detection, even if the flyout was closed
