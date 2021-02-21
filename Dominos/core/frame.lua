@@ -640,9 +640,14 @@ function Frame:GetSavedPosition()
 end
 
 function Frame:SaveRelativePostiion()
-    local point, relPoint, x, y = FlyPaper.GetBestAnchorForParent(self)
+    local point, relPoint, x, y = self:GetRelativePosition()
 
     self:SavePosition(point, relPoint, x, y)
+end
+
+function Frame:GetRelativePosition()
+    local point, relPoint, x, y = FlyPaper.GetBestAnchorForParent(self)
+    return point, relPoint, x, y
 end
 
 function Frame:RestorePosition()
