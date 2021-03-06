@@ -1,5 +1,10 @@
 # Dominos Changelog
 
+## 9.0.24
+
+* Adjusted the alignment grid thickness to prevent issues with displaying at various scaled resolutions
+
+
 ## 9.0.23
 
 * The alignment grid is now drawn from the center, and uses a square grid instead of rectangles (thanks Swanarog)
