@@ -6,7 +6,7 @@
 local _, Addon = ...
 local L = _G.LibStub("AceLocale-3.0"):GetLocale(Addon:GetParent():GetName())
 
-local GRID_SIZE_MINIMUM = 4
+local GRID_SIZE_MINIMUM = 0
 local GRID_SIZE_MAXIMUM = 128
 local GRID_SIZE_STEP = 2
 
