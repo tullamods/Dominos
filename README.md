@@ -1,41 +1,54 @@
-## Dominos is an action bar addon intended to do the following:
+# Dominos
 
-* Reuse as much standard blizzard action button code as possible.
-* Contain a relatively minimal feature set
-* Be easy to use
-* Be stable
+Dominos is an addon that replaces your main bar with movable parts that offer
+additional customization. Dominos is used primarily for its action bars,
+which feature:
 
-## It includes the following features:
+* Customizable layout settings (spacing, vertical bars, opacity, scale, etc)
+* Customizable action bar paging (so that you can change what your bars do when shapeshifted, etc)
+* Customizable visiblity (so that you can make bars transparent, or show up only when in combat, etc)
+* [Masque](https://www.curseforge.com/wow/addons/masque) support for button styling,
+with individual settings per bar
+* [LibKeyBound](https://www.wowace.com/projects/libkeybound-1-0) is implemented for quickly binding keys
+* Any other addon that works on Blizzard UI for action buttons should also work with Dominos, too.
+This includes things like [tullaRange](https://www.curseforge.com/wow/addons/tullarange), [AdiButtonAuras](https://www.curseforge.com/wow/addons/adibuttonauras), and [OmniCC](https://www.curseforge.com/wow/addons/omni-cc)
 
-* 10 action bars, pet, class, menu, and bag bars. Each one has customizable settings for padding, spacing, columns, scale, and opacity.
-* Customizable paging. You can switch pages on: action bar pages, modifier keys, forms, and targeting.
-* Customizable show states. You can tell your bar under which macro options to show.
-* Fading bars. You can set your bars to fade out to a certain opacity when not moused over.
-* The ability to customize showing empty buttons or not
-* Full button facade support
-* Keybound support
-* Sticky frames
-* The ability to move buttons in combat
-* A movable casting bar (optional)
-* A movable roll frame (optional)
-* A movable xp/reputation bar (optional)
-* Configurable right click targeting
-* Configurable self cast key settings
-* Possess bar support
+## Usage
 
-## ...and will probably not end up with the following:
+### General Settings
 
-* A stats bar
-* A minimap bar
-* True variable length bars
+The main options menu in Dominos can be found by either right clicking the
+minimap icon or via the `/dominos` slashcommand. On the main options menu,
+you will find sections for configuring shared bar settings and profiles.
 
-## Here's how you use it:
+### Moving Stuff Around
 
-* To see the current list of slash commands, type /dom ? or /dominos ?
-* To open up the options menu, either go into interface options, or type /dom
-* To move bars around, either go into the options menu and press the "Enter Config Mode" button, or type /dom config
-* To bind keys, enter binding mode via /kb or /keybound, or press the "Enter Binding Mode" button in the options menu.
+To move around or hide bars, you will want to enter **configuration mode**. You
+can do this by either one of the following ways
 
-## [You can find help in the wiki](http://code.google.com/p/tullamods/wiki/Dominos)
+* Left clicking the minimap button
+* Clicking **Confugure Bars...** from the main options menu (accessible from /dominos)
+* Using the slash command /dominos config
+* Once in configuration mode, you can drag around bars using your mouse
 
-## [And source code on GitHub](http://github.com/tullamods/Dominos)
+### Customizing Individual Bars
+
+Most per bar settings can be found in context menus. To access these settings,
+*right click* or alt left click the bar in configuration mode.
+
+### Binding Keys
+
+Dominos implements support for [LibKeyBound](https://www.wowace.com/projects/libkeybound-1-0)
+for quickly binding keys. Quick Binding mode can be entered by either the standard keybound shortcut (/kb)
+or by clicking the Bind Keys... button in the main options menu.
+
+### Slash Commands
+
+Dominos provides a large set of slash commands for usage in macros and bulk
+adjustments. [The complete set of slash commands can be found on the wiki](https://github.com/tullamods/Dominos/wiki/Slash-Commands)
+
+## Contributing
+
+[Source code for the addon can be found on GitHub](https://github.com/tullamods/Dominos).
+Contributions are welcome (though I can be picky 😊).
+
