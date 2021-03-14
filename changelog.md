@@ -1,5 +1,10 @@
 # Dominos Changelog
 
+## 9.0.25
+
+* Update TOCs for 9.0.5
+* Force the talking head UI to reposition upon load
+
 ## 9.0.24
 
 * Adjusted the alignment grid thickness to prevent issues with displaying at various scaled resolutions
