@@ -122,6 +122,28 @@ function Panel:NewSlider(options)
 	return slider
 end
 
+function Panel:NewLayerSlider(options)
+	options.parent = self
+
+	local slider = Addon.LayerSlider:New(options)
+
+	local prev = self.lastWidget
+	if prev then
+		slider:SetPoint('TOPLEFT', self.lastWidget, 'BOTTOMLEFT', 0, -(12 + slider.text:GetHeight()))
+	else
+		slider:SetPoint('TOPLEFT', 4, -(12 + slider.text:GetHeight()))
+	end
+
+	local width, height = slider:GetEffectiveSize()
+	self.height = self.height + (height + 12)
+	self.width = math.max(self.width, width)
+	self.lastWidget = slider
+
+	self:Render()
+
+	return slider
+end
+
 function Panel:NewDropdown(options)
 	options.parent = self
 
@@ -385,6 +407,28 @@ function Panel:AddAdvancedOptions(displayConditionsOnly)
 		self:NewShowInPetBattleUICheckbox()
 	end
 
+	--this may not seem like the best implementation, but i think its very user friendly. ~Goranaws
+	self:NewLayerSlider{
+		name = "Strata",
+		layerType = "strata",
+		get = function()
+			return self.owner:GetDisplayLevel()
+		end,
+		set = function(_, value)
+			self.owner:SetDisplayLevel(value)
+		end
+	}
+	self:NewLayerSlider{
+		name = "Level",
+		layerType = "layer",
+		get = function()
+			return self.owner:GetDisplayLayer()
+		end,
+		set = function(_, value)
+			self.owner:SetDisplayLayer(value)
+		end
+	}
+	
 	self.showStatesEditBox = self:NewTextInput{
 		name = L.ShowStates,
 		multiline = true,
