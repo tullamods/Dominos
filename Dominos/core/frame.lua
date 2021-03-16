@@ -657,6 +657,10 @@ function Frame:RestorePosition()
     self:ClearAllPoints()
     self:SetScale(scale)
     self:SetPoint(point, self:GetParent() or _G.UIParent, relPoint, x, y)
+    
+    --adding this here, as it will be be called by all frames, and Tuller seems to be considering layering to be a form of position now. ~Goranaws
+    self:UpdateDisplayLevel()
+    
     return true
 end
 
@@ -939,9 +943,34 @@ function Frame:GetDescription()
     return
 end
 
+--i chose to follow existing function name schemes, 
+--but i recommend changing reversing Level and 
+--Layer in the function names below to avoid confusion.
+--didn't want to disrupt existing call to GetDisplayLevel. ~Goranaws
+
 function Frame:GetDisplayLevel()
-    return 'MEDIUM'
+    return self.sets.displayLevel or 'MEDIUM'
 end
+
+function Frame:SetDisplayLevel(value)
+    self.sets.displayLevel = value
+	self:UpdateDisplayLevel()
+end
+
+function Frame:GetDisplayLayer()
+    return self.sets.displayLayer or 50
+end
+
+function Frame:SetDisplayLayer(value)
+    self.sets.displayLayer = value
+	self:UpdateDisplayLevel()
+end
+
+function Frame:UpdateDisplayLevel()
+	self:SetFrameStrata(self:GetDisplayLevel())
+	self:SetFrameLevel(self:GetDisplayLayer())
+end
+
 
 --------------------------------------------------------------------------------
 -- Mouseover
