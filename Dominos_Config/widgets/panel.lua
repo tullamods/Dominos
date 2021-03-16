@@ -385,6 +385,28 @@ function Panel:AddAdvancedOptions(displayConditionsOnly)
 		self:NewShowInPetBattleUICheckbox()
 	end
 
+	--this may not seem like the best implementation, but i think its very user friendly. ~Goranaws
+	self:NewLayerSlider{
+		name = "Strata",
+		layerType = "strata",
+		get = function()
+			return self.owner:GetDisplayLevel()
+		end,
+		set = function(_, value)
+			self.owner:SetDisplayLevel(value)
+		end
+	}
+	self:NewLayerSlider{
+		name = "Level",
+		layerType = "layer",
+		get = function()
+			return self.owner:GetDisplayLayer()
+		end,
+		set = function(_, value)
+			self.owner:SetDisplayLayer(value)
+		end
+	}
+	
 	self.showStatesEditBox = self:NewTextInput{
 		name = L.ShowStates,
 		multiline = true,
