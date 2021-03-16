@@ -122,6 +122,28 @@ function Panel:NewSlider(options)
 	return slider
 end
 
+function Panel:NewLayerSlider(options)
+	options.parent = self
+
+	local slider = Addon.LayerSlider:New(options)
+
+	local prev = self.lastWidget
+	if prev then
+		slider:SetPoint('TOPLEFT', self.lastWidget, 'BOTTOMLEFT', 0, -(12 + slider.text:GetHeight()))
+	else
+		slider:SetPoint('TOPLEFT', 4, -(12 + slider.text:GetHeight()))
+	end
+
+	local width, height = slider:GetEffectiveSize()
+	self.height = self.height + (height + 12)
+	self.width = math.max(self.width, width)
+	self.lastWidget = slider
+
+	self:Render()
+
+	return slider
+end
+
 function Panel:NewDropdown(options)
 	options.parent = self
 
