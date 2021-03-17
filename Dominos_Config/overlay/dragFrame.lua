@@ -163,9 +163,17 @@ function DragFrame:OnLoad(parent)
     self.frame:SetHighlightFontObject(DragFrameLabelHighlightFont)
     self.frame:SetNormalFontObject(DragFrameLabelFont)
     self.frame:SetText("LABEL")
+	
     self.frame:SetScript('OnKeyDown', function(_, key) self:OnKeyDown(key) end)
+    self.frame:SetScript('OnKeyUp', function(_, key) self:OnKeyUp(key) end)
+	self.frame:EnableKeyboard(false)--true or false this to enable or disable keyboard movement.
+	
     self.frame:SetScript("OnClick", function(_, button) self:OnClick(button) end)
     self.frame:SetScript("OnEnter", function() self:OnEnter() end)
+	
+	--keyboard input is now enabled OnEnter and disabled OnLeave.
+	--There is also a fall back check at the beginning of OnKeyDown
+	--to verify if mouse is still over frame, if not, will disable key input.
     self.frame:SetScript("OnLeave", function() self:OnLeave() end)
     self.frame:SetScript("OnMouseDown", function(_, button) self:OnMouseDown(button) end)
     self.frame:SetScript("OnMouseUp", function() self:OnMouseUp() end)
@@ -242,6 +250,8 @@ function DragFrame:OnEnter()
     GameTooltip:SetOwner(self.frame, 'ANCHOR_LEFT')
 
     self:UpdateTooltip()
+	
+	self.frame:EnableKeyboard(true) -- enable keyboard input.
 end
 
 function DragFrame:OnLeave()
@@ -250,6 +260,7 @@ function DragFrame:OnLeave()
     if GameTooltip:GetOwner() == self.frame then
         GameTooltip:Hide()
     end
+	self.frame:EnableKeyboard(false) -- disable keyboard input.
 end
 
 local function IsKeyInSet(key, ...)
@@ -259,27 +270,39 @@ local function IsKeyInSet(key, ...)
         end
     end
 end
-
+--[[
+	previously, this function was to be called by all Dominos' frames
+	on every key press. Having this enable "OnEnter" and disable 
+	"OnLeave",  should help reduce memory usage.(even slightly is a good thing)
+--]]
 function DragFrame:OnKeyDown(key)
-    local handled = false
+	if self:OnKeyUp() == true then return end
+	
+	local action = GetBindingAction(key)--what is this key's binding set to?
+	if self:HasState(DRAG_FRAME_STATE.FOCUSED) and IsKeyInSet(key, GetBindingKey(action)) then
+		local increment = IsShiftKeyDown()   == true and .1 --smaller adjustments for moar precisions! ~Goranaws
+                       or IsControlKeyDown() == true and 5  --adjustment steps!
+                       or IsAltKeyDown()     == true and 10
+                       or KEYBOARD_MOVEMENT_INCREMENT       --an amount the frame will move.
 
-    if self:HasState(DRAG_FRAME_STATE.FOCUSED) then
-        if IsKeyInSet(key, GetBindingKey('MOVEFORWARD')) then
-            self:NudgeFrame(0, KEYBOARD_MOVEMENT_INCREMENT)
-            handled = true
-        elseif IsKeyInSet(key, GetBindingKey('MOVEBACKWARD')) then
-            self:NudgeFrame(0, -KEYBOARD_MOVEMENT_INCREMENT)
-            handled = true
-        elseif IsKeyInSet(key, GetBindingKey('TURNLEFT')) then
-            self:NudgeFrame(-KEYBOARD_MOVEMENT_INCREMENT, 0)
-            handled = true
-        elseif IsKeyInSet(key, GetBindingKey('TURNRIGHT')) then
-            self:NudgeFrame(KEYBOARD_MOVEMENT_INCREMENT, 0)
-            handled = true
-        end
-    end
+		local x = action == "TURNLEFT"    and -1 or action == "TURNRIGHT"    and 1  or 0
+		local y = action == "MOVEFORWARD" and  1 or action == "MOVEBACKWARD" and -1 or 0
 
-    self.frame:SetPropagateKeyboardInput(not handled)
+		self:NudgeFrame(x * increment, y * increment) --nudge the frame in the indicated direction by the increment amount. 
+		return self.frame:SetPropagateKeyboardInput(false)
+	end
+
+    self.frame:SetPropagateKeyboardInput(true)
+end
+
+function DragFrame:OnKeyUp()
+	if not MouseIsOver(self.frame) then
+		--do nothing and disable keyboard input if mouse is not over frame.
+	    self:RemoveState(DRAG_FRAME_STATE.FOCUSED)
+		self.frame:EnableKeyboard(false)
+		self.frame:SetPropagateKeyboardInput(true)
+		return true
+	end
 end
 
 function DragFrame:OnMouseDown(button)
@@ -502,8 +525,8 @@ end
 function DragFrame:NudgeFrame(dx, dy)
     local ox, oy, ow, oh = self.owner:GetRect()
     local _, _, pw, ph = self.owner:GetParent():GetRect()
-    local x = Clamp(Round(ox + dx), 0, pw - ow)
-    local y = Clamp(Round(oy + dy), 0, ph - oh)
+    local x = Clamp((ox + dx), 0, pw - ow) --rounding prevents .1 micro adjustements
+    local y = Clamp((oy + dy), 0, ph - oh)
 
     self.owner:ClearSavedAnchor()
     self.owner:ClearAllPoints()
