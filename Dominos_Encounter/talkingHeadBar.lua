@@ -96,7 +96,12 @@ local TalkingHeadBarModule = Dominos:NewModule('TalkingHeadBar', 'AceEvent-3.0')
 
 function TalkingHeadBarModule:Load()
     self.frame = TalkingHeadBar:New()
-    self:RegisterEvent("ADDON_LOADED")
+
+    if IsAddOnLoaded("Blizzard_TalkingHeadUI") then
+        self:OnTalkingHeadUILoaded()
+    elseif not self.loaded then
+        self:RegisterEvent("ADDON_LOADED")
+    end
 end
 
 function TalkingHeadBarModule:Unload()
@@ -114,6 +119,10 @@ function TalkingHeadBarModule:ADDON_LOADED(event, addon)
 end
 
 function TalkingHeadBarModule:OnTalkingHeadUILoaded()
+    if self.loaded then
+        return
+    end
+
     TalkingHeadFrame.ignoreFramePositionManager = true
 
     -- OnShow/OnHide call UpdateManagedFramePositions on the blizzard end so
@@ -135,8 +144,6 @@ function TalkingHeadBarModule:OnTalkingHeadUILoaded()
     hooksecurefunc(AlertFrame, 'UpdateAnchors', function()
         self:OnAlertFrameAnchorsUpdated()
     end)
-
-    self.frame:RepositionTalkingHeadFrame()
 end
 
 -- reposition the talking head frame when it moves
