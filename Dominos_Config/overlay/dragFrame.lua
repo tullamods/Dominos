@@ -35,11 +35,11 @@ local DRAG_FRAME_STATE = {
 DragFrame.state = DRAG_FRAME_STATE.DEFAULT
 
 -- drag frame levels
-local DRAG_FRAME_LEVELS = {
-    LOW = 10,
-    MEDIUM = 20,
-    HIGH = 30,
-    FOCUSED = 100
+local FRAME_STRATA_LEVELS = {
+    LOW = 1000,
+    MEDIUM = 2000,
+    HIGH = 3000,
+    FOCUSED = 4000
 }
 
 -- drag frame background settings
@@ -328,7 +328,9 @@ function DragFrame:OnOwnerChanged(owner)
     -- show
     self.frame:Show()
 
-    self.frame:SetFrameLevel(DRAG_FRAME_LEVELS[owner:GetDisplayLevel() or 'LOW'])
+    self.frame:SetFrameLevel(
+        (FRAME_STRATA_LEVELS[owner:GetDisplayLayer()] or 0) + owner:GetDisplayLevel()
+    )
 end
 
 function DragFrame:OnStateChanged(state)
