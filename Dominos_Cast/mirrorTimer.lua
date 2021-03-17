@@ -20,7 +20,6 @@ end
 function MirrorTimer:OnCreate()
     MirrorTimer.proto.OnCreate(self)
 
-    self:SetFrameStrata('HIGH')
     self:SetScript('OnEvent', self.OnEvent)
 
     self.props = {}
@@ -59,6 +58,7 @@ function MirrorTimer:GetDefaults()
         h = 26,
         font = LSM:GetDefault(LSM.MediaType.FONT),
         texture = LSM:GetDefault(LSM.MediaType.STATUSBAR),
+        displayLayer = 'HIGH',
         display = {
             label = true,
             time = false,
@@ -72,10 +72,6 @@ function MirrorTimer:GetDisplayName()
     local L = LibStub("AceLocale-3.0"):GetLocale("Dominos-CastBar")
 
     return L.MirrorTimerDisplayName:format(self.timerID)
-end
-
-function MirrorTimer:GetDisplayLevel()
-	return 'HIGH'
 end
 
 ---@param event string

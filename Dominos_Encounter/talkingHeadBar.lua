@@ -18,6 +18,7 @@ function TalkingHeadBar:GetDefaults()
         point = 'BOTTOM',
         x = 0,
         y = 74,
+        displayLayer = 'LOW',
         showInPetBattleUI = true,
         showInOverrideUI = true
     }
@@ -25,10 +26,6 @@ end
 
 function TalkingHeadBar:GetDisplayName()
 	return 'Talking Heads'
-end
-
-function TalkingHeadBar:GetDisplayLevel()
-    return 'LOW'
 end
 
 function TalkingHeadBar:Layout()

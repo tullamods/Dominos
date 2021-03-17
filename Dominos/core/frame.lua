@@ -91,12 +91,6 @@ function Frame:Create(id)
     frame:SetClampedToScreen(true)
     frame:SetMovable(true)
 
-    -- compatibility:
-    -- in old versions of dominos, frames had an extra header frame to control
-    -- visibility, which pushed things up by one frame level
-    -- so increase the frame level of frames to account for that
-    frame:SetFrameLevel(frame:GetFrameLevel() + 1)
-
     frame.id = id
 
     frame:SetAttribute('id', id)
@@ -195,8 +189,9 @@ function Frame:LoadSettings()
     self.sets = Addon:GetFrameSets(self.id)
              or Addon:SetFrameSets(self.id, self:GetDefaults())
 
+    self:UpdateDisplayLayer()
+    self:UpdateDisplayLevel()
     self:RestorePosition()
-
     self:RestoreAnchor()
 
     if self.sets.hidden then
@@ -657,10 +652,10 @@ function Frame:RestorePosition()
     self:ClearAllPoints()
     self:SetScale(scale)
     self:SetPoint(point, self:GetParent() or _G.UIParent, relPoint, x, y)
-    
+
     --adding this here, as it will be be called by all frames, and Tuller seems to be considering layering to be a form of position now. ~Goranaws
     self:UpdateDisplayLevel()
-    
+
     return true
 end
 
@@ -943,34 +938,31 @@ function Frame:GetDescription()
     return
 end
 
---i chose to follow existing function name schemes, 
---but i recommend changing reversing Level and 
---Layer in the function names below to avoid confusion.
---didn't want to disrupt existing call to GetDisplayLevel. ~Goranaws
+function Frame:GetDisplayLayer()
+    return self.sets.displayLayer or 'MEDIUM'
+end
+
+function Frame:SetDisplayLayer(layer)
+    self.sets.displayLayer = layer
+	self:UpdateDisplayLayer()
+end
+
+function Frame:UpdateDisplayLayer()
+	self:SetFrameStrata(self:GetDisplayLayer())
+end
 
 function Frame:GetDisplayLevel()
-    return self.sets.displayLevel or 'MEDIUM'
+    return self.sets.displayLevel or 1
 end
 
-function Frame:SetDisplayLevel(value)
-    self.sets.displayLevel = value
-	self:UpdateDisplayLevel()
-end
-
-function Frame:GetDisplayLayer()
-    return self.sets.displayLayer or 50
-end
-
-function Frame:SetDisplayLayer(value)
-    self.sets.displayLayer = value
+function Frame:SetDisplayLevel(level)
+    self.sets.displayLevel = tonumber(level) or 0
 	self:UpdateDisplayLevel()
 end
 
 function Frame:UpdateDisplayLevel()
-	self:SetFrameStrata(self:GetDisplayLevel())
-	self:SetFrameLevel(self:GetDisplayLayer())
+	self:SetFrameLevel(self:GetDisplayLevel())
 end
-
 
 --------------------------------------------------------------------------------
 -- Mouseover

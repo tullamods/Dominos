@@ -21,10 +21,6 @@ function ExtraAbilityBar:New()
     return bar
 end
 
-function ExtraAbilityBar:GetDisplayLevel()
-    return 'HIGH'
-end
-
 function ExtraAbilityBar:GetDisplayName()
     return L.ExtraBarDisplayName
 end
@@ -79,6 +75,7 @@ end
 function ExtraAbilityBar:GetDefaults()
     return {
         point = 'BOTTOM',
+        displayLayer = 'HIGH',
         x = 0,
         y = 160,
         showInPetBattleUI = true,

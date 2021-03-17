@@ -69,10 +69,6 @@ function MenuBar:GetDisplayName()
     return L.MenuBarDisplayName
 end
 
-function MenuBar:GetDisplayLevel()
-    return 'LOW'
-end
-
 MenuBar:Extend(
     'OnCreate',
     function(self)
@@ -143,6 +139,7 @@ MenuBar:Extend(
 
 function MenuBar:GetDefaults()
     return {
+        displayLayer = 'LOW',
         point = 'BOTTOMRIGHT',
         x = -244,
         y = 0

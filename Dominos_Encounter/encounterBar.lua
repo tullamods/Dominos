@@ -17,11 +17,7 @@ function EncounterBar:New()
 end
 
 function EncounterBar:GetDefaults()
-	return { point = 'CENTER' }
-end
-
-function EncounterBar:GetDisplayLevel()
-    return 'HIGH'
+	return { point = 'CENTER', displayLayer = 'HIGH' }
 end
 
 -- always reparent + position the bar due to UIParent.lua moving it whenever its shown
