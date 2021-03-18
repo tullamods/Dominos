@@ -143,12 +143,14 @@ DragFrameTextFont:SetJustifyV('CENTER')
 --------------------------------------------------------------------------------
 -- Events
 --------------------------------------------------------------------------------
+local dragFrames = {}
 
 function DragFrame:Create(parent)
     local frame = setmetatable({ }, DragFrame)
-
     frame:OnLoad(parent)
-
+	if not tContains(dragFrames, frame) then
+		tinsert(dragFrames, frame)
+	end
     return frame
 end
 
@@ -263,36 +265,52 @@ function DragFrame:OnLeave()
 	self.frame:EnableKeyboard(false) -- disable keyboard input.
 end
 
-local function IsKeyInSet(key, ...)
+local function IsKeyInSet(key, ...)--no longer needed.
     for i = 1, select('#', ...) do
         if key == (select(i, ...)) then
             return true
         end
     end
 end
+
+	local binds = {
+		MOVEFORWARD = "0,1", --not sure if this is cheaper than using 4 tables...
+		TURNLEFT = "-1,0",
+		MOVEBACKWARD = "0,-1",
+		TURNRIGHT = "1,0",
+	}
 --[[
 	previously, this function was to be called by all Dominos' frames
 	on every key press. Having this enable "OnEnter" and disable 
 	"OnLeave",  should help reduce memory usage.(even slightly is a good thing)
 --]]
 function DragFrame:OnKeyDown(key)
-	if self:OnKeyUp() == true then return end
-	
-	local action = GetBindingAction(key)--what is this key's binding set to?
-	if self:HasState(DRAG_FRAME_STATE.FOCUSED) and IsKeyInSet(key, GetBindingKey(action)) then
+	if self:OnKeyUp() == true then return end   
+	if key == "SPACE" then
+		--toggle display of options
+		if self.owner.menu and self.owner.menu:IsShown() then
+			self.owner.menu:Hide()
+		else
+			self:OnClick("RightButton")
+		end
+												
+		return self.frame:SetPropagateKeyboardInput(false)
+	end
+	if key == "TAB" then
+		self:OnTabPressed()
+		return self.frame:SetPropagateKeyboardInput(false)
+	end
+	local action = GetBindingAction(key) --what is this key's binding set to?
+	if self:HasState(DRAG_FRAME_STATE.FOCUSED) and binds[action] then --is the mouse over the frame, and is this a movement key?
 		local increment = IsShiftKeyDown()   == true and .1 --smaller adjustments for moar precisions! ~Goranaws
                        or IsControlKeyDown() == true and 5  --adjustment steps!
                        or IsAltKeyDown()     == true and 10
                        or KEYBOARD_MOVEMENT_INCREMENT       --an amount the frame will move.
-
-		local x = action == "TURNLEFT"    and -1 or action == "TURNRIGHT"    and 1  or 0
-		local y = action == "MOVEFORWARD" and  1 or action == "MOVEBACKWARD" and -1 or 0
-
-		self:NudgeFrame(x * increment, y * increment) --nudge the frame in the indicated direction by the increment amount. 
-		return self.frame:SetPropagateKeyboardInput(false)
+		local x, y = string.split(",", binds[action]) --split movement up; could use table, and then us unpack(binds[action])
+		self:NudgeFrame(tonumber(x) * increment, tonumber(y) * increment) --nudge the frame in the indicated direction by the increment amount. 
+		return self.frame:SetPropagateKeyboardInput(false) --this key press has been used, don't pass it on.
 	end
-
-    self.frame:SetPropagateKeyboardInput(true)
+    self.frame:SetPropagateKeyboardInput(true) --this key press has not been used, do pass it on.
 end
 
 function DragFrame:OnKeyUp()
@@ -302,6 +320,119 @@ function DragFrame:OnKeyUp()
 		self.frame:EnableKeyboard(false)
 		self.frame:SetPropagateKeyboardInput(true)
 		return true
+	end
+end
+
+local sorted = {}
+local sorting = {}
+
+-- Utility method to get a screen-normalized rect for a frame
+local function GetScreenFrameRect(frame)
+	local l, b, w, h =  frame:GetRect()
+	local s = frame:GetEffectiveScale()
+	local r, t = l + w, b + h
+	return l / s, r / s , b / s, t / s, s --left, right, bottom, top 
+end
+
+local f = CreateFrame("Frame", nil, UIParent) --debug and testing purposes only
+local debugging = true
+f.texture = f:CreateTexture(nil, "ARTWORK")
+f.texture:SetColorTexture(1,1,1,1)
+
+local function compare(frame, oFrame)
+	local  l,  r,  b,  t, s = GetScreenFrameRect(frame.owner)
+	local _l, _r, _b, _t = GetScreenFrameRect(oFrame.owner)
+
+	local Horizontal = (_l >=  l and _l <=  r) --left of oFrame overlaps
+	                or (_r >=  l and _r <=  r) --right of oFrame overlaps
+					or ( l >= _l and  l <= _r)
+					or ( r >= _l and  r <= _r)
+					
+	local Vertical   = (_b >=  b and _b <=  t)
+	                or (_t >=  b and _t <=  t)
+                    or ( b >= _b and  b <= _t) 
+                    or ( t >= _b and  t <= _t) 
+
+	--first, verify if frames overlap
+	 local overlap =  Horizontal and Vertical
+
+	 if overlap == true then --don't do the math below, if they don't overlap.
+
+		local T = ((_t > b) and ((_t < t and _t) or t))
+		local B = ((_b < t) and ((_b > b and _b) or b))
+		local L = ((_r > l) and ((_l < l and l) or _l))
+		local R = ((_r > l) and ((_r < r and _r) or r))
+		
+	
+		local overlapPercent = ((R - L) * (T - B)) / ((r - l) * (t - b))
+	
+		if overlapPercent > .002 and overlapPercent and debugging then
+			f.texture:SetPoint("BottomLeft", UIParent, L*s, B*s)
+			f.texture:SetPoint("TopRight", UIParent, "BottomLeft", R*s, T*s)
+		end
+	
+		return overlapPercent > .002 and overlapPercent
+	 end
+end
+
+
+local strata = {--ALL stratas must be included for proper calculations
+	"BACKGROUND", --1
+	"LOW",--2
+	"MEDIUM",--3
+	"HIGH",--4
+	"DIALOG",--5
+	"FULLSCREEN",--6
+	"FULLSCREEN_DIALOG",--7
+	"TOOLTIP",--8
+}
+
+local function GetFrameZAxis(frame) --tada! ~Goranaws
+	local layer = tIndexOf(strata, frame.owner:GetFrameStrata())
+	local level = frame.owner:GetFrameLevel() / 10000 -- GetFrameLevel can only return between 1 and 10000
+	return layer + level
+end
+
+local currentFocusIndex
+
+function DragFrame:OnTabPressed()
+	wipe(sorted)
+	tinsert(sorted, self)
+		self.zAxis = GetFrameZAxis(self)
+	for j, otherFrame in pairs(dragFrames) do
+		if tContains(sorted, otherFrame) ~= true then
+			local overlapPercent = compare(self, otherFrame, j)
+			if overlapPercent and MouseIsOver(otherFrame.owner) then
+				otherFrame.zAxis = GetFrameZAxis(otherFrame)
+				tinsert(sorted, otherFrame) --this frame overlaps current focus
+			end
+		end
+	end
+	
+	if #sorted > 1 then
+		local _min,_max = 1, #sorted
+
+		--sort by frame layer and level
+		local sort = function(a, b) return a.zAxis > b.zAxis end
+		table.sort(sorted, sort)
+		
+		local currentIndex = tIndexOf(sorted, self)
+		
+		local _next = currentIndex + 1
+		if currentIndex > #sorted then
+			_next = 1
+		end
+		
+		self:OnLeave()
+
+		local nextFocus = sorted[_next]
+		local _ = nextFocus and nextFocus:OnEnter()
+			
+		if self.owner.menu and self.owner.menu:IsShown() then
+			self.owner.menu:Hide()
+		
+			local _ = nextFocus and nextFocus:OnClick("RightButton")
+		end
 	end
 end
 
