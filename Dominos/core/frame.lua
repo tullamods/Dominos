@@ -7,6 +7,10 @@ local Frame = Addon:CreateClass('Frame')
 local L = LibStub('AceLocale-3.0'):GetLocale(AddonName)
 local FlyPaper = LibStub('LibFlyPaper-2.0')
 
+local function fireBarCallback(bar, callback, ...)
+    Addon.callbacks:Fire(callback, bar, bar.id, ...)
+end
+
 local active = {}
 local unused = {}
 
@@ -948,7 +952,11 @@ function Frame:SetDisplayLayer(layer)
 end
 
 function Frame:UpdateDisplayLayer()
-	self:SetFrameStrata(self:GetDisplayLayer())
+    local layer = self:GetDisplayLayer()
+
+	self:SetFrameStrata(layer)
+
+    fireBarCallback(self, 'BAR_DISPLAY_LAYER_UPDATED', layer)
 end
 
 function Frame:GetDisplayLevel()
@@ -961,7 +969,11 @@ function Frame:SetDisplayLevel(level)
 end
 
 function Frame:UpdateDisplayLevel()
-	self:SetFrameLevel(self:GetDisplayLevel())
+    local level = self:GetDisplayLevel()
+
+	self:SetFrameLevel(level)
+
+    fireBarCallback(self, 'BAR_DISPLAY_LEVEL_UPDATED', level)
 end
 
 --------------------------------------------------------------------------------

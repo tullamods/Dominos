@@ -2,7 +2,7 @@
 
 As of Dominos 8.4, I've started implementing callbacks into the addon.
 
-## Callbacks
+## Global Callbacks
 
 ### LAYOUT_LOADING
 
@@ -35,3 +35,14 @@ Called when the alignment grid is enabled or disabled
 ### ALIGNMENT_GRID_SIZE_CHANGED (size)
 
 Called when the alignment grid size is changed
+
+
+## Bar Callbacks
+
+### BAR_DISPLAY_LAYER_UPDATED (bar, id, layer)
+
+Called when a bar's frame strata changes
+
+### BAR_DISPLAY_LEVEL_UPDATED (bar, id, level)
+
+Called when a bar's frame level changes

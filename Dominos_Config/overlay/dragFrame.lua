@@ -36,10 +36,11 @@ DragFrame.state = DRAG_FRAME_STATE.DEFAULT
 
 -- drag frame levels
 local FRAME_STRATA_LEVELS = {
-    LOW = 1000,
-    MEDIUM = 2000,
-    HIGH = 3000,
-    FOCUSED = 4000
+    BACKGROUND = 1000,
+    LOW = 2000,
+    MEDIUM = 3000,
+    HIGH = 4000,
+    FOCUSED = 5000
 }
 
 -- drag frame background settings
@@ -327,10 +328,7 @@ function DragFrame:OnOwnerChanged(owner)
 
     -- show
     self.frame:Show()
-
-    self.frame:SetFrameLevel(
-        (FRAME_STRATA_LEVELS[owner:GetDisplayLayer()] or 0) + owner:GetDisplayLevel()
-    )
+    self:UpdateFrameLevel()
 end
 
 function DragFrame:OnStateChanged(state)
@@ -339,6 +337,7 @@ function DragFrame:OnStateChanged(state)
     self.borderLeft:SetColorTexture(BORDER_COLORS[state]:GetRGBA())
     self.borderRight:SetColorTexture(BORDER_COLORS[state]:GetRGBA())
     self.borderTop:SetColorTexture(BORDER_COLORS[state]:GetRGBA())
+    self:UpdateFrameLevel()
 end
 
 function DragFrame:OnContextMenuShown()
@@ -574,6 +573,20 @@ function DragFrame:ShowOwnerContextMenu()
     end
 
     self.owner:ShowMenu()
+end
+
+function DragFrame:UpdateFrameLevel()
+    local owner = self.owner
+    if not owner then
+        return
+    end
+
+    if self:HasState(DRAG_FRAME_STATE.FOCUSED) then
+        self.frame:SetFrameLevel(FRAME_STRATA_LEVELS.FOCUSED)
+    else
+        local level = (FRAME_STRATA_LEVELS[owner:GetDisplayLayer()] or 0) + owner:GetDisplayLevel()
+        self.frame:SetFrameLevel(level)
+    end
 end
 
 --------------------------------------------------------------------------------
