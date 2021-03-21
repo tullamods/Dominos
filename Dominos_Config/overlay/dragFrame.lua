@@ -159,7 +159,6 @@ local highestLevel = 0
 function DragFrame:OnLoad(parent)
     -- create the frame
     self.frame  = CreateFrame('Button', nil, UIParent)
-    self.frame:EnableKeyboard(false)
     self.frame:Hide()
     self.frame:RegisterForClicks('AnyUp')
     self.frame:RegisterForDrag('LeftButton')
@@ -287,6 +286,61 @@ local binds = {
 	MOVEBACKWARD = "0,-1",
 	TURNRIGHT = "1,0",
 }
+
+local nudgeMachine = CreateFrame("Frame")
+--I had thought Dominos has a unified "OnUpdate", for anything that needs run OnUpdate... not finding it now. ~Goranaws
+local nudging = {}
+
+function DragFrame:StartActiveNudge(key)
+	nudgeMachine.key = key
+	nudgeMachine.frame = self
+	local t = GetTime()
+	local action = GetBindingAction(key)
+	if action and binds[action] then
+		if not tContains(nudging, key) then
+			tinsert(nudging, key) 
+		end
+	
+		if not nudgeMachine:GetScript("OnUpdate") then
+			nudgeMachine:SetScript("OnUpdate", function()
+				
+				local _t = GetTime()
+				local reset = _t - t
+			
+			
+				for i, key in pairs(nudging) do
+					local action = GetBindingAction(key)
+					local direction = action and binds[action]
+
+					local x, y = string.split(",", direction)
+				
+					
+					if reset >= .25 then --nudge no more than every quarter second.
+						local increment = IsShiftKeyDown()   == true and .1
+									   or IsControlKeyDown() == true and 5
+									   or IsAltKeyDown()     == true and 10
+									   or KEYBOARD_MOVEMENT_INCREMENT
+						self:NudgeFrame(tonumber(x) * increment, tonumber(y) * increment) 
+					end
+				end
+				if reset >= .25 then
+					--cannot be done above. Otherwise, might skip a nudge direction if reset in middle of parsing.
+					t = GetTime()
+				end
+				self:StopActiveNudge() --stop nudging if frame moves from under cursor.
+			end)
+		end
+	end
+end
+
+function DragFrame:StopActiveNudge(key)
+	local _ = key and tDeleteItem(nudging, key)
+	local isOver = (self.frame and MouseIsOver(self.frame)) and true or nil
+	if (not isOver) or (#nudging == 0) then
+		nudgeMachine.key = nil
+		nudgeMachine:SetScript("OnUpdate", nil)
+	end
+end
 --[[
 	previously, this function was to be called by all Dominos' frames
 	on every key press. Having this enable "OnEnter" and disable 
@@ -317,11 +371,21 @@ function DragFrame:OnKeyDown(key)
 			local x, y = string.split(",", binds[action]) --split movement up; could use table, and then us unpack(binds[action])
 			self:NudgeFrame(tonumber(x) * increment, tonumber(y) * increment) --nudge the frame in the indicated direction by the increment amount. 
 			keyNotUsed = false --key has been used, don't pass it on.
+			self:StartActiveNudge(key)
 		end
 	end
     self.frame:SetPropagateKeyboardInput(keyNotUsed) --pass or don't pass on key press to next frame with keyboard input enabled
 end
 
+function DragFrame:OnKeyUp(key)
+	if MouseIsOver(self.frame) ~= true then
+		b:OnLeave()
+		b.frame:SetFrameStrata('DIALOG')
+		return true
+	end
+	
+	self:StopActiveNudge(key)
+end
 
 local sorted = {}
 
@@ -388,15 +452,6 @@ function DragFrame:OnTabPressed()
 		end
 	end
 	wipe(sorted)
-end
-
-
-function DragFrame:OnKeyUp()
-	if MouseIsOver(self.frame) ~= true then
-		b:OnLeave()
-		b.frame:SetFrameStrata('DIALOG')
-		return true
-	end
 end
 
 function DragFrame:OnMouseDown(button)
