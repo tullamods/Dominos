@@ -265,6 +265,8 @@ function MirrorTimer:OnCreateMenu(menu)
     self:AddLayoutPanel(menu)
     self:AddTexturePanel(menu)
     self:AddFontPanel(menu)
+	menu:AddFadingPanel()
+	menu:AddAdvancedPanel(true)
 
     self.menu = menu
 
@@ -339,8 +341,8 @@ function MirrorTimer:AddLayoutPanel(menu)
 
     panel.paddingSlider = panel:NewPaddingSlider()
     panel.scaleSlider = panel:NewScaleSlider()
-    panel.opacitySlider = panel:NewOpacitySlider()
-    panel.fadeSlider = panel:NewFadeSlider()
+	panel:NewDisplayLayerSlider()
+	panel:NewDisplayLevelSlider()
 end
 
 ---@param menu table

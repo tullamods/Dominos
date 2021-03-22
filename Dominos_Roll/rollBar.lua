@@ -70,8 +70,11 @@ function AlertsBar:OnCreateMenu(menu)
 
 	panel.scaleSlider = panel:NewScaleSlider()
 	panel.paddingSlider = panel:NewPaddingSlider()
+	panel:NewDisplayLayerSlider()
+	panel:NewDisplayLevelSlider()
 
 	menu:AddFadingPanel()
+	menu:AddAdvancedPanel(true)
 end
 
 --------------------------------------------------------------------------------

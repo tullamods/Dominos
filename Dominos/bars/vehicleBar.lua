@@ -61,6 +61,9 @@ function VehicleBar:AddLayoutPanel(menu)
 
     panel.scaleSlider = panel:NewScaleSlider()
     panel.paddingSlider = panel:NewPaddingSlider()
+
+	panel:NewDisplayLayerSlider()
+	panel:NewDisplayLevelSlider()
 end
 
 -- module

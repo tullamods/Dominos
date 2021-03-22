@@ -282,10 +282,12 @@ Addon.MenuBar = MenuBar
 local function Menu_AddLayoutPanel(menu)
     local panel = menu:NewPanel(LibStub('AceLocale-3.0'):GetLocale('Dominos-Config').Layout)
 
+    panel:NewColumnsSlider()
     panel:NewScaleSlider()
     panel:NewPaddingSlider()
     panel:NewSpacingSlider()
-    panel:NewColumnsSlider()
+	panel:NewDisplayLayerSlider()
+	panel:NewDisplayLevelSlider()
 
     return panel
 end

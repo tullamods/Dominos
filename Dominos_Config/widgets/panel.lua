@@ -459,6 +459,8 @@ function Panel:AddLayoutOptions()
 	self.spacingSlider = self:NewSpacingSlider()
 	self.paddingSlider = self:NewPaddingSlider()
 	self.scaleSlider = self:NewScaleSlider()
+	self:NewDisplayLayerSlider()
+	self:NewDisplayLevelSlider()
 end
 
 function Panel:AddAdvancedOptions(displayConditionsOnly)
@@ -472,9 +474,6 @@ function Panel:AddAdvancedOptions(displayConditionsOnly)
 		self:NewShowInOverrideUICheckbox()
 		self:NewShowInPetBattleUICheckbox()
 	end
-
-	self:NewDisplayLayerSlider()
-	self:NewDisplayLevelSlider()
 
 	self.showStatesEditBox = self:NewTextInput{
 		name = L.ShowStates,

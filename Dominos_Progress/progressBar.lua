@@ -757,6 +757,9 @@ do
 		panel.spacingSlider = panel:NewSpacingSlider()
 		panel.paddingSlider = panel:NewPaddingSlider()
 		panel.scaleSlider = panel:NewScaleSlider()
+
+		panel:NewDisplayLayerSlider()
+		panel:NewDisplayLevelSlider()
 	end
 
 	function ProgressBar:AddTextPanel(menu)

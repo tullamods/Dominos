@@ -567,6 +567,8 @@ function CastBar:OnCreateMenu(menu)
 
 	menu:AddFadingPanel()
 
+	menu:AddAdvancedPanel(true)
+
 	menu:HookScript("OnShow", function()
 		self.menuShown = true
 
@@ -653,6 +655,9 @@ function CastBar:AddLayoutPanel(menu)
 			panel.owner:SetLatencyPadding(value)
 		end
 	}
+
+	panel:NewDisplayLayerSlider()
+	panel:NewDisplayLevelSlider()
 end
 
 function CastBar:AddFontPanel(menu)

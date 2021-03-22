@@ -97,7 +97,9 @@ function BagBar:OnCreateMenu(menu)
             return layoutPanel.owner:ShowBags()
         end,
         set = function(_, enable)
-            return layoutPanel.owner:SetShowBags(enable)
+            layoutPanel.owner:SetShowBags(enable)
+            layoutPanel.colsSlider:UpdateRange()
+            layoutPanel.colsSlider:UpdateValue()
         end
     }
 
@@ -108,7 +110,9 @@ function BagBar:OnCreateMenu(menu)
                 return layoutPanel.owner:ShowKeyRing()
             end,
             set = function(_, enable)
-                return layoutPanel.owner:SetShowKeyRing(enable)
+                layoutPanel.owner:SetShowKeyRing(enable)
+                layoutPanel.colsSlider:UpdateRange()
+                layoutPanel.colsSlider:UpdateValue()
             end
         }
     end
