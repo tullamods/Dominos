@@ -1,9 +1,19 @@
---------------------------------------------------------------------------------
--- Drag Frame
---
--- Allows users to move arounds bars in configuration mode and access bar
--- specific settings
---------------------------------------------------------------------------------
+--[[Drag Frame
+	Allows users to move around bars in configuration mode and access bar
+	specific settings
+
+	Bar Settings: Right Mouse Click or place mouse over frame and press "SPACE"
+
+	Mouse Move: 
+	   Click and hold, move the mouse to move bar. Release mouse to stop dragging.
+
+	Keyboard Move(nudge):
+	   Place mouse over bar, then press a movement key.
+	   One press for a single nudge, press and hold for repeated nudge
+	   nudge amount may be adjusted by pressing and holding a modifier key (shift, ctrl, alt)
+	   pressing "TAB" will switch focus to other dragFrames that are under the cursor and blocked by current dragFrame.
+	       pressing "TAB" while current dragFrame's menu is open, will also close the current dragframe's menu and open the next dragFrame's menu
+--]]
 
 local AddonName, Addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(Addon:GetParent():GetName())
@@ -18,18 +28,12 @@ local function HasFlag(state, flag)
 end
 
 local DRAG_FRAME_STATE = {
-    -- default state
-    DEFAULT = 0,
-    -- a bar that's hidden
-    HIDDEN = 1,
-    -- a bar that's currently in focus
-    FOCUSED = 2,
-    -- a bar docked to another bar
-    ANCHORED = 4,
-    -- a bar in preview mode, so we want to see what the bar will look like
-    PREVIEW = 8,
-    -- a bar we've started moving via the keyboard
-    KEYBOARD_MOVEMENT = 16
+    DEFAULT = 0,           -- default state
+    HIDDEN = 1,            -- a bar that's hidden
+    FOCUSED = 2,           -- a bar that's currently in focus
+    ANCHORED = 4,          -- a bar docked to another bar
+    PREVIEW = 8,           -- a bar in preview mode, so we want to see what the bar will look like
+    KEYBOARD_MOVEMENT = 16 -- a bar we've started moving via the keyboard
 }
 
 DragFrame.state = DRAG_FRAME_STATE.DEFAULT
@@ -160,32 +164,30 @@ function DragFrame:OnLoad(parent)
     -- create the frame
     self.frame  = CreateFrame('Button', nil, UIParent)
     self.frame:Hide()
+	self.frame:SetToplevel(true) -- Sets whether the frame should raise itself when clicked
+	self.frame:EnableKeyboard(false) --true or false this to enable or disable keyboard movement.
+    self.frame:SetFrameStrata('DIALOG')
+	self.frame:SetFixedFrameStrata(true)
     self.frame:RegisterForClicks('AnyUp')
     self.frame:RegisterForDrag('LeftButton')
-    self.frame:SetFrameStrata('DIALOG')
-	
+
     self.frame:SetHighlightFontObject(DragFrameLabelHighlightFont)
     self.frame:SetNormalFontObject(DragFrameLabelFont)
     self.frame:SetText("LABEL")
 	
-    self.frame:SetScript('OnKeyDown', function(_, key) self:OnKeyDown(key) end)
-    self.frame:SetScript('OnKeyUp', function(_, key) self:OnKeyUp(key) end)
-	self.frame:EnableKeyboard(false)--true or false this to enable or disable keyboard movement.
-	
-    self.frame:SetScript("OnClick", function(_, button) self:OnClick(button) end)
-    self.frame:SetScript("OnEnter", function() self:OnEnter() end)
-	
-	self.frame:SetFixedFrameStrata(true)
-	self.frame:SetToplevel(true) -- Sets whether the frame should raise itself when clicked
-	
 	--keyboard input is now enabled OnEnter and disabled OnLeave.
 	--There is also a fall back check at the beginning of OnKeyDown
-	--to verify if mouse is still over frame, if not, will disable key input.
-    self.frame:SetScript("OnLeave", function() self:OnLeave() end)
-    self.frame:SetScript("OnMouseDown", function(_, button) self:OnMouseDown(button) end)
-    self.frame:SetScript("OnMouseUp", function() self:OnMouseUp() end)
+	--to verify if mouse is still over frame, if not, will disable key input
     self.frame:SetScript("OnMouseWheel", function(_, delta) self:OnMouseWheel(delta) end)
+    self.frame:SetScript("OnMouseDown", function(_, button) self:OnMouseDown(button) end)
+    self.frame:SetScript("OnClick", function(_, button) self:OnClick(button) end)
+    self.frame:SetScript('OnKeyDown', function(_, key) self:OnKeyDown(key) end)
+    self.frame:SetScript('OnKeyUp', function(_, key) self:OnKeyUp(key) end)
+    self.frame:SetScript("OnMouseUp", function() self:OnMouseUp() end)
+	
     self.frame.UpdateTooltip = function() self:UpdateTooltip() end
+    self.frame:SetScript("OnEnter", function() self:OnEnter() end)
+    self.frame:SetScript("OnLeave", function() self:OnLeave() end)
 
     -- add a label
     self.label = self.frame:GetFontString()
@@ -288,7 +290,7 @@ local binds = {
 }
 
 local nudgeMachine = CreateFrame("Frame")
---I had thought Dominos has a unified "OnUpdate", for anything that needs run OnUpdate... not finding it now. ~Goranaws
+--I had thought Dominos had a unified "OnUpdate", for anything that needs run OnUpdate... not finding it now. ~Goranaws
 local nudging = {}
 
 function DragFrame:StartActiveNudge(key)
@@ -300,21 +302,14 @@ function DragFrame:StartActiveNudge(key)
 		if not tContains(nudging, key) then
 			tinsert(nudging, key) 
 		end
-	
 		if not nudgeMachine:GetScript("OnUpdate") then
-			nudgeMachine:SetScript("OnUpdate", function()
-				
+			nudgeMachine:SetScript("OnUpdate", function()				
 				local _t = GetTime()
 				local reset = _t - t
-			
-			
 				for i, key in pairs(nudging) do
 					local action = GetBindingAction(key)
 					local direction = action and binds[action]
-
 					local x, y = string.split(",", direction)
-				
-					
 					if reset >= .25 then --nudge no more than every quarter second.
 						local increment = IsShiftKeyDown()   == true and .1
 									   or IsControlKeyDown() == true and 5
@@ -341,6 +336,7 @@ function DragFrame:StopActiveNudge(key)
 		nudgeMachine:SetScript("OnUpdate", nil)
 	end
 end
+
 --[[
 	previously, this function was to be called by all Dominos' frames
 	on every key press. Having this enable "OnEnter" and disable 
@@ -357,9 +353,12 @@ function DragFrame:OnKeyDown(key)
 		else
 			self:OnClick("RightButton")
 		end
+		
 		keyNotUsed = false
-	elseif key == "TAB" then --place holder for now.
+	elseif key == "TAB" then
+		-- shift focus to other dragFrames under cursor
 		self:OnTabPressed()
+		
 		keyNotUsed = false
 	else
 		local action = GetBindingAction(key) --what is this key's binding set to?
@@ -368,9 +367,13 @@ function DragFrame:OnKeyDown(key)
 						   or IsControlKeyDown() == true and 5  --adjustment steps!
 						   or IsAltKeyDown()     == true and 10
 						   or KEYBOARD_MOVEMENT_INCREMENT       --an amount the frame will move.
+			
 			local x, y = string.split(",", binds[action]) --split movement up; could use table, and then us unpack(binds[action])
+			
 			self:NudgeFrame(tonumber(x) * increment, tonumber(y) * increment) --nudge the frame in the indicated direction by the increment amount. 
+			
 			keyNotUsed = false --key has been used, don't pass it on.
+			
 			self:StartActiveNudge(key)
 		end
 	end
@@ -378,26 +381,23 @@ function DragFrame:OnKeyDown(key)
 end
 
 function DragFrame:OnKeyUp(key)
+	self:StopActiveNudge(key)
+	
 	if MouseIsOver(self.frame) ~= true then
 		b:OnLeave()
-		b.frame:SetFrameStrata('DIALOG')
 		return true
 	end
-	
-	self:StopActiveNudge(key)
 end
 
-local sorted = {}
-
 local strata = {--ALL stratas must be included for proper calculations
-	"BACKGROUND", --1
-	"LOW",--2
-	"MEDIUM",--3
-	"HIGH",--4
-	"DIALOG",--5
-	"FULLSCREEN",--6
-	"FULLSCREEN_DIALOG",--7
-	"TOOLTIP",--8
+	"BACKGROUND",        --1
+	"LOW",               --2
+	"MEDIUM",            --3
+	"HIGH",              --4
+	"DIALOG",            --5
+	"FULLSCREEN",        --6
+	"FULLSCREEN_DIALOG", --7
+	"TOOLTIP",           --8
 }
 
 local function GetFrameZAxis(frame)
@@ -413,45 +413,47 @@ local function SetFrameZAxis(frame, value) --tada! ~Goranaws
 	frame:GetFrameLevel((value - floor(value)) * 10000) 
 end
 
-local currentFocusIndex
-local focused
+local tabFrames = {}
+
 function DragFrame:OnTabPressed()
-	wipe(sorted)
+	wipe(tabFrames) --clean before you use it.
+	
 	for j, otherFrame in pairs(dragFrames) do
+		--
 		if MouseIsOver(otherFrame.frame) then
-			tinsert(sorted, otherFrame)
+			tinsert(tabFrames, otherFrame)
 		end
 	end
 
-	if #sorted > 0 then
-		local _min, _max = 1, #sorted
+	if #tabFrames > 0 then
+		local _min, _max = 1, #tabFrames
 
 		--sort by frame layer and level
 		local sort = function(a, b) return (a and b) and GetFrameZAxis(a) >= GetFrameZAxis(b) end
-		table.sort(sorted, sort)
+		table.sort(tabFrames, sort)
 		
-		local currentIndex = tIndexOf(sorted, self) or 1
+		local currentIndex = tIndexOf(tabFrames, self) or 1
 
 		local _next = currentIndex + 1
 		if _next > _max then
 			_next = _min
 		end
 		
-		local nextFocus = sorted[_next]
+		local nextFocus = tabFrames[_next]
 		local _ = nextFocus and nextFocus:OnEnter()
 		if nextFocus then
 			self:RemoveState(DRAG_FRAME_STATE.FOCUSED)
-			self.frame:EnableKeyboard(false) -- disable keyboard input.
+			self.frame:EnableKeyboard(false) -- disable keyboard input for current frame.
 			if self.owner.menu and self.owner.menu:IsShown() then
 				self.owner.menu:Hide()
 				nextFocus:OnClick("RightButton")
+				nextFocus.owner.menu:Show()
 			end
 				
 			self.frame:Lower()
 			nextFocus.frame:Raise()
 		end
 	end
-	wipe(sorted)
 end
 
 function DragFrame:OnMouseDown(button)
@@ -499,7 +501,9 @@ function DragFrame:OnOwnerChanged(owner)
 
     -- show
     self.frame:Show()
-
+	
+	--not sure this is needed now. as drag frames are focused, they now change levels to be on top of other dragFrames.
+	--dragFrame strata is now also locked to "DIALOG"
     self.frame:SetFrameLevel(DRAG_FRAME_LEVELS[owner:GetDisplayLevel() or 'LOW'])
 end
 
