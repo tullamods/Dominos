@@ -279,19 +279,6 @@ Addon.MenuBar = MenuBar
 -- context menu
 --------------------------------------------------------------------------------
 
-local function Menu_AddLayoutPanel(menu)
-    local panel = menu:NewPanel(LibStub('AceLocale-3.0'):GetLocale('Dominos-Config').Layout)
-
-    panel:NewColumnsSlider()
-    panel:NewScaleSlider()
-    panel:NewPaddingSlider()
-    panel:NewSpacingSlider()
-	panel:NewDisplayLayerSlider()
-	panel:NewDisplayLevelSlider()
-
-    return panel
-end
-
 local function MenuButtonCheckbox_Create(panel, button, name)
     if not button then
         return
@@ -333,11 +320,12 @@ local function Menu_AddDisableMenuButtonsPanel(menu)
 
     panel.width = width
     panel.height = height
+
     return panel
 end
 
 function MenuBar:OnCreateMenu(menu)
-    Menu_AddLayoutPanel(menu)
+    menu:AddLayoutPanel()
     Menu_AddDisableMenuButtonsPanel(menu)
     menu:AddFadingPanel()
     menu:AddAdvancedPanel()

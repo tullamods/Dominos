@@ -55,23 +55,6 @@ function EncounterBar:InitPlayerPowerBarAlt()
 	end
 end
 
-function EncounterBar:OnCreateMenu(menu)
-	self:AddLayoutPanel(menu)
-	menu:AddAdvancedPanel(true)
-	menu:AddFadingPanel()
-end
-
-function EncounterBar:AddLayoutPanel(menu)
-	local panel = menu:NewPanel(LibStub('AceLocale-3.0'):GetLocale('Dominos-Config').Layout)
-
-	panel.scaleSlider = panel:NewScaleSlider()
-	panel.paddingSlider = panel:NewPaddingSlider()
-	panel:NewDisplayLayerSlider()
-	panel:NewDisplayLevelSlider()
-
-	return panel
-end
-
 -- module
 local EncounterBarModule = Dominos:NewModule('EncounterBar', 'AceEvent-3.0')
 

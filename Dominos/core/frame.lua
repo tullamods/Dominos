@@ -910,7 +910,7 @@ function Frame:CreateMenu()
 end
 
 function Frame:OnCreateMenu(menu)
-    menu:AddLayoutPanel()
+    menu:AddBasicLayoutPanel()
     menu:AddFadingPanel()
     menu:AddAdvancedPanel(true)
 end

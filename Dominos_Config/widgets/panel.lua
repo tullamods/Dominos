@@ -457,10 +457,14 @@ end
 function Panel:AddLayoutOptions()
 	self.colsSlider = self:NewColumnsSlider()
 	self.spacingSlider = self:NewSpacingSlider()
+	self:AddBasicLayoutOptions()
+end
+
+function Panel:AddBasicLayoutOptions()
 	self.paddingSlider = self:NewPaddingSlider()
 	self.scaleSlider = self:NewScaleSlider()
-	self:NewDisplayLayerSlider()
-	self:NewDisplayLevelSlider()
+	self.displayLayerSlider = self:NewDisplayLayerSlider()
+	self.displayLevelSlider = self:NewDisplayLevelSlider()
 end
 
 function Panel:AddAdvancedOptions(displayConditionsOnly)

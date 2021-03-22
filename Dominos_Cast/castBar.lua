@@ -1,6 +1,7 @@
 local _, Addon = ...
 local Dominos = LibStub("AceAddon-3.0"):GetAddon("Dominos")
 local LSM = LibStub("LibSharedMedia-3.0")
+local L = LibStub("AceLocale-3.0"):GetLocale("Dominos-CastBar")
 
 -- local aliases for some globals
 local GetSpellInfo = _G.GetSpellInfo
@@ -562,6 +563,7 @@ end
 
 function CastBar:OnCreateMenu(menu)
 	self:AddLayoutPanel(menu)
+	self:AddDisplayPanel(menu)
 	self:AddTexturePanel(menu)
 	self:AddFontPanel(menu)
 
@@ -589,29 +591,8 @@ end
 function CastBar:AddLayoutPanel(menu)
 	local panel = menu:NewPanel(LibStub("AceLocale-3.0"):GetLocale("Dominos-Config").Layout)
 
-	local l = LibStub("AceLocale-3.0"):GetLocale("Dominos-CastBar")
-
-	panel:NewCheckButton{
-		name = l["UseSpellReactionColors"],
-		tooltip = l["UseSpellReactionColorsTip"],
-		get = function() return panel.owner:UseSpellReactionColors() end,
-		set = function(_, enable) panel.owner:SetUseSpellReactionColors(enable) end
-	}
-
-	for _, part in ipairs{"border", "icon", "latency", "spark", "time"} do
-		panel:NewCheckButton{
-			name = l["Display_" .. part],
-			get = function()
-				return panel.owner:Displaying(part)
-			end,
-			set = function(_, enable)
-				panel.owner:SetDisplay(part, enable)
-			end
-		}
-	end
-
 	panel.widthSlider = panel:NewSlider{
-		name = l.Width,
+		name = L.Width,
 		min = 1,
 		max = function()
 			return math.ceil(UIParent:GetWidth() / panel.owner:GetScale())
@@ -625,7 +606,7 @@ function CastBar:AddLayoutPanel(menu)
 	}
 
 	panel.heightSlider = panel:NewSlider{
-		name = l.Height,
+		name = L.Height,
 		min = 1,
 		max = function()
 			return math.ceil(UIParent:GetHeight() / panel.owner:GetScale())
@@ -638,12 +619,33 @@ function CastBar:AddLayoutPanel(menu)
 		end
 	}
 
-	panel.paddingSlider = panel:NewPaddingSlider()
+	panel:AddBasicLayoutOptions()
+end
 
-	panel.scaleSlider = panel:NewScaleSlider()
+function CastBar:AddDisplayPanel(menu)
+	local panel = menu:NewPanel(L.Display)
+
+	panel:NewCheckButton{
+		name = L["UseSpellReactionColors"],
+		tooltip = L["UseSpellReactionColorsTip"],
+		get = function() return panel.owner:UseSpellReactionColors() end,
+		set = function(_, enable) panel.owner:SetUseSpellReactionColors(enable) end
+	}
+
+	for _, part in ipairs{"border", "icon", "spark", "time", "latency"} do
+		panel:NewCheckButton{
+			name = L["Display_" .. part],
+			get = function()
+				return panel.owner:Displaying(part)
+			end,
+			set = function(_, enable)
+				panel.owner:SetDisplay(part, enable)
+			end
+		}
+	end
 
 	panel.latencySlider = panel:NewSlider{
-		name = l.LatencyPadding,
+		name = L.LatencyPadding,
 		min = 0,
 		max = function()
 			return 500
@@ -655,14 +657,10 @@ function CastBar:AddLayoutPanel(menu)
 			panel.owner:SetLatencyPadding(value)
 		end
 	}
-
-	panel:NewDisplayLayerSlider()
-	panel:NewDisplayLevelSlider()
 end
 
 function CastBar:AddFontPanel(menu)
-	local l = LibStub("AceLocale-3.0"):GetLocale("Dominos-CastBar")
-	local panel = menu:NewPanel(l.Font)
+	local panel = menu:NewPanel(L.Font)
 
 	panel.fontSelector = Dominos.Options.FontSelector:New{
 		parent = panel,
@@ -676,8 +674,7 @@ function CastBar:AddFontPanel(menu)
 end
 
 function CastBar:AddTexturePanel(menu)
-	local l = LibStub("AceLocale-3.0"):GetLocale("Dominos-CastBar")
-	local panel = menu:NewPanel(l.Texture)
+	local panel = menu:NewPanel(L.Texture)
 
 	panel.textureSelector = Dominos.Options.TextureSelector:New{
 		parent = panel,

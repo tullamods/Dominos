@@ -112,11 +112,7 @@ function ExtraAbilityBar:AddLayoutPanel(menu)
         end
     }
 
-    panel.scaleSlider = panel:NewScaleSlider()
-    panel.paddingSlider = panel:NewPaddingSlider()
-
-	panel:NewDisplayLayerSlider()
-	panel:NewDisplayLevelSlider()
+    panel:AddBasicLayoutOptions()
 end
 
 function ExtraAbilityBar:ShowBlizzardTexture(show)

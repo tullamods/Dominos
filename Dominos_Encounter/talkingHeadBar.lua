@@ -70,10 +70,9 @@ function TalkingHeadBar:AddLayoutPanel(menu)
 		set = function(_, enable) panel.owner:SetMuteSounds(enable) end
 	}
 
-    panel.scaleSlider = panel:NewScaleSlider()
-    panel.paddingSlider = panel:NewPaddingSlider()
-	panel:NewDisplayLayerSlider()
-	panel:NewDisplayLevelSlider()
+    panel:AddBasicLayoutOptions()
+
+    return panel
 end
 
 function TalkingHeadBar:SetMuteSounds(enable)

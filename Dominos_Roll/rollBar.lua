@@ -63,20 +63,6 @@ function AlertsBar:RepositionChildFrame()
 	frame:SetPoint('BOTTOM', self)
 end
 
-function AlertsBar:OnCreateMenu(menu)
-	local l = LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')
-
-	local panel = menu:NewPanel(l.Layout)
-
-	panel.scaleSlider = panel:NewScaleSlider()
-	panel.paddingSlider = panel:NewPaddingSlider()
-	panel:NewDisplayLayerSlider()
-	panel:NewDisplayLevelSlider()
-
-	menu:AddFadingPanel()
-	menu:AddAdvancedPanel(true)
-end
-
 --------------------------------------------------------------------------------
 -- module
 --------------------------------------------------------------------------------
