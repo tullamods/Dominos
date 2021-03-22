@@ -32,7 +32,6 @@ function ProgressBar:New(id, modes, ...)
 	end
 
 	bar.modes = modes
-	bar:SetFrameStrata(bar.sets.strata or 'BACKGROUND')
 	bar:UpdateFont()
 	bar:UpdateAlwaysShowText()
 	bar:UpdateMode()
@@ -42,8 +41,6 @@ end
 
 function ProgressBar:OnCreate(...)
 	ProgressBar.proto.OnCreate(self, ...)
-
-	self:SetFrameStrata('BACKGROUND')
 
 	self.colors = {
 		base = {0, 0, 0},
@@ -62,7 +59,6 @@ function ProgressBar:OnCreate(...)
 	click:SetScript('OnLeave', function(_, ...) self:OnLeave(...) end)
 	click:RegisterForClicks('anyUp')
 	click:SetAllPoints(self)
-	click:SetFrameStrata('LOW')
 
 	local text = click:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
 	text:SetPoint('CENTER')
@@ -95,6 +91,7 @@ function ProgressBar:GetDefaults()
 			max = true,
 			bonus = true
 		},
+		displayLayer = 'BACKGROUND',
 		alwaysShowText = true,
 		lockMode = true
 	}

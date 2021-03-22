@@ -18,12 +18,9 @@ function BagBar:GetDisplayName()
     return L.BagBarDisplayName
 end
 
-function BagBar:GetDisplayLevel()
-    return 'LOW'
-end
-
 function BagBar:GetDefaults()
     return {
+        displayLayer = 'LOW',
         point = 'BOTTOMRIGHT',
         oneBag = false,
         keyRing = true,

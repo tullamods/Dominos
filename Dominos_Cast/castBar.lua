@@ -57,7 +57,6 @@ function CastBar:New(id, units, ...)
 end
 
 CastBar:Extend("OnCreate", function(self)
-	self:SetFrameStrata("HIGH")
 	self:SetScript("OnEvent", self.OnEvent)
 
 	self.props = {}
@@ -90,10 +89,6 @@ function CastBar:GetDisplayName()
     return L.CastBarDisplayName
 end
 
-function CastBar:GetDisplayLevel()
-	return 'HIGH'
-end
-
 function CastBar:GetDefaults()
 	return {
 		point = "CENTER",
@@ -108,6 +103,8 @@ function CastBar:GetDefaults()
 
 		-- default to the spell queue window for latency padding
 		latencyPadding = tonumber(GetCVar("SpellQueueWindow")),
+
+		displayLayer = 'HIGH',
 
 		display = {
 			icon = false,
