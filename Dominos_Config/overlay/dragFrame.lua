@@ -293,47 +293,62 @@ local nudgeMachine = CreateFrame("Frame")
 --I had thought Dominos had a unified "OnUpdate", for anything that needs run OnUpdate... not finding it now. ~Goranaws
 local nudging = {}
 
+function nudgeMachine:Activate(frame)
+	local dragFrame = frame
+	if not nudgeMachine:GetScript("OnUpdate") then
+		local t = GetTime()
+		nudgeMachine:SetScript("OnUpdate", function()				
+			local _t = GetTime()
+			local reset = _t - t
+			for i, key in pairs(nudging) do
+				local action = GetBindingAction(key)
+				local direction = action and binds[action]
+				local x, y = string.split(",", direction)
+				if reset >= .25 then --nudge no more than every quarter second.
+					local increment = IsShiftKeyDown()   == true and .1
+								   or IsControlKeyDown() == true and 5
+								   or IsAltKeyDown()     == true and 10
+								   or KEYBOARD_MOVEMENT_INCREMENT
+					dragFrame:NudgeFrame(tonumber(x) * increment, tonumber(y) * increment) 
+				end
+			end
+			if reset >= .25 then
+				--cannot be done above. Otherwise, might skip a nudge direction if reset in middle of parsing.
+				t = GetTime()
+			end
+			dragFrame:StopActiveNudge() --stop nudging if frame moves from under cursor.
+		end)
+	end
+end
+
+function nudgeMachine:Deactivate()
+	nudgeMachine:SetScript("OnUpdate", nil)
+end
+
+local prevDragFrame
 function DragFrame:StartActiveNudge(key)
-	nudgeMachine.key = key
-	nudgeMachine.frame = self
-	local t = GetTime()
+	if prevDragFrame and prevDragFrame ~= self then
+		prevDragFrame:StopActiveNudge(true) --extreme edge case: a second frame calls this function while another is running it.
+	end
 	local action = GetBindingAction(key)
 	if action and binds[action] then
 		if not tContains(nudging, key) then
 			tinsert(nudging, key) 
 		end
-		if not nudgeMachine:GetScript("OnUpdate") then
-			nudgeMachine:SetScript("OnUpdate", function()				
-				local _t = GetTime()
-				local reset = _t - t
-				for i, key in pairs(nudging) do
-					local action = GetBindingAction(key)
-					local direction = action and binds[action]
-					local x, y = string.split(",", direction)
-					if reset >= .25 then --nudge no more than every quarter second.
-						local increment = IsShiftKeyDown()   == true and .1
-									   or IsControlKeyDown() == true and 5
-									   or IsAltKeyDown()     == true and 10
-									   or KEYBOARD_MOVEMENT_INCREMENT
-						self:NudgeFrame(tonumber(x) * increment, tonumber(y) * increment) 
-					end
-				end
-				if reset >= .25 then
-					--cannot be done above. Otherwise, might skip a nudge direction if reset in middle of parsing.
-					t = GetTime()
-				end
-				self:StopActiveNudge() --stop nudging if frame moves from under cursor.
-			end)
-		end
+		nudgeMachine:Activate(self)
 	end
+	prevDragFrame = self
 end
 
 function DragFrame:StopActiveNudge(key)
-	local _ = key and tDeleteItem(nudging, key)
+	if key == true then
+		wipe(nudging)
+	else
+		local _ = key and tDeleteItem(nudging, key)
+	end
 	local isOver = (self.frame and MouseIsOver(self.frame)) and true or nil
 	if (not isOver) or (#nudging == 0) then
-		nudgeMachine.key = nil
-		nudgeMachine:SetScript("OnUpdate", nil)
+		nudgeMachine:Deactivate()
 	end
 end
 
@@ -384,7 +399,7 @@ function DragFrame:OnKeyUp(key)
 	self:StopActiveNudge(key)
 	
 	if MouseIsOver(self.frame) ~= true then
-		b:OnLeave()
+		self:OnLeave()
 		return true
 	end
 end
