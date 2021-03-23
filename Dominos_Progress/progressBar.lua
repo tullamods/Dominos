@@ -60,6 +60,10 @@ function ProgressBar:OnCreate(...)
 	click:RegisterForClicks('anyUp')
 	click:SetAllPoints(self)
 
+	-- push the click frame higher so that it shows up over the
+	-- status bar segments
+	click:SetFrameLevel(7)
+
 	local text = click:CreateFontString(nil, 'OVERLAY', 'GameFontHighlightSmall')
 	text:SetPoint('CENTER')
 	self.text = text

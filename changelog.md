@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 9.0.27
+
+* Fix progress bar text showing up under the actual progress bar
+
 ## 9.0.26
 
 * You can now make adjustments to strata and level of bars (thanks Goranaws)
