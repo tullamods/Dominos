@@ -4,7 +4,7 @@
 #@non-retail@
 # ## Interface: 11306
 #@end-non-retail@
-## Title: Dominos_Auras
+## Title: Dominos Auras
 ## Author: Goranaws
 ## Version: 9
 ## Notes: Configurable buff and debuff bars for Dominos.
