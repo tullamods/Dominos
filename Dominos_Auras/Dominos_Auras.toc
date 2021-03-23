@@ -1,9 +1,10 @@
-## Version: 9
 ## Interface: 90002
 ## Title: Dominos_Auras
+## Author: Goranaws
+## Version: 9
 ## Notes: Configurable buff and debuff bars for Dominos.
 ## Dependencies: Dominos
-
+## DefaultState: disabled
 auras.xml
 template.lua
 buffs.lua
