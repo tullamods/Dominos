@@ -1,4 +1,9 @@
-## Interface: 90002
+#@retail@
+## Interface: 90005
+#@end-retail@
+#@non-retail@
+# ## Interface: 11306
+#@end-non-retail@
 ## Title: Dominos_Auras
 ## Author: Goranaws
 ## Version: 9
