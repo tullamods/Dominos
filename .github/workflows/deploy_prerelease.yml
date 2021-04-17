@@ -30,16 +30,21 @@ jobs:
       - name: Clone project
         uses: actions/checkout@v2
 
-      # once cloned, we just run the GitHub Action for the packager project
+      # retail
       - name: Package and release
         uses: BigWigsMods/packager@master
         with:
           args: -p 6650 -w 19110 -a 9rN4rdKD
 
-      # another example where we supply additional arguments, this example is specifically to release
-      # for the Classic version of the game
+      # classic
       - name: Package and release for Classic
         uses: BigWigsMods/packager@master
         with:
-          args: -g 1.13.6 -p 6650 -w 19110 -a 9rN4rdKD
+          args: -g classic -p 6650 -w 19110 -a 9rN4rdKD
+
+      # tbc classic
+      - name: Package and release for Burning Crusade Classic
+        uses: BigWigsMods/packager@master
+        with:
+          args: -g bc -p 6650 -w 19110 -a 9rN4rdKD
 

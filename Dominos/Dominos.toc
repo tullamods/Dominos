@@ -1,23 +1,22 @@
-#@retail@
 ## Interface: 90005
-#@end-retail@
-#@non-retail@
-# ## Interface: 11306
-#@end-non-retail@
+## Interface-Classic: 11306
+## Interface-BC: 20501
 ## Title: Dominos
-## Title-zhCN: |cFF0099FFDominos|r
 ## Notes: A main actionbar replacement
 ## Notes-zhCN: 一种动作条替换方案
 ## Author: Tuller
 ## Version: @project-version@
-#@retail@
-## X-Build: Retail
-#@end-retail@
-#@non-retail@
-# ## X-Build: Classic
-#@end-non-retail@
 ## SavedVariables: DominosDB
 ## OptionalDeps: Ace3, LibKeyBound-1.0, LibSharedMedia-3.0, Masque, FlyPaper
+#@version-retail@
+## X-Build: Retail
+#@end-version-retail@
+#@version-classic@
+## X-Build: Classic
+#@end-version-classic@
+#@version-bc@
+## X-Build: BC
+#@end-version-bc@
 # stuff required for the addon to work
 embeds.xml
 localization.xml
@@ -42,20 +41,20 @@ bars\stanceBar.lua
 bars\bagBar.lua
 bars\menuBar.lua
 bars\possessBar.lua
-#@retail@
+#@version-retail@
 bars\extraAbilityBar.lua
-#@end-retail@
+#@end-version-retail@
 bars\vehicleBar.lua
 # stuff you should be able to comment out and still have Dominos work
 plugins\slashCommands.lua
 plugins\launcher.lua
 plugins\blizzardHider.lua
 plugins\buttonThemer.lua
-#@retail@
+#@version-retail@
 plugins\quickBindings.lua
 plugins\multiActionBarFixer.lua
-#@end-retail@
-#@non-retail@
-# plugins\getActionReagentUses.lua
-# plugins\multiActionBarFixer.classic.lua
-#@end-non-retail@
+#@end-version-retail@
+#@version-classic@
+plugins\getActionReagentUses.lua
+plugins\multiActionBarFixer.classic.lua
+#@end-version-classic@
