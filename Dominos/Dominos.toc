@@ -58,3 +58,7 @@ plugins\multiActionBarFixer.lua
 plugins\getActionReagentUses.lua
 plugins\multiActionBarFixer.classic.lua
 #@end-version-classic@
+#@version-bc@
+plugins\getActionReagentUses.lua
+plugins\multiActionBarFixer.classic.lua
+#@end-version-bc@
