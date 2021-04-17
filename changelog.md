@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 9.0.28-beta
+
+* Added support for Burning Crusade Classic
+
 ## 9.0.27
 
 * Fix progress bar text showing up under the actual progress bar
