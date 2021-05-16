@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 9.0.28-beta2
+
+* Add support for 9.1.0
+
 ## 9.0.28-beta
 
 * Added support for Burning Crusade Classic
