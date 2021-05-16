@@ -1,6 +1,6 @@
-## Interface: 90005
-## Interface-Classic: 11306
-## Interface-BC: 20501
+## Interface: 90100
+## Interface-BCC: 20501
+## Interface-Classic: 11307
 ## Title: Dominos
 ## Notes: A main actionbar replacement
 ## Notes-zhCN: 一种动作条替换方案
@@ -8,15 +8,7 @@
 ## Version: @project-version@
 ## SavedVariables: DominosDB
 ## OptionalDeps: Ace3, LibKeyBound-1.0, LibSharedMedia-3.0, Masque, FlyPaper
-#@version-retail@
-## X-Build: Retail
-#@end-version-retail@
-#@version-classic@
-## X-Build: Classic
-#@end-version-classic@
-#@version-bc@
-## X-Build: BC
-#@end-version-bc@
+## X-Build: @game-type@
 # stuff required for the addon to work
 embeds.xml
 localization.xml
@@ -54,11 +46,11 @@ plugins\buttonThemer.lua
 plugins\quickBindings.lua
 plugins\multiActionBarFixer.lua
 #@end-version-retail@
+#@version-bcc@
+plugins\getActionReagentUses.lua
+plugins\multiActionBarFixer.classic.lua
+#@end-version-bcc@
 #@version-classic@
 plugins\getActionReagentUses.lua
 plugins\multiActionBarFixer.classic.lua
 #@end-version-classic@
-#@version-bc@
-plugins\getActionReagentUses.lua
-plugins\multiActionBarFixer.classic.lua
-#@end-version-bc@

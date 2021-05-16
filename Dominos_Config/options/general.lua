@@ -72,7 +72,7 @@ Addon:AddOptionsPanel(
             },
             check(L.ShowOverrideUI) {
                 desc = L.ShowOverrideUIDesc,
-                disabled = ParentAddon:IsBuild("bc", "classic"),
+                disabled = ParentAddon:IsBuild("bcc", "classic"),
                 get = function()
                     return ParentAddon:UsingOverrideUI()
                 end,
