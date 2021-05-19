@@ -32,12 +32,6 @@ jobs:
       - name: Clone project
         uses: actions/checkout@v2
 
-      # retail
-      - name: Package and release
-        uses: BigWigsMods/packager@master
-        with:
-          args: -p 6650 -w 9085 -a 9rN4rdKD
-
       # classic
       - name: Package and release for Classic
         uses: BigWigsMods/packager@master
@@ -49,3 +43,9 @@ jobs:
         uses: BigWigsMods/packager@master
         with:
           args: -g bcc -p 6650 -w 9085 -a 9rN4rdKD
+
+      # retail
+      - name: Package and release
+        uses: BigWigsMods/packager@master
+        with:
+          args: -p 6650 -w 9085 -a 9rN4rdKD
