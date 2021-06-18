@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 9.0.29
+
+* Banished the MainMenuBarMaxLevelBar
+
 ## 9.0.28
 
 * Added support for Burning Crusade Classic
