@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 9.1.0
+
+* TOC update for WoW 9.1.0
+
 ## 9.0.29
 
 * Banished the MainMenuBarMaxLevelBar
