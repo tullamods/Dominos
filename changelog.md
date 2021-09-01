@@ -1,5 +1,11 @@
 # Dominos Changelog
 
+## 9.1.1
+
+* Fix micro menu bar in BCC
+* Also, it should go without saying, but the [toxic workplace at Blizzard](https://en.wikipedia.org/wiki/California_Department_of_Fair_Employment_and_Housing_v._Activision_Blizzard)
+  is REAL bad and I don't support that. Solidarity with the workers at Blizzard.
+
 ## 9.1.0
 
 * TOC update for WoW 9.1.0
