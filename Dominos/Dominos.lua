@@ -157,7 +157,13 @@ end
 
 -- db actions
 function Addon:CreateDatabase()
-    local db = LibStub('AceDB-3.0'):New(AddonName .. 'DB', self:GetDatabaseDefaults(), UnitClass('player'))
+    local db = LibStub('AceDB-3.0'):New(
+        AddonName .. 'DB',
+        self:GetDatabaseDefaults(),
+        UnitClass('player')
+    )
+    local LibDualSpec = LibStub('LibDualSpec-1.0')
+    LibDualSpec:EnhanceDatabase(db, AddonName .. 'DB')
 
     db.RegisterCallback(self, 'OnNewProfile')
     db.RegisterCallback(self, 'OnProfileChanged')

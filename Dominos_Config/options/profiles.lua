@@ -1,6 +1,8 @@
 local _, Addon = ...
 
-Addon:AddOptionsPanelOptions(
-    "profiles",
-    _G.LibStub("AceDBOptions-3.0"):GetOptionsTable(Addon:GetParent().db, true)
-)
+local DualSpec = _G.LibStub("LibDualSpec-1.0")
+local db = Addon:GetParent().db
+local options = _G.LibStub("AceDBOptions-3.0"):GetOptionsTable(db, true)
+DualSpec:EnhanceOptions(options, db)
+
+Addon:AddOptionsPanelOptions("profiles", options)
