@@ -6,6 +6,7 @@
 	<Include file="libs\AceConsole-3.0\AceConsole-3.0.xml"/>
 	<Include file="libs\AceLocale-3.0\AceLocale-3.0.xml"/>
 	<Include file="libs\AceDB-3.0\AceDB-3.0.xml"/>
+	<Include file="libs\LibDualSpec-1.0\LibDualSpec-1.0.xml"/>
 	<Include file="libs\LibKeyBound-1.0\lib.xml"/>
 	<Script file="libs\LibDataBroker-1.1\LibDataBroker-1.1.lua"/>
 	<Script file="libs\LibDBIcon-1.0\LibDBIcon-1.0.lua"/>
