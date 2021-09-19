@@ -1,5 +1,11 @@
 # Dominos Changelog
 
+## 9.1.2
+
+* Implement spec profile support in Retail (Thanks wkrueger)
+* Add Swift Flight Form support (thanks ap0yuv)
+* Fix transparency of normal texture for action buttons
+
 ## 9.1.1
 
 * Fix micro menu bar in BCC
