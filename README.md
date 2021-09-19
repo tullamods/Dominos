@@ -27,7 +27,7 @@ To move around or hide bars, you will want to enter **configuration mode**. You
 can do this by either one of the following ways
 
 * Left clicking the minimap button
-* Clicking **Confugure Bars...** from the main options menu (accessible from /dominos)
+* Clicking **Configure Bars...** from the main options menu (accessible from /dominos)
 * Using the slash command /dominos config
 * Once in configuration mode, you can drag around bars using your mouse
 
