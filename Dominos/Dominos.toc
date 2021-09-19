@@ -8,7 +8,6 @@
 ## Version: @project-version@
 ## SavedVariables: DominosDB
 ## OptionalDeps: Ace3, LibKeyBound-1.0, LibSharedMedia-3.0, Masque, FlyPaper, LibDualSpec-1.0
-## X-Build: @game-type@
 #@version-retail@
 ## X-Build: Retail
 #@end-version-retail@
@@ -42,10 +41,10 @@ bars\stanceBar.lua
 bars\bagBar.lua
 bars\menuBar.lua
 bars\possessBar.lua
+bars\vehicleBar.lua
 #@version-retail@
 bars\extraAbilityBar.lua
 #@end-version-retail@
-bars\vehicleBar.lua
 # stuff you should be able to comment out and still have Dominos work
 plugins\slashCommands.lua
 plugins\launcher.lua
@@ -55,11 +54,7 @@ plugins\buttonThemer.lua
 plugins\quickBindings.lua
 plugins\multiActionBarFixer.lua
 #@end-version-retail@
-#@version-bcc@
+#@not-version-retail@
 plugins\getActionReagentUses.lua
 plugins\multiActionBarFixer.classic.lua
-#@end-version-bcc@
-#@version-classic@
-plugins\getActionReagentUses.lua
-plugins\multiActionBarFixer.classic.lua
-#@end-version-classic@
+#@end-not-version-retail@
