@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 9.1.3
+
+* Add a type check for the button themer on classic era realms
+
 ## 9.1.2
 
 * Implement spec profile support in Retail (Thanks wkrueger)
