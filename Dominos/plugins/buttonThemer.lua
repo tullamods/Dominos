@@ -60,8 +60,8 @@ local function resizeNormalTexture(button)
 
     -- make the texture slightly transparent now to match its state when moving
     -- empty buttons around
-    if button.NormalTexture then
-        button.NormalTexture:SetVertexColor(1, 1, 1, 0.5)
+    if button.normalTexture then
+        button.normalTexture:SetVertexColor(1, 1, 1, 0.5)
     end
 end
 
