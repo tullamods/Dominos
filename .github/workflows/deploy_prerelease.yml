@@ -32,18 +32,18 @@ jobs:
 
       # classic
       - name: Package and release for Classic
-        uses: BigWigsMods/packager@master
+        uses: BigWigsMods/packager@v1
         with:
           args: -g classic -p 6650 -w 19110 -a 9rN4rdKD
 
       # tbc classic
       - name: Package and release for Burning Crusade Classic
-        uses: BigWigsMods/packager@master
+        uses: BigWigsMods/packager@v1
         with:
           args: -g bcc -p 6650 -w 19110 -a 9rN4rdKD
 
       # retail
       - name: Package and release
-        uses: BigWigsMods/packager@master
+        uses: BigWigsMods/packager@v1
         with:
           args: -p 6650 -w 19110 -a 9rN4rdKD
