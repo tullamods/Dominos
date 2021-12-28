@@ -1,6 +1,6 @@
 ## Interface: 90100
 ## Interface-BCC: 20502
-## Interface-Classic: 11307
+## Interface-Classic: 11401
 ## Title: Dominos Cast
 ## Title-zhCN: |cFF0099FFDominos|r 施法条模块
 ## Notes: A movable casting bar, with timer

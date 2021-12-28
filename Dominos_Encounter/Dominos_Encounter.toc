@@ -1,6 +1,6 @@
 ## Interface: 90100
 ## Interface-BCC: 20502
-## Interface-Classic: 11307
+## Interface-Classic: 11401
 ## Title: Dominos Extras
 ## Title-zhCN: |cFF0099FFDominos|r Extras 模块
 ## Notes: Makes additional frames movable
