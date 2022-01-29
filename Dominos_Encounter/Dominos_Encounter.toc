@@ -1,5 +1,5 @@
 ## Interface: 90105
-## Interface-BCC: 20502
+## Interface-BCC: 20503
 ## Interface-Classic: 11401
 ## Title: Dominos Extras
 ## Title-zhCN: |cFF0099FFDominos|r Extras 模块
