@@ -1,5 +1,10 @@
 # Dominos Changelog
 
+## 9.1.6
+
+* The cast bar now displays immediately, instead of fading in
+* Fixed a bug causing the cast bar to get stuck when canceling out of a spell cast started in a Druid form
+
 ## 9.1.5
 
 * TOC updates
