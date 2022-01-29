@@ -239,8 +239,6 @@ function TimerBar:FadeIn()
         self.fadeOut:Stop()
     end
 
-    print("fade in", self.fadeIn:GetDuration())
-
     if self:GetAlpha() < 1 then
         if self.fadeIn:GetDuration() > 0 then
             if not self.fadeIn:IsPlaying() then
@@ -256,8 +254,6 @@ function TimerBar:FadeOut()
     if self.fadeIn:IsPlaying() then
         self.fadeIn:Stop()
     end
-
-    print("fade out", self.fadeOut:GetDuration())
 
     if self:GetAlpha() > 0 then
         if self.fadeOut:GetDuration() > 0 then
