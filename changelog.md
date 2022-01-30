@@ -1,5 +1,10 @@
 # Dominos Changelog
 
+## 9.1.7
+
+* Fixed a bug causing channeling spells to not appear on the castbar
+* Updated TOCs for the latest version of TBC Classic
+
 ## 9.1.6
 
 * The cast bar now displays immediately, instead of fading in

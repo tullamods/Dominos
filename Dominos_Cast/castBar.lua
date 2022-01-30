@@ -139,9 +139,7 @@ end
 
 -- channeling events
 function CastBar:UNIT_SPELLCAST_CHANNEL_START(event, unit, castID, spellID)
-    if castID == nil then
-        return
-    end
+    castID = castID or spellID
 
     self:SetProperty("castID", castID)
     self:SetProperty("unit", unit)
@@ -150,6 +148,8 @@ function CastBar:UNIT_SPELLCAST_CHANNEL_START(event, unit, castID, spellID)
 end
 
 function CastBar:UNIT_SPELLCAST_CHANNEL_UPDATE(event, unit, castID, spellID)
+    castID = castID or spellID
+
     if castID ~= self:GetProperty("castID") then
         return
     end
@@ -158,6 +158,8 @@ function CastBar:UNIT_SPELLCAST_CHANNEL_UPDATE(event, unit, castID, spellID)
 end
 
 function CastBar:UNIT_SPELLCAST_CHANNEL_STOP(event, unit, castID, spellID)
+    castID = castID or spellID
+
     if castID ~= self:GetProperty("castID") then
         return
     end
