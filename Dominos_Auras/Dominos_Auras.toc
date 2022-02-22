@@ -1,6 +1,6 @@
-## Interface: 90105
+## Interface: 90200
 ## Interface-BCC: 20503
-## Interface-Classic: 11401
+## Interface-Classic: 11402
 ## Title: Dominos Auras
 ## Author: Goranaws
 ## Version: 9

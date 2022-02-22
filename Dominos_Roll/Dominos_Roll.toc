@@ -1,6 +1,6 @@
-## Interface: 90105
+## Interface: 90200
 ## Interface-BCC: 20503
-## Interface-Classic: 11401
+## Interface-Classic: 11402
 ## Title: Dominos Roll
 ## Title-zhCN: |cFF0099FFDominos|r Roll 窗口模块
 ## Notes: Makes the set of frames for rolling on items when in a group movable

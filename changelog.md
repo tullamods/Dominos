@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 9.2.0
+
+* Update TOCs for client versions 9.2.0 and 1.14.2
+
 ## 9.1.7
 
 * Fixed a bug causing channeling spells to not appear on the castbar
