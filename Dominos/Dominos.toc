@@ -28,7 +28,12 @@ core\frame.lua
 core\buttonBar.lua
 core\bindableButton.lua
 core\fadeManager.lua
+#@version-retail@
 core\overrideController.lua
+#@end-version-retail@
+#@version-bcc@
+core\overrideController.bcc.lua
+#@end-version-bcc@
 core\tooltipController.lua
 # builtin bars
 bars\actionButtonMixin.lua

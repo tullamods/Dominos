@@ -61,7 +61,7 @@ Addon:AddOptionsPanel(
                     player = L.RCUPlayer,
                     focus = L.RCUFocus,
                     targettarget = L.RCUToT,
-                    none = L.None
+                    none = DEFAULT
                 },
                 get = function()
                     return ParentAddon:GetRightClickUnit() or "none"
@@ -88,6 +88,10 @@ Addon:AddOptionsPanel(
 
                     for i = 1, ParentAddon:NumBars() do
                         tinsert(items, L.ActionBarNumber:format(i))
+                    end
+
+                    if ParentAddon:IsBuild("bcc", "classic") then
+                        items.pet = ParentAddon.Frame:Get("pet"):GetDisplayName()
                     end
 
                     return items
