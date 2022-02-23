@@ -3,6 +3,7 @@
 ## 9.2.0
 
 * Update TOCs for client versions 9.2.0 and 1.14.2
+* Add the ability to choose the Pet bar as the possess bar in TBC Classic
 
 ## 9.1.7
 
