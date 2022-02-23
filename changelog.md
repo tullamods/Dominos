@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 9.2.1
+
+* Fixed a loading error for Classic
+
 ## 9.2.0
 
 * Update TOCs for client versions 9.2.0 and 1.14.2
