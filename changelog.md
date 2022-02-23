@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 9.2.2
+
+* Fixed some packaging issues
+
 ## 9.2.1
 
 * Fixed a loading error for Classic

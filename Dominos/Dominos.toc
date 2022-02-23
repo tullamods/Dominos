@@ -31,9 +31,9 @@ core\fadeManager.lua
 #@version-retail@
 core\overrideController.lua
 #@end-version-retail@
-#@not-version-retail@
-core\overrideController.bcc.lua
-#@end-not-version-retail@
+#@non-version-retail@
+# core\overrideController.bcc.lua
+#@end-non-version-retail@
 core\tooltipController.lua
 # builtin bars
 bars\actionButtonMixin.lua
@@ -59,7 +59,7 @@ plugins\buttonThemer.lua
 plugins\quickBindings.lua
 plugins\multiActionBarFixer.lua
 #@end-version-retail@
-#@not-version-retail@
-plugins\getActionReagentUses.lua
-plugins\multiActionBarFixer.classic.lua
-#@end-not-version-retail@
+#@non-version-retail@
+# plugins\getActionReagentUses.lua
+# plugins\multiActionBarFixer.classic.lua
+#@end-non-version-retail@
