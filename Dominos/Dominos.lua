@@ -181,7 +181,7 @@ end
 function Addon:GetDatabaseDefaults()
     return {
         profile = {
-            possessBar = self:IsBuild('retail') and 1 or "pet",
+            possessBar = self:IsBuild('retail', 'wrath') and 1 or "pet",
             -- if true, applies a default dominos skin to buttons
             -- when masque is not enabled
             applyButtonTheme = true,
@@ -193,7 +193,7 @@ function Addon:GetDatabaseDefaults()
             showEquippedItemBorders = true,
             showTooltips = true,
             showTooltipsCombat = true,
-            useOverrideUI = self:IsBuild('retail'),
+            useOverrideUI = self:IsBuild('retail', 'wrath'),
 
             minimap = {hide = false},
 
@@ -585,7 +585,7 @@ function Addon:SetUseOverrideUI(enable)
 end
 
 function Addon:UsingOverrideUI()
-    return self.db.profile.useOverrideUI and self:IsBuild('retail')
+    return self.db.profile.useOverrideUI and self:IsBuild('retail', 'wrath')
 end
 
 function Addon:UpdateUseOverrideUI()
@@ -756,7 +756,7 @@ function Addon:GetWowBuild()
     if project == WOW_PROJECT_CLASSIC then
         return 'classic'
     elseif project == WOW_PROJECT_BURNING_CRUSADE_CLASSIC then
-        local expansion = LE_EXPANSION_LEVEL_CURRENT        
+        local expansion = LE_EXPANSION_LEVEL_CURRENT
         if expansion == LE_EXPANSION_NORTHREND then
             return 'wrath'
         elseif expansion == LE_EXPANSION_BURNING_CRUSADE then

@@ -1,5 +1,11 @@
 # Dominos Changelog
 
+## 9.3.0
+
+* First pass at support for WotLK classic:
+  * Turned on the full vehicle UI for WotLK (NEEDS TESTING)
+  * Made the Blizzard totem bar movable
+
 ## 9.2.2
 
 * Fixed some packaging issues

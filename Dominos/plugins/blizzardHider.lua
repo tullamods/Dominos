@@ -49,12 +49,15 @@ apply(
     MultiBarBottomRight,
     MultiBarLeft,
     MultiBarRight,
-    MultiCastActionBarFrame,
     PetActionBarFrame,
     StanceBarFrame
 )
 
-apply(disableSlideOutAnimations, MainMenuBar, MultiBarLeft, MultiBarRight, OverrideActionBar)
+if not Addon:IsBuild('wrath') then
+    apply(hide, MultiCastActionBarFrame)
+end
+
+apply(disableSlideOutAnimations, MainMenuBar, MultiBarLeft, MultiBarRight, OverrideActionBar, MultiCastActionBarFrame)
 
 -- we don't completely disable the main menu bar, as there's some logic
 -- dependent on it being visible

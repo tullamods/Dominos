@@ -35,9 +35,12 @@ core\fadeManager.lua
 #@version-retail@
 core\overrideController.lua
 #@end-version-retail@
-#@non-version-retail@
-# core\overrideController.bcc.lua
-#@end-non-version-retail@
+#@version-wrath@
+core\overrideController.lua
+#@end-version-wrath@
+#@version-bcc@
+core\overrideController.bcc.lua
+#@end-version-bcc@
 core\tooltipController.lua
 # builtin bars
 bars\actionButtonMixin.lua
@@ -54,6 +57,9 @@ bars\vehicleBar.lua
 #@version-retail@
 bars\extraAbilityBar.lua
 #@end-version-retail@
+#@version-wrath@
+bars\totemBar.lua
+#@end-version-wrath@
 # stuff you should be able to comment out and still have Dominos work
 plugins\slashCommands.lua
 plugins\launcher.lua
