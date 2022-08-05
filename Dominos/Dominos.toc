@@ -1,6 +1,7 @@
-## Interface: 90200
-## Interface-BCC: 20503
-## Interface-Classic: 11402
+## Interface: 90205
+## Interface-BCC: 20504
+## Interface-Classic: 11403
+## Interface-Wrath: 30400
 ## Title: Dominos
 ## Notes: A main actionbar replacement
 ## Notes-zhCN: 一种动作条替换方案
@@ -17,6 +18,9 @@
 #@version-classic@
 ## X-Build: Classic
 #@end-version-classic@
+#@version-wrath@
+## X-Build: Wrath
+#@end-version-wrath@
 # stuff required for the addon to work
 embeds.xml
 localization.xml
