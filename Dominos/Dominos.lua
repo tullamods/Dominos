@@ -756,13 +756,12 @@ function Addon:GetWowBuild()
     if project == WOW_PROJECT_CLASSIC then
         return 'classic'
     elseif project == WOW_PROJECT_BURNING_CRUSADE_CLASSIC then
-        local version = select(4, GetBuildInfo())
-
-        if version >= 30000 and version < 40000 then
+        local expansion = LE_EXPANSION_LEVEL_CURRENT        
+        if expansion == LE_EXPANSION_NORTHREND then
             return 'wrath'
+        elseif expansion == LE_EXPANSION_BURNING_CRUSADE then
+            return 'bcc'
         end
-
-        return 'bcc'
     elseif project == WOW_PROJECT_MAINLINE then
         return 'retail'
     end
