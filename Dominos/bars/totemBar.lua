@@ -3,12 +3,14 @@
 -- Lets you move around the bar for totems
 --------------------------------------------------------------------------------
 
-if UnitClassBase('player') ~= 'SHAMAN' and Addon:IsBuild('wrath') then
-    return
-end
+local AddonName, Addon = ...
 
 local MultiCastActionBarFrame = _G.MultiCastActionBarFrame
 if not MultiCastActionBarFrame then
+    return
+end
+
+if not (UnitClassBase('player') == 'SHAMAN' and Addon:IsBuild('wrath')) then
     return
 end
 
@@ -16,7 +18,6 @@ end
 -- Bar setup
 --------------------------------------------------------------------------------
 
-local AddonName, Addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(AddonName)
 
 local TotemBar = Addon:CreateClass('Frame', Addon.Frame)
