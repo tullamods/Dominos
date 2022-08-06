@@ -78,8 +78,6 @@ function Frame:New(id)
 
     frame:LoadSettings()
 
-    Addon.OverrideController:Add(frame)
-
     frame:OnAcquire(id)
     FlyPaper.AddFrame(AddonName, id, frame)
     active[id] = frame
@@ -135,7 +133,6 @@ function Frame:Free(deleteSettings)
 
     UnregisterStateDriver(self, 'display', 'show')
     Addon.FadeManager:Remove(self)
-    Addon.OverrideController:Remove(self)
     FlyPaper.RemoveFrame(AddonName, self.id, self)
 
     self:ClearAllPoints()
