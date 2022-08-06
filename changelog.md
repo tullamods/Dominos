@@ -1,5 +1,10 @@
 # Dominos Changelog
 
+## 9.3.0-beta3
+
+* (WotLK) Fix the shadowdance state
+* (Vanilla) Fix a crash due to no override bar
+
 ## 9.3.0-beta2
 
 * (WotLK) Fixed a load issue with the new totem bar
