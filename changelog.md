@@ -1,6 +1,11 @@
 # Dominos Changelog
 
-## 9.3.0
+## 9.3.0-beta2
+
+* (WotLK) Fixed a load issue with the new totem bar
+* (WotLK) Disabled the pet bar when possessing a target
+
+## 9.3.0-beta1
 
 * First pass at support for WotLK classic:
   * Turned on the full vehicle UI for WotLK (NEEDS TESTING)
