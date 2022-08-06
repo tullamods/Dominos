@@ -158,14 +158,12 @@ do
             addState('class', 'shadowform', '[form:1]', GetSpellInfo(16592))
         end
     elseif class == 'ROGUE' then
-        -- retail shadowdance
-        if GetSpellInfo(185313) then
-            addState('class', 'shadowdance', '[bonusbar:1,form:2]', GetSpellInfo(185313))
-        end
-
         -- wrath shadowdance
         if Addon:IsBuild('wrath') then
-            addState('class', 'shadowdance', '[form:3]', GetSpellInfo(51713))
+            addState('class', 'shadowdance', '[bonusbar:2]', GetSpellInfo(51713))
+        -- retail
+        elseif GetSpellInfo(185313) then
+            addState('class', 'shadowdance', '[bonusbar:1,form:2]', GetSpellInfo(185313))
         end
 
         addState('class', 'stealth', '[bonusbar:1]', GetSpellInfo(1784))
