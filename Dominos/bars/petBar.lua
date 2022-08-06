@@ -44,7 +44,7 @@ function PetBar:UpdateOverrideBar()
     self:UpdateDisplayConditions()
 end
 
-if Addon:IsBuild('retail') then
+if Addon:IsBuild('retail', 'wrath') then
     function PetBar:GetDisplayConditions()
         return '[@pet,exists,nopossessbar]show;hide'
     end
