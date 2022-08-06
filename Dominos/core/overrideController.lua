@@ -104,14 +104,12 @@ function OverrideController:OnLoad()
 		RegisterStateDriver(self, state, values)
 	end
 
-	Addon.Frame:Extend("OnAcquire", function(frame) self:Add(frame); end)
-	Addon.Frame:Extend("OnRelease", function(frame) self:Remove(frame); end)
-
 	self.OnLoad = nil
 end
 
 function OverrideController:Add(frame)
 	self:SetFrameRef('FrameToRegister', frame)
+
 	self:Execute([[
 		local frame = self:GetFrameRef('FrameToRegister')
 
@@ -144,7 +142,6 @@ function OverrideController:OverrideBarActive()
 end
 
 OverrideController:OnLoad()
-
 
 -- exports
 Addon.OverrideController = OverrideController

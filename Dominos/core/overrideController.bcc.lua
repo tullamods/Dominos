@@ -16,9 +16,6 @@ function OverrideController:OnLoad()
 
     RegisterStateDriver(self, 'possess', '[bonusbar:5]1;0')
 
-	Addon.Frame:Extend("OnAcquire", function(frame) self:Add(frame); end)
-	Addon.Frame:Extend("OnRelease", function(frame) self:Remove(frame); end)
-
     self.OnLoad = nil
 end
 
