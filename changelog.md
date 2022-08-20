@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 9.3.1
+
+* Fix packaging for multiple game versions
+
 ## 9.3.0
 
 * Packaged as a universal addon
