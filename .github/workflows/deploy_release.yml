@@ -36,4 +36,4 @@ jobs:
       - name: Package and release
         uses: BigWigsMods/packager@v2
         with:
-          args: -p 6650 -w 9085 -a 9rN4rdKD
+          args: -S -p 6650 -w 9085 -a 9rN4rdKD
