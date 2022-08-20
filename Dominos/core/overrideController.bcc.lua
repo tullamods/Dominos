@@ -1,41 +1,45 @@
 local _, Addon = ...
 local OverrideController = Addon:CreateHiddenFrame('Frame', nil, UIParent, 'SecureHandlerStateTemplate')
 
+if not Addon:IsBuild('bcc') then
+	return
+end
+
 function OverrideController:OnLoad()
-    self:SetAttribute('_onstate-possess', [[
+	self:SetAttribute('_onstate-possess', [[
 		self:RunAttribute('updateOverridePage')
 	]])
 
-    self:SetAttribute('updateOverridePage', [[
+	self:SetAttribute('updateOverridePage', [[
 		local newPage = GetBonusBarOffset() or 0
 
 		self:SetAttribute('state-overridepage', newPage)
 	]])
 
-    self:Execute([[ myFrames = table.new() ]])
+	self:Execute([[ myFrames = table.new() ]])
 
-    RegisterStateDriver(self, 'possess', '[bonusbar:5]1;0')
+	RegisterStateDriver(self, 'possess', '[bonusbar:5]1;0')
 
-    self.OnLoad = nil
+	self.OnLoad = nil
 end
 
 function OverrideController:Add(frame)
-    self:SetFrameRef('FrameToRegister', frame)
+	self:SetFrameRef('FrameToRegister', frame)
 
-    self:Execute([[
+	self:Execute([[
 		local frame = self:GetFrameRef('FrameToRegister')
 
 		table.insert(myFrames, frame)
 	]])
 
-    -- OnLoad states
-    frame:SetAttribute('state-overridepage', self:GetAttribute('state-overridepage') or 0)
+	-- OnLoad states
+	frame:SetAttribute('state-overridepage', self:GetAttribute('state-overridepage') or 0)
 end
 
 function OverrideController:Remove(frame)
-    self:SetFrameRef('FrameToUnregister', frame)
+	self:SetFrameRef('FrameToUnregister', frame)
 
-    self:Execute([[
+	self:Execute([[
 		local frameToUnregister = self:GetFrameRef('FrameToUnregister')
 
 		for i, frame in pairs(myFrames) do
@@ -50,7 +54,7 @@ end
 -- returns true if the player is in a state where they should be using actions
 -- normally found on the override bar
 function OverrideController:OverrideBarActive()
-    return (self:GetAttribute('state-overridepage') or 0) > 10
+	return (self:GetAttribute('state-overridepage') or 0) > 10
 end
 
 OverrideController:OnLoad()

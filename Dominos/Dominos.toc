@@ -1,4 +1,4 @@
-## Interface: 90205
+## Interface: 90207
 ## Interface-BCC: 20504
 ## Interface-Classic: 11403
 ## Interface-Wrath: 30400
@@ -9,18 +9,6 @@
 ## Version: @project-version@
 ## SavedVariables: DominosDB
 ## OptionalDeps: Ace3, LibKeyBound-1.0, LibSharedMedia-3.0, Masque, FlyPaper, LibDualSpec-1.0
-#@version-retail@
-## X-Build: Retail
-#@end-version-retail@
-#@version-bcc@
-## X-Build: BCC
-#@end-version-bcc@
-#@version-classic@
-## X-Build: Classic
-#@end-version-classic@
-#@version-wrath@
-## X-Build: Wrath
-#@end-version-wrath@
 # stuff required for the addon to work
 embeds.xml
 localization.xml
@@ -32,15 +20,8 @@ core\frame.lua
 core\buttonBar.lua
 core\bindableButton.lua
 core\fadeManager.lua
-#@version-retail@
 core\overrideController.lua
-#@end-version-retail@
-#@version-wrath@
-core\overrideController.lua
-#@end-version-wrath@
-#@version-bcc@
 core\overrideController.bcc.lua
-#@end-version-bcc@
 core\tooltipController.lua
 # builtin bars
 bars\actionButtonMixin.lua
@@ -54,22 +35,14 @@ bars\bagBar.lua
 bars\menuBar.lua
 bars\possessBar.lua
 bars\vehicleBar.lua
-#@version-retail@
 bars\extraAbilityBar.lua
-#@end-version-retail@
-#@version-wrath@
 bars\totemBar.lua
-#@end-version-wrath@
 # stuff you should be able to comment out and still have Dominos work
 plugins\slashCommands.lua
 plugins\launcher.lua
 plugins\blizzardHider.lua
 plugins\buttonThemer.lua
-#@version-retail@
-plugins\quickBindings.lua
 plugins\multiActionBarFixer.lua
-#@end-version-retail@
-#@non-version-retail@
-# plugins\getActionReagentUses.lua
-# plugins\multiActionBarFixer.classic.lua
-#@end-non-version-retail@
+plugins\multiActionBarFixer.classic.lua
+plugins\quickBindings.lua
+plugins\getActionReagentUses.lua

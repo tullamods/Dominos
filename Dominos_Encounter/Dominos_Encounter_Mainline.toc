@@ -1,15 +1,9 @@
-## Interface: 90205
-## Interface-BCC: 20504
-## Interface-Classic: 11403
-## Interface-Wrath: 30400
+## Interface: 90207
 ## Title: Dominos Extras
 ## Title-zhCN: |cFF0099FFDominos|r Extras 模块
 ## Notes: Makes additional frames movable
 ## Notes-zhCN: 使玩家高级能量条(PlayerPowerBarAlt)可移动
 ## Author: Tuller (with help from Goranaws)
 ## Dependencies: Dominos
-#@non-retail@
-## DefaultState: disabled
-#@end-non-retail@
 encounterBar.lua
 talkingHeadBar.lua

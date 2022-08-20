@@ -1,3 +1,6 @@
+local TalkingHeadFrame = _G.TalkingHeadFrame
+if not TalkingHeadFrame then return end
+
 local Dominos = LibStub("AceAddon-3.0"):GetAddon("Dominos")
 
 -- bar

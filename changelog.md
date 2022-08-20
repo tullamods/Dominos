@@ -1,5 +1,10 @@
 # Dominos Changelog
 
+## 9.3.0
+
+* Packaged as a universal addon
+* (WotLK) Update expansion level detection
+
 ## 9.3.0-beta3
 
 * (WotLK) Fix the shadowdance state

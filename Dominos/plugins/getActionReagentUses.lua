@@ -1,6 +1,7 @@
 -- GetActionReagentUses
 -- An API to figure out how many times you can cast a spell that requires reagents
 local _, Addon = ...
+
 if not Addon:IsBuild('classic') then
     return
 end
