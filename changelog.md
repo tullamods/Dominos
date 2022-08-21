@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 9.3.2
+
+* Use Dominos_Encounter.toc instead of Dominos_Encounter_Mainline.toc for compatibility
+
 ## 9.3.1
 
 * Fix packaging for multiple game versions
