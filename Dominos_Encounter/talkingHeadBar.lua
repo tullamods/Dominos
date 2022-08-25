@@ -1,7 +1,7 @@
-local TalkingHeadFrame = _G.TalkingHeadFrame
-if not TalkingHeadFrame then return end
-
 local Dominos = LibStub("AceAddon-3.0"):GetAddon("Dominos")
+if not Dominos:IsBuild("retail") then
+    return
+end
 
 -- bar
 local TalkingHeadBar = Dominos:CreateClass('Frame', Dominos.Frame)
@@ -28,7 +28,7 @@ function TalkingHeadBar:GetDefaults()
 end
 
 function TalkingHeadBar:GetDisplayName()
-	return 'Talking Heads'
+    return 'Talking Heads'
 end
 
 function TalkingHeadBar:Layout()
@@ -68,10 +68,10 @@ function TalkingHeadBar:AddLayoutPanel(menu)
 
     panel.muteButton = panel:NewCheckButton
     {
-		name = _G.MUTE,
-		get = function() return panel.owner:MuteSounds() end,
-		set = function(_, enable) panel.owner:SetMuteSounds(enable) end
-	}
+        name = _G.MUTE,
+        get = function() return panel.owner:MuteSounds() end,
+        set = function(_, enable) panel.owner:SetMuteSounds(enable) end
+    }
 
     panel:AddBasicLayoutOptions()
 

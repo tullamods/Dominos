@@ -6,5 +6,3 @@
 ## Author: Tuller (with help from Goranaws)
 ## Dependencies: Dominos
 ## DefaultState: disabled
-# encounterBar.lua
-# talkingHeadBar.lua

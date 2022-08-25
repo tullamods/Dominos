@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 9.3.3
+
+* (Retail) Fix issues with the talking head bar not loading
+
 ## 9.3.2
 
 * Use Dominos_Encounter.toc instead of Dominos_Encounter_Mainline.toc for compatibility
