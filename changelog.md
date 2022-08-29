@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 9.3.4
+
+* (Classic) Fix OverrideController related errors
+
 ## 9.3.3
 
 * (Retail) Fix issues with the talking head bar not loading
