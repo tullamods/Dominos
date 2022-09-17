@@ -1,8 +1,12 @@
 # Dominos Changelog
 
+## 9.3.5
+
+* (WotLK) Update LibDualSpec
+
 ## 9.3.4
 
-* (Classic) Fix OverrideController related errors
+* (WotLK) Fix OverrideController related errors
 
 ## 9.3.3
 
