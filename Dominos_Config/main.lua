@@ -4,6 +4,10 @@ local Addon = LibStub('AceAddon-3.0'):NewAddon(AddonTable, AddonName, 'AceEvent-
 local ParentAddonName = (GetAddOnDependencies(AddonName))
 local ParentAddon = LibStub('AceAddon-3.0'):GetAddon(ParentAddonName)
 
+Addon.frame = CreateFrame('Frame')
+Addon.frame.children = {}
+Addon.panels = {}
+
 --------------------------------------------------------------------------------
 -- Events
 --------------------------------------------------------------------------------
@@ -11,7 +15,7 @@ local ParentAddon = LibStub('AceAddon-3.0'):GetAddon(ParentAddonName)
 function Addon:OnEnable()
     self:CreateOptionsMenu()
 
-    if self.optionsMenuFrame:IsShown() then
+    if self.frame and self.frame:IsShown() then
         self:ShowPrimaryOptionsPanel()
     end
 end
@@ -20,21 +24,20 @@ end
 -- Interface Options Menu
 --------------------------------------------------------------------------------
 
-Addon.optionsMenuFrame = ParentAddon.OptionsFrame
-Addon.optionsMenuPanels = { }
-
 function Addon:CreateOptionsMenu()
     ParentAddon.callbacks:Fire('OPTIONS_MENU_LOADING', self)
 
-    -- augment the options panel with new stuff
-    self.optionsMenuFrame:SetScript(
-        'OnShow',
-        function()
-            self:ShowPrimaryOptionsPanel()
-        end
+    local category = Settings.RegisterCanvasLayoutCategory(
+        self.frame,
+        ParentAddonName
     )
 
-    self.optionsMenuFrame.children = { }
+    Settings.RegisterAddOnCategory(category)
+
+    -- augment the options panel with new stuff
+    self.frame:SetScript('OnShow', function()
+        self:ShowPrimaryOptionsPanel()
+    end)
 
     -- register ace config options
     LibStub('AceConfig-3.0'):RegisterOptionsTable(
@@ -62,21 +65,21 @@ function Addon:CreateOptionsMenu()
 
         if not frame then
             frame = _G.LibStub('AceConfigDialog-3.0'):AddToBlizOptions(
-                self.optionsMenuFrame.name,
+                category.name,
                 panel.options.name,
-                self.optionsMenuFrame.name,
+                category.name,
                 panel.key
             )
         end
 
-        table.insert(self.optionsMenuFrame.children, frame)
+        self.frame.children[1 + #self.frame.children] = frame
     end
 
     ParentAddon.callbacks:Fire('OPTIONS_MENU_LOADED', self)
 end
 
 -- A DSL for fun
-local env = setmetatable({}, {__index = _G})
+local env = setmetatable({}, { __index = _G })
 
 local function option(props)
     return function(...)
@@ -93,7 +96,7 @@ end
 
 local function make_option(type)
     return function(name)
-        return option {type = type, name = name}
+        return option { type = type, name = name }
     end
 end
 
@@ -129,12 +132,12 @@ for key, type in pairs {
 end
 
 function env.radio_group(name)
-    return option {name = name, type = 'select', style = 'radio'}
+    return option { name = name, type = 'select', style = 'radio' }
 end
 
 function env.group(name)
     return function(children)
-        return option {type = 'group', name = name, args = make_args(children)}
+        return option { type = 'group', name = name, args = make_args(children) }
     end
 end
 
@@ -152,7 +155,7 @@ end
 function env.tablist(props)
     return function(children)
         return option {
-            name = name,
+            -- name = name,
             type = 'group',
             childGroups = 'tab',
             args = make_args(children)
@@ -183,11 +186,21 @@ function env.menu(props)
 end
 
 -- shows the first options panel frame we have
-function Addon:ShowPrimaryOptionsPanel()
-    local _, child = next(self.optionsMenuFrame.children)
+if Settings and Settings.OpenToCategory then
+    function Addon:ShowPrimaryOptionsPanel()
+        local _, child = next(self.frame.children)
 
-    if child then
-        _G.InterfaceOptionsFrame_OpenToCategory(child)
+        if child then
+            Settings.OpenToCategory(child)
+        end
+    end
+else
+    function Addon:ShowPrimaryOptionsPanel()
+        local _, child = next(self.frame.children)
+
+        if child then
+            InterfaceOptionsFrame_OpenToCategory(child)
+        end
     end
 end
 
@@ -195,23 +208,19 @@ function Addon:AddOptionsPanel(func, ...)
     local options = setfenv(func, env)(...)
     local args = make_args(options)
 
-    return self:AddOptionsPanelOptions(options.key, {
-        type = 'group',
-        name = options.name,
-        args = args
-    })
+    return self:AddOptionsPanelOptions(options.key, { type = 'group', name = options.name, args = args })
 end
 
 function Addon:AddOptionsPanelOptions(key, options)
-    return table.insert(self.optionsMenuPanels, {key = key, options = options})
+    return table.insert(self.panels, { key = key, options = options })
 end
 
 function Addon:AddOptionsPanelFrame(key, frame)
-    return table.insert(self.optionsMenuPanels, {key = key, frame = frame})
+    return table.insert(self.panels, { key = key, frame = frame })
 end
 
 function Addon:GetOptionsPanels()
-    return ipairs(self.optionsMenuPanels)
+    return ipairs(self.panels)
 end
 
 --------------------------------------------------------------------------------
