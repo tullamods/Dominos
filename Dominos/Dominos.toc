@@ -23,6 +23,8 @@ core\fadeManager.lua
 core\overrideController.lua
 core\overrideController.bcc.lua
 core\tooltipController.lua
+core\blizzardHider.lua
+core\blizzardHider.classic.lua
 # builtin bars
 # bars\actionButtonMixin.lua
 # bars\actionButtons.lua
@@ -40,10 +42,8 @@ core\tooltipController.lua
 # stuff you should be able to comment out and still have Dominos work
 plugins\slashCommands.lua
 plugins\launcher.lua
-plugins\blizzardHider.lua
-plugins\blizzardHider.classic.lua
 plugins\buttonThemer.lua
-plugins\multiActionBarFixer.lua
+# plugins\multiActionBarFixer.lua
 plugins\multiActionBarFixer.classic.lua
 plugins\quickBindings.lua
 plugins\getActionReagentUses.lua
