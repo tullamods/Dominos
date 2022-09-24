@@ -23,9 +23,6 @@ function Addon:OnInitialize()
     self:CreateDatabase()
     self:UpgradeDatabase()
 
-    -- create a stub loader for the options menu
-    self:CreateOptionsFrame()
-
     -- keybound support
     local kb = KeyBound
     kb.RegisterCallback(self, 'LIBKEYBOUND_ENABLED')
@@ -297,40 +294,28 @@ end
 
 -- create a stub container on the Blizzard interface options panel
 -- it will be filled with content once the config addon loads
-function Addon:CreateOptionsFrame()
-    if not self:IsConfigAddonEnabled() then
-        return
-    end
-
-    local frame = CreateFrame('Frame')
-    frame:Hide()
-
-    frame.name = AddonName
-
-    -- if a user shows this frame and we've not yet loaded  the config addon,
-    -- then load it
-    frame:SetScript('OnShow', function(f)
-        f:SetScript('OnShow', nil)
-        LoadAddOn(CONFIG_ADDON_NAME)
-    end)
-
-    InterfaceOptions_AddCategory(frame)
-
-    self.OptionsFrame = frame
-    return frame
-end
-
 function Addon:ShowOptionsFrame()
-    if self.OptionsFrame and not InCombatLockdown() then
-        if not InterfaceOptionsFrame:IsShown() then
-            InterfaceOptionsFrame_Show()
-        end
-
-        InterfaceOptionsFrame_OpenToCategory(self.OptionsFrame)
-        return true
+    if InCombatLockdown() then
+        return false
     end
 
-    return false
+    if not self:IsConfigAddonEnabled() then
+        return false
+    end
+
+    if not IsAddOnLoaded(CONFIG_ADDON_NAME) then
+        LoadAddOn(CONFIG_ADDON_NAME)
+    end
+
+    self.Options:ShowPrimaryOptionsPanel()
+
+    -- if Settings and Settings.OpenToCategory then
+    --     Settings.OpenToCategory(AddonName)
+    -- else
+    --     InterfaceOptionsFrame_OpenToCategory(AddonName)
+    -- end
+
+    return true
 end
 
 function Addon:NewMenu()
