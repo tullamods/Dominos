@@ -4,15 +4,10 @@ manual-changelog:
   filename: changelog.md
   markup-type: markdown
 
-ignore:
-  - Dominos_Auras
-
 move-folders:
   Dominos/Dominos: Dominos
-  Dominos/Dominos_Auras: Dominos_Auras
   Dominos/Dominos_Cast: Dominos_Cast
   Dominos/Dominos_Config: Dominos_Config
-  Dominos/Dominos_Encounter: Dominos_Encounter
   Dominos/Dominos_Progress: Dominos_Progress
   Dominos/Dominos_Roll: Dominos_Roll
 
@@ -35,3 +30,4 @@ externals:
   Dominos_Config/libs/AceConfig-3.0: https://repos.wowace.com/wow/ace3/trunk/AceConfig-3.0
   Dominos_Config/libs/AceDBOptions-3.0: https://repos.wowace.com/wow/ace3/trunk/AceDBOptions-3.0
   Dominos_Config/libs/AceGUI-3.0: https://repos.wowace.com/wow/ace3/trunk/AceGUI-3.0
+  Dominos_Config/libs/LibUIDropDownMenu-4.0: https://repos.wowace.com/wow/libuidropdownmenu/trunk
