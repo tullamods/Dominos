@@ -54,6 +54,26 @@ local actionButton_OnUpdateOffset = [[
     end
 ]]
 
+local actionButton_OnUpdateShowGrid = [[
+    local new = message or 0
+    local old = self:GetAttribute("showgrid") or 0
+
+    if old ~= new then
+        self:SetAttribute("showgrid", new)
+        self:RunAttribute("UpdateShown")
+    end
+]]
+
+local actionButton_UpdateShown = [[
+    local show = not self:GetAttribute("statehidden") and (self:GetAttribute("showgrid") > 0 or HasAction(self:GetAttribute("action")))
+
+    if show then
+        self:Show(true)
+    else
+        self:Hide(true)
+    end
+]]
+
 -- action button creation is deferred so that we can avoid creating buttons for
 -- bars set to show less than the maximum
 local ActionButtons = setmetatable({}, {
@@ -79,6 +99,11 @@ local ActionButtons = setmetatable({}, {
         -- set a handler for updating the action from a parent frame
         button:SetAttribute('_childupdate-offset', actionButton_OnUpdateOffset)
 
+        -- set a handler for updating showgrid status
+        button:SetAttribute('_childupdate-showgrid', actionButton_OnUpdateShowGrid)
+
+        button:SetAttribute("UpdateShown", actionButton_UpdateShown)
+
         -- reset the ID to zero, as that prevents the default paging code
         -- from being used
         button:SetID(0)
@@ -95,11 +120,15 @@ local ActionButtons = setmetatable({}, {
         rawset(self, id, button)
         return button
     end,
+
     -- newindex is set to block writes to prevent errors
     __newindex = function()
         error(('%s.ActionButtons does not support writes'):format(AddonName), 2)
     end
 })
+
+
+
 
 -- exports
 Addon.ActionButtons = ActionButtons

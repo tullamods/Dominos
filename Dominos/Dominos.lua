@@ -44,11 +44,11 @@ end
 
 -- keybound events
 function Addon:LIBKEYBOUND_ENABLED()
-    self.Frame:ForAll('KEYBOUND_ENABLED')
+    self.Frame:ForEach('KEYBOUND_ENABLED')
 end
 
 function Addon:LIBKEYBOUND_DISABLED()
-    self.Frame:ForAll('KEYBOUND_DISABLED')
+    self.Frame:ForEach('KEYBOUND_DISABLED')
 end
 
 -- profile events
@@ -106,7 +106,7 @@ function Addon:Load()
         end
     end
 
-    self.Frame:ForAll('RestoreAnchor')
+    self.Frame:ForEach('RestoreAnchor')
     self:GetModule('ButtonThemer'):Reskin()
 
     self.callbacks:Fire('LAYOUT_LOADED')
@@ -189,11 +189,15 @@ function Addon:GetDatabaseDefaults()
 
             minimap = { hide = false },
 
-            ab = { count = 10, showgrid = true, rightClickUnit = 'player' },
+            ab = {
+                count = 10,
+                showgrid = true,
+                rightClickUnit = 'player'
+            },
 
             frames = { bags = { point = 'BOTTOMRIGHT', oneBag = false, keyRing = true, spacing = 2 } },
 
-            alignmentGrid = { enabled = true, size = 32 },
+            alignmentGrid = { enabled = false, size = 32 },
 
             -- what modules are enabled
             -- module[id] = enabled
@@ -511,7 +515,7 @@ end
 
 function Addon:SetShowGrid(enable)
     self.db.profile.showgrid = enable or false
-    self.Frame:ForAll('UpdateGrid')
+    self.Frame:ForEach('UpdateGrid')
 end
 
 function Addon:ShowGrid()
@@ -521,7 +525,7 @@ end
 -- right click selfcast
 function Addon:SetRightClickUnit(unit)
     self.db.profile.ab.rightClickUnit = unit
-    self.Frame:ForAll('SetRightClickUnit', unit)
+    self.Frame:ForEach('SetRightClickUnit', unit)
 end
 
 function Addon:GetRightClickUnit()
@@ -531,7 +535,7 @@ end
 -- binding text
 function Addon:SetShowBindingText(enable)
     self.db.profile.showBindingText = enable or false
-    self.Frame:ForAll('ForButtons', 'UpdateHotkeys')
+    self.Frame:ForEach('ForButtons', 'UpdateHotkeys')
 end
 
 function Addon:ShowBindingText()
@@ -541,7 +545,7 @@ end
 -- macro text
 function Addon:SetShowMacroText(enable)
     self.db.profile.showMacroText = enable or false
-    self.Frame:ForAll('ForButtons', 'SetShowMacroText', enable)
+    self.Frame:ForEach('ForButtons', 'SetShowMacroText', enable)
 end
 
 function Addon:ShowMacroText()
@@ -551,7 +555,7 @@ end
 -- border
 function Addon:SetShowEquippedItemBorders(enable)
     self.db.profile.showEquippedItemBorders = enable or false
-    self.Frame:ForAll('ForButtons', 'SetShowEquippedItemBorders', enable)
+    self.Frame:ForEach('ForButtons', 'SetShowEquippedItemBorders', enable)
 end
 
 function Addon:ShowEquippedItemBorders()
@@ -654,8 +658,8 @@ function Addon:SetSticky(enable)
     self.db.profile.sticky = enable or false
 
     if not enable then
-        self.Frame:ForAll('Stick')
-        self.Frame:ForAll('Reposition')
+        self.Frame:ForEach('Stick')
+        self.Frame:ForEach('Reposition')
     end
 end
 
@@ -667,8 +671,8 @@ end
 function Addon:SetLinkedOpacity(enable)
     self.db.profile.linkedOpacity = enable or false
 
-    self.Frame:ForAll('UpdateWatched')
-    self.Frame:ForAll('UpdateAlpha')
+    self.Frame:ForEach('UpdateWatched')
+    self.Frame:ForEach('UpdateAlpha')
 end
 
 function Addon:IsLinkedOpacityEnabled()
@@ -692,7 +696,7 @@ end
 
 function Addon:SetShowCounts(enable)
     self.db.profile.showCounts = enable or false
-    self.Frame:ForAll('ForButtons', 'SetShowCountText', enable)
+    self.Frame:ForEach('ForButtons', 'SetShowCountText', enable)
 end
 
 -- alignment grid

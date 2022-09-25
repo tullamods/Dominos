@@ -76,16 +76,21 @@ local function hideFloatingBG(button)
     end
 end
 
-local function theme(button)
-    if not Addon:ThemeButtons() then
-        return
-    end
+local theme
+if Addon:IsBuild("retail") then
+    theme = function() end
+else
+    theme = function(button)
+        if not Addon:ThemeButtons() then
+            return
+        end
 
-    cleanupHotkeyText(button)
-    trimIconEdges(button)
-    fixCooldownPositions(button)
-    resizeNormalTexture(button)
-    hideFloatingBG(button)
+        cleanupHotkeyText(button)
+        trimIconEdges(button)
+        fixCooldownPositions(button)
+        resizeNormalTexture(button)
+        hideFloatingBG(button)
+    end
 end
 
 function ButtonThemer:Unload()
@@ -154,7 +159,7 @@ if Masque then
                 Template = 'Default',
                 --Disable = true, -- Hides the skin in the GUI.
                 Icon = {
-                    TexCoords = {0.06, 0.94, 0.06, 0.94},
+                    TexCoords = { 0.06, 0.94, 0.06, 0.94 },
                     DrawLayer = 'BACKGROUND',
                     DrawLevel = 0,
                     Width = 36,
@@ -166,7 +171,7 @@ if Masque then
                 Normal = {
                     Texture = [[Interface\Buttons\UI-Quickslot2]],
                     -- TexCoords = {0, 1, 0, 1},
-                    Color = {1, 1, 1, 0.5},
+                    Color = { 1, 1, 1, 0.5 },
                     -- EmptyTexture = [[Interface\Buttons\UI-Quickslot2]],
                     -- EmptyCoords = {0, 1, 0, 1},
                     -- EmptyColor = {1, 1, 1, 0.5},

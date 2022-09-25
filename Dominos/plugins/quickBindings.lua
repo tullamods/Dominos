@@ -9,14 +9,13 @@ if not ActionButtonUtil then
 end
 
 local _, Addon = ...
+local ACTION_BUTTON_SHOW_GRID_REASON_KEYBOUND = 2048
 
 hooksecurefunc(
     ActionButtonUtil,
     'ShowAllActionButtonGrids',
     function()
-        for _, button in pairs(Addon.ActionButtons) do
-            button:ShowGridInsecure(ACTION_BUTTON_SHOW_GRID_REASON_EVENT)
-        end
+        Addon.Frame:ForEach("ShowGrid", ACTION_BUTTON_SHOW_GRID_REASON_KEYBOUND)
     end
 )
 
@@ -24,9 +23,7 @@ hooksecurefunc(
     ActionButtonUtil,
     'HideAllActionButtonGrids',
     function()
-        for _, button in pairs(Addon.ActionButtons) do
-            button:HideGridInsecure(ACTION_BUTTON_SHOW_GRID_REASON_EVENT)
-        end
+        Addon.Frame:ForEach("HideGrid", ACTION_BUTTON_SHOW_GRID_REASON_KEYBOUND)
     end
 )
 
