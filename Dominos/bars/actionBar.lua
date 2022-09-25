@@ -14,7 +14,7 @@ local ActionBar = Addon:CreateClass('Frame', Addon.ButtonBar)
 
 ActionBar.class = UnitClassBase('player')
 
--- Metatable magic.  Basically this says, 'create a new table for this index'
+-- Metatable magic. Basically this says, "create a new table for this index"
 -- I do this so that I only create page tables for classes the user is actually
 -- playing
 ActionBar.defaultOffsets = {
@@ -70,10 +70,11 @@ end)
 
 ActionBar:Extend('OnAcquire', function(self)
     self:LoadStateController()
+    self:LoadShowGridController()
     self:UpdateStateDriver()
     self:SetUnit(self:GetUnit())
     self:SetRightClickUnit(self:GetRightClickUnit())
-    self:UpdateGrid()
+    self:UpdateGrid(true)
     self:UpdateTransparent(true)
     self:UpdateFlyoutDirection()
 end)
@@ -83,12 +84,13 @@ function ActionBar:GetDefaults()
     return {
         point = 'BOTTOM',
         x = 0,
-        y = 40 * (self.id - 1),
+        y = (ActionButton1:GetHeight() + 4) * (self.id - 1),
         pages = {},
-        spacing = 4,
+        spacing = 2,
         padW = 2,
         padH = 2,
         numButtons = self:MaxLength(),
+        showEmptyButtons = false,
         unit = "none",
         rightClickUnit = "none"
     }
@@ -108,7 +110,7 @@ function ActionBar:AcquireButton(index)
     local button = Addon.ActionButtons[id]
 
     button:SetAttribute('index', index)
-    button:SetAttribute('statehidden', nil)
+    button:SetAttribute('statehidden', false)
 
     return button
 end
@@ -127,6 +129,9 @@ function ActionBar:OnAttachButton(button)
     button:SetShowEquippedItemBorders(Addon:ShowEquippedItemBorders())
     button:SetShowCooldowns(self:GetAlpha() > 0)
     button:UpdateHotkeys()
+
+    -- button:SetAttribute("showgrid", self:GetAttribute("showgrid"))
+    -- button:UpdateShownInsecure()
 
     Addon:GetModule('ButtonThemer'):Register(button, self:GetDisplayName())
     Addon:GetModule('Tooltips'):Register(button)
@@ -208,6 +213,39 @@ function ActionBar:LoadStateController()
     self:UpdateOverrideBar()
 end
 
+-- watch for cursor changes, so that we can control action button visibility
+-- on pickup
+function ActionBar:LoadShowGridController()
+    self:SetAttribute("showgrid", 0)
+
+    self:SetAttribute("UpdateGrid", [[
+        control:ChildUpdate('showgrid', self:GetAttribute("showgrid") or 0)
+    ]])
+
+    self:SetAttribute('_onstate-cursor', [[
+        local reason = 2
+        local old = self:GetAttribute("showgrid") or 0
+        local new = old
+
+        if newstate > 0 then
+            if new % (2 * reason) < reason then
+                new = new + reason
+            end
+        else
+            if new % (2 * reason) >= reason then
+                new = new - reason
+            end
+        end
+
+        if old ~= new then
+            self:SetAttribute("showgrid", new)
+            self:RunAttribute("UpdateGrid")
+        end
+    ]])
+
+    RegisterStateDriver(self, "cursor", "[cursor]2;0")
+end
+
 function ActionBar:UpdateOverrideBar()
     self:SetAttribute('state-overridebar', self:IsOverrideBar())
 end
@@ -219,27 +257,35 @@ function ActionBar:IsOverrideBar()
 end
 
 -- Empty button display
-function ActionBar:ShowGrid(reason)
-    if InCombatLockdown() then
-        return
-    end
+function ActionBar:ShowGrid(reason, force)
+    if InCombatLockdown() then return end
 
-    self:ForButtons('ShowGridInsecure', reason)
+    local old = self:GetAttribute("showgrid") or 0
+    local new = bit.bor(old, reason)
+
+    if (old ~= new) or force then
+        self:SetAttribute("showgrid", new)
+        self:Execute([[ self:RunAttribute("UpdateGrid") ]])
+    end
 end
 
-function ActionBar:HideGrid(reason)
-    if InCombatLockdown() then
-        return
-    end
+function ActionBar:HideGrid(reason, force)
+    if InCombatLockdown() then return end
 
-    self:ForButtons('HideGridInsecure', reason)
+    local old = self:GetAttribute("showgrid") or 0
+    local new = bit.band(old, bit.bnot(reason))
+
+    if (old ~= new) or force then
+        self:SetAttribute("showgrid", new)
+        self:Execute([[ self:RunAttribute("UpdateGrid") ]])
+    end
 end
 
-function ActionBar:UpdateGrid()
+function ActionBar:UpdateGrid(force)
     if Addon:ShowGrid() then
-        self:ShowGrid(ACTION_BUTTON_SHOW_GRID_REASON_ADDON)
+        self:ShowGrid(ACTION_BUTTON_SHOW_GRID_REASON_ADDON, force)
     else
-        self:HideGrid(ACTION_BUTTON_SHOW_GRID_REASON_ADDON)
+        self:HideGrid(ACTION_BUTTON_SHOW_GRID_REASON_ADDON, force)
     end
 end
 
@@ -298,7 +344,7 @@ end
 function ActionBar:UpdateTransparent(force)
     local isTransparent = self:GetAlpha() == 0
 
-    if self.__transparent ~= isTransparent or force then
+    if (self.__transparent ~= isTransparent) or force then
         self.__transparent = isTransparent
 
         self:ForButtons('SetShowCooldowns', not isTransparent)
@@ -350,5 +396,6 @@ end
 
 ActionBar:Extend("Layout", ActionBar.UpdateFlyoutDirection)
 ActionBar:Extend("Stick", ActionBar.UpdateFlyoutDirection)
+
 -- exports
 Addon.ActionBar = ActionBar

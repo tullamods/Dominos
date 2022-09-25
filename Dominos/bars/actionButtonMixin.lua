@@ -19,31 +19,17 @@ function ActionButtonMixin:SetActionOffsetInsecure(offset)
     end
 end
 
-function ActionButtonMixin:ShowGridInsecure(reason)
+function ActionButtonMixin:UpdateShownInsecure()
     if InCombatLockdown() then
         return
     end
 
-    local oldShowGrid = self:GetAttribute('showgrid') or 0
-    local newShowGrid = bit.bor(oldShowGrid, reason)
+    local show = ((self:GetAttribute("showgrid") or 0) > 0 or HasAction(self:GetAttribute("action"))) and not self:GetAttribute("statehidden")
 
-    if oldShowGrid ~= newShowGrid then
-        self:SetAttribute('showgrid', newShowGrid)
-        self:ShowGrid(reason)
-    end
-end
-
-function ActionButtonMixin:HideGridInsecure(reason)
-    if InCombatLockdown() then
-        return
-    end
-
-    local oldShowGrid = self:GetAttribute('showgrid') or 0
-
-    if oldShowGrid > 0 then
-        local newShowGrid = bit.band(oldShowGrid, bit.bnot(reason))
-        self:SetAttribute('showgrid', newShowGrid)
-        self:HideGrid(reason)
+    if show then
+        self:Show()
+    else
+        self:Hide()
     end
 end
 
@@ -54,7 +40,7 @@ function ActionButtonMixin:SetFlyoutDirection(direction)
     end
 
     self:SetAttribute("flyoutDirection", direction)
-    ActionButton_UpdateFlyout(self)
+    self:UpdateFlyout()
 end
 
 function ActionButtonMixin:SetShowCountText(show)
@@ -101,6 +87,7 @@ if not Addon:IsBuild('retail') then
     ActionButtonMixin.ShowGrid = ActionButton_ShowGrid
     ActionButtonMixin.UpdateState = ActionButton_UpdateState
     ActionButtonMixin.Update = ActionButton_Update
+    ActionButtonMixin.UpdateFlyout = ActionButton_UpdateFlyout
 
     hooksecurefunc("ActionButton_UpdateHotkeys", Addon.BindableButton.UpdateHotkeys)
 end

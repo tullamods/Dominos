@@ -50,6 +50,22 @@ local function disableActionButton(buttonName)
     if button then
         button:SetAttribute('statehidden', true)
         button:Hide()
+
+        if button.RightDivider then
+            button.RightDivider:SetAlpha(0)
+        end
+
+        if button.BottomDivider then
+            button.BottomDivider:SetAlpha(0)
+        end
+
+        if button.SlotArt then
+            button.SlotArt:SetAlpha(0)
+        end
+
+        if button.SlotBackground then
+            button.SlotBackground:SetAlpha(0)
+        end
     else
         Addon:Printf('Action Button %q could not be found', buttonName)
     end
