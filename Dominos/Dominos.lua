@@ -191,7 +191,7 @@ function Addon:GetDatabaseDefaults()
 
             ab = {
                 count = 10,
-                showgrid = true,
+                showEmptyButtons = true,
                 rightClickUnit = 'player'
             },
 
@@ -514,12 +514,12 @@ function Addon:ToggleGrid()
 end
 
 function Addon:SetShowGrid(enable)
-    self.db.profile.showgrid = enable or false
+    self.db.profile.showEmptyButtons = enable or false
     self.Frame:ForEach('UpdateGrid')
 end
 
 function Addon:ShowGrid()
-    return self.db.profile.showgrid
+    return self.db.profile.showEmptyButtons
 end
 
 -- right click selfcast

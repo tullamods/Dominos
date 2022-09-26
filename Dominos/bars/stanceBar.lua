@@ -5,7 +5,6 @@
 
 local AddonName, Addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(AddonName)
-local NUM_STANCE_SLOTS = NUM_STANCE_SLOTS or #StanceBar.actionButtons
 
 -- test to see if the player has a stance bar
 -- not the best looking, but I also don't need to keep it after I do the check
@@ -33,13 +32,6 @@ end
 local function getStanceButton(id)
     return _G[('StanceButton%d'):format(id)]
 end
-
--- for id = 1, NUM_STANCE_SLOTS do
---     local button = getStanceButton(id)
-
---     -- add quick binding support
---     Addon.BindableButton:AddQuickBindingSupport(button, ('SHAPESHIFTBUTTON%s'):format(id))
--- end
 
 --------------------------------------------------------------------------------
 -- Bar setup

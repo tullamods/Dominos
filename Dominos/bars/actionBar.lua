@@ -110,18 +110,20 @@ function ActionBar:AcquireButton(index)
     local button = Addon.ActionButtons[id]
 
     button:SetAttribute('index', index)
-    button:SetAttribute('statehidden', false)
+    button:SetAttribute('statehidden', nil)
 
     return button
 end
 
 function ActionBar:ReleaseButton(button)
     button:SetAttribute('statehidden', true)
+    button:SetAttribute("showgrid", 0)
     button:Hide()
 end
 
 function ActionBar:OnAttachButton(button)
     button:SetActionOffsetInsecure(self:GetAttribute('actionOffset') or 0)
+    button:SetShowGridInsecure("showgrid", self:GetAttribute("showgrid") or 0, true)
 
     button:SetFlyoutDirection(self:GetFlyoutDirection())
     button:SetShowCountText(Addon:ShowCounts())
@@ -129,9 +131,6 @@ function ActionBar:OnAttachButton(button)
     button:SetShowEquippedItemBorders(Addon:ShowEquippedItemBorders())
     button:SetShowCooldowns(self:GetAlpha() > 0)
     button:UpdateHotkeys()
-
-    -- button:SetAttribute("showgrid", self:GetAttribute("showgrid"))
-    -- button:UpdateShownInsecure()
 
     Addon:GetModule('ButtonThemer'):Register(button, self:GetDisplayName())
     Addon:GetModule('Tooltips'):Register(button)
@@ -218,10 +217,6 @@ end
 function ActionBar:LoadShowGridController()
     self:SetAttribute("showgrid", 0)
 
-    self:SetAttribute("UpdateGrid", [[
-        control:ChildUpdate('showgrid', self:GetAttribute("showgrid") or 0)
-    ]])
-
     self:SetAttribute('_onstate-cursor', [[
         local reason = 2
         local old = self:GetAttribute("showgrid") or 0
@@ -239,7 +234,7 @@ function ActionBar:LoadShowGridController()
 
         if old ~= new then
             self:SetAttribute("showgrid", new)
-            self:RunAttribute("UpdateGrid")
+            control:ChildUpdate('showgrid', new)
         end
     ]])
 
@@ -265,7 +260,7 @@ function ActionBar:ShowGrid(reason, force)
 
     if (old ~= new) or force then
         self:SetAttribute("showgrid", new)
-        self:Execute([[ self:RunAttribute("UpdateGrid") ]])
+        self:ForButtons('SetShowGridInsecure', new, force)
     end
 end
 
@@ -277,7 +272,7 @@ function ActionBar:HideGrid(reason, force)
 
     if (old ~= new) or force then
         self:SetAttribute("showgrid", new)
-        self:Execute([[ self:RunAttribute("UpdateGrid") ]])
+        self:ForButtons('SetShowGridInsecure', new, force)
     end
 end
 

@@ -19,18 +19,28 @@ function ActionButtonMixin:SetActionOffsetInsecure(offset)
     end
 end
 
+function ActionButtonMixin:SetShowGridInsecure(showgrid, force)
+    if InCombatLockdown() then
+        return
+    end
+
+    showgrid = tonumber(showgrid) or 0
+
+    if (self:GetAttribute("showgrid") ~= showgrid) or force then
+        self:SetAttribute("showgrid", showgrid)
+        self:UpdateShownInsecure()
+    end
+end
+
 function ActionButtonMixin:UpdateShownInsecure()
     if InCombatLockdown() then
         return
     end
 
-    local show = ((self:GetAttribute("showgrid") or 0) > 0 or HasAction(self:GetAttribute("action"))) and not self:GetAttribute("statehidden")
+    local show = not self:GetAttribute("statehidden") and
+        (self:GetAttribute("showgrid") > 0 or HasAction(self:GetAttribute("action")))
 
-    if show then
-        self:Show()
-    else
-        self:Hide()
-    end
+    self:SetShown(show)
 end
 
 -- configuration commands
@@ -85,9 +95,9 @@ end
 if not Addon:IsBuild('retail') then
     ActionButtonMixin.HideGrid = ActionButton_HideGrid
     ActionButtonMixin.ShowGrid = ActionButton_ShowGrid
-    ActionButtonMixin.UpdateState = ActionButton_UpdateState
     ActionButtonMixin.Update = ActionButton_Update
     ActionButtonMixin.UpdateFlyout = ActionButton_UpdateFlyout
+    ActionButtonMixin.UpdateState = ActionButton_UpdateState
 
     hooksecurefunc("ActionButton_UpdateHotkeys", Addon.BindableButton.UpdateHotkeys)
 end
