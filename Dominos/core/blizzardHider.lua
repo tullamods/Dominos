@@ -118,13 +118,6 @@ if MainMenuBar then
 	MainMenuBar:UnregisterEvent("NEUTRAL_FACTION_SELECT_RESULT")
 end
 
--- unregister and hide, but don't reparent the StatusTrackingBarManager to
--- prevent some tainting issues
-if StatusTrackingBarManager then
-    StatusTrackingBarManager:UnregisterAllEvents()
-    StatusTrackingBarManager:Hide()
-end
-
 -- set the stock action buttons to hidden by default
 for id = 1, NUM_ACTIONBAR_BUTTONS do
     disableActionButton(('ActionButton%d'):format(id))
