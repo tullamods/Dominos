@@ -84,7 +84,7 @@ function ActionBar:GetDefaults()
     return {
         point = 'BOTTOM',
         x = 0,
-        y = (ActionButton1:GetHeight() + 4) * (self.id - 1),
+        y = 14 + (ActionButton1:GetHeight() + 4) * (self.id - 1),
         pages = {},
         spacing = 2,
         padW = 2,
@@ -92,7 +92,8 @@ function ActionBar:GetDefaults()
         numButtons = self:MaxLength(),
         showEmptyButtons = false,
         unit = "none",
-        rightClickUnit = "none"
+        rightClickUnit = "none",
+        displayLayer = 'LOW'
     }
 end
 
