@@ -79,7 +79,7 @@ end
 
 function ProgressBar:GetDefaults()
 	return {
-		point = 'TOP',
+		point = 'BOTTOM',
 		x = 0,
 		y = 0,
 		columns = 20,
