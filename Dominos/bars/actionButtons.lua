@@ -9,9 +9,7 @@ local function createActionButton(id)
 
     local button = CreateFrame('CheckButton', name, nil, 'ActionBarButtonTemplate')
 
-    button.commandName = ('CLICK %s:HOTKEY'):format(name)
-
-    Addon.BindableButton:AddCastOnKeyPressSupport(button)
+    button.commandName = ('CLICK %s:LeftButton'):format(name)
 
     return button
 end
@@ -20,7 +18,7 @@ local function acquireActionButton(id)
     if id <= 12 then
         return _G[('ActionButton%d'):format(id)]
     elseif id <= 24 then
-        return createActionButton(id - 12)
+        return createActionButton(id - 12), true
     elseif id <= 36 then
         return _G[('MultiBarRightButton%d'):format(id - 24)]
     elseif id <= 48 then
@@ -30,7 +28,7 @@ local function acquireActionButton(id)
     elseif id <= 72 then
         return _G[('MultiBarBottomLeftButton%d'):format(id - 60)]
     else
-        return createActionButton(id - 60)
+        return createActionButton(id - 60), true
     end
 end
 
@@ -86,7 +84,7 @@ local ActionButtons = setmetatable({}, {
             error(('Usage: %s.ActionButtons[1-%d]'):format(AddonName, ACTION_BUTTON_COUNT), 2)
         end
 
-        local button = acquireActionButton(id)
+        local button, custom = acquireActionButton(id)
 
         -- apply our extra action button methods
         Mixin(button, Addon.ActionButtonMixin)
@@ -94,7 +92,9 @@ local ActionButtons = setmetatable({}, {
         -- apply hooks for quick binding
         -- this must be done before we reset the button ID, as we use it
         -- to figure out the binding action for the button
-        Addon.BindableButton:AddQuickBindingSupport(button, getBindingAction(button))
+        if custom then
+            Addon.BindableButton:AddQuickBindingSupport(button, getBindingAction(button))
+        end
 
         -- set a handler for updating the action from a parent frame
         button:SetAttribute('_childupdate-offset', actionButton_OnUpdateOffset)
@@ -114,6 +114,8 @@ local ActionButtons = setmetatable({}, {
         -- reset the showgrid setting to default
         button:SetAttribute('showgrid', 0)
 
+        button:Hide()
+
         -- enable mousewheel clicks
         button:EnableMouseWheel(true)
 
@@ -126,9 +128,6 @@ local ActionButtons = setmetatable({}, {
         error(('%s.ActionButtons does not support writes'):format(AddonName), 2)
     end
 })
-
-
-
 
 -- exports
 Addon.ActionButtons = ActionButtons
