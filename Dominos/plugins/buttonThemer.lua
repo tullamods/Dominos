@@ -78,7 +78,27 @@ end
 
 local theme
 if Addon:IsBuild("retail") then
-    theme = function() end
+    theme = function(button)
+        if button.RightDivider then
+            button.RightDivider:SetAlpha(0)
+            button.RightDivider:SetParent(Addon.ShadowUIParent)
+        end
+
+        if button.BottomDivider then
+            button.BottomDivider:SetAlpha(0)
+            button.BottomDivider:SetParent(Addon.ShadowUIParent)
+        end
+
+        if button.SlotArt then
+            button.SlotArt:SetAlpha(0)
+            button.SlotArt:SetParent(Addon.ShadowUIParent)
+        end
+
+        if button.SlotBackground then
+            button.SlotBackground:SetAlpha(0)
+            button.SlotBackground:SetParent(Addon.ShadowUIParent)
+        end
+    end
 else
     theme = function(button)
         if not Addon:ThemeButtons() then
