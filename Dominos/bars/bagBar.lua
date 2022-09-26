@@ -86,6 +86,15 @@ function BagBar:NumButtons()
     return count
 end
 
+if Addon:IsBuild("retail") then
+    function BagBar:GetButtonSize()
+        local w, h = MainMenuBarBackpackButton:GetSize()
+        local l, r, t, b = self:GetButtonInsets()
+
+        return w - (l + r), h - (t + b)
+    end
+end
+
 function BagBar:OnCreateMenu(menu)
     local L = LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')
 
@@ -240,7 +249,9 @@ function BagBarModule:RegisterButton(name)
 
     button:Hide()
 
-    if Addon:IsBuild('retail', 'wrath') then
+    if Addon:IsBuild("retail") then
+        button:SetSize(MainMenuBarBackpackButton:GetSize())
+    elseif Addon:IsBuild('wrath') then
         resize(button, 36)
         resize(button.IconBorder, 37)
         resize(button.IconOverlay, 37)
