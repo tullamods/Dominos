@@ -14,31 +14,7 @@ local function createActionButton(id)
     return button
 end
 
-local function acquireActionButton(id)
-    if id <= 12 then
-        return _G[('ActionButton%d'):format(id)]
-    elseif id <= 24 then
-        return createActionButton(id - 12), true
-    elseif id <= 36 then
-        return _G[('MultiBarRightButton%d'):format(id - 24)]
-    elseif id <= 48 then
-        return _G[('MultiBarLeftButton%d'):format(id - 36)]
-    elseif id <= 60 then
-        return _G[('MultiBarBottomRightButton%d'):format(id - 48)]
-    elseif id <= 72 then
-        return _G[('MultiBarBottomLeftButton%d'):format(id - 60)]
-    else
-        return createActionButton(id - 60), true
-    end
-end
 
-local function getBindingAction(button)
-    local id = button:GetID()
-
-    if id > 0 then
-        return (button.buttonType or 'ACTIONBUTTON') .. id
-    end
-end
 
 -- handle notifications from our parent bar about whate the action button
 -- ID offset should be
@@ -63,7 +39,8 @@ local actionButton_OnUpdateShowGrid = [[
 ]]
 
 local actionButton_UpdateShown = [[
-    local show = not self:GetAttribute("statehidden") and (self:GetAttribute("showgrid") > 0 or HasAction(self:GetAttribute("action")))
+    local show = (self:GetAttribute("showgrid") > 0 or HasAction(self:GetAttribute("action")))
+                 and not self:GetAttribute("statehidden")
 
     if show then
         self:Show(true)
@@ -84,17 +61,10 @@ local ActionButtons = setmetatable({}, {
             error(('Usage: %s.ActionButtons[1-%d]'):format(AddonName, ACTION_BUTTON_COUNT), 2)
         end
 
-        local button, custom = acquireActionButton(id)
+        local button = createActionButton(id)
 
         -- apply our extra action button methods
         Mixin(button, Addon.ActionButtonMixin)
-
-        -- apply hooks for quick binding
-        -- this must be done before we reset the button ID, as we use it
-        -- to figure out the binding action for the button
-        if custom then
-            Addon.BindableButton:AddQuickBindingSupport(button, getBindingAction(button))
-        end
 
         -- set a handler for updating the action from a parent frame
         button:SetAttribute('_childupdate-offset', actionButton_OnUpdateOffset)
