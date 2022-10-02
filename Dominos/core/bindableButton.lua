@@ -109,92 +109,6 @@ end)
 -- previously, this was a mixin
 local BindableButton = Addon:NewModule('Bindings', 'AceEvent-3.0')
 
-BindableButton.keyPressHandler = Addon:CreateHiddenFrame('Frame', nil, nil, 'SecureHandlerBaseTemplate')
-
-function BindableButton:OnEnable()
-    -- self:RegisterEvent('CVAR_UPDATE')
-    -- self:SetCastOnKeyPress(GetCVarBool('ActionButtonUseKeyDown'))
-
-    -- migrate any old click bindings to the new format
-    local updatedBindings = false
-
-    for id = 1, 60 do
-        local oldAction = ('CLICK %sActionButton%d:HOTKEY'):format(AddonName, id)
-        local newAction = ('CLICK %sActionButton%d:LeftButton'):format(AddonName, id)
-
-        local key = GetBindingKey(oldAction)
-        while key do
-            SetBinding(key, newAction)
-            key = GetBindingKey(oldAction)
-            updatedBindings = true
-        end
-    end
-
-    if updatedBindings then
-        (SaveBindings or AttemptToSaveBindings)(GetCurrentBindingSet())
-    end
-end
-
--- function BindableButton:CVAR_UPDATE(event, cvarName, cvarValue)
---     if cvarName == ACTION_BUTTON_USE_KEY_DOWN then
---         self:SetCastOnKeyPress(cvarValue == '1')
---     end
--- end
-
--- function BindableButton:PLAYER_REGEN_ENABLED(event)
---     self:SetCastOnKeyPress(GetCVarBool('ActionButtonUseKeyDown'))
---     self:UnregisterEvent(event)
---     self.needsUpdate = nil
--- end
-
--- adds cast on keypress support to custom actions
--- function BindableButton:AddCastOnKeyPressSupport(button)
---     -- watch down clicks in addition to up clicks
---     -- we can't stop here, however, as it would cause pressing the mouse button
---     -- down on a button to trigger an action, which isn't something we want
---     button:RegisterForClicks('AnyUp', 'AnyDown')
-
---     -- ...so the solution is to wrap the click handler for buttons
---     -- and filter clicks of the HOTKEY "button" appropiately
---     -- those are then transformed into LeftButton clicks if they pass through
---     -- the filter so we preserve existing action bar behavior
---     self.keyPressHandler:WrapScript(button, 'OnClick', [[
---         if button == 'HOTKEY' then
---             if down == control:GetAttribute("CastOnKeyPress") then
---                 return 'LeftButton'
---             else
---                 return false
---             end
---         elseif down then
---             return false
---         end
---     ]])
--- end
-
--- adds quickbinding support to buttons
-function BindableButton:AddQuickBindingSupport(button, bindingAction)
-    button:HookScript('OnEnter', BindableButton.OnEnter)
-
-    if bindingAction then
-        button:SetAttribute('bindingAction', bindingAction)
-    end
-
-    if button.UpdateHotkeys then
-        hooksecurefunc(button, 'UpdateHotkeys', BindableButton.UpdateHotkeys)
-    else
-        button.UpdateHotkeys = BindableButton.UpdateHotkeys
-    end
-end
-
--- function BindableButton:SetCastOnKeyPress(enable)
---     if InCombatLockdown() and not self.needsUpdate then
---         self.needsUpdate = true
---         self:RegisterEvent('PLAYER_REGEN_ENABLED')
---         return
---     end
-
---     self.keyPressHandler:SetAttribute('CastOnKeyPress', enable)
--- end
 
 function BindableButton:UpdateHotkeys()
     local key = getButtonHotkey(self)
@@ -228,13 +142,13 @@ do
     _G[('BINDING_CATEGORY_%s'):format(AddonName)] = AddonName
 
     local addonActionBarName = AddonName .. ' ' .. L.ActionBarDisplayName
-    for id = 1, 12 do
-        _G[('BINDING_HEADER_%sActionBar%d'):format(AddonName, id)] = addonActionBarName:format(id)
+    for barID = 1, 12 do
+        _G[('BINDING_HEADER_%sActionBar%d'):format(AddonName, barID)] = addonActionBarName:format(barID)
     end
 
     local addonActionButtonName = AddonName .. ' ' .. L.ActionButtonDisplayName
-    for id = 1, 60 do
-        _G[('BINDING_NAME_CLICK %sActionButton%d:LeftButton'):format(AddonName, id)] = addonActionButtonName:format(id)
+    for buttonID = 1, 120 do
+        _G[('BINDING_NAME_CLICK %sActionButton%d:LeftButton'):format(AddonName, buttonID)] = addonActionButtonName:format(buttonID)
     end
 end
 

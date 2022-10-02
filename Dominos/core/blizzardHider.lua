@@ -9,7 +9,7 @@ end
 local function banish(...)
     for i = 1, select('#', ...) do
         local name = select(i, ...)
-        local frame =_G[name]
+        local frame = _G[name]
 
         if frame then
             frame:Hide()
@@ -35,7 +35,7 @@ end
 local function unregisterEvents(...)
     for i = 1, select('#', ...) do
         local name = select(i, ...)
-        local frame =_G[name]
+        local frame = _G[name]
 
         if frame then
             frame:UnregisterAllEvents()
@@ -48,30 +48,11 @@ end
 local function disableActionButton(buttonName)
     local button = _G[buttonName]
     if button then
+        button:UnregisterAllEvents()
         button:SetAttribute('statehidden', true)
         button:Hide()
     else
         Addon:Printf('Action Button %q could not be found', buttonName)
-    end
-end
-
--- disables override bar transition animations
-local function disableSlideOutAnimations(frameName)
-    local frame = _G[frameName]
-
-    if not frame then
-        Addon:Printf('Could not find frame %q', frameName)
-        return
-    end
-
-    if not frame.slideOut then
-        Addon:Printf('%q has no sldie out animdations to hide', frameName)
-        return
-    end
-
-    local animation = (frame.slideOut:GetAnimations())
-    if animation then
-        animation:SetOffset(0, 0)
     end
 end
 
@@ -91,22 +72,17 @@ unregisterEvents(
     "MultiBarRight"
 )
 
-disableSlideOutAnimations("OverrideActionBar")
-
--- we don't completely disable the main menu bar, as there's some logic
--- dependent on it being visible
-if MainMenuBar then
-    -- the main menu bar is responsible for updating the micro buttons
-    -- so we don't disable all events for it
-	MainMenuBar:UnregisterEvent("ACTIONBAR_PAGE_CHANGED")
-	MainMenuBar:UnregisterEvent("NEUTRAL_FACTION_SELECT_RESULT")
+-- disable the stock action buttons
+for i = 1, NUM_ACTIONBAR_BUTTONS do
+    disableActionButton(('ActionButton%d'):format(i))
+    disableActionButton(('MultiBarRightButton%d'):format(i))
+    disableActionButton(('MultiBarLeftButton%d'):format(i))
+    disableActionButton(('MultiBarBottomRightButton%d'):format(i))
+    disableActionButton(('MultiBarBottomLeftButton%d'):format(i))
 end
 
--- set the stock action buttons to hidden by default
-for id = 1, NUM_ACTIONBAR_BUTTONS do
-    disableActionButton(('ActionButton%d'):format(id))
-    disableActionButton(('MultiBarRightButton%d'):format(id))
-    disableActionButton(('MultiBarLeftButton%d'):format(id))
-    disableActionButton(('MultiBarBottomRightButton%d'):format(id))
-    disableActionButton(('MultiBarBottomLeftButton%d'):format(id))
-end
+-- disable some action bar controller updates that we probably don't need
+-- ActionBarController:UnregisterEvent('UPDATE_SHAPESHIFT_FORM')
+-- ActionBarController:UnregisterEvent('UPDATE_SHAPESHIFT_FORMS')
+-- ActionBarController:UnregisterEvent('UPDATE_SHAPESHIFT_USABLE')
+-- ActionBarController:UnregisterEvent('UPDATE_POSSESS_BAR')
