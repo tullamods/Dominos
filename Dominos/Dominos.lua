@@ -195,9 +195,19 @@ function Addon:GetDatabaseDefaults()
                 rightClickUnit = 'player'
             },
 
-            frames = { bags = { point = 'BOTTOMRIGHT', oneBag = false, keyRing = true, spacing = 2 } },
+            frames = {
+                bags = {
+                    point = 'BOTTOMRIGHT',
+                    oneBag = false,
+                    keyRing = true,
+                    spacing = 2
+                }
+            },
 
-            alignmentGrid = { enabled = false, size = 32 },
+            alignmentGrid = {
+                enabled = not self:IsBuild("retail"),
+                size = 32
+            },
 
             -- what modules are enabled
             -- module[id] = enabled
