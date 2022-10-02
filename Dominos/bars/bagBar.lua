@@ -22,8 +22,8 @@ function BagBar:GetDefaults()
     return {
         displayLayer = 'LOW',
         point = 'BOTTOMRIGHT',
-        oneBag = false,
-        keyRing = true,
+        oneBag = Addon:IsBuild('retail'),
+        keyRing = not Addon:IsBuild('retail'),
         spacing = 2
     }
 end
@@ -51,7 +51,7 @@ end
 -- Frame Overrides
 function BagBar:AcquireButton(index)
     if index < 1 then
-        return nil
+        return
     end
 
     local keyRingIndex = self:ShowKeyRing() and 1 or 0
@@ -136,82 +136,18 @@ end
 --	module
 --------------------------------------------------------------------------------
 
-local BagBarModule = Addon:NewModule('BagBar')
+local BagBarModule = Addon:NewModule('BagBar', 'AceEvent-3.0')
 
 function BagBarModule:OnInitialize()
     for slot = (NUM_BAG_SLOTS - 1), 0, -1 do
         self:RegisterButton(('CharacterBag%dSlot'):format(slot))
     end
 
-    if not Addon:IsBuild('retail') then
-        -- force hide the old keyring button
-        KeyRingButton:Hide()
-
-        hooksecurefunc(
-            'MainMenuBar_UpdateKeyRing',
-            function()
-                KeyRingButton:Hide()
-            end
-        )
-
-        -- setup the dominos specific one
-        local keyring = CreateFrame('CheckButton', AddonName .. 'KeyRingButton', UIParent, 'ItemButtonTemplate')
-        keyring:RegisterForClicks('LeftButtonUp', 'RightButtonUp')
-        keyring:SetID(KEYRING_CONTAINER)
-
-        keyring:SetScript(
-            'OnClick',
-            function(_, button)
-                if CursorHasItem() then
-                    PutKeyInKeyRing()
-                else
-                    ToggleBag(KEYRING_CONTAINER)
-                end
-            end
-        )
-
-        keyring:SetScript(
-            'OnReceiveDrag',
-            function(_)
-                if CursorHasItem() then
-                    PutKeyInKeyRing()
-                end
-            end
-        )
-
-        keyring:SetScript(
-            'OnEnter',
-            function(self)
-                GameTooltip:SetOwner(self, 'ANCHOR_LEFT')
-
-                local color = HIGHLIGHT_FONT_COLOR
-                GameTooltip:SetText(KEYRING, color.r, color.g, color.b)
-                GameTooltip:AddLine()
-            end
-        )
-
-        keyring:SetScript(
-            'OnLeave',
-            function()
-                GameTooltip:Hide()
-            end
-        )
-
-        keyring.icon:SetTexture([[Interface\Icons\INV_Misc_Bag_16]])
-
-        self:RegisterButton(keyring:GetName())
-
-        MainMenuBarBackpackButton:HookScript(
-            'OnClick',
-            function(_, button)
-                if IsControlKeyDown() then
-                    ToggleBag(KEYRING_CONTAINER)
-                end
-            end
-        )
-    end
-
+    self:RegisterKeyRingButton()
     self:RegisterButton('MainMenuBarBackpackButton')
+
+    self.RegisterKeyRingButton = nil
+    self.RegisterButton = nil
 end
 
 function BagBarModule:OnEnable()
@@ -227,36 +163,115 @@ function BagBarModule:OnEnable()
 end
 
 function BagBarModule:Load()
-    self.frame = BagBar:New()
+    if self.frame == nil then
+        self.frame = BagBar:New()
+        self:RegisterEvent("EXPAND_BAG_BAR_CHANGED")
+    end
 end
 
 function BagBarModule:Unload()
-    if self.frame then
+    if self.frame ~= nil then
+        self:UnregisterEvent("EXPAND_BAG_BAR_CHANGED")
         self.frame:Free()
         self.frame = nil
     end
 end
 
-local function resize(o, size)
-    o:SetSize(size, size)
+function BagBarModule:EXPAND_BAG_BAR_CHANGED(...)
+    Addon:Print(...)
 end
 
-function BagBarModule:RegisterButton(name)
-    local button = _G[name]
-    if not button then
+if Addon:IsBuild("retail") then
+    function BagBarModule:RegisterButton(name)
+        local button = _G[name]
+        if not button then
+            return
+        end
+
+        button:SetSize(MainMenuBarBackpackButton:GetSize())
+        button:Hide()
+
+        BagButtons[#BagButtons + 1] = button
+    end
+elseif Addon:IsBuild("wrath") then
+    function BagBarModule:RegisterButton(name)
+        local button = _G[name]
+        if not button then
+            return
+        end
+
+        button:Hide()
+        button:SetSize(36, 36)
+        button.IconBorder:SetSize(37, 37)
+        button.IconOverlay:SetSize(37, 37)
+
+        _G[button:GetName() .. 'NormalTexture']:SetSize(64, 64)
+
+        BagButtons[#BagButtons + 1] = button
+    end
+else
+    function BagBarModule:RegisterButton(name)
+        local button = _G[name]
+        if not button then
+            return
+        end
+
+        button:Hide()
+        BagButtons[#BagButtons + 1] = button
+    end
+end
+
+function BagBarModule:RegisterKeyRingButton()
+    if not KeyRingButton then
         return
     end
 
-    button:Hide()
+    -- force hide the old keyring button
+    KeyRingButton:Hide()
 
-    if Addon:IsBuild("retail") then
-        button:SetSize(MainMenuBarBackpackButton:GetSize())
-    elseif Addon:IsBuild('wrath') then
-        resize(button, 36)
-        resize(button.IconBorder, 37)
-        resize(button.IconOverlay, 37)
-        resize(_G[button:GetName() .. 'NormalTexture'], 64)
-    end
+    -- setup the dominos specific one
+    local keyring = CreateFrame('CheckButton', AddonName .. 'KeyRingButton', UIParent, 'ItemButtonTemplate')
 
-    tinsert(BagButtons, button)
+    keyring:RegisterForClicks('LeftButtonUp', 'RightButtonUp')
+    keyring:SetID(KEYRING_CONTAINER)
+    keyring.icon:SetTexture([[Interface\Icons\INV_Misc_Bag_16]])
+
+    keyring:SetScript('OnClick', function()
+        if CursorHasItem() then
+            PutKeyInKeyRing()
+        else
+            ToggleBag(KEYRING_CONTAINER)
+        end
+    end)
+
+    keyring:SetScript('OnReceiveDrag', function()
+        if CursorHasItem() then
+            PutKeyInKeyRing()
+        end
+    end)
+
+    keyring:SetScript('OnEnter', function(frame)
+        GameTooltip:SetOwner(frame, 'ANCHOR_LEFT')
+
+        local color = HIGHLIGHT_FONT_COLOR
+        GameTooltip:SetText(KEYRING, color.r, color.g, color.b)
+        GameTooltip:AddLine()
+    end)
+
+    keyring:SetScript('OnLeave', function()
+        GameTooltip:Hide()
+    end)
+
+    MainMenuBarBackpackButton:HookScript('OnClick', function()
+        if IsControlKeyDown() then
+            ToggleBag(KEYRING_CONTAINER)
+        end
+    end)
+
+    -- prevent the button from coming back
+    hooksecurefunc('MainMenuBar_UpdateKeyRing', function()
+        KeyRingButton:Hide()
+    end)
+
+    self:RegisterButton(keyring:GetName())
 end
