@@ -22,7 +22,7 @@ function BagBar:GetDefaults()
     return {
         displayLayer = 'LOW',
         point = 'BOTTOMRIGHT',
-        oneBag = Addon:IsBuild('retail'),
+        oneBag = Addon:IsBuild('retail') and not GetCVarBool("expandBagBar"),
         keyRing = not Addon:IsBuild('retail'),
         spacing = 2
     }

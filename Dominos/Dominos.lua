@@ -198,8 +198,8 @@ function Addon:GetDatabaseDefaults()
             frames = {
                 bags = {
                     point = 'BOTTOMRIGHT',
-                    oneBag = false,
-                    keyRing = true,
+                    oneBag = Addon:IsBuild('retail') and not GetCVarBool("expandBagBar"),
+                    keyRing = not Addon:IsBuild('retail'),
                     spacing = 2
                 }
             },
