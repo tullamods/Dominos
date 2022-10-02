@@ -37,8 +37,8 @@ function ActionButtonMixin:UpdateShownInsecure()
         return
     end
 
-    local show = not self:GetAttribute("statehidden") and
-        (self:GetAttribute("showgrid") > 0 or HasAction(self:GetAttribute("action")))
+    local show = (self:GetAttribute("showgrid") > 0 or HasAction(self:GetAttribute("action")))
+                 and not self:GetAttribute("statehidden")
 
     self:SetShown(show)
 end
