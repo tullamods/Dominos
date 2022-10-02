@@ -172,8 +172,6 @@ function ExtraAbilityBarModule:Load()
                 end
             end
         )
-
-        Addon.BindableButton:AddQuickBindingSupport(_G.ExtraActionButton1)
     end
 
     self.frame = ExtraAbilityBar:New()
