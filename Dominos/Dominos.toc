@@ -43,7 +43,4 @@ bars\menuBar.lua
 plugins\slashCommands.lua
 plugins\launcher.lua
 plugins\buttonThemer.lua
-# plugins\multiActionBarFixer.lua
-plugins\multiActionBarFixer.classic.lua
-plugins\quickBindings.lua
 plugins\getActionReagentUses.lua
