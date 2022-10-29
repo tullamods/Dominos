@@ -70,7 +70,7 @@ PossessBar:Extend(
 
 
 function PossessBar:GetDisplayName()
-    return L.PossessBarDisplayName
+    return HUD_EDIT_MODE_POSSESS_ACTION_BAR_LABEL or L.PossessBarDisplayName
 end
 
 -- disable UpdateDisplayConditions as we're not using showstates for this
