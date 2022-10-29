@@ -1,12 +1,30 @@
 # Dominos Changelog
 
+## 10.0.0-alpha2
+
+* Action button proxying implemented. Action Bars 1, 3, 4, 5, 6, 13, and 14 now
+  support cast on key press and hold to cast
+* Fixed shield conditionals for Paladins/Warriors
+
+### Known Issues
+
+* This version does not support classic
+* The following bars are not implemented
+  * Extra Bar
+  * Pet Bar
+  * Possess Bar
+  * Vehicle Exit
+* Not all action bars support cast on key press at the moment (Blizzard bug)
+* Not all action bars support hold to cast at the moment (Blizzard bug)
+* Action bars do not support flyouts at the moment (Blizzard bug)
+
 ## 10.0.0-alpha1
 
 * Dragonflight Support
 * Added support for 14 action bars
 * Merged Dominos_Encounter/Extras into the main addon
 
-## Known Issues
+### Known Issues
 
 * This version does not support classic
 * Bindings are not redirected yet. You'll need to manually bind keys
