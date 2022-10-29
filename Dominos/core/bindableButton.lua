@@ -5,14 +5,9 @@ local KeyBound = LibStub('LibKeyBound-1.0')
 -- binding method definitions
 -- returns the binding action associated with the button
 local function getButtonBindingAction(button)
-    local bindingAction = button:GetAttribute('bindingAction')
-    if bindingAction then
-        return bindingAction
-    end
-
-    local id = button:GetID() or 0
-    if id > 0 and button.buttonType then
-        return (button.buttonType .. id)
+    local commandName = button.commandName
+    if commandName then
+        return commandName
     end
 
     return ('CLICK %s:LeftButton'):format(button:GetName())
