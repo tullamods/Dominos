@@ -4,6 +4,10 @@ if not VehicleLeaveButton then
 end
 
 local AddonName, Addon = ...
+if Addon:IsBuild("retail") then
+    return
+end
+
 local L = LibStub('AceLocale-3.0'):GetLocale(AddonName)
 
 local CanExitVehicle = _G.CanExitVehicle
