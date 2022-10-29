@@ -13,9 +13,9 @@ Addon.callbacks = LibStub('CallbackHandler-1.0'):New(Addon)
 
 -- how many action buttons we support
 if WOW_PROJECT_ID == WOW_PROJECT_MAINLINE then
-    Addon.ACTION_BUTTON_COUNT = 15 * 12
+    Addon.ACTION_BUTTON_COUNT = 14 * NUM_ACTIONBAR_BUTTONS
 else
-    Addon.ACTION_BUTTON_COUNT = 10 * 12
+    Addon.ACTION_BUTTON_COUNT = 10 * NUM_ACTIONBAR_BUTTONS
 end
 
 --------------------------------------------------------------------------------
@@ -194,7 +194,7 @@ function Addon:GetDatabaseDefaults()
             minimap = { hide = false },
 
             ab = {
-                count = self.ACTION_BUTTON_COUNT / 12,
+                count = self.ACTION_BUTTON_COUNT / NUM_ACTIONBAR_BUTTONS,
                 showEmptyButtons = true,
                 rightClickUnit = 'player'
             },
