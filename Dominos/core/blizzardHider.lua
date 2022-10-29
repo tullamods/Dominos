@@ -86,7 +86,8 @@ if StanceBar and StanceBar.actionButtons then
         disableActionButton(button:GetName())
     end
 
-    Addon:Banish(StanceBar, true)
+    banish("StanceBar")
+    StanceBar:UnregisterAllEvents()
 
     ActionBarController:UnregisterEvent('UPDATE_SHAPESHIFT_FORM')
     ActionBarController:UnregisterEvent('UPDATE_SHAPESHIFT_FORMS')

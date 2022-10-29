@@ -107,8 +107,22 @@ end)
 
 -- methods to inject onto a bar to add in common binding functionality
 -- previously, this was a mixin
-local BindableButton = Addon:NewModule('Bindings', 'AceEvent-3.0')
+local BindableButton = { }
 
+-- adds quickbinding support to buttons
+function BindableButton:AddQuickBindingSupport(button, bindingAction)
+    button:HookScript('OnEnter', BindableButton.OnEnter)
+
+    if bindingAction then
+        button:SetAttribute('bindingAction', bindingAction)
+    end
+
+    if button.UpdateHotkeys then
+        hooksecurefunc(button, 'UpdateHotkeys', BindableButton.UpdateHotkeys)
+    else
+        button.UpdateHotkeys = BindableButton.UpdateHotkeys
+    end
+end
 
 function BindableButton:UpdateHotkeys()
     local key = getButtonHotkey(self)
@@ -135,22 +149,6 @@ function BindableButton:OnEnter()
     KeyBound:Set(BindableButtonProxy)
 end
 
--- inject binding names
-do
-    local L = LibStub('AceLocale-3.0'):GetLocale(AddonName)
-
-    _G[('BINDING_CATEGORY_%s'):format(AddonName)] = AddonName
-
-    local addonActionBarName = AddonName .. ' ' .. L.ActionBarDisplayName
-    for barID = 1, 12 do
-        _G[('BINDING_HEADER_%sActionBar%d'):format(AddonName, barID)] = addonActionBarName:format(barID)
-    end
-
-    local addonActionButtonName = AddonName .. ' ' .. L.ActionButtonDisplayName
-    for buttonID = 1, 120 do
-        _G[('BINDING_NAME_CLICK %sActionButton%d:LeftButton'):format(AddonName, buttonID)] = addonActionButtonName:format(buttonID)
-    end
-end
 
 -- exports
 Addon.BindableButton = BindableButton

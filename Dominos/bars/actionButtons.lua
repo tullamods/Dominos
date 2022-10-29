@@ -9,12 +9,9 @@ local function createActionButton(id)
 
     local button = CreateFrame('CheckButton', name, nil, 'ActionBarButtonTemplate')
 
-    button.commandName = ('CLICK %s:LeftButton'):format(name)
-
+    button.id = id
     return button
 end
-
-
 
 -- handle notifications from our parent bar about whate the action button
 -- ID offset should be
@@ -65,6 +62,11 @@ local ActionButtons = setmetatable({}, {
 
         -- apply our extra action button methods
         Mixin(button, Addon.ActionButtonMixin)
+
+        -- apply hooks for quick binding
+        -- this must be done before we reset the button ID, as we use it
+        -- to figure out the binding action for the button
+        Addon.BindableButton:AddQuickBindingSupport(button)
 
         -- set a handler for updating the action from a parent frame
         button:SetAttribute('_childupdate-offset', actionButton_OnUpdateOffset)
