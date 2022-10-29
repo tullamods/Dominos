@@ -1,5 +1,10 @@
 # Dominos Changelog
 
+## 10.0.0-alpha1
+
+* Add support for 14 action bars in Dragonflight
+* Disabled the extra, pet, posses, vehicle, talking head, and encounter bars.
+
 ## 9.3.5
 
 * (WotLK) Update LibDualSpec
