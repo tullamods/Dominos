@@ -1,7 +1,7 @@
 ## Interface: 100000
-## Interface-BCC: 20504
-## Interface-Classic: 11403
-## Interface-Wrath: 30400
+# Interface-BCC: 20504
+# Interface-Classic: 11403
+# Interface-Wrath: 30400
 ## Title: Dominos
 ## Notes: A main actionbar replacement
 ## Notes-zhCN: 一种动作条替换方案
@@ -33,10 +33,12 @@ bars\actionBarMenu.lua
 bars\actionBarModule.lua
 bars\bagBar.lua
 # bars\extraAbilityBar.lua
+bars\encounterBar.lua
 bars\menuBar.lua
 # bars\petBar.lua
 # bars\possessBar.lua
 bars\stanceBar.lua
+bars\talkingHeadBar.lua
 bars\totemBar.lua
 # bars\vehicleBar.lua
 # stuff you should be able to comment out and still have Dominos work

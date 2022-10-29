@@ -70,7 +70,7 @@ PossessBar:Extend(
 
 
 function PossessBar:GetDisplayName()
-    return HUD_EDIT_MODE_POSSESS_ACTION_BAR_LABEL or L.PossessBarDisplayName
+    return L.PossessBarDisplayName
 end
 
 -- disable UpdateDisplayConditions as we're not using showstates for this
@@ -117,9 +117,9 @@ Addon.PossessBar = PossessBar
 local PossessBarModule = Addon:NewModule('PossessBar', 'AceEvent-3.0')
 
 function PossessBarModule:Load()
-    if not self.initialized then
+    if not self.loaded then
         self:DisablePossessBarFrame()
-        self.initialized = true
+        self.loaded = true
     end
 
     self.bar = PossessBar:New()

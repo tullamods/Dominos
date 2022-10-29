@@ -1,8 +1,0 @@
-## Interface: 30400
-## Interface-BCC: 20504
-## Interface-Classic: 11403
-## Title: Dominos Extras
-## Notes: Makes additional frames movable
-## Author: Tuller (with help from Goranaws)
-## Dependencies: Dominos
-## DefaultState: disabled
