@@ -26,11 +26,10 @@ core\tooltipController.lua
 core\blizzardHider.lua
 core\blizzardHider.classic.lua
 # builtin bars
-bars\actionButtonMixin.lua
-bars\actionButtons.lua
-bars\actionBar.lua
-bars\actionBarMenu.lua
-bars\actionBarModule.lua
+bars\actionBar\button.lua
+bars\actionBar\bar.lua
+bars\actionBar\menu.lua
+bars\actionBar\module.lua
 bars\bagBar.lua
 # bars\extraAbilityBar.lua
 bars\encounterBar.lua
