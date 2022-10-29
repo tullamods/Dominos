@@ -12,7 +12,11 @@ local CONFIG_VERSION = 1
 Addon.callbacks = LibStub('CallbackHandler-1.0'):New(Addon)
 
 -- how many action buttons we support
-Addon.ACTION_BUTTON_COUNT = 120
+if WOW_PROJECT_ID == WOW_PROJECT_MAINLINE then
+    Addon.ACTION_BUTTON_COUNT = 15 * 12
+else
+    Addon.ACTION_BUTTON_COUNT = 10 * 12
+end
 
 --------------------------------------------------------------------------------
 -- Events
@@ -190,7 +194,7 @@ function Addon:GetDatabaseDefaults()
             minimap = { hide = false },
 
             ab = {
-                count = 10,
+                count = self.ACTION_BUTTON_COUNT / 12,
                 showEmptyButtons = true,
                 rightClickUnit = 'player'
             },
@@ -306,30 +310,17 @@ end
 -- Configuration UI
 --------------------------------------------------------------------------------
 
--- create a stub container on the Blizzard interface options panel
--- it will be filled with content once the config addon loads
 function Addon:ShowOptionsFrame()
-    if InCombatLockdown() then
-        return false
+    if self:IsConfigAddonEnabled() and LoadAddOn(CONFIG_ADDON_NAME) then
+        local dialog = LibStub('AceConfigDialog-3.0')
+
+        dialog:Open(AddonName)
+        dialog:SelectGroup(AddonName, "general")
+
+        return true
     end
 
-    if not self:IsConfigAddonEnabled() then
-        return false
-    end
-
-    if not IsAddOnLoaded(CONFIG_ADDON_NAME) then
-        LoadAddOn(CONFIG_ADDON_NAME)
-    end
-
-    self.Options:ShowPrimaryOptionsPanel()
-
-    -- if Settings and Settings.OpenToCategory then
-    --     Settings.OpenToCategory(AddonName)
-    -- else
-    --     InterfaceOptionsFrame_OpenToCategory(AddonName)
-    -- end
-
-    return true
+    return false
 end
 
 function Addon:NewMenu()
@@ -524,12 +515,12 @@ function Addon:ToggleGrid()
 end
 
 function Addon:SetShowGrid(enable)
-    self.db.profile.showEmptyButtons = enable or false
+    self.db.profile.showgrid = enable or false
     self.Frame:ForEach('UpdateGrid')
 end
 
 function Addon:ShowGrid()
-    return self.db.profile.showEmptyButtons
+    return self.db.profile.showgrid
 end
 
 -- right click selfcast
