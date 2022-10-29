@@ -2,7 +2,6 @@
 -- ActionButtons - A pool of action buttons
 --------------------------------------------------------------------------------
 local AddonName, Addon = ...
-local ACTION_BUTTON_COUNT = Addon.ACTION_BUTTON_COUNT
 
 local function createActionButton(id)
     local name = ('%sActionButton%d'):format(AddonName, id)
@@ -10,6 +9,7 @@ local function createActionButton(id)
     local button = CreateFrame('CheckButton', name, nil, 'ActionBarButtonTemplate')
 
     button.id = id
+
     return button
 end
 
