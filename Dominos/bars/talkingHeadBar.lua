@@ -1,10 +1,18 @@
-local Dominos = LibStub("AceAddon-3.0"):GetAddon("Dominos")
-if not Dominos:IsBuild("retail") then
+--------------------------------------------------------------------------------
+-- Talking Head Bar
+-- Lets you move around the talking heads display
+--------------------------------------------------------------------------------
+
+local AddonName, Addon = ...
+
+if not (TalkingHeadFrame and Addon:IsBuild("retail")) then
     return
 end
 
+local L = LibStub("AceLocale-3.0"):GetLocale(AddonName)
+
 -- bar
-local TalkingHeadBar = Dominos:CreateClass('Frame', Dominos.Frame)
+local TalkingHeadBar = Addon:CreateClass('Frame', Addon.Frame)
 
 function TalkingHeadBar:New()
     return TalkingHeadBar.proto.New(self, 'talk')
@@ -28,7 +36,7 @@ function TalkingHeadBar:GetDefaults()
 end
 
 function TalkingHeadBar:GetDisplayName()
-    return HUD_EDIT_MODE_TALKING_HEAD_FRAME_LABEL or 'Talking Head'
+    return L.TalkingHeadBarDisplayName
 end
 
 function TalkingHeadBar:Layout()
@@ -93,11 +101,15 @@ function TalkingHeadBar:MuteSounds()
 end
 
 -- module
-local TalkingHeadBarModule = Dominos:NewModule('TalkingHeadBar', 'AceEvent-3.0')
+local TalkingHeadBarModule = Addon:NewModule('TalkingHeadBar')
 
 function TalkingHeadBarModule:Load()
     self.frame = TalkingHeadBar:New()
-    self:OnTalkingHeadUILoaded()
+
+    if not self.loaded then
+        self:OnTalkingHeadUILoaded()
+        self.loaded = true
+    end
 end
 
 function TalkingHeadBarModule:Unload()
@@ -106,19 +118,7 @@ function TalkingHeadBarModule:Unload()
     end
 end
 
-function TalkingHeadBarModule:ADDON_LOADED(event, addon)
-    if addon == 'Blizzard_TalkingHeadUI' then
-        self:UnregisterEvent(event)
-
-        self:OnTalkingHeadUILoaded()
-    end
-end
-
 function TalkingHeadBarModule:OnTalkingHeadUILoaded()
-    if self.loaded then
-        return
-    end
-
     TalkingHeadFrame.ignoreFramePositionManager = true
 
     -- OnShow/OnHide call UpdateManagedFramePositions on the blizzard end so

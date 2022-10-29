@@ -1,9 +1,0 @@
-## Interface: 100000
-## Title: Dominos Extras
-## Title-zhCN: |cFF0099FFDominos|r Extras 模块
-## Notes: Makes additional frames movable
-## Notes-zhCN: 使玩家高级能量条(PlayerPowerBarAlt)可移动
-## Author: Tuller (with help from Goranaws)
-## Dependencies: Dominos
-encounterBar.lua
-talkingHeadBar.lua

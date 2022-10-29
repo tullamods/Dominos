@@ -21,7 +21,7 @@ function VehicleBar:New()
 end
 
 function VehicleBar:GetDisplayName()
-    return HUD_EDIT_MODE_VEHICLE_LEAVE_BUTTON_LABEL or BINDING_NAME_VEHICLEEXIT
+    return L.VehicleBarDisplayName
 end
 
 VehicleBar:Extend('OnAcquire', function(self)
