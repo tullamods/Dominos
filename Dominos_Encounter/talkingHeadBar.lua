@@ -28,7 +28,7 @@ function TalkingHeadBar:GetDefaults()
 end
 
 function TalkingHeadBar:GetDisplayName()
-    return 'Talking Heads'
+    return HUD_EDIT_MODE_TALKING_HEAD_FRAME_LABEL or 'Talking Head'
 end
 
 function TalkingHeadBar:Layout()
@@ -97,12 +97,7 @@ local TalkingHeadBarModule = Dominos:NewModule('TalkingHeadBar', 'AceEvent-3.0')
 
 function TalkingHeadBarModule:Load()
     self.frame = TalkingHeadBar:New()
-
-    if IsAddOnLoaded("Blizzard_TalkingHeadUI") then
-        self:OnTalkingHeadUILoaded()
-    elseif not self.loaded then
-        self:RegisterEvent("ADDON_LOADED")
-    end
+    self:OnTalkingHeadUILoaded()
 end
 
 function TalkingHeadBarModule:Unload()
@@ -131,7 +126,7 @@ function TalkingHeadBarModule:OnTalkingHeadUILoaded()
     TalkingHeadFrame:SetScript("OnShow", nil)
     TalkingHeadFrame:SetScript("OnHide", nil)
 
-    hooksecurefunc("TalkingHeadFrame_PlayCurrent", function()
+    hooksecurefunc(TalkingHeadFrame, 'PlayCurrent', function()
         if not self.frame:MuteSounds() then
             return
         end
