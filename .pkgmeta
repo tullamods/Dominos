@@ -6,8 +6,6 @@ manual-changelog:
 
 ignore:
   - Dominos_Auras
-  - Dominos_Encounter
-  - Dominos_Roll
 
 move-folders:
   Dominos/Dominos: Dominos
