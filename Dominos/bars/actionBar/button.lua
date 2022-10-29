@@ -109,12 +109,39 @@ Addon.ActionButtonMixin = ActionButtonMixin
 -- ActionButtons - A pool of action buttons
 --------------------------------------------------------------------------------
 
+local source_OnAttributeChanged = [[
+    if name ~= "action" then return end
+
+    local target = control:GetFrameRef("target")
+
+    if target and target:GetAttribute(name) ~= value then
+        target:SetAttribute(name, value)
+    end
+]]
+
+local function proxyActionButtonKeyPress(source, target)
+    if not target then return end
+
+    source.commandName = target.commandName
+
+    local proxy = CreateFrame('Frame', nil, nil, "SecureHandlerBaseTemplate")
+
+    proxy:SetFrameRef("target", target)
+    proxy:WrapScript(source, "OnAttributeChanged", source_OnAttributeChanged)
+    proxy:Hide()
+
+    hooksecurefunc(target, "SetButtonState", function(_, state)
+        source:SetButtonStateBase(state)
+    end)
+end
+
 local function createActionButton(id)
     local name = ('%sActionButton%d'):format(AddonName, id)
 
     local button = CreateFrame('CheckButton', name, nil, 'ActionBarButtonTemplate')
 
     button.id = id
+    proxyActionButtonKeyPress(button, Addon.ActionButtonMap[id])
 
     return button
 end
