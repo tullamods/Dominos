@@ -118,8 +118,7 @@ end
 
 function ActionBar:ReleaseButton(button)
     button:SetAttribute('statehidden', true)
-    button:SetAttribute("showgrid", 0)
-    button:Hide()
+    button:SetShowGridInsecure("showgrid", 0, true)
 end
 
 function ActionBar:OnAttachButton(button)
@@ -199,11 +198,17 @@ function ActionBar:LoadStateController()
         local offset = 0
 
         local overridePage = self:GetAttribute('state-overridepage') or 0
-        if overridePage > 10 and self:GetAttribute('state-overridebar') then
+        if overridePage > 0 and self:GetAttribute('state-overridebar') then
             offset = (overridePage - 1) * self:GetAttribute('overrideBarLength')
         else
             local page = self:GetAttribute('state-page') or 1
+
             offset = (page - 1) * self:GetAttribute('barLength')
+
+            -- skip action bar 12 (not really usable)
+            if offset >= 132 then
+                offset = offset + 12
+            end
         end
 
         self:SetAttribute('actionOffset', offset)

@@ -37,4 +37,3 @@ externals:
   Dominos_Config/libs/AceConfig-3.0: https://repos.wowace.com/wow/ace3/trunk/AceConfig-3.0
   Dominos_Config/libs/AceDBOptions-3.0: https://repos.wowace.com/wow/ace3/trunk/AceDBOptions-3.0
   Dominos_Config/libs/AceGUI-3.0: https://repos.wowace.com/wow/ace3/trunk/AceGUI-3.0
-  Dominos_Config/libs/LibUIDropDownMenu-4.0: https://repos.wowace.com/wow/libuidropdownmenu/trunk/LibUIDropDownMenu

@@ -6,12 +6,22 @@
 local AddonName, Addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(AddonName)
 
+if Addon:IsBuild("retail") then
+    return
+end
+
 --------------------------------------------------------------------------------
 -- Pet Button Setup
 --------------------------------------------------------------------------------
 
 local function getPetButton(id)
     return _G[('PetActionButton%d'):format(id)]
+end
+
+for id = 1, NUM_PET_ACTION_SLOTS do
+    local button = getPetButton(id)
+
+    Addon.BindableButton:AddQuickBindingSupport(button, ('BONUSACTIONBUTTON%d'):format(id))
 end
 
 --------------------------------------------------------------------------------

@@ -21,6 +21,7 @@ local actionButton_OnUpdateOffset = [[
 
     if self:GetAttribute('action') ~= id then
         self:SetAttribute('action', id)
+        self:RunAttribute("UpdateShown")
         self:CallMethod('UpdateState')
     end
 ]]
@@ -54,8 +55,8 @@ local ActionButtons = setmetatable({}, {
         -- validate the ID of the button we're getting is within an
         -- our expected range
         id = tonumber(id) or 0
-        if id < 1 or id > ACTION_BUTTON_COUNT then
-            error(('Usage: %s.ActionButtons[1-%d]'):format(AddonName, ACTION_BUTTON_COUNT), 2)
+        if id < 1 then
+            error(('Usage: %s.ActionButtons[>0]'):format(AddonName), 2)
         end
 
         local button = createActionButton(id)

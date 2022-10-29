@@ -56,22 +56,24 @@ function VehicleBarModule:OnInitialize()
     -- button, so put it back on the vehicle bar whenever it is called
     -- we also show it again, if possible, because it'll be hidden normally if
     -- the Override UI is enabled.
-    hooksecurefunc(
-        'MainMenuBarVehicleLeaveButton_Update',
-        Addon:Defer(
-            function()
-                if self.frame then
-                    VehicleLeaveButton:ClearAllPoints()
-                    VehicleLeaveButton:SetPoint('CENTER', self.frame)
+    if MainMenuBarVehicleLeaveButton_Update then
+        hooksecurefunc(
+            'MainMenuBarVehicleLeaveButton_Update',
+            Addon:Defer(
+                function()
+                    if self.frame then
+                        VehicleLeaveButton:ClearAllPoints()
+                        VehicleLeaveButton:SetPoint('CENTER', self.frame)
 
-                    if CanExitVehicle() then
-                        VehicleLeaveButton:Show()
+                        if CanExitVehicle() then
+                            VehicleLeaveButton:Show()
+                        end
                     end
-                end
-            end,
-            0.01
+                end,
+                0.01
+            )
         )
-    )
+    end
 end
 
 function VehicleBarModule:Load()
