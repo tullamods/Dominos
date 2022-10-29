@@ -2,8 +2,22 @@
 
 ## 10.0.0-alpha1
 
-* Add support for 14 action bars in Dragonflight
-* Disabled the extra, pet, posses, vehicle, talking head, and encounter bars.
+* Dragonflight Support
+* Added support for 14 action bars
+* Merged Dominos_Encounter/Extras into the main addon
+
+## Known Issues
+
+* This version does not support classic
+* Bindings are not redirected yet. You'll need to manually bind keys
+* The following bars are not implemented
+  * Extra Bar
+  * Pet Bar
+  * Possess Bar
+  * Vehicle Exit
+* Action buttons do not support cast on key press at the moment (Blizzard bug)
+* Action buttons do not support hold to cast at the moment (Blizzard bug)
+* Action buttons do not support flyouts at the moment (Blizzard bug)
 
 ## 9.3.5
 
