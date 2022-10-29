@@ -22,7 +22,7 @@ function ExtraAbilityBar:New()
 end
 
 function ExtraAbilityBar:GetDisplayName()
-    return L.ExtraBarDisplayName
+    return HUD_EDIT_MODE_EXTRA_ABILITIES_LABEL or L.ExtraBarDisplayName
 end
 
 ExtraAbilityBar:Extend(
