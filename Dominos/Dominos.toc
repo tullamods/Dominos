@@ -35,10 +35,10 @@ bars\bagBar.lua
 # bars\extraAbilityBar.lua
 bars\menuBar.lua
 # bars\petBar.lua
-bars\possessBar.lua
+# bars\possessBar.lua
 bars\stanceBar.lua
 bars\totemBar.lua
-bars\vehicleBar.lua
+# bars\vehicleBar.lua
 # stuff you should be able to comment out and still have Dominos work
 plugins\slashCommands.lua
 plugins\launcher.lua
