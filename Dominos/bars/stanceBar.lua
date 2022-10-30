@@ -20,7 +20,7 @@ if not ({
     ROGUE = true,
     SHAMAN = false,
     WARLOCK = Addon:IsBuild('wrath'),
-    WARRIOR = not Addon:IsBuild('retail')
+    WARRIOR = true,
 })[UnitClassBase('player')] then
     return
 end
