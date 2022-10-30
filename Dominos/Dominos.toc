@@ -37,6 +37,7 @@ bars\encounterBar.lua
 bars\menuBar.lua
 bars\petBar.lua
 # bars\possessBar.lua
+bars\queueStatusBar.lua
 bars\stanceBar.lua
 bars\talkingHeadBar.lua
 bars\totemBar.lua

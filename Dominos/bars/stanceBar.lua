@@ -80,6 +80,8 @@ function StanceBar:AcquireButton(index)
 end
 
 function StanceBar:OnAttachButton(button)
+    button:Show()
+    button:UpdateHotkeys()
     Addon:GetModule('ButtonThemer'):Register(button, 'Class Bar')
     Addon:GetModule('Tooltips'):Register(button)
 end
@@ -136,13 +138,15 @@ function StanceBarModule:UpdateNumForms()
 end
 
 function StanceBarModule:OnFirstLoad()
+    -- banish the current stance bar
     local StanceBar = _G.StanceBar
     if StanceBar then
-        -- banish the current stance bar
         StanceBar.ignoreFramePositionManager = true
         StanceBar:UnregisterAllEvents()
-        StanceBar.SetParent(Addon.ShadowUIParent)
-        StanceBar.Hide()
+        StanceBar:SetParent(Addon.ShadowUIParent)
+        StanceBar:ClearAllPoints()
+        StanceBar:SetPoint('CENTER')
+        StanceBar:Hide()
 
         -- and its buttons, too
         for _, button in pairs(StanceBar.actionButtons) do
@@ -150,15 +154,6 @@ function StanceBarModule:OnFirstLoad()
             button:SetAttribute('statehidden', true)
             button:Hide()
         end
-
-        -- With 8.2 and later there's more restrictions on frame anchoring
-        -- if something happens to be attached to a restricted frame. This
-        -- causes issues with moving the action bars around, so we perform a
-        -- clear all points to avoid some frame dependency issues. We then
-        -- follow it up with a SetPoint to handle the cases of bits of the
-        -- UI code assuming that this element has a position.
-        StanceBar.ClearAllPoints()
-        StanceBar.SetPoint('CENTER')
     end
 
     -- turn off stance bar related action bar events
