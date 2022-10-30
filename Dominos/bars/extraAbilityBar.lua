@@ -11,14 +11,7 @@ local BAR_ID = 'extra'
 local ExtraAbilityBar = Addon:CreateClass('Frame', Addon.Frame)
 
 function ExtraAbilityBar:New()
-    local bar = ExtraAbilityBar.proto.New(self, BAR_ID)
-
-    -- drop need for showstates for this case
-    if bar:GetUserDisplayConditions() == '[extrabar]show;hide' then
-        bar:SetUserDisplayConditions(nil)
-    end
-
-    return bar
+    return ExtraAbilityBar.proto.New(self, BAR_ID)
 end
 
 function ExtraAbilityBar:GetDisplayName()
