@@ -40,27 +40,17 @@ function TalkingHeadBar:GetDisplayName()
 end
 
 function TalkingHeadBar:Layout()
-    local width, height
-
-    if TalkingHeadFrame then
-        self:RepositionTalkingHeadFrame()
-        width, height = TalkingHeadFrame:GetSize()
-    else
-        width, height = 570, 155
-    end
+    self:RepositionTalkingHeadFrame()
+    local width, height = TalkingHeadFrame:GetSize()
 
     local pW, pH = self:GetPadding()
     self:SetSize(width + pW, height + pH)
 end
 
 function TalkingHeadBar:RepositionTalkingHeadFrame()
-    local frame = TalkingHeadFrame
-    if frame then
-        frame:ClearAllPoints()
-        frame:SetPoint('CENTER', self)
-        frame:SetParent(self)
-        return true
-    end
+    TalkingHeadFrame:ClearAllPoints()
+    TalkingHeadFrame:SetPoint('CENTER', self)
+    TalkingHeadFrame:SetParent(self)
 end
 
 function TalkingHeadBar:OnCreateMenu(menu)
