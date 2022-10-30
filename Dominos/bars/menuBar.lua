@@ -19,11 +19,11 @@ if Addon:IsBuild('retail') then
         "QuestLogMicroButton",
         "GuildMicroButton",
         "LFDMicroButton",
-        "EJMicroButton",
         "CollectionsMicroButton",
-        "MainMenuMicroButton",
+        "EJMicroButton",
+        "StoreMicroButton",
         -- "HelpMicroButton",
-        "StoreMicroButton"
+        "MainMenuMicroButton"
     }
 else
     MICRO_BUTTONS = _G.MICRO_BUTTONS
