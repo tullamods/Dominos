@@ -38,12 +38,7 @@ function Addon:OnEnable()
 
     -- watch for binding updates, updating all bars on the last one that happens
     -- in rapid sequence
-    self.UPDATE_BINDINGS = self:Defer(
-        function() self.Frame:ForEach('ForButtons', 'UpdateHotkeys') end,
-        self,
-        0.01
-    )
-
+    self.UpdateHotkeys = self:Defer(function() self.Frame:ForEach('ForButtons', 'UpdateHotkeys') end, 0.01)
     self:RegisterEvent('UPDATE_BINDINGS')
 end
 
@@ -55,7 +50,11 @@ function Addon:OnUpgradeAddon(oldVersion, newVersion)
     self:Printf(L.Updated, ADDON_VERSION, self:GetWowBuild())
 end
 
--- keybound events
+-- binding events
+function Addon:UPDATE_BINDINGS()
+    self:UpdateHotkeys()
+end
+
 function Addon:LIBKEYBOUND_ENABLED()
     self.Frame:ForEach('KEYBOUND_ENABLED')
 end

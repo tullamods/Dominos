@@ -1,5 +1,23 @@
 # Dominos Changelog
 
+## 10.0.0-alpha3
+
+* Added a new pet bar implementation
+* Added a queue status bar
+* Added support for Warrior stances
+* Reorganized menu buttons (thanks Daenarys)
+* Turned the extra bar back on (it *probably* works without any additional adjustments needed)
+
+### Known Issues
+
+* This version does not support classic versions of WoW
+* Action bars do not support spell flyout actions at the moment (Blizzard bug).
+  You'll receive an error if you try to use one.
+* The possess bar and vehicle exit bars are not implemented. You can use the
+  builtin versions.
+* Not all action bars support cast on key press at the moment (Blizzard bug)
+* Not all action bars support hold to cast at the moment (Blizzard bug)
+
 ## 10.0.0-alpha2
 
 * Action button proxying implemented. Action Bars 1, 3, 4, 5, 6, 13, and 14 now

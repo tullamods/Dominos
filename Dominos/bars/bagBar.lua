@@ -72,6 +72,10 @@ function BagBar:AcquireButton(index)
     end
 end
 
+function BagBar:OnAttachButton(button)
+    button:Show()
+end
+
 function BagBar:NumButtons()
     local count = 1
 
