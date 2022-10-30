@@ -35,7 +35,7 @@ bars\bagBar.lua
 bars\extraAbilityBar.lua
 bars\encounterBar.lua
 bars\menuBar.lua
-# bars\petBar.lua
+bars\petBar.lua
 # bars\possessBar.lua
 bars\stanceBar.lua
 bars\talkingHeadBar.lua
