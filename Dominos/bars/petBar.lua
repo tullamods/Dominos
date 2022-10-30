@@ -1,3 +1,5 @@
+if not PetActionBar then return end
+
 --------------------------------------------------------------------------------
 -- Pet Bar
 -- A movable action bar for pets
