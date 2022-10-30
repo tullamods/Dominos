@@ -53,8 +53,7 @@ function ExtraAbilityBar:ThemeBar(enable)
     local zoneAbilities = C_ZoneAbility and C_ZoneAbility.GetActiveAbilities() or 0
 
     if #zoneAbilities > 0 then
-        local container = ZoneAbilityFrame and ZoneAbilityFrame.SpellButtonContainer
-        for button in container:EnumerateActive() do
+        for button in ZoneAbilityFrame.SpellButtonContainer:EnumerateActive() do
             if button then
                 if enable then
                     Addon:GetModule('ButtonThemer'):Register(
