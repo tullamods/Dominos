@@ -109,6 +109,14 @@ Addon.ActionButtonMixin = ActionButtonMixin
 -- ActionButtons - A pool of action buttons
 --------------------------------------------------------------------------------
 
+-- dragonflight hack: whenever a Dominos action button's action changes
+-- set the action of the corresponding blizzard action button
+-- this ensures that pressing a blizzard keybinding does the same thing as
+-- clicking a Dominos button would
+--
+-- We want to not remap blizzard keybindings in dragonflight, so that we can
+-- use some behaviors only available to blizzard action buttons, mainly cast on
+-- key down and press and hold casting
 local source_OnAttributeChanged = [[
     if name ~= "action" then return end
 
