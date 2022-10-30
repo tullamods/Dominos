@@ -81,19 +81,5 @@ for i = 1, NUM_ACTIONBAR_BUTTONS do
     disableActionButton(('MultiBarBottomLeftButton%d'):format(i))
 end
 
-if StanceBar and StanceBar.actionButtons then
-    for _, button in pairs(StanceBar.actionButtons) do
-        disableActionButton(button:GetName())
-    end
-
-    banish("StanceBar")
-    StanceBar:UnregisterAllEvents()
-
-    ActionBarController:UnregisterEvent('UPDATE_SHAPESHIFT_FORM')
-    ActionBarController:UnregisterEvent('UPDATE_SHAPESHIFT_FORMS')
-    ActionBarController:UnregisterEvent('UPDATE_SHAPESHIFT_USABLE')
-    ActionBarController:UnregisterEvent('UPDATE_INVENTORY_ALERTS') --Wha? indeed
-end
-
 -- disable some action bar controller updates that we probably don't need
 -- ActionBarController:UnregisterEvent('UPDATE_POSSESS_BAR')
