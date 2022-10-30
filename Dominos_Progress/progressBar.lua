@@ -681,6 +681,7 @@ do
 
 		segment.bonus:SetStatusBarTexture(self:GetSegmentTexture())
 		segment.bonus:SetStatusBarColor(self:GetBonusColor())
+		segment:Show()
 
 		return segment
 	end
