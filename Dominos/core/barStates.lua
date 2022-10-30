@@ -173,6 +173,10 @@ elseif class == 'WARLOCK' then
     end
 elseif class == 'WARRIOR' then
     if Addon:IsBuild('retail') then
+        addFormState('class', 'battle', 386164)
+        addFormState('class', 'defensive', 386208)
+        addFormState('class', 'berserker', 386196)
+
         addState('class', 'shield', getEquippedConditional(Enum.ItemClass.Armor, Enum.ItemArmorSubclass.Shield))
     else
         addState('class', 'battle', '[bonusbar:1]', GetSpellInfo(2457))
