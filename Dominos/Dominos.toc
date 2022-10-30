@@ -32,7 +32,7 @@ bars\actionBar\bar.lua
 bars\actionBar\menu.lua
 bars\actionBar\module.lua
 bars\bagBar.lua
-# bars\extraAbilityBar.lua
+bars\extraAbilityBar.lua
 bars\encounterBar.lua
 bars\menuBar.lua
 # bars\petBar.lua
