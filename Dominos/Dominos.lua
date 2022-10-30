@@ -28,14 +28,23 @@ function Addon:OnInitialize()
     self:UpgradeDatabase()
 
     -- keybound support
-    local kb = KeyBound
-    kb.RegisterCallback(self, 'LIBKEYBOUND_ENABLED')
-    kb.RegisterCallback(self, 'LIBKEYBOUND_DISABLED')
+    KeyBound.RegisterCallback(self, 'LIBKEYBOUND_ENABLED')
+    KeyBound.RegisterCallback(self, 'LIBKEYBOUND_DISABLED')
 end
 
 function Addon:OnEnable()
     self:UpdateUseOverrideUI()
     self:Load()
+
+    -- watch for binding updates, updating all bars on the last one that happens
+    -- in rapid sequence
+    self.UPDATE_BINDINGS = self:Defer(
+        function() self.Frame:ForEach('ForButtons', 'UpdateHotkeys') end,
+        self,
+        0.01
+    )
+
+    self:RegisterEvent('UPDATE_BINDINGS')
 end
 
 -- configuration events

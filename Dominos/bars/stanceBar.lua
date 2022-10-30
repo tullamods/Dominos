@@ -99,12 +99,16 @@ Addon.StanceBar = StanceBar
 local StanceBarModule = Addon:NewModule('StanceBar', 'AceEvent-3.0')
 
 function StanceBarModule:Load()
+    if not self.loaded then
+        self:OnFirstLoad()
+        self.loaded = true
+    end
+
     self.bar = StanceBar:New()
 
     -- self:RegisterEvent("ACTIONBAR_PAGE_CHANGED")
     self:RegisterEvent("PLAYER_ENTERING_WORLD", 'UpdateNumForms')
     self:RegisterEvent("PLAYER_REGEN_ENABLED", 'UpdateNumForms')
-    self:RegisterEvent("UPDATE_BINDINGS")
     -- self:RegisterEvent("UPDATE_BONUS_ACTIONBAR", 'UpdateStanceButtons')
     -- self:RegisterEvent("UPDATE_OVERRIDE_ACTIONBAR", 'UpdateStanceButtons')
     -- self:RegisterEvent("UPDATE_POSSESS_BAR", 'UpdateStanceButtons')
@@ -131,8 +135,40 @@ function StanceBarModule:UpdateNumForms()
     self:UpdateStanceButtons()
 end
 
-function StanceBarModule:UPDATE_BINDINGS()
-    self.bar:ForButtons('UpdateHotkeys')
+function StanceBarModule:OnFirstLoad()
+    local StanceBar = _G.StanceBar
+    if StanceBar then
+        -- banish the current stance bar
+        StanceBar.ignoreFramePositionManager = true
+        StanceBar:UnregisterAllEvents()
+        StanceBar.SetParent(Addon.ShadowUIParent)
+        StanceBar.Hide()
+
+        -- and its buttons, too
+        for _, button in pairs(StanceBar.actionButtons) do
+            button:UnregisterAllEvents()
+            button:SetAttribute('statehidden', true)
+            button:Hide()
+        end
+
+        -- With 8.2 and later there's more restrictions on frame anchoring
+        -- if something happens to be attached to a restricted frame. This
+        -- causes issues with moving the action bars around, so we perform a
+        -- clear all points to avoid some frame dependency issues. We then
+        -- follow it up with a SetPoint to handle the cases of bits of the
+        -- UI code assuming that this element has a position.
+        StanceBar.ClearAllPoints()
+        StanceBar.SetPoint('CENTER')
+    end
+
+    -- turn off stance bar related action bar events
+    local ActionBarController = _G.ActionBarController
+    if ActionBarController then
+        ActionBarController:UnregisterEvent('UPDATE_SHAPESHIFT_FORM')
+        ActionBarController:UnregisterEvent('UPDATE_SHAPESHIFT_FORMS')
+        ActionBarController:UnregisterEvent('UPDATE_SHAPESHIFT_USABLE')
+        ActionBarController:UnregisterEvent('UPDATE_INVENTORY_ALERTS') --Wha? indeed
+    end
 end
 
 StanceBarModule.UpdateStanceButtons = Addon:Defer(function(self)

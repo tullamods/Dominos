@@ -123,7 +123,6 @@ function PossessBarModule:Load()
     end
 
     self.bar = PossessBar:New()
-    self:RegisterEvent('UPDATE_BINDINGS')
 end
 
 function PossessBarModule:Unload()
@@ -132,10 +131,6 @@ function PossessBarModule:Unload()
     if self.bar then
         self.bar:Free()
     end
-end
-
-function PossessBarModule:UPDATE_BINDINGS()
-    self.bar:ForButtons('UpdateHotkeys')
 end
 
 function PossessBarModule:DisablePossessBarFrame()
