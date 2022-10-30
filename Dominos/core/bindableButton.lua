@@ -144,6 +144,5 @@ function BindableButton:OnEnter()
     KeyBound:Set(BindableButtonProxy)
 end
 
-
 -- exports
 Addon.BindableButton = BindableButton
