@@ -169,20 +169,14 @@ end
 function BagBarModule:Load()
     if self.frame == nil then
         self.frame = BagBar:New()
-        self:RegisterEvent("EXPAND_BAG_BAR_CHANGED")
     end
 end
 
 function BagBarModule:Unload()
     if self.frame ~= nil then
-        self:UnregisterEvent("EXPAND_BAG_BAR_CHANGED")
         self.frame:Free()
         self.frame = nil
     end
-end
-
-function BagBarModule:EXPAND_BAG_BAR_CHANGED(...)
-    Addon:Print(...)
 end
 
 if Addon:IsBuild("retail") then
