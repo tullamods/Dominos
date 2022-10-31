@@ -14,6 +14,8 @@ local function getActionPageOffset(bar)
 end
 
 local function addBar(bar, offset)
+    if not bar and bar.actionButtons then return end
+
     offset = offset or getActionPageOffset(bar)
 
     for i, button in ipairs(bar.actionButtons) do
