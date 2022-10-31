@@ -1,9 +1,6 @@
+if not PlayerPowerBarAlt then return end
+
 local AddonName, Addon = ...
-
-if not (PlayerPowerBarAlt and Addon:IsBuild("retail")) then
-	return
-end
-
 local L = LibStub('AceLocale-3.0'):GetLocale(AddonName)
 
 local EncounterBar = Addon:CreateClass('Frame', Addon.Frame)

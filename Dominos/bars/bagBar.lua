@@ -19,13 +19,25 @@ function BagBar:GetDisplayName()
 end
 
 function BagBar:GetDefaults()
-    return {
-        displayLayer = 'LOW',
-        point = 'BOTTOMRIGHT',
-        oneBag = Addon:IsBuild('retail') and not GetCVarBool("expandBagBar"),
-        keyRing = not Addon:IsBuild('retail'),
-        spacing = 2
-    }
+    if Addon:IsBuild("retail") then
+        return {
+            displayLayer = 'LOW',
+            point = 'BOTTOMRIGHT',
+            oneBag = not GetCVarBool("expandBagBar"),
+            keyRing = false,
+            spacing = 2
+        }
+    else
+        return {
+            displayLayer = 'LOW',
+            point = 'BOTTOMRIGHT',
+            x = 0,
+            y = 40,
+            oneBag = false,
+            keyRing = true,
+            spacing = 2
+        }
+    end
 end
 
 function BagBar:SetShowBags(enable)

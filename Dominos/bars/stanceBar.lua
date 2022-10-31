@@ -1,3 +1,5 @@
+if not StanceBar then return end
+
 --------------------------------------------------------------------------------
 -- Stance bar
 -- Lets you move around the bar for displaying forms/stances/etc
