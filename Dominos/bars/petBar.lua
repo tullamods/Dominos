@@ -128,7 +128,7 @@ local function createPetActionButton(name, id)
     end)
 
     -- setup bindings
-    button.commandName = "BONUSACTIONBUTTON" .. id
+    button.commandName = ("BONUSACTIONBUTTON%d"):format(id)
     Addon.BindableButton:AddQuickBindingSupport(button)
 
     -- add support for mousewheel bindings

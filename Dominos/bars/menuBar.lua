@@ -124,12 +124,21 @@ MenuBar:Extend(
 )
 
 function MenuBar:GetDefaults()
-    return {
-        displayLayer = 'LOW',
-        point = 'BOTTOMRIGHT',
-        x = 0,
-        y = 48
-    }
+    if Addon:IsBuild("retail") then
+        return {
+            displayLayer = 'LOW',
+            point = 'BOTTOMRIGHT',
+            x = 0,
+            y = 48
+        }
+    else
+        return {
+            displayLayer = 'LOW',
+            point = 'BOTTOMRIGHT',
+            x = 0,
+            y = 0
+        }
+    end
 end
 
 function MenuBar:AcquireButton(index)

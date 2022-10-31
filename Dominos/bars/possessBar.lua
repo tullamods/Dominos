@@ -1,5 +1,3 @@
-if not PossessActionBar then return end
-
 --------------------------------------------------------------------------------
 -- Possess bar
 -- Handles the exit button for vehicles and taxis
@@ -37,16 +35,21 @@ local function getOrCreatePossessButton(id)
     local button = _G[name]
 
     if not button then
-        button = CreateFrame("CheckButton", name, nil, "SmallActionButtonTemplate", id)
+        if PossessButtonMixin then
+            button = CreateFrame("CheckButton", name, nil, "SmallActionButtonTemplate", id)
+            Mixin(button, PossessButtonMixin)
 
-        Mixin(button, PossessButtonMixin)
-
-        button.index = id
-        button:OnLoad()
-        button.OnEnter = possessButton_OnEnter
-        button:SetScript("OnClick", button.OnClick)
-        button:SetScript("OnEnter", button.OnEnter)
-        button:SetScript("OnLeave", button.OnLeave)
+            button:OnLoad()
+            button:SetScript("OnClick", button.OnClick)
+            button:SetScript("OnEnter", possessButton_OnEnter)
+            button:SetScript("OnLeave", button.OnLeave)
+        else
+            button = CreateFrame("CheckButton", name, nil, "ActionButtonTemplate", id)
+            button:SetSize(30, 30)
+            button:SetScript("OnClick", PossessButton_OnClick)
+            button:SetScript("OnEnter", possessButton_OnEnter)
+            button:SetScript("OnLeave", function() GameTooltip:Hide() end)
+        end
 
         Addon.BindableButton:AddQuickBindingSupport(button)
     end
@@ -136,6 +139,7 @@ local PossessBarModule = Addon:NewModule('PossessBar', 'AceEvent-3.0')
 
 function PossessBarModule:Load()
     if not self.loaded then
+        self:DisableFrame(PossessBar)
         self:DisableFrame(PossessActionBar)
         self:DisableFrame(MainMenuBarVehicleLeaveButton)
         self.Update = Addon:Defer(self.Update, 0.01, self)

@@ -208,12 +208,6 @@ function Addon:GetDatabaseDefaults()
             },
 
             frames = {
-                bags = {
-                    point = 'BOTTOMRIGHT',
-                    oneBag = Addon:IsBuild('retail') and not GetCVarBool("expandBagBar"),
-                    keyRing = not Addon:IsBuild('retail'),
-                    spacing = 2
-                }
             },
 
             alignmentGrid = {

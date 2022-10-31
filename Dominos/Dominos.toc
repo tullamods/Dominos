@@ -33,9 +33,11 @@ bars\extraAbilityBar.lua
 bars\encounterBar.lua
 bars\menuBar.lua
 bars\petBar.lua
+bars\petBar.classic.lua
 bars\possessBar.lua
 bars\queueStatusBar.lua
 bars\stanceBar.lua
+bars\stanceBar.classic.lua
 bars\talkingHeadBar.lua
 bars\totemBar.lua
 # stuff you should be able to comment out and still have Dominos work

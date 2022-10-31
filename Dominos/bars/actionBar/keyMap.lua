@@ -14,11 +14,11 @@ local function getActionPageOffset(bar)
 end
 
 local function addBar(bar, offset)
-    if not bar and bar.actionButtons then return end
+    if not (bar and bar.actionButtons) then return end
 
     offset = offset or getActionPageOffset(bar)
 
-    for i, button in ipairs(bar.actionButtons) do
+    for i, button in pairs(bar.actionButtons) do
         -- reset id, so that the actionpage attribute is not taken into account
         -- see SecureActionButtonMixin:CalculateAction(button)
         button:SetID(0)
