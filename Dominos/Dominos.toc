@@ -26,7 +26,7 @@ core\tooltipController.lua
 core\blizzardHider.lua
 core\blizzardHider.classic.lua
 # builtin bars
-bars\actionBar\keyMap.lua
+bars\actionBar\actionButtonMap.lua
 bars\actionBar\button.lua
 bars\actionBar\bar.lua
 bars\actionBar\menu.lua
