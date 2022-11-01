@@ -2,17 +2,14 @@
 
 ## 10.0.0-beta1
 
-* Removed support for classic temporarily
 * Added a placeholder for Dominos Encounter/Extras to automatically disable it
-*
 
 ### Known Issues
 
-* This version does not support classic versions of WoW
-* Action bars do not support spell flyout actions at the moment (Blizzard bug).
+* Action bars do not support spell flyout actions on 10.x realms (Blizzard bug).
   You will receive an error if you try to use one.
-* Not all action bars support cast on key press at the moment (Blizzard bug)
-* Not all action bars support hold to cast at the moment (Blizzard bug)
+* Not all action bars support cast on key press on 10.x realms (Blizzard bug)
+* Not all action bars support hold to cast on 10.x realms (Blizzard bug)
 
 ## 10.0.0-alpha4
 
