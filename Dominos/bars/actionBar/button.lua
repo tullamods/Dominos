@@ -93,8 +93,8 @@ end
 -- in classic, blizzard action buttons don't use a mixin
 -- so define some methods that we'd expect
 if not Addon:IsBuild('retail') then
-    ActionButtonMixin.HideGrid = ActionButton_HideGrid
-    ActionButtonMixin.ShowGrid = ActionButton_ShowGrid
+    -- ActionButtonMixin.HideGrid = ActionButton_HideGrid
+    -- ActionButtonMixin.ShowGrid = ActionButton_ShowGrid
     ActionButtonMixin.Update = ActionButton_Update
     ActionButtonMixin.UpdateFlyout = ActionButton_UpdateFlyout
     ActionButtonMixin.UpdateState = ActionButton_UpdateState
@@ -104,77 +104,106 @@ end
 
 Addon.ActionButtonMixin = ActionButtonMixin
 
-
 --------------------------------------------------------------------------------
 -- ActionButtons - A pool of action buttons
 --------------------------------------------------------------------------------
 
--- dragonflight hack: whenever a Dominos action button's action changes
--- set the action of the corresponding blizzard action button
--- this ensures that pressing a blizzard keybinding does the same thing as
--- clicking a Dominos button would
---
--- We want to not remap blizzard keybindings in dragonflight, so that we can
--- use some behaviors only available to blizzard action buttons, mainly cast on
--- key down and press and hold casting
-local source_OnAttributeChanged = [[
-    if name ~= "action" then return end
-
-    local target = control:GetFrameRef("target")
-    if target and target:GetAttribute(name) ~= value then
-        target:SetAttribute(name, value)
-    end
-]]
-
-local proxyActionButton
-
+local createActionButton
 if Addon:IsBuild("retail") then
-    proxyActionButton = function(button, target)
-        if not target then return end
+    local source_OnAttributeChanged = [[
+        if name ~= "action" then return end
 
+        local target = control:GetFrameRef("target")
+        if target and target:GetAttribute(name) ~= value then
+            target:SetAttribute(name, value)
+        end
+    ]]
+
+    -- dragonflight hack: whenever a Dominos action button's action changes
+    -- set the action of the corresponding blizzard action button
+    -- this ensures that pressing a blizzard keybinding does the same thing as
+    -- clicking a Dominos button would
+    --
+    -- We want to not remap blizzard keybindings in dragonflight, so that we can
+    -- use some behaviors only available to blizzard action buttons, mainly cast on
+    -- key down and press and hold casting
+    local function proxyActionButton(button, target)
+        -- link to the binding
         button.commandName = target.commandName
 
+        -- mirror action attribute chagnes from button to target
         local proxy = CreateFrame('Frame', nil, nil, "SecureHandlerBaseTemplate")
-
         proxy:SetFrameRef("target", target)
         proxy:WrapScript(button, "OnAttributeChanged", source_OnAttributeChanged)
         proxy:Hide()
 
-        hooksecurefunc(target, "SetButtonState", function(_, state)
+        hooksecurefunc(target, "SetButtonStateBase", function(_, state)
             button:SetButtonStateBase(state)
         end)
-    end
-else
-    proxyActionButton = function(button, target)
-        if not target then return end
 
-        if target.buttonType then
-            button.commandName = target.buttonType .. (1 + (button.id - 1) % 12)
-        else
-            button.commandName = target:GetName():upper()
+        -- disable paging on the target by giving the target an ID of zero
+        target:SetID(0)
+    end
+
+    createActionButton = function(id)
+        local name = ('%sActionButton%d'):format(AddonName, id)
+
+        local button = CreateFrame('CheckButton', name, nil, 'ActionBarButtonTemplate')
+
+        local target = Addon.ActionButtonMap[id]
+
+        if target then
+            proxyActionButton(button, target)
         end
 
-        local proxy = CreateFrame('Frame', nil, nil, "SecureHandlerBaseTemplate")
-
-        proxy:SetFrameRef("target", target)
-        proxy:WrapScript(button, "OnAttributeChanged", source_OnAttributeChanged)
-        proxy:Hide()
-
-        hooksecurefunc(target, "SetButtonState", function(_, state)
-            button:SetButtonState(state)
-        end)
+        return button
     end
-end
+else
+    -- ignore pickup action clicks except on key down
+    -- and ignore clicks that do not match our down state
+    local filterClicks = [[
+        if IsModifiedClick("PICKUPACTION") and down then
+            return false
+        end
 
-local function createActionButton(id)
-    local name = ('%sActionButton%d'):format(AddonName, id)
+        if down ~= control:GetAttribute("CastOnKeyPress") then
+            return false
+        end
+    ]]
 
-    local button = CreateFrame('CheckButton', name, nil, 'ActionBarButtonTemplate')
+    local keyPressHandler = CreateFrame('Frame', nil, nil, 'SecureHandlerBaseTemplate')
 
-    button.id = id
-    proxyActionButton(button, Addon.ActionButtonMap[id])
+    keyPressHandler:Hide()
 
-    return button
+    keyPressHandler:SetAttribute("CastOnKeyPress", GetCVarBool("ActionButtonUseKeyDown"))
+
+    keyPressHandler:SetScript("OnEvent", function(self)
+        self:SetAttribute("CastOnKeyPress", GetCVarBool("ActionButtonUseKeyDown"))
+    end)
+
+    keyPressHandler:RegisterEvent("PLAYER_ENTERING_WORLD")
+
+    local function addCastOnKeyPressSupport(button)
+        button:RegisterForClicks('AnyUp', 'AnyDown')
+        keyPressHandler:WrapScript(button, 'OnClick', filterClicks)
+    end
+
+    createActionButton = function(id)
+        local button = Addon.ActionButtonMap[id]
+
+        if button then
+            -- disable paging on the existing button by giving the target an ID of zero
+            button:SetID(0)
+        else
+            local name = ('%sActionButton%d'):format(AddonName, id)
+
+            button = CreateFrame('CheckButton', name, nil, 'ActionBarButtonTemplate')
+        end
+
+        addCastOnKeyPressSupport(button)
+
+        return button
+    end
 end
 
 -- handle notifications from our parent bar about whate the action button
@@ -246,7 +275,7 @@ local ActionButtons = setmetatable({}, {
 
         button:Hide()
 
-        -- enable mousewheel clicks
+        -- enable binding to mousewheel
         button:EnableMouseWheel(true)
 
         rawset(self, id, button)

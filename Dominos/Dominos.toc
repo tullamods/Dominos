@@ -48,3 +48,4 @@ plugins\slashCommands.lua
 plugins\launcher.lua
 plugins\buttonThemer.lua
 plugins\getActionReagentUses.lua
+plugins\multiActionBarFixer.classic.lua
