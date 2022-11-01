@@ -146,8 +146,6 @@ function StanceBarModule:OnFirstLoad()
         StanceBar.ignoreFramePositionManager = true
         StanceBar:UnregisterAllEvents()
         StanceBar:SetParent(Addon.ShadowUIParent)
-        StanceBar:ClearAllPoints()
-        StanceBar:SetPoint('CENTER')
         StanceBar:Hide()
 
         -- and its buttons, too
