@@ -38,7 +38,7 @@ function ActionButtonMixin:UpdateShownInsecure()
     end
 
     local show = (self:GetAttribute("showgrid") > 0 or HasAction(self:GetAttribute("action")))
-                 and not self:GetAttribute("statehidden")
+        and not self:GetAttribute("statehidden")
 
     self:SetShown(show)
 end
@@ -121,26 +121,49 @@ local source_OnAttributeChanged = [[
     if name ~= "action" then return end
 
     local target = control:GetFrameRef("target")
-
     if target and target:GetAttribute(name) ~= value then
         target:SetAttribute(name, value)
     end
 ]]
 
-local function proxyActionButtonKeyPress(source, target)
-    if not target then return end
+local proxyActionButton
 
-    source.commandName = target.commandName
+if Addon:IsBuild("retail") then
+    proxyActionButton = function(button, target)
+        if not target then return end
 
-    local proxy = CreateFrame('Frame', nil, nil, "SecureHandlerBaseTemplate")
+        button.commandName = target.commandName
 
-    proxy:SetFrameRef("target", target)
-    proxy:WrapScript(source, "OnAttributeChanged", source_OnAttributeChanged)
-    proxy:Hide()
+        local proxy = CreateFrame('Frame', nil, nil, "SecureHandlerBaseTemplate")
 
-    hooksecurefunc(target, "SetButtonState", function(_, state)
-        source:SetButtonStateBase(state)
-    end)
+        proxy:SetFrameRef("target", target)
+        proxy:WrapScript(button, "OnAttributeChanged", source_OnAttributeChanged)
+        proxy:Hide()
+
+        hooksecurefunc(target, "SetButtonState", function(_, state)
+            button:SetButtonStateBase(state)
+        end)
+    end
+else
+    proxyActionButton = function(button, target)
+        if not target then return end
+
+        if target.buttonType then
+            button.commandName = target.buttonType .. (1 + (button.id - 1) % 12)
+        else
+            button.commandName = target:GetName():upper()
+        end
+
+        local proxy = CreateFrame('Frame', nil, nil, "SecureHandlerBaseTemplate")
+
+        proxy:SetFrameRef("target", target)
+        proxy:WrapScript(button, "OnAttributeChanged", source_OnAttributeChanged)
+        proxy:Hide()
+
+        hooksecurefunc(target, "SetButtonState", function(_, state)
+            button:SetButtonState(state)
+        end)
+    end
 end
 
 local function createActionButton(id)
@@ -149,7 +172,7 @@ local function createActionButton(id)
     local button = CreateFrame('CheckButton', name, nil, 'ActionBarButtonTemplate')
 
     button.id = id
-    proxyActionButtonKeyPress(button, Addon.ActionButtonMap[id])
+    proxyActionButton(button, Addon.ActionButtonMap[id])
 
     return button
 end
@@ -217,13 +240,6 @@ local ActionButtons = setmetatable({}, {
         button:SetAttribute('_childupdate-showgrid', actionButton_OnUpdateShowGrid)
 
         button:SetAttribute("UpdateShown", actionButton_UpdateShown)
-
-        -- reset the ID to zero, as that prevents the default paging code
-        -- from being used
-        button:SetID(0)
-
-        -- clear current position to avoid forbidden frame issues
-        button:ClearAllPoints()
 
         -- reset the showgrid setting to default
         button:SetAttribute('showgrid', 0)
