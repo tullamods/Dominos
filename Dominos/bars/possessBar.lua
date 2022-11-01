@@ -139,9 +139,9 @@ local PossessBarModule = Addon:NewModule('PossessBar', 'AceEvent-3.0')
 
 function PossessBarModule:Load()
     if not self.loaded then
-        self:DisableFrame(PossessBar)
-        self:DisableFrame(PossessActionBar)
-        self:DisableFrame(MainMenuBarVehicleLeaveButton)
+        self:BanishFrame(PossessBar)
+        self:BanishFrame(PossessActionBar)
+        self:BanishFrame(MainMenuBarVehicleLeaveButton)
         self.Update = Addon:Defer(self.Update, 0.01, self)
 
         self.loaded = true
@@ -168,7 +168,7 @@ function PossessBarModule:Unload()
     end
 end
 
-function PossessBarModule:DisableFrame(frame)
+function PossessBarModule:BanishFrame(frame)
     if frame then
         frame:UnregisterAllEvents()
         frame:SetParent(Addon.ShadowUIParent)

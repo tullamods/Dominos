@@ -1,5 +1,12 @@
 # Dominos Changelog
 
+## 10.0.0-beta2
+
+* Re-enable action button reuse in classic versions
+* Re-enable cast on keypress in classic versions
+* Potentially add support for dragonriding
+* Reduce some potential source of taint
+
 ## 10.0.0-beta1
 
 * Added a placeholder for Dominos Encounter/Extras to automatically disable it
