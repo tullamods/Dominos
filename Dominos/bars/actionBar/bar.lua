@@ -221,6 +221,8 @@ end
 -- watch for cursor changes, so that we can control action button visibility
 -- on pickup
 function ActionBar:LoadShowGridController()
+    if not Addon:IsBuild("retail") then return end
+
     self:SetAttribute("showgrid", 0)
 
     self:SetAttribute('_onstate-cursor', [[
