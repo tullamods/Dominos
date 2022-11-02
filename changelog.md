@@ -1,5 +1,19 @@
 # Dominos Changelog
 
+## 10.0.0-beta3
+
+* Fix bindings not showing up for action buttons in classic
+* Fix invalid event registration preventing the possess bar from loading in vanilla
+* Work around dragging mounts not triggering showing empty buttons by showing empty buttons when the collections journal
+  is shown
+
+### Known Issues
+
+* Action bars do not support spell flyout actions on 10.x realms (Blizzard bug).
+  My reccommendation is to use the addon Select.
+* Not all action bars support cast on key press on 10.x realms (Blizzard bug)
+* Not all action bars support hold to cast on 10.x realms (Blizzard bug)
+
 ## 10.0.0-beta2
 
 * Re-enable action button reuse in classic versions
