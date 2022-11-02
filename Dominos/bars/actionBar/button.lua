@@ -3,7 +3,7 @@
 -- Additional methods we define on action buttons
 --------------------------------------------------------------------------------
 local AddonName, Addon = ...
-local ActionButtonMixin = {}
+local ActionButtonMixin = { }
 
 function ActionButtonMixin:SetActionOffsetInsecure(offset)
     if InCombatLockdown() then
@@ -188,10 +188,20 @@ else
         keyPressHandler:WrapScript(button, 'OnClick', filterClicks)
     end
 
+    local function getBlizzardActionButtonCommandName(button)
+        if button.buttonType then
+            return button.buttonType .. button:GetID()
+        end
+
+        return button:GetName():upper()
+    end
+
     createActionButton = function(id)
         local button = Addon.ActionButtonMap[id]
 
         if button then
+            button.commandName = getBlizzardActionButtonCommandName(button)
+
             -- disable paging on the existing button by giving the target an ID of zero
             button:SetID(0)
         else
