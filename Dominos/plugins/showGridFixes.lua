@@ -6,38 +6,48 @@ local _, Addon = ...
 
 if not Addon:IsBuild("retail") then return end
 
-local ACTION_BUTTON_SHOW_GRID_REASON_COLLECTIONS = 512
+local ACTION_BUTTON_SHOW_GRID_REASON_UNSUPPORTED_THING = 512
 
-local function onShowCollectionsJournal()
-    if InCombatLockdown() then return end
+local BROKEN_CURSOR_TYPES = {
+    battlepet = true,
+    mount = true,
+    petaction = true,
+}
 
-    Addon.Frame:ForEach("ShowGrid", ACTION_BUTTON_SHOW_GRID_REASON_COLLECTIONS)
+local function cursorHasUnsupportedThing()
+    local type, index = GetCursorInfo()
+
+    if type and BROKEN_CURSOR_TYPES[type] then
+        return not (index == nil or index == 0)
+    end
+
+    return false
 end
 
-local function onHideCollectionsJournal()
-    if InCombatLockdown() then return end
+local function requestHideGrid()
+    if cursorHasUnsupportedThing() or InCombatLockdown() or SecureCmdOptionParse("[cursor]1;0") == "1" then
+        return
+    end
 
-    Addon.Frame:ForEach("HideGrid", ACTION_BUTTON_SHOW_GRID_REASON_COLLECTIONS)
+    Addon.Frame:ForEach("HideGrid", ACTION_BUTTON_SHOW_GRID_REASON_UNSUPPORTED_THING)
 end
 
 local Module = Addon:NewModule("ShowGridFixer", "AceEvent-3.0")
 
 function Module:OnEnable()
-    self:RegisterEvent("ADDON_LOADED")
+    self:RegisterEvent("ACTIONBAR_SHOWGRID", "OnCursorChanged")
+    self:RegisterEvent("ACTIONBAR_HIDEGRID", "OnCursorChanged")
+    self:RegisterEvent("BATTLE_PET_CURSOR_CLEAR", "OnCursorChanged")
+    self:RegisterEvent("MOUNT_CURSOR_CLEAR", "OnCursorChanged")
+    self:RegisterEvent("PLAYER_REGEN_ENABLED", "OnCursorChanged")
 end
 
-function Module:ADDON_LOADED(event, addon)
-    if addon == "Blizzard_Collections" then
-        CollectionsJournal:HookScript("OnShow", onShowCollectionsJournal)
-        CollectionsJournal:HookScript("OnHide", onHideCollectionsJournal)
+function Module:OnCursorChanged()
+    if InCombatLockdown() then return end
 
-        self:UnregisterEvent(event)
-        self:RegisterEvent("PLAYER_REGEN_ENABLED")
-    end
-end
-
-function Module:PLAYER_REGEN_ENABLED()
-    if not CollectionsJournal:IsVisible() then
-        onHideCollectionsJournal()
+    if cursorHasUnsupportedThing() then
+        Addon.Frame:ForEach("ShowGrid", ACTION_BUTTON_SHOW_GRID_REASON_UNSUPPORTED_THING)
+    else
+        C_Timer.After(0.01, requestHideGrid)
     end
 end

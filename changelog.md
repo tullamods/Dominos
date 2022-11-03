@@ -1,5 +1,16 @@
 # Dominos Changelog
 
+## 10.0.0
+
+* Improved show empty buttons detection for battlepet, mount, and petaction cursor types
+
+### Known Issues
+
+* Action bars do not support spell flyout actions on 10.x realms (Blizzard bug).
+  You will receive an error if you try to use one.
+* Not all action bars support cast on key press on 10.x realms (Blizzard bug)
+* Not all action bars support hold to cast on 10.x realms (Blizzard bug)
+
 ## 10.0.0-beta4
 
 * Fix error when leaving combat
@@ -11,13 +22,6 @@
 * Work around dragging mounts not triggering showing empty buttons by showing empty buttons when the collections journal
   is shown
 
-### Known Issues
-
-* Action bars do not support spell flyout actions on 10.x realms (Blizzard bug).
-  My reccommendation is to use the addon Select.
-* Not all action bars support cast on key press on 10.x realms (Blizzard bug)
-* Not all action bars support hold to cast on 10.x realms (Blizzard bug)
-
 ## 10.0.0-beta2
 
 * Re-enable action button reuse in classic versions
@@ -28,13 +32,6 @@
 ## 10.0.0-beta1
 
 * Added a placeholder for Dominos Encounter/Extras to automatically disable it
-
-### Known Issues
-
-* Action bars do not support spell flyout actions on 10.x realms (Blizzard bug).
-  You will receive an error if you try to use one.
-* Not all action bars support cast on key press on 10.x realms (Blizzard bug)
-* Not all action bars support hold to cast on 10.x realms (Blizzard bug)
 
 ## 10.0.0-alpha4
 
