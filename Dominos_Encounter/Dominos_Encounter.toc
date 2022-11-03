@@ -1,8 +1,10 @@
-## Interface: 30400
+## Interface: 100000
 ## Interface-BCC: 20504
 ## Interface-Classic: 11403
+## Interface-Wrath: 30400
 ## Title: Dominos Extras
-## Notes: Makes additional frames movable
-## Author: Tuller (with help from Goranaws)
+## Notes: This addon is deprecated and should be removed
+## Author: Tuller
 ## Dependencies: Dominos
 ## DefaultState: disabled
+main.lua

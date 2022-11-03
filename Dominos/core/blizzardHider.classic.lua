@@ -1,4 +1,9 @@
 local _, Addon = ...
+
+if Addon:IsBuild('retail') then
+    return
+end
+
 local CLASS = UnitClassBase('player')
 
 local function hide(...)

@@ -6,6 +6,7 @@
 	We do this via clearing specific showgrid reasons on all the buttons on
 	each MultiActionBar whenever the showgrid value changes
 --]]
+
 local _, Addon = ...
 
 if Addon:IsBuild('retail') then
@@ -26,9 +27,9 @@ MultiBarFixer:WrapScript(ActionButton1, 'OnAttributeChanged', [[
 MultiBarFixer:SetAttribute("showgrid", ActionButton1:GetAttribute("showgrid"))
 
 -- ensure that the other action buttons maintain that state
-for _, barName in pairs {'MultiBarBottomLeft', 'MultiBarBottomRight', 'MultiBarLeft', 'MultiBarRight'} do
+for _, actionBarName in pairs {'MultiBarBottomLeft', 'MultiBarBottomRight', 'MultiBarLeft', 'MultiBarRight'} do
     for i = 1, NUM_MULTIBAR_BUTTONS do
-        local button = _G[('%sButton%d'):format(barName, i)]
+        local button = _G[('%sButton%d'):format(actionBarName, i)]
 
         MultiBarFixer:WrapScript(button, 'OnAttributeChanged', [[
             if name ~= "showgrid" then return end

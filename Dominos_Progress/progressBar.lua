@@ -79,7 +79,7 @@ end
 
 function ProgressBar:GetDefaults()
 	return {
-		point = 'TOP',
+		point = 'BOTTOM',
 		x = 0,
 		y = 0,
 		columns = 20,
@@ -681,6 +681,7 @@ do
 
 		segment.bonus:SetStatusBarTexture(self:GetSegmentTexture())
 		segment.bonus:SetStatusBarColor(self:GetBonusColor())
+		segment:Show()
 
 		return segment
 	end

@@ -4,12 +4,8 @@ manual-changelog:
   filename: changelog.md
   markup-type: markdown
 
-ignore:
-  - Dominos_Auras
-
 move-folders:
   Dominos/Dominos: Dominos
-  Dominos/Dominos_Auras: Dominos_Auras
   Dominos/Dominos_Cast: Dominos_Cast
   Dominos/Dominos_Config: Dominos_Config
   Dominos/Dominos_Encounter: Dominos_Encounter
