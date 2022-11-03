@@ -24,7 +24,6 @@ local Module = Addon:NewModule("ShowGridFixer", "AceEvent-3.0")
 
 function Module:OnEnable()
     self:RegisterEvent("ADDON_LOADED")
-    self:RegisterEvent("PLAYER_REGEN_ENABLED")
 end
 
 function Module:ADDON_LOADED(event, addon)
@@ -33,6 +32,7 @@ function Module:ADDON_LOADED(event, addon)
         CollectionsJournal:HookScript("OnHide", onHideCollectionsJournal)
 
         self:UnregisterEvent(event)
+        self:RegisterEvent("PLAYER_REGEN_ENABLED")
     end
 end
 
