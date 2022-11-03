@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 10.0.0-beta4
+
+* Fix error when leaving combat
+
 ## 10.0.0-beta3
 
 * Fix bindings not showing up for action buttons in classic
