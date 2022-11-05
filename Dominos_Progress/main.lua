@@ -41,10 +41,10 @@ function ProgressBarModule:OnEnable()
 		self:RegisterEvent("AZERITE_ITEM_EXPERIENCE_CHANGED")
 	end
 
-     -- gold events
-     if Addon.GoldBar then
-           self:RegisterEvent("PLAYER_MONEY")
-     end
+	-- gold events
+	if Addon.GoldBar then
+		self:RegisterEvent("PLAYER_MONEY")
+	end
 
 	-- addon and library callbacks
 	Dominos.RegisterCallback(self, "OPTIONS_MENU_LOADING")
@@ -125,7 +125,7 @@ function ProgressBarModule:HONOR_XP_UPDATE()
 end
 
 function ProgressBarModule:PLAYER_MONEY()
-     self:UpdateAllBars()
+	self:UpdateAllBars()
 end
 
 function ProgressBarModule:LibSharedMedia_Registered()
@@ -171,21 +171,21 @@ function ProgressBarModule:AddOptionsPanel()
 				end
 			},
 
-                range(L.GoldGoal) {
-                     min = 0,
-                     max = 10000000,
-                     softMin = 0,
-                     softMax = 100000,
-                     step = 100,
-                     bigStep = 1000,
-                     get = function()
-                           return Addon.Config:GoldGoal()
-                     end,
-                     set = function(_, value)
-                           Addon.Config:SetGoldGoal(value)
-                           self:UpdateAllBars()
-                     end,
-                },
+			range(L.GoldGoal) {
+				min = 0,
+				max = 10000000,
+				softMin = 0,
+				softMax = 100000,
+				step = 100,
+				bigStep = 1000,
+				get = function()
+					return Addon.Config:GoldGoal()
+				end,
+				set = function(_, value)
+					Addon.Config:SetGoldGoal(value)
+					self:UpdateAllBars()
+				end,
+			},
 
 			h(COLORS)
 		}

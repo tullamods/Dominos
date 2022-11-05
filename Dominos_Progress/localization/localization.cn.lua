@@ -31,7 +31,10 @@ L.Color_honor = '荣誉条颜色'
 L.Color_honor_bonus = '额外荣誉条颜色'
 L.Color_artifact = '神器能量条颜色'
 L.Color_azerite = '艾泽里特条颜色'
+L.Color_gold = '金额颜色'
+L.Color_gold_realm = '服务器金额颜色'
 
 L.Paragon = '阵营'
 L.Azerite = '艾泽里特能量'
 L.SkipInactiveModes = "忽略未激活进度条"
+L.GoldGoal = "金额目标数量"
