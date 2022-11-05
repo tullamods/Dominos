@@ -5,6 +5,7 @@
 * Use LibUIDropdown to reduce potential sources of taint from configuration mode
 * (Clssic) Reimplement :HOTKEY bindings to ensure that cast on keypress works
   properly with modifier keys
+* Update zhCN localization (thanks Kuletco)
 
 ## 10.0.0
 
