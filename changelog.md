@@ -1,5 +1,11 @@
 # Dominos Changelog
 
+## 10.0.1
+
+* Use LibUIDropdown to reduce potential sources of taint from configuration mode
+* (Clssic) Reimplement :HOTKEY bindings to ensure that cast on keypress works
+  properly with modifier keys
+
 ## 10.0.0
 
 * Improved show empty buttons detection for battlepet, mount, and petaction cursor types
