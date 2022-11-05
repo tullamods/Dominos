@@ -18,6 +18,7 @@ L.BarSettings = '%s 动作条设置'
 L.Buttons = "按钮"
 L.ClickThrough = '允许穿透点击'
 L.Columns = '一行按钮数'
+L.CommandKey = 'Command 键'
 L.ConfirmCopyProfile = '从 %s 复制配置到当前配置?'
 L.ConfirmDeleteProfile = '删除配置 %s?'
 L.ConfirmResetProfile = '是否重置配置?'
@@ -36,11 +37,18 @@ L.FadedOpacity = '透明度'
 L.FadeIn = "淡入"
 L.FadeOut = "淡出"
 L.Fading = "渐变"
+L.FrameStrata = "框体层级"
+L.FrameStrata_BACKGROUND = "底"
+L.FrameStrata_LOW = LOW
+L.FrameStrata_MEDIUM = "中"
+L.FrameStrata_HIGH = HIGH
+L.FrameLevel = "框体级别"
 L.General = '通用'
 L.Layout = '布局'
 L.LeftToRight = '按钮从左至右排列'
 L.LinkedOpacity = '粘附动作条继承透明度'
 L.LockActionButtons = '锁定动作条位置'
+L.MetaKey = 'Meta 键'
 L.Modifiers = '功能键翻页'
 L.None = NONE
 L.OneBag = '只显示一个背包图标'
@@ -49,7 +57,7 @@ L.OutOfCombat = "脱离战斗"
 L.Padding = '边距'
 L.Paging = "翻页"
 L.PossessBar = '载具'
-L.PossessBarDesc = "What action bar to display special actions on when possessing an enemy and in certain encounters"
+L.PossessBarDesc = "在某些情况下控制敌人时将哪个动作条用来显示特殊动作"
 L.Profiles = '配置管理'
 L.ProfilesPanelDesc = '允许你管理Dominos插件的配置'
 L.QuickMoveKey = '快速移动按键'
@@ -73,23 +81,12 @@ L.ShowKeyring = '显示钥匙链'
 L.ShowMacroText = '显示宏名称'
 L.ShowMinimapButton = '显示小地图按钮'
 L.ShowOverrideUI = '使用默认载具界面'
-L.ShowOverrideUIDesc = "Display the Blizzard override UI when piloting a vehicle, and other situations"
+L.ShowOverrideUIDesc = "当驾驶载具等情况下显示暴雪覆盖UI"
 L.ShowStates = '显示隐藏条件'
 L.ShowTooltips = '显示鼠标提示'
 L.ShowTooltipsCombat = '战斗中显示鼠标提示'
 L.Size = '按钮总数'
 L.Spacing = '按钮间隔'
-L.State_ALTSHIFT = strjoin('-', ALT_KEY_TEXT, SHIFT_KEY_TEXT)
-L.State_CTRLALT = strjoin('-', CTRL_KEY_TEXT, ALT_KEY_TEXT)
-L.State_CTRLALTSHIFT = strjoin('-', CTRL_KEY_TEXT, ALT_KEY_TEXT, SHIFT_KEY_TEXT)
-L.State_CTRLSHIFT = strjoin('-', CTRL_KEY_TEXT, SHIFT_KEY_TEXT)
-
-if IsMacClient() then
-    L.State_META = 'Command Key'
-else
-    L.State_META = 'Meta Key'
-end
-
 L.State_HARM = '敌对目标'
 L.State_HELP = '友方目标'
 L.State_NOTARGET = '无目标'
@@ -97,6 +94,18 @@ L.State_SHIELD = "持盾"
 L.StickyBars = '粘附动作条'
 L.Targeting = '根据目标翻页'
 L.ThemeActionButtons = '启用动作条主题 (需要重载界面)'
-L.ThemeActionButtonsDesc = "Applies some custom style adjustments to action buttons when enabled, and leave them untouched when not"
+L.ThemeActionButtonsDesc = "启用时，对动作按钮应用一些自定义样式，未启用时，保持不变"
 L.TopToBottom = '按钮从上至下排列'
 L.Visibility = '可见性' --NOUSE
+
+-- derived translations
+L.State_ALTSHIFT = strjoin('-', ALT_KEY_TEXT, SHIFT_KEY_TEXT)
+L.State_CTRLALT = strjoin('-', CTRL_KEY_TEXT, ALT_KEY_TEXT)
+L.State_CTRLALTSHIFT = strjoin('-', CTRL_KEY_TEXT, ALT_KEY_TEXT, SHIFT_KEY_TEXT)
+L.State_CTRLSHIFT = strjoin('-', CTRL_KEY_TEXT, SHIFT_KEY_TEXT)
+
+if IsMacClient() then
+    L.State_META = 'Command 键'
+else
+    L.State_META = 'Meta 键'
+end
