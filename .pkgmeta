@@ -11,6 +11,7 @@ move-folders:
   Dominos/Dominos_Encounter: Dominos_Encounter
   Dominos/Dominos_Progress: Dominos_Progress
   Dominos/Dominos_Roll: Dominos_Roll
+  Dominos/Masque_Dominos: Masque_Dominos
 
 externals:
   # core dominos libraries
@@ -32,3 +33,5 @@ externals:
   Dominos_Config/libs/AceDBOptions-3.0: https://repos.wowace.com/wow/ace3/trunk/AceDBOptions-3.0
   Dominos_Config/libs/AceGUI-3.0: https://repos.wowace.com/wow/ace3/trunk/AceGUI-3.0
   Dominos_Config/libs/LibUIDropDownMenu: https://repos.wowace.com/wow/libuidropdownmenu/trunk/LibUIDropDownMenu
+  # Dominos Skin
+  Masque_Dominos: https://github.com/SFX-WoW/Masque_Dominos.git
