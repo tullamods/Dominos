@@ -227,7 +227,7 @@ local PetBarModule = Addon:NewModule('PetBar', 'AceEvent-3.0')
 
 function PetBarModule:Load()
     if not self.loaded then
-        -- self:OnFirstLoad()
+        self:OnFirstLoad()
         self.loaded = true
     end
 
