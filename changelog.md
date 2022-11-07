@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 10.0.3
+
+* Fix possess bar errors in classic
+
 ## 10.0.2
 
 * Fix missing Bindings.xml errors
