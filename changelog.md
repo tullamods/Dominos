@@ -3,6 +3,7 @@
 ## 10.0.2
 
 * Fix missing Bindings.xml errors
+* Fix some errors with hiding frames
 
 ## 10.0.1
 
