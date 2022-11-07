@@ -806,5 +806,5 @@ end
 
 -- exports
 -- luacheck: push ignore 122
--- _G[AddonName] = Addon
+_G[AddonName] = Addon
 -- luacheck: pop

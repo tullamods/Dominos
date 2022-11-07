@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 10.0.2
+
+* Fix missing Bindings.xml errors
+
 ## 10.0.1
 
 * Use LibUIDropdown to reduce potential sources of taint from configuration mode
