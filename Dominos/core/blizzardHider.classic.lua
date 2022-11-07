@@ -140,6 +140,11 @@ if VerticalMultiBarsContainer then
     )
 end
 
+if PossessBar then
+    PossessBar:UnregisterAllEvents()
+    hide(PossessBar)
+end
+
 -- set the stock action buttons to hidden by default
 local function disableActionButton(buttonName)
     local button = _G[buttonName]
