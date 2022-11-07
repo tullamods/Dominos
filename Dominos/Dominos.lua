@@ -6,7 +6,7 @@ local KeyBound = LibStub('LibKeyBound-1.0')
 
 local ADDON_VERSION = GetAddOnMetadata(AddonName, 'Version')
 local CONFIG_ADDON_NAME = AddonName .. '_Config'
-local CONFIG_VERSION = 1
+local DB_SCHEMA_VERSION = 1
 
 -- setup custom callbacks
 Addon.callbacks = LibStub('CallbackHandler-1.0'):New(Addon)
@@ -224,9 +224,9 @@ end
 
 function Addon:UpgradeDatabase()
     local configVerison = self.db.global.configVersion
-    if configVerison ~= CONFIG_VERSION then
-        self:OnUpgradeDatabase(configVerison, CONFIG_VERSION)
-        self.db.global.configVersion = CONFIG_VERSION
+    if configVerison ~= DB_SCHEMA_VERSION then
+        self:OnUpgradeDatabase(configVerison, DB_SCHEMA_VERSION)
+        self.db.global.configVersion = DB_SCHEMA_VERSION
     end
 
     local addonVersion = self.db.global.addonVersion
