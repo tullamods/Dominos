@@ -145,6 +145,11 @@ if PossessBar then
     hide(PossessBar)
 end
 
+if MainMenuBarVehicleLeaveButton then
+    MainMenuBarVehicleLeaveButton:UnregisterAllEvents()
+    hide(MainMenuBarVehicleLeaveButton)
+end
+
 -- set the stock action buttons to hidden by default
 local function disableActionButton(buttonName)
     local button = _G[buttonName]
