@@ -1,5 +1,10 @@
 # Dominos Changelog
 
+## 10.0.4
+
+* The Dominos Masque skin is now packaged as a separate addon (thanks [StormFX](https://github.com/StormFX))
+* Adjusted bindings header definitions in retail to avoid tainting issues
+
 ## 10.0.3
 
 * Fix possess bar errors in classic
