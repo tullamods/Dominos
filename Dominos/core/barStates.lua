@@ -129,7 +129,7 @@ if class == 'DRUID' then
         end
     end
 elseif class == 'EVOKER' then
-    addFormState('class', 'soar', 369536)
+    addState('class', 'soar', '[bonusbar:1]', GetSpellInfo(369536))
 elseif class == 'PALADIN' then
     if Addon:IsBuild('retail') then
         addFormState('class', 'concentration', 317920)
