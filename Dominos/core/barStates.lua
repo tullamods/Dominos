@@ -128,6 +128,8 @@ if class == 'DRUID' then
             addFormState('class', 'flight', 40120)
         end
     end
+elseif class == 'EVOKER' then
+    addFormState('class', 'soar', 369536)
 elseif class == 'PALADIN' then
     if Addon:IsBuild('retail') then
         addFormState('class', 'concentration', 317920)

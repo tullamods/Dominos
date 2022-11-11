@@ -42,6 +42,8 @@ ActionBar.mainbarOffsets = {
             pages.bear = 8
             pages.moonkin = 9
             pages.tree = 7
+        elseif i == 'EVOKER' then
+            pages.soar = 7
         elseif i == 'ROGUE' then
             pages.stealth = 6
             pages.shadowdance = 6
