@@ -15,6 +15,7 @@ localization.xml
 Dominos.lua
 core\helpers.lua
 core\barStates.lua
+core\secureEnv.lua
 core\shadowUIParent.lua
 core\frame.lua
 core\buttonBar.lua
@@ -49,4 +50,4 @@ plugins\launcher.lua
 plugins\buttonThemer.lua
 plugins\getActionReagentUses.lua
 plugins\multiActionBarFixer.classic.lua
-plugins\showGridFixes.lua
+

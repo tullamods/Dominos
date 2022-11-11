@@ -109,7 +109,7 @@ Addon.ActionButtonMixin = ActionButtonMixin
 
 local createActionButton
 if Addon:IsBuild("retail") then
-    local source_OnAttributeChanged = [[
+    local actionButton_OnAttributeChanged = [[
         if name ~= "action" then return end
 
         local target = control:GetFrameRef("target")
@@ -133,7 +133,7 @@ if Addon:IsBuild("retail") then
         -- mirror action attribute chagnes from button to target
         local proxy = CreateFrame('Frame', nil, nil, "SecureHandlerBaseTemplate")
         proxy:SetFrameRef("target", target)
-        proxy:WrapScript(button, "OnAttributeChanged", source_OnAttributeChanged)
+        proxy:WrapScript(button, "OnAttributeChanged", actionButton_OnAttributeChanged)
         proxy:Hide()
 
         hooksecurefunc(target, "SetButtonStateBase", function(_, state)

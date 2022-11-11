@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 10.0.6
+
+* Fix showing empty buttons not working in combat
+
 ## 10.0.5
 
 * The exit vehicle button should work under more scenarios now
