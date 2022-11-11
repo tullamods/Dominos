@@ -4,6 +4,7 @@
 
 * The exit vehicle button should work under more scenarios now
 * Adjusted the strata of the queue status bar
+* Add Evoker stance support (untested)
 
 ## 10.0.4
 
