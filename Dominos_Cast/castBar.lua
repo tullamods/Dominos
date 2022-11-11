@@ -129,6 +129,12 @@ function CastBar:RegisterEvents()
         self:RegisterUnitEvent("UNIT_SPELLCAST_INTERRUPTED", ...)
         self:RegisterUnitEvent("UNIT_SPELLCAST_START", ...)
         self:RegisterUnitEvent("UNIT_SPELLCAST_STOP", ...)
+
+        if Dominos:IsBuild("retail") then
+            self:RegisterUnitEvent('UNIT_SPELLCAST_EMPOWER_START', ...)
+            self:RegisterUnitEvent('UNIT_SPELLCAST_EMPOWER_STOP', ...)
+            self:RegisterUnitEvent('UNIT_SPELLCAST_EMPOWER_UPDATE', ...)
+        end
     end
 
     registerUnitEvents(unpack(self.units))
@@ -165,6 +171,37 @@ function CastBar:UNIT_SPELLCAST_CHANNEL_STOP(event, unit, castID, spellID)
     self:SetProperty("state", "stopped")
 end
 
+-- empower events
+function CastBar:UNIT_SPELLCAST_EMPOWER_START(event, unit, castID, spellID)
+    castID = castID or spellID
+
+    self:SetProperty("castID", castID)
+    self:SetProperty("unit", unit)
+
+    self:UpdateEmpowering()
+end
+
+function CastBar:UNIT_SPELLCAST_EMPOWER_UPDATE(event, unit, castID, spellID)
+    castID = castID or spellID
+
+    if castID ~= self:GetProperty("castID") then
+        return
+    end
+
+    self:UpdateEmpowering()
+end
+
+function CastBar:UNIT_SPELLCAST_EMPOWER_STOP(event, unit, castID, spellID)
+    castID = castID or spellID
+
+    if castID ~= self:GetProperty("castID") then
+        return
+    end
+
+    self:SetProperty("state", "stopped")
+end
+
+-- spellcast events
 function CastBar:UNIT_SPELLCAST_START(event, unit, castID, spellID)
     if castID == nil then
         return
@@ -334,8 +371,7 @@ function CastBar:UpdateChanneling()
 end
 
 function CastBar:UpdateCasting()
-    local name, text, texture, startTimeMS, endTimeMS, _, _, notInterruptible, spellID = UnitCastingInfo(
-                                                                                             self:GetProperty("unit"))
+    local name, text, texture, startTimeMS, endTimeMS, _, _, notInterruptible, spellID = UnitCastingInfo(self:GetProperty("unit"))
 
     if name then
         self:SetProperty("state", "casting")
@@ -350,6 +386,40 @@ function CastBar:UpdateCasting()
         local time = GetTime()
         local startTime = startTimeMS / 1000
         local endTime = endTimeMS / 1000
+
+        self.timer:Start(time - startTime, 0, endTime - startTime)
+
+        return true
+    end
+
+    return false
+end
+
+function CastBar:UpdateEmpowering()
+    local unit = self:GetProperty("unit")
+    local name, text, texture, startTimeMS, endTimeMS, isTradeSkill, notInterruptible, spellID, _, numStages = UnitChannelInfo(unit)
+
+    if name then
+        numStages = tonumber(numStages) or 0
+
+        local chargeSpell = numStages > 0
+
+        self:SetProperty("state", "empowering")
+        self:SetProperty("label", name or text)
+        self:SetProperty("icon", texture)
+        self:SetProperty("spell", spellID)
+        self:SetProperty("uninterruptible", notInterruptible)
+
+        self.timer:SetCountdown(false)
+        self.timer:SetShowLatency(self:Displaying("latency"))
+
+        local time = GetTime()
+        local startTime = startTimeMS / 1000
+        local endTime = endTimeMS / 1000
+
+		if isChargeSpell then
+			endTime = endTime + GetUnitEmpowerHoldAtMaxTime(self.unit);
+		end
 
         self.timer:Start(time - startTime, 0, endTime - startTime)
 
@@ -571,7 +641,8 @@ function CastBar:OnCreateMenu(menu)
     menu:HookScript("OnShow", function()
         self.menuShown = true
 
-        if not (self:GetProperty("state") == "casting" or self:GetProperty("state") == "channeling") then
+        local state = self:GetProperty("state")
+        if not (state == "casting" or state == "channeling" or state == "empowering") then
             self:SetupDemo()
         end
     end)
@@ -579,7 +650,7 @@ function CastBar:OnCreateMenu(menu)
     menu:HookScript("OnHide", function()
         self.menuShown = nil
 
-        if self:GetProperty("state") == "demo" then
+        if state == "demo" then
             self:Stop()
         end
     end)
