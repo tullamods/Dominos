@@ -402,8 +402,6 @@ function CastBar:UpdateEmpowering()
     if name then
         numStages = tonumber(numStages) or 0
 
-        local chargeSpell = numStages > 0
-
         self:SetProperty("state", "empowering")
         self:SetProperty("label", name or text)
         self:SetProperty("icon", texture)
@@ -411,14 +409,16 @@ function CastBar:UpdateEmpowering()
         self:SetProperty("uninterruptible", notInterruptible)
 
         self.timer:SetCountdown(false)
-        self.timer:SetShowLatency(self:Displaying("latency"))
+        self.timer:SetShowLatency(false)
 
         local time = GetTime()
         local startTime = startTimeMS / 1000
-        local endTime = endTimeMS / 1000
+        local endTime
 
-		if isChargeSpell then
-			endTime = endTime + GetUnitEmpowerHoldAtMaxTime(self.unit);
+		if numStages > 0 then
+			endTime = (endTimeMS + GetUnitEmpowerHoldAtMaxTime(unit)) / 1000;
+        else
+            endTime = endTimeMS / 1000
 		end
 
         self.timer:Start(time - startTime, 0, endTime - startTime)

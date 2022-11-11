@@ -5,6 +5,7 @@
 * The exit vehicle button should work under more scenarios now
 * Adjusted the strata of the queue status bar
 * Add Evoker stance support (untested)
+* Empowered spells should now show up on Dominos cast. Level display is not yet implemented
 
 ## 10.0.4
 
