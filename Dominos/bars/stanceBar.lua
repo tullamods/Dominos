@@ -14,6 +14,7 @@ if not ({
     DEATHKNIGHT = Addon:IsBuild('wrath'),
     DEMONHUNTER = false,
     DRUID = true,
+    EVOKER = true,
     HUNTER = false,
     MAGE = false,
     MONK = false,
