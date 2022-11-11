@@ -1,5 +1,10 @@
 # Dominos Changelog
 
+## 10.0.5
+
+* The exit vehicle button should work under more scenarios now
+* Adjusted the strata of the queue status bar
+
 ## 10.0.4
 
 * The Dominos Masque skin is now packaged as a separate addon (thanks [StormFX](https://github.com/StormFX))
