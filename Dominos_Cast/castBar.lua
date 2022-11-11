@@ -121,16 +121,14 @@ end
 function CastBar:RegisterEvents()
     local function registerUnitEvents(...)
         self:RegisterUnitEvent("UNIT_SPELLCAST_CHANNEL_START", ...)
-        self:RegisterUnitEvent("UNIT_SPELLCAST_CHANNEL_UPDATE", ...)
         self:RegisterUnitEvent("UNIT_SPELLCAST_CHANNEL_STOP", ...)
-
+        self:RegisterUnitEvent("UNIT_SPELLCAST_CHANNEL_UPDATE", ...)
+        self:RegisterUnitEvent("UNIT_SPELLCAST_DELAYED", ...)
+        self:RegisterUnitEvent("UNIT_SPELLCAST_FAILED_QUIET", ...)
+        self:RegisterUnitEvent("UNIT_SPELLCAST_FAILED", ...)
+        self:RegisterUnitEvent("UNIT_SPELLCAST_INTERRUPTED", ...)
         self:RegisterUnitEvent("UNIT_SPELLCAST_START", ...)
         self:RegisterUnitEvent("UNIT_SPELLCAST_STOP", ...)
-        self:RegisterUnitEvent("UNIT_SPELLCAST_FAILED", ...)
-        self:RegisterUnitEvent("UNIT_SPELLCAST_FAILED_QUIET", ...)
-
-        self:RegisterUnitEvent("UNIT_SPELLCAST_INTERRUPTED", ...)
-        self:RegisterUnitEvent("UNIT_SPELLCAST_DELAYED", ...)
     end
 
     registerUnitEvents(unpack(self.units))
