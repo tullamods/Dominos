@@ -10,6 +10,10 @@ function ActionBarsModule:Load()
         self:RegisterEvent('UPDATE_OVERRIDE_ACTIONBAR', 'OnOverrideBarUpdated')
     end
 
+    if Addon:IsBuild("retail") then
+        self:RegisterEvent('SPELLS_CHANGED')
+    end
+
     self:RegisterEvent('PET_BAR_HIDEGRID')
 
     self:SetBarCount(Addon:NumBars())
@@ -53,6 +57,14 @@ function ActionBarsModule:UPDATE_SHAPESHIFT_FORMS()
     end
 
     self:ForActive('UpdateStateDriver')
+end
+
+function ActionBarsModule:SPELLS_CHANGED()
+    if InCombatLockdown() then
+        return
+    end
+
+    self:ForActive('ForButtons', 'UpdateShownInsecure')
 end
 
 function ActionBarsModule:SetBarCount(count)
