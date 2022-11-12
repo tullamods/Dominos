@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 10.0.7
+
+* Update action button visibility when known spells changed
+
 ## 10.0.6
 
 * Fix showing empty buttons not working in combat
