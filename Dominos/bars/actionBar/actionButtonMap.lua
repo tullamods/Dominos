@@ -14,6 +14,7 @@ if Addon:IsBuild("retail") then
         page = page or bar:GetAttribute("actionpage")
 
         -- when assigning buttons, we skip bar 12 (totems)
+        -- so shift pages above 12 down one
         if page > 12 then
             page = page - 1
         end
