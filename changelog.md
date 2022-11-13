@@ -2,6 +2,14 @@
 
 ## 10.0.7
 
+* Added the ability to show empty buttons per action bar
+* Fixed a bug preventing the show empty buttons option from working
+* Fixed an off by one error causing action slots to incorrectly map to the totem bar
+* Fixed some weird dragging behavior with action buttons
+* Fixed an issue causing keybindings for Blizzard bars 6, 7, and 8 to not map properly to Dominos bars 12, 13, and 14
+
+## 10.0.7
+
 * Update action button visibility when known spells changed
 
 ## 10.0.6
