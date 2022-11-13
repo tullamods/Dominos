@@ -10,8 +10,6 @@ function ActionBarsModule:Load()
         self:RegisterEvent('UPDATE_OVERRIDE_ACTIONBAR', 'OnOverrideBarUpdated')
     end
 
-    self:RegisterEvent('PET_BAR_HIDEGRID')
-
     self:SetBarCount(Addon:NumBars())
     Addon.RegisterCallback(self, "ACTIONBAR_COUNT_UPDATED")
 end
@@ -34,17 +32,8 @@ function ActionBarsModule:OnOverrideBarUpdated()
     end
 end
 
-function ActionBarsModule:ACTIONBAR_COUNT_UPDATED(event, count)
+function ActionBarsModule:ACTIONBAR_COUNT_UPDATED(_, count)
     self:SetBarCount(count)
-end
-
--- workaround for empty buttons not hiding when dropping a pet action
-function ActionBarsModule:PET_BAR_HIDEGRID()
-    if InCombatLockdown() then
-        return
-    end
-
-    self:ForActive('HideGrid', ACTION_BUTTON_SHOW_GRID_REASON_EVENT or 2)
 end
 
 function ActionBarsModule:UPDATE_SHAPESHIFT_FORMS()
