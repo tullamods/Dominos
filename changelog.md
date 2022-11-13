@@ -1,6 +1,6 @@
 # Dominos Changelog
 
-## 10.0.7
+## 10.0.8
 
 * Added the ability to show empty buttons per action bar
 * Fixed a bug preventing the show empty buttons option from working
