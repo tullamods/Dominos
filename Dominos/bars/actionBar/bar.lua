@@ -208,8 +208,8 @@ function ActionBar:LoadStateController()
 
             offset = (page - 1) * self:GetAttribute('barLength')
 
-            -- skip action bar 12 (not really usable)
-            if offset > 132 then
+            -- skip action bar 12 slots (not really usable)
+            if offset >= 132 then
                 offset = offset + 12
             end
         end
