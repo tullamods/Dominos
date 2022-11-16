@@ -155,6 +155,8 @@ end
 local BagBarModule = Addon:NewModule('BagBar', 'AceEvent-3.0')
 
 function BagBarModule:OnInitialize()
+    self:RegisterButton('CharacterReagentBag0Slot')
+
     for slot = (NUM_BAG_SLOTS - 1), 0, -1 do
         self:RegisterButton(('CharacterBag%dSlot'):format(slot))
     end
