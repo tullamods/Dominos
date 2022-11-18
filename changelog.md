@@ -1,5 +1,10 @@
 # Dominos Changelog
 
+## 10.0.9
+
+* Update TOCs for 10.0.2
+* Add reagent bag slot
+
 ## 10.0.8
 
 * Added the ability to show empty buttons per action bar
