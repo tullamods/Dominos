@@ -89,13 +89,15 @@ do
         table.wipe(slots)
 
         if self:ShowKeyRing() then
-            maybeAddBagSlot(slots, _G[AddonName .. 'KeyRingButton'])
+            maybeAddBagSlot(slots, AddonName .. 'KeyRingButton')
         end
 
-        maybeAddBagSlot(slots, 'CharacterReagentBag0Slot')
+        if self:ShowBags() then
+            maybeAddBagSlot(slots, 'CharacterReagentBag0Slot')
 
-        for slot = (NUM_BAG_SLOTS - 1), 0, -1 do
-            maybeAddBagSlot(slots, ('CharacterBag%dSlot'):format(slot))
+            for slot = (NUM_BAG_SLOTS - 1), 0, -1 do
+                maybeAddBagSlot(slots, ('CharacterBag%dSlot'):format(slot))
+            end
         end
 
         maybeAddBagSlot(slots, 'MainMenuBarBackpackButton')
