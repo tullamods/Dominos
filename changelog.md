@@ -2,7 +2,7 @@
 
 ## 10.0.10
 
-* Update
+* Add zhTW updates from @class2u
 
 ## 10.0.9
 
