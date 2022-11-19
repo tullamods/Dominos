@@ -20,7 +20,7 @@ end
 
 local function banishFrames(...)
     local function banish(frame)
-        frame:Hide()
+        (frame.HideBase or frame.Hide)(frame)
         frame:SetParent(Addon.ShadowUIParent)
     end
 
