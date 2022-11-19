@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 10.0.10
+
+* Update
+
 ## 10.0.9
 
 * Update TOCs for 10.0.2
