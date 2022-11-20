@@ -1,5 +1,10 @@
 # Dominos Changelog
 
+## 10.0.11
+
+* Fix an issue caussing the zhTW localization to not load for the cast bar
+* Added some workarounds to better control the position of the extra action bar
+
 ## 10.0.10
 
 * Add zhTW updates from @class2u
