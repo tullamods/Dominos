@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 10.0.12
+
+* Fix dragonriding bar calculation
+
 ## 10.0.11
 
 * Fix an issue caussing the zhTW localization to not load for the cast bar
