@@ -1,5 +1,12 @@
 # Dominos Changelog
 
+## 10.0.13-beta1
+
+* Dragonriding is now a normal paging condition. You can modify via an action bar's right click menu.
+* Disabled the Extra, Encounter, and Talking Head bars to evaluate if doing so can reduce
+  instances of abilities not working in combat due to taint caused by the new edit mode UI
+* Removed the deprecated Dominos_Encounter folder
+
 ## 10.0.12
 
 * Fix dragonriding bar calculation
