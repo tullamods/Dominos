@@ -1,5 +1,10 @@
 # Dominos Changelog
 
+## 10.0.13-beta2
+
+* Implemented a flyout workaround
+* Fixed dragonriding not being preconfigured on action bar 1
+
 ## 10.0.13-beta1
 
 * Dragonriding is now a normal paging condition. You can modify via an action bar's right click menu.
