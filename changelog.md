@@ -1,5 +1,10 @@
 # Dominos Changelog
 
+## 10.0.14
+
+* Fix an issue with profile version updates upon the load of a new profile
+* Improved flyout mouseover detection
+
 ## 10.0.13
 
 * Implemented a flyout workaround for portals and pet abilities, etc.
