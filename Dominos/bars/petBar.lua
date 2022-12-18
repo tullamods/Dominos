@@ -36,10 +36,14 @@ function PetActionButtonMixin:Update()
     local petActionID = self:GetID()
     local petActionIcon = self.icon
     local name, texture, isToken, isActive, autoCastAllowed, autoCastEnabled, spellID = GetPetActionInfo(petActionID)
+	
+	if not isToken then
+		self.tooltipName = name
+	else
+		self.tooltipName = _G[name]
+	end
 
     self.isToken = isToken
-
-    self.tooltipName = isToken and name or _G[name]
 
     if spellID and spellID ~= self.spellID then
         self.spellID = spellID
