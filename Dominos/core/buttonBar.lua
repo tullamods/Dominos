@@ -201,7 +201,7 @@ function ButtonBar:Layout()
     local isTopToBottom = self:GetTopToBottom()
 
     -- grab base button sizes
-    local l, _, t, _ = self:GetButtonInsets()
+    local l, r, t, b = self:GetButtonInsets()
     local bW, bH = self:GetButtonSize()
     local pW, pH = self:GetPadding()
     local spacing = self:GetSpacing()
@@ -209,8 +209,8 @@ function ButtonBar:Layout()
     local buttonWidth = bW + spacing
     local buttonHeight = bH + spacing
 
-    local xOff = pW - l
-    local yOff = pH - t
+    local xOff = pW - (l - r)
+    local yOff = pH - (b - t)
 
     for i, button in ipairs(self.buttons) do
         local row = floor((i - 1) / cols)
