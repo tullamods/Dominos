@@ -1,6 +1,6 @@
 # Dominos Changelog
 
-## 10.0.15-beta
+## 10.0.15-beta1
 
 * Implement TOC support for 3.4.1 and 10.0.5
 * (Classic) Add Death Knight presence paging (thanks [Road-block](https://github.com/Road-block))
