@@ -11,7 +11,7 @@ local L = LibStub('AceLocale-3.0'):GetLocale(AddonName)
 local MicroButtons = { }
 local PetMicroButtonFrame
 
-if Addon:IsBuild('retail') then
+if MicroMenu then
     local function registerButtons(...)
         for i = 1, select('#', ...) do
             local button = select(i, ...)
@@ -23,6 +23,30 @@ if Addon:IsBuild('retail') then
     end
 
     registerButtons(MicroMenu:GetChildren())
+
+    PetMicroButtonFrame = PetBattleFrame.BottomFrame.MicroButtonFrame
+elseif Addon:IsBuild("retail") then
+    local MICRO_BUTTONS = {
+        "CharacterMicroButton",
+        "SpellbookMicroButton",
+        "TalentMicroButton",
+        "AchievementMicroButton",
+        "QuestLogMicroButton",
+        "GuildMicroButton",
+        "LFDMicroButton",
+        "EJMicroButton",
+        "CollectionsMicroButton",
+        "MainMenuMicroButton",
+        -- "HelpMicroButton",
+        "StoreMicroButton"
+    }
+
+    for _, name in ipairs(MICRO_BUTTONS) do
+        local button = _G[name]
+        if button then
+            MicroButtons[#MicroButtons + 1] = button
+        end
+    end
 
     PetMicroButtonFrame = PetBattleFrame.BottomFrame.MicroButtonFrame
 else
@@ -150,7 +174,10 @@ if Addon:IsBuild("retail") then
                     local x, y = OverrideActionBar:GetMicroButtonAnchor()
 
                     x = x - 12
-                    y = y + button:GetHeight()
+
+                    if MicroMenu then
+                        y = y + button:GetHeight()
+                    end
 
                     button:SetPoint('BOTTOMLEFT', x, y)
                 elseif i == 7 then
