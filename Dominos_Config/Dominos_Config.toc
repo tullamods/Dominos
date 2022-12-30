@@ -1,7 +1,7 @@
 ## Interface: 100005
 ## Interface-BCC: 20504
 ## Interface-Classic: 11403
-## Interface-Wrath: 30401
+## Interface-Wrath: 30400
 ## Title: Dominos Config
 ## Title-zhCN: |cFF0099FFDominos|r 设置
 ## Title-zhTW: |cFF0099FFDominos|r 設置
