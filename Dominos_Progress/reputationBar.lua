@@ -19,6 +19,13 @@ if not IsFactionParagon then
     end
 end
 
+local IsMajorFaction = C_Reputation and C_Reputation.IsMajorFaction
+if not IsMajorFaction then
+    IsMajorFaction = function()
+        return false
+    end
+end
+
 function ReputationBar:Init()
     self:Update()
 end
@@ -42,10 +49,10 @@ function ReputationBar:Update()
         colorIndex = PARAGON_FACTION_COLOR_INDEX
         description = GetText("FACTION_STANDING_LABEL" .. reaction, UnitSex("player"))
         capped = false
-    elseif C_Reputation.IsMajorFaction(factionID) then
+    elseif IsMajorFaction(factionID) then
         local majorFactionData = C_MajorFactions.GetMajorFactionData(factionID)
         min, max = 0, majorFactionData.renownLevelThreshold
-        
+
         colorIndex = reaction
         description = GetText("FACTION_STANDING_LABEL" .. reaction, UnitSex("player"))
     else
