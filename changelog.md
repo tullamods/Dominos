@@ -2,11 +2,12 @@
 
 ## 10.0.15
 
-* Add major faction support to reputation bar (thanks, [Daenarys](https://github.com/Daenarys))
-* (Classic) Add Death Knight presence paging (thanks [Road-block](https://github.com/Road-block))
-* Increase dragon riding paging priority to resolve conflicts with warrior stances
-* Improve menu bar handling in override/pet battle conditions
-* Fix a forbidden frame error impacting fading in combat
+* Added major faction support to reputation bar (thanks, [Daenarys](https://github.com/Daenarys))
+* (Classic) Added Death Knight presence paging (thanks [Road-block](https://github.com/Road-block))
+* Increased dragon riding paging priority to resolve conflicts with warrior stances
+* Improved menu bar handling in override/pet battle conditions
+* Fixed a forbidden frame error impacting fading in combat
+* Added a workaround for invalid micro menu hit rect offsets on 3.4.1
 
 ## 10.0.14
 
