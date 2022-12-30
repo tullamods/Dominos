@@ -42,6 +42,12 @@ function ReputationBar:Update()
         colorIndex = PARAGON_FACTION_COLOR_INDEX
         description = GetText("FACTION_STANDING_LABEL" .. reaction, UnitSex("player"))
         capped = false
+    elseif C_Reputation.IsMajorFaction(factionID) then
+        local majorFactionData = C_MajorFactions.GetMajorFactionData(factionID)
+        min, max = 0, majorFactionData.renownLevelThreshold
+        
+        colorIndex = reaction
+        description = GetText("FACTION_STANDING_LABEL" .. reaction, UnitSex("player"))
     else
         local friendID, friendRep, _, _, _, _, friendTextLevel, friendThreshold, nextFriendThreshold = GetFriendshipReputation(factionID)
 
