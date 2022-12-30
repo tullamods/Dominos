@@ -209,10 +209,10 @@ function ButtonBar:Layout()
     local buttonWidth = bW + spacing
     local buttonHeight = bH + spacing
 
-    local xOff = pW - (l - r)
-    local yOff = pH - (b - t)
+    local xOff = pW - l
+    local yOff = pH - t
 
-    for i, button in ipairs(self.buttons) do
+    for i, button in pairs(self.buttons) do
         local row = floor((i - 1) / cols)
         if not isTopToBottom then
             row = rows - (row + 1)
