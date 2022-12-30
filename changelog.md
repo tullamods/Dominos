@@ -1,5 +1,13 @@
 # Dominos Changelog
 
+## 10.0.15-beta1
+
+* Implement TOC support for 3.4.1 and 10.0.5
+* (Classic) Add Death Knight presence paging (thanks [Road-block](https://github.com/Road-block))
+* Increase dragon riding priority to resolve conflicts with warrior stances
+* Improve menu bar handling in override/pet battle conditions
+* Fix a forbidden frame error impacting fading in combat
+
 ## 10.0.14
 
 * Fix an issue with profile version updates upon the load of a new profile
