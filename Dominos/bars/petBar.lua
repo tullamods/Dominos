@@ -1,4 +1,5 @@
-if not PetActionBar then return end
+local BlizzardPetBar = _G.PetActionBar
+if not BlizzardPetBar then return end
 
 --------------------------------------------------------------------------------
 -- Pet Bar
@@ -41,6 +42,19 @@ end
 function PetBar:UpdateOverrideBar()
 end
 
+if Addon:IsBuild('retail', 'wrath') then
+    function PetBar:GetDisplayConditions()
+        return '[@pet,exists,nopossessbar]show;hide'
+    end
+else
+    function PetBar:GetDisplayConditions()
+        if self:IsOverrideBar() then
+            return '[@pet,exists][bonusbar:5]show;hide'
+        end
+        return '[@pet,exists,nobonusbar:5]show;hide'
+    end
+end
+
 function PetBar:GetDefaults()
     return {
         point = 'CENTER',
@@ -51,11 +65,11 @@ function PetBar:GetDefaults()
 end
 
 function PetBar:NumButtons()
-    return #PetActionBar.actionButtons
+    return #BlizzardPetBar.actionButtons
 end
 
 function PetBar:AcquireButton(index)
-    return PetActionBar.actionButtons[index]
+    return BlizzardPetBar.actionButtons[index]
 end
 
 function PetBar:OnAttachButton(button)
@@ -115,12 +129,12 @@ function PetBarModule:Unload()
 end
 
 function PetBarModule:OnFirstLoad()
-    PetActionBar:SetParent(Addon.ShadowUIParent)
+    BlizzardPetBar:SetParent(Addon.ShadowUIParent)
 
     -- wipe buttons and spacers to avoid layout updates from the stock ui
-    table.wipe(PetActionBar.buttonsAndSpacers)
+    table.wipe(BlizzardPetBar.buttonsAndSpacers)
 
-    for _, button in pairs(PetActionBar.actionButtons) do
+    for _, button in pairs(BlizzardPetBar.actionButtons) do
         -- setup bindings
         Addon.BindableButton:AddQuickBindingSupport(button)
 
