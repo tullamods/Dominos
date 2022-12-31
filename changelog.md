@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 10.0.16-beta2
+
+* Fixed a bug causing the pet bar to remain shown when after a pet is dismissed
+
 ## 10.0.16-beta1
 
 * Simplified the implementation of the stance and pet bars. These once again reuse the stock buttons.
