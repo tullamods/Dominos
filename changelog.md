@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 10.0.16-beta1
+
+* Simplified the implementation of the stance and pet bars. These once again reuse the stock buttons.
+
 ## 10.0.15
 
 * Added major faction support to reputation bar (thanks, [Daenarys](https://github.com/Daenarys))
