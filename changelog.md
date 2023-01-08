@@ -1,12 +1,12 @@
 # Dominos Changelog
 
-## 10.0.16-beta2
-
-* Fixed a bug causing the pet bar to remain shown when after a pet is dismissed
-
-## 10.0.16-beta1
+## 10.0.16
 
 * Simplified the implementation of the stance and pet bars. These once again reuse the stock buttons.
+* Updated reputation calculations for major, friendly and paragon factions
+* Prevented the pet bar from showing up when channeling Eye of Kilrog with an active summon
+* Flyouts now better handle learning new abilities/switching specs
+* Flyouts can now be toggled by clicking any mouse button, instead of only the left button.
 
 ## 10.0.15
 
