@@ -398,12 +398,19 @@ function SpellFlyout:UpdateKnownFlyouts()
 
 		self:Execute(([[
 			local flyoutID = %d
+			local numSlots = %d
+			local isKnown = %q == "true"
 
 			local data = FLYOUT_INFO[flyoutID] or newtable()
-			data.numSlots = %d
-			data.isKnown = %q == "true"
+			data.numSlots = numSlots
+			data.isKnown = isKnown
 
 			FLYOUT_INFO[flyoutID] = data
+
+			-- clear the known state of any newly unused slots
+			for i = numSlots + 1, #data do
+				data[i].isKnown = false
+			end
 		]]):format(
 			flyoutID,
 			numSlots,
@@ -423,10 +430,12 @@ function SpellFlyout:UpdateKnownFlyouts()
 			self:Execute(([[
 				local flyoutID = %d
 				local slotID = %d
+				local spellID = %d
+				local isKnown = %q == "true"
 
 				local data = FLYOUT_INFO[flyoutID][slotID] or newtable()
-				data.spellID = %d
-				data.isKnown = %q == "true"
+				data.spellID = spellID
+				data.isKnown = isKnown
 
 				FLYOUT_INFO[flyoutID][slotID] = data
 			]]):format(
