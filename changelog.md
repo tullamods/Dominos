@@ -7,6 +7,7 @@
 * Prevented the pet bar from showing up when channeling Eye of Kilrog with an active summon
 * Flyouts now better handle learning new abilities/switching specs
 * Flyouts can now be toggled by clicking any mouse button, instead of only the left button.
+* Added additional forbidden frame checks to the mouseover detection code
 
 ## 10.0.15
 
