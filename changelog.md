@@ -1,5 +1,14 @@
 # Dominos Changelog
 
+## 10.0.16
+
+* Simplified the implementation of the stance and pet bars. These once again reuse the stock buttons.
+* Updated reputation calculations for major, friendly and paragon factions
+* Prevented the pet bar from showing up when channeling Eye of Kilrog with an active summon
+* Flyouts now better handle learning new abilities/switching specs
+* Flyouts can now be toggled by clicking any mouse button, instead of only the left button.
+* Added additional forbidden frame checks to the mouseover detection code
+
 ## 10.0.15
 
 * Added major faction support to reputation bar (thanks, [Daenarys](https://github.com/Daenarys))
