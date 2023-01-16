@@ -1,5 +1,5 @@
 local BlizzardStanceBar = _G.StanceBar
-if not BlizzardStanceBar then return end
+if not (type(BlizzardStanceBar) == "table" and type(BlizzardStanceBar.actionButtons) == "table") then return end
 
 --------------------------------------------------------------------------------
 -- Stance bar
