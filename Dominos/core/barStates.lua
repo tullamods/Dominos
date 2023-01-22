@@ -168,7 +168,7 @@ elseif class == 'PALADIN' then
     end
 elseif class == 'PRIEST' then
     if not Addon:IsBuild('retail') then
-        addState('class', 'shadowform', '[form:1]', GetSpellInfo(16592))
+        addFormState('class', 'shadowform', 16592)
     end
 elseif class == 'ROGUE' then
     -- wrath shadowdance
@@ -182,7 +182,7 @@ elseif class == 'ROGUE' then
     addState('class', 'stealth', '[bonusbar:1]', GetSpellInfo(1784))
 elseif class == 'WARLOCK' then
     if Addon:IsBuild('wrath') then
-        addState('class', 'metamorphosis', '[form:1]', GetSpellInfo(47241))
+        addFormState('class', 'metamorphosis', 47241)
     end
 elseif class == 'WARRIOR' then
     if Addon:IsBuild('retail') then
