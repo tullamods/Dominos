@@ -1,5 +1,10 @@
 # Dominos Changelog
 
+## 10.0.17
+
+* Updated TOCs for 3.4.1
+* Made Shadowform (Retail) and Metamorphosis (Classic) state calculations to be dynamic
+
 ## 10.0.16
 
 * Simplified the implementation of the stance and pet bars. These once again reuse the stock buttons.
