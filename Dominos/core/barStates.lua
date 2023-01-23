@@ -167,8 +167,10 @@ elseif class == 'PALADIN' then
         addFormState('class', 'shadow', 19896)
     end
 elseif class == 'PRIEST' then
-    if not Addon:IsBuild('retail') then
-        addFormState('class', 'shadowform', 16592)
+    if Addon:IsBuild('retail') then
+        addFormState('class', 'shadowform', 232698)
+    else
+        addFormState('class', 'shadowform', 15473)
     end
 elseif class == 'ROGUE' then
     -- wrath shadowdance

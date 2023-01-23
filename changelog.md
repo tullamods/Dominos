@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 10.0.18
+
+* (Classic) Correct spell ID used for shadowform detection
+
 ## 10.0.17
 
 * Updated TOCs for 3.4.1
