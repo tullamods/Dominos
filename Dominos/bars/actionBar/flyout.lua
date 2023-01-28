@@ -94,13 +94,13 @@ end
 
 SpellFlyoutButton.UpdateCooldown = ActionButton_UpdateCooldown
 
-SpellFlyoutButton_OnClickPre = [[
+local SpellFlyoutButton_OnClickPre = [[
 	if button == "LeftButton" then
 		return nil, control:IsShown()
 	end
 ]]
 
-SpellFlyoutButton_OnClickPost = [[
+local SpellFlyoutButton_OnClickPost = [[
 	if message then
 		self:GetParent():Hide()
 	end
