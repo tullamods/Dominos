@@ -42,38 +42,41 @@ end
 
 apply(banish,
     "MainMenuBar",
+    "MainMenuBarVehicleLeaveButton",
     "MicroButtonAndBagsBar",
+    "MultiBar5",
+    "MultiBar6",
+    "MultiBar7",
     "MultiBarBottomLeft",
     "MultiBarBottomRight",
     "MultiBarLeft",
     "MultiBarRight",
-    "MultiBar5",
-    "MultiBar6",
-    "MultiBar7",
     "PossessActionBar",
-    "MainMenuBarVehicleLeaveButton"
+    "StanceBar"
 )
 
 apply(unregisterEvents,
+    "MainMenuBarVehicleLeaveButton",
+    "MultiBar5",
+    "MultiBar6",
+    "MultiBar7",
     "MultiBarBottomLeft",
     "MultiBarBottomRight",
     "MultiBarLeft",
     "MultiBarRight",
-    "MultiBar5",
-    "MultiBar6",
-    "MultiBar7",
     "PossessActionBar",
-    "MainMenuBarVehicleLeaveButton"
+    "StanceBar"
 )
 
 apply(disableActionButtons,
     "MainMenuBar",
+    "MultiBar5",
+    "MultiBar6",
+    "MultiBar7",
     "MultiBarBottomLeft",
     "MultiBarBottomRight",
     "MultiBarLeft",
     "MultiBarRight",
-    "MultiBar5",
-    "MultiBar6",
-    "MultiBar7",
-    "PossessActionBar"
+    "PossessActionBar",
+    "StanceBar"
 )
