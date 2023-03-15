@@ -113,6 +113,16 @@ local createActionButton
 if Addon:IsBuild("retail") then
     local SecureHandler = Addon:CreateHiddenFrame('Frame', nil, nil, "SecureHandlerBaseTemplate")
 
+    local button_OnAttributeChanged = [[
+        if name ~= "action" then return end
+
+        local target = self:GetFrameRef("ProxyTarget")
+
+        if target and target:GetAttribute(name) ~= value then
+            target:SetAttribute(name, value)
+        end
+    ]]
+
     -- dragonflight hack: whenever a Dominos action button's action changes
     -- set the action of the corresponding blizzard action button
     -- this ensures that pressing a blizzard keybinding does the same thing as
@@ -133,15 +143,7 @@ if Addon:IsBuild("retail") then
         -- mirror the owner's action on target whenever it changes
         SecureHandlerSetFrameRef(owner, "ProxyTarget", target)
 
-        SecureHandler:WrapScript(owner, "OnAttributeChanged", [[
-            if name ~= "action" then return end
-
-            local target = self:GetFrameRef("ProxyTarget")
-
-            if target and target:GetAttribute(name) ~= value then
-                target:SetAttribute(name, value)
-            end
-        ]])
+        SecureHandler:WrapScript(owner, "OnAttributeChanged", button_OnAttributeChanged)
 
         -- mirror the pushed state of the target button
         hooksecurefunc(target, "SetButtonStateBase", function(_, state)
@@ -155,18 +157,7 @@ if Addon:IsBuild("retail") then
         local button = CreateFrame('CheckButton', buttonName, nil, 'ActionBarButtonTemplate')
 
         -- inject custom flyout handling
-        Addon.SpellFlyout:WrapScript(button, "OnClick", [[
-            if not down then
-                local actionType, actionID = GetActionInfo(self:GetAttribute("action"))
-
-                if actionType == "flyout" then
-                    control:SetAttribute("caller", self)
-                    control:RunAttribute("Toggle", actionID)
-
-                    return false
-                end
-            end
-        ]])
+        Addon.SpellFlyout:Register(button)
 
         proxyActionButton(button, Addon.BlizzardActionButtons[id])
 

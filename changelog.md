@@ -1,5 +1,11 @@
 # Dominos Changelog
 
+## 10.0.20
+
+* Updated TOCs for 10.0.7
+* Reverted to 10.0.15 implementations of pet and stance bars due to API changes
+* Improved handling of flyout clicks
+
 ## 10.0.19
 
 * Updated TOCs for 10.0.5
