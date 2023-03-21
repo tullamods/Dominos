@@ -29,10 +29,11 @@ local SpellFlyoutButtonMixin = {}
 
 function SpellFlyoutButtonMixin:Initialize()
 	self:SetAttribute("type", "spell")
-	self:RegisterForClicks("AnyUp")
+	self:RegisterForClicks("AnyUp", "AnyDown")
 
 	self:SetScript("OnEnter", self.OnEnter)
 	self:SetScript("OnLeave", self.OnLeave)
+	self:SetScript("PreClick", self.OnPreClick)
 	self:SetScript("PostClick", self.OnPostClick)
 end
 
@@ -75,7 +76,19 @@ function SpellFlyoutButtonMixin:OnFlyoutUpdated()
 	self:Update()
 end
 
-function SpellFlyoutButtonMixin:OnPostClick()
+function SpellFlyoutButtonMixin:OnPreClick(_, down)
+	if down then
+		self._ActionButtonUseKeyDown = GetCVarBool("ActionButtonUseKeyDown")
+		SetCVar("ActionButtonUseKeyDown", false)
+	end
+end
+
+function SpellFlyoutButtonMixin:OnPostClick(_, down)
+	if not down then
+		SetCVar("ActionButtonUseKeyDown", self._ActionButtonUseKeyDown)
+		self._ActionButtonUseKeyDown = nil
+	end
+
 	self:UpdateState()
 end
 
@@ -439,8 +452,6 @@ local SpellFlyoutButton_OnClick = [[
 	if not down then
 		return nil, "close"
 	end
-
-	return false
 ]]
 
 local SpellFlyoutButton_OnClickPost = [[
