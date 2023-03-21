@@ -4,6 +4,7 @@
 --------------------------------------------------------------------------------
 
 local AddonName, Addon = ...
+if not Addon:IsBuild("retail") then return end
 
 -- A precalculated list of all known valid flyout ids. Not robust, but also sparse.
 -- TODO: regeneate this list once every build
@@ -565,6 +566,14 @@ function SpellFlyout:OnFlyoutHidden()
 		self:UnregisterEvent("SPELL_UPDATE_COOLDOWN")
 		self:UnregisterEvent("SPELL_UPDATE_USABLE")
 	end
+end
+
+function SpellFlyout:IsVisible()
+	return self.frame and self.frame:IsVisible()
+end
+
+function SpellFlyout:IsMouseOver(...)
+	return self.frame and self.frame:IsMouseOver(...)
 end
 
 Addon.SpellFlyout = SpellFlyout
