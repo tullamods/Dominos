@@ -1,5 +1,10 @@
 # Dominos Changelog
 
+## 10.0.21
+
+* Fixed an error caused by hovering over a faded bar
+* Resolved a flyout activation issue when cast on key press is enabled
+
 ## 10.0.20
 
 * Updated TOCs for 10.0.7
