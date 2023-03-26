@@ -587,4 +587,14 @@ function SpellFlyout:IsMouseOver(...)
 	return self.frame and self.frame:IsMouseOver(...)
 end
 
+function SpellFlyout:IsForbidden(...)
+	return self.frame and self.frame:IsForbidden()
+end
+
+function SpellFlyout:GetParent()
+	if self.frame then
+		return self.frame:GetParent()
+	end
+end
+
 Addon.SpellFlyout = SpellFlyout

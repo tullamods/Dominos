@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 10.0.22
+
+* Fixed a few more issues with mouseover fading and hovering over the spell flyout
+
 ## 10.0.21
 
 * Fixed an error caused by hovering over a faded bar
