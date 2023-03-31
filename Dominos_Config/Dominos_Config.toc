@@ -3,13 +3,14 @@
 ## Interface-Classic: 11403
 ## Interface-Wrath: 30401
 ## Title: Dominos Config
-## Title-zhCN: |cFF0099FFDominos|r 设置
-## Title-zhTW: |cFF0099FFDominos|r 設置
+## Title-zhCN: Dominos 设置
+## Title-zhTW: Dominos 設置
 ## Notes: GUI based configuration for Dominos
 ## Notes-zhCN: Dominos 图形设置界面
 ## Author: Tuller
 ## Dependencies: Dominos
 ## LoadOnDemand: 1
+## IconTexture: Interface/AddOns/Dominos/Dominos
 embeds.xml
 localization.xml
 main.lua

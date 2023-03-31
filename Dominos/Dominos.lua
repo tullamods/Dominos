@@ -4,7 +4,7 @@ local Addon = LibStub('AceAddon-3.0'):NewAddon(AddonTable, AddonName, 'AceEvent-
 local L = LibStub('AceLocale-3.0'):GetLocale(AddonName)
 local KeyBound = LibStub('LibKeyBound-1.0')
 
-local ADDON_VERSION = GetAddOnMetadata(AddonName, 'Version')
+local ADDON_VERSION = (C_AddOns.GetAddOnMetadata or GetAddOnMetadata)(AddonName, 'Version')
 local CONFIG_ADDON_NAME = AddonName .. '_Config'
 local DB_SCHEMA_VERSION = 2
 
@@ -809,6 +809,22 @@ function Addon:IsBuild(...)
     end
 
     return false
+end
+
+function Addon.OnLaunch(_, button)
+    if button == 'LeftButton' then
+        if IsShiftKeyDown() then
+            Addon:ToggleBindingMode()
+        else
+            Addon:ToggleLockedFrames()
+        end
+    elseif button == 'RightButton' then
+        Addon:ShowOptionsFrame()
+    end
+end
+
+if type(C_AddOns) == "table" then
+    _G[AddonName .. '_Launch'] = Addon.OnLaunch
 end
 
 -- exports

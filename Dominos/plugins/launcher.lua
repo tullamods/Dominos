@@ -26,17 +26,7 @@ function Launcher:CreateDataBrokerObject()
         {
             type = 'launcher',
             icon = ([[Interface\Addons\%s\%s]]):format(AddonName, AddonName),
-            OnClick = function(_, button)
-                if button == 'LeftButton' then
-                    if IsShiftKeyDown() then
-                        Addon:ToggleBindingMode()
-                    else
-                        Addon:ToggleLockedFrames()
-                    end
-                elseif button == 'RightButton' then
-                    Addon:ShowOptionsFrame()
-                end
-            end,
+            OnClick = Addon.OnLaunch,
             OnTooltipShow = function(tooltip)
                 if not tooltip or not tooltip.AddLine then
                     return
