@@ -9,4 +9,7 @@ Desktop.ini
 
 # packager release folder
 .release
-.vscode/settings.json
+
+# vscode settings
+.vscode
+

@@ -16,7 +16,10 @@ function QueueStatusBar:GetDisplayName()
     return L.QueueStatusBarDisplayName
 end
 
-QueueStatusBar:Extend('OnAcquire', function(self) self:Layout() end)
+QueueStatusBar:Extend('OnAcquire', function(self)
+    self:RepositionButton()
+    self:Layout()
+end)
 
 function QueueStatusBar:GetDefaults()
     return {
@@ -27,14 +30,16 @@ function QueueStatusBar:GetDefaults()
 end
 
 function QueueStatusBar:Layout()
-    QueueStatusButton:ClearAllPoints()
-    QueueStatusButton:SetPoint('CENTER', self)
-    QueueStatusButton:SetParent(self)
-
     local w, h = QueueStatusButton:GetSize()
     local pW, pH = self:GetPadding()
 
     self:TrySetSize(w + pW, h + pH)
+end
+
+function QueueStatusBar:RepositionButton()
+    QueueStatusButton:ClearAllPoints()
+    QueueStatusButton:SetPoint('CENTER', self)
+    QueueStatusButton:SetParent(self)
 end
 
 
@@ -43,6 +48,16 @@ local QueueStatusBarModule = Addon:NewModule('QueueStatusBar', 'AceEvent-3.0')
 
 function QueueStatusBarModule:Load()
     self.frame = QueueStatusBar:New()
+
+    if not self.updatePositionHooked then
+        hooksecurefunc(QueueStatusButton, "UpdatePosition", function()
+            if self.frame then
+                self.frame:RepositionButton()
+            end
+        end)
+
+        self.updatePositionHooked = true
+    end
 end
 
 function QueueStatusBarModule:Unload()
