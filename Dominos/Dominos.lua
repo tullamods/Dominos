@@ -4,7 +4,13 @@ local Addon = LibStub('AceAddon-3.0'):NewAddon(AddonTable, AddonName, 'AceEvent-
 local L = LibStub('AceLocale-3.0'):GetLocale(AddonName)
 local KeyBound = LibStub('LibKeyBound-1.0')
 
-local ADDON_VERSION = (C_AddOns.GetAddOnMetadata or GetAddOnMetadata)(AddonName, 'Version')
+local ADDON_VERSION
+if type(C_Addons) == "table" then
+    ADDON_VERSION = C_Addons.GetAddOnMetadata(AddonName, 'Version')
+else
+    ADDON_VERSION = GetAddOnMetadata(AddonName, 'Version')
+end
+
 local CONFIG_ADDON_NAME = AddonName .. '_Config'
 local DB_SCHEMA_VERSION = 2
 
@@ -29,7 +35,7 @@ function Addon:OnInitialize()
     self:CreateDatabase()
     self:UpgradeDatabase()
 
-    -- keybound support
+    -- register keybound callbacks
     KeyBound.RegisterCallback(self, 'LIBKEYBOUND_ENABLED')
     KeyBound.RegisterCallback(self, 'LIBKEYBOUND_DISABLED')
 
