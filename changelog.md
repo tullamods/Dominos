@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 10.1.1-beta1
+
+* Fix errors preventing Dominos from loading on the Wrath PTR
+
 ## 10.1.0
 
 * Add support for 10.1.0
