@@ -5,10 +5,12 @@ local L = LibStub('AceLocale-3.0'):GetLocale(AddonName)
 local KeyBound = LibStub('LibKeyBound-1.0')
 
 local ADDON_VERSION
-if type(C_Addons) == "table" then
-    ADDON_VERSION = C_Addons.GetAddOnMetadata(AddonName, 'Version')
-else
+if type(GetAddOnMetadata) == "function" then
     ADDON_VERSION = GetAddOnMetadata(AddonName, 'Version')
+elseif type(C_AddOns) == "table" then
+    ADDON_VERSION = C_AddOns.GetAddOnMetadata(AddonName, 'Version')
+elseif type(C_Addons) == "table" then
+    ADDON_VERSION = C_Addons.GetAddOnMetadata(AddonName, 'Version')
 end
 
 local CONFIG_ADDON_NAME = AddonName .. '_Config'
