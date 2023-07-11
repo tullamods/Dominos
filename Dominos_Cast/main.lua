@@ -4,6 +4,7 @@
 local _, Addon = ...
 local Dominos = LibStub("AceAddon-3.0"):GetAddon("Dominos")
 local CastBarModule = Dominos:NewModule("CastBar")
+local MIRRORTIMER_NUMTIMERS = MIRRORTIMER_NUMTIMERS or #MirrorTimerContainer.mirrorTimers
 
 local function disableFrame(name)
     local frame = _G[name]
