@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 10.1.2
+
+* Add support for 10.1.5
+
 ## 10.1.1
 
 * Add support for 3.4.3
