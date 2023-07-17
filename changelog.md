@@ -1,5 +1,10 @@
 # Dominos Changelog
 
+## 10.1.3
+
+* Add the Evoker class bar
+* Made some internal improvements to handling one time events for module loading
+
 ## 10.1.2
 
 * Add support for 10.1.5
