@@ -15,12 +15,6 @@ local function disableFrame(name)
     end
 end
 
-function CastBarModule:OnInitialize()
-    disableFrame("CastingBarFrame")
-    disableFrame("PlayerCastingBarFrame")
-    disableFrame("PetCastingBarFrame")
-end
-
 function CastBarModule:Load()
     self.frame = Addon.CastBar:New("cast", {"player", "vehicle"})
 end
@@ -32,19 +26,14 @@ function CastBarModule:Unload()
     end
 end
 
+function CastBarModule:OnFirstLoad()
+    disableFrame("CastingBarFrame")
+    disableFrame("PlayerCastingBarFrame")
+    disableFrame("PetCastingBarFrame")
+end
+
 local MirrorTimerModule = Dominos:NewModule("MirrorTimer", "AceEvent-3.0")
 
-function MirrorTimerModule:OnInitialize()
-    UIParent:UnregisterEvent("MIRROR_TIMER_START")
-
-    for i = 1, MIRRORTIMER_NUMTIMERS do
-        local timer = _G["MirrorTimer" .. i]
-        if timer then
-            timer:UnregisterAllEvents()
-            timer:Hide()
-        end
-    end
-end
 
 function MirrorTimerModule:Load()
     self.bars = {}
@@ -68,6 +57,18 @@ function MirrorTimerModule:Unload()
     end
 
     self.bars = nil
+end
+
+function MirrorTimerModule:OnFirstLoad()
+    UIParent:UnregisterEvent("MIRROR_TIMER_START")
+
+    for i = 1, MIRRORTIMER_NUMTIMERS do
+        local timer = _G["MirrorTimer" .. i]
+        if timer then
+            timer:UnregisterAllEvents()
+            timer:Hide()
+        end
+    end
 end
 
 ---@param event string

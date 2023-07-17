@@ -48,16 +48,6 @@ local QueueStatusBarModule = Addon:NewModule('QueueStatusBar', 'AceEvent-3.0')
 
 function QueueStatusBarModule:Load()
     self.frame = QueueStatusBar:New()
-
-    if not self.updatePositionHooked then
-        hooksecurefunc(QueueStatusButton, "UpdatePosition", function()
-            if self.frame then
-                self.frame:RepositionButton()
-            end
-        end)
-
-        self.updatePositionHooked = true
-    end
 end
 
 function QueueStatusBarModule:Unload()
@@ -65,4 +55,12 @@ function QueueStatusBarModule:Unload()
         self.frame:Free()
         self.frame = nil
     end
+end
+
+function QueueStatusBarModule:OnFirstLoad()
+    hooksecurefunc(QueueStatusButton, "UpdatePosition", function()
+        if self.frame then
+            self.frame:RepositionButton()
+        end
+    end)
 end

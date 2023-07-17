@@ -312,7 +312,18 @@ end
 
 local MenuBarModule = Addon:NewModule('MenuBar')
 
-function MenuBarModule:OnInitialize()
+function MenuBarModule:Load()
+    self.frame = MenuBar:New()
+end
+
+function MenuBarModule:Unload()
+    if self.frame then
+        self.frame:Free()
+        self.frame = nil
+    end
+end
+
+function MenuBarModule:OnFirstLoad()
     -- the performance bar actually appears under the game menu button if you
     -- move it somewhere else
     local perf = MainMenuMicroButton and MainMenuMicroButton.MainMenuBarPerformanceBar
@@ -340,16 +351,5 @@ function MenuBarModule:OnInitialize()
         local f = CreateFrame('Frame', nil, PetMicroButtonFrame)
         f:SetScript("OnShow", layout)
         f:SetScript("OnHide", layout)
-    end
-end
-
-function MenuBarModule:Load()
-    self.frame = MenuBar:New()
-end
-
-function MenuBarModule:Unload()
-    if self.frame then
-        self.frame:Free()
-        self.frame = nil
     end
 end

@@ -130,11 +130,6 @@ end
 local ExtraAbilityBarModule = Addon:NewModule('ExtraAbilityBar')
 
 function ExtraAbilityBarModule:Load()
-    if not self.loaded then
-        self:OnFirstLoad()
-        self.loaded = true
-    end
-
     self.frame = ExtraAbilityBar:New()
 end
 
@@ -183,7 +178,6 @@ function ExtraAbilityBarModule:RepositionExtraAbilityContainer()
         self.frame:RepositionExtraAbilityContainer()
     end
 end
-
 
 -- Titan panel will attempt to take control of the ExtraActionBarFrame and break
 -- its position and ability to be usable. This is because Titan Panel doesn't

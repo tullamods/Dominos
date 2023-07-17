@@ -95,11 +95,6 @@ local TalkingHeadBarModule = Addon:NewModule('TalkingHeadBar')
 
 function TalkingHeadBarModule:Load()
     self.frame = TalkingHeadBar:New()
-
-    if not self.loaded then
-        self:OnTalkingHeadUILoaded()
-        self.loaded = true
-    end
 end
 
 function TalkingHeadBarModule:Unload()
@@ -108,7 +103,7 @@ function TalkingHeadBarModule:Unload()
     end
 end
 
-function TalkingHeadBarModule:OnTalkingHeadUILoaded()
+function TalkingHeadBarModule:OnFirstLoad()
     TalkingHeadFrame.ignoreFramePositionManager = true
 
     -- OnShow/OnHide call UpdateManagedFramePositions on the blizzard end so

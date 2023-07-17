@@ -230,11 +230,6 @@ end
 local PetBarModule = Addon:NewModule('PetBar', 'AceEvent-3.0')
 
 function PetBarModule:Load()
-    if not self.loaded then
-        self:OnFirstLoad()
-        self.loaded = true
-    end
-
     self.bar = PetBar:New()
     self:UpdateActions()
     self:RegisterEvent("PET_BAR_UPDATE_COOLDOWN")

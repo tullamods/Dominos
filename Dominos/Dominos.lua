@@ -140,6 +140,8 @@ end
 -- Layout Lifecycle
 --------------------------------------------------------------------------------
 
+local initializedModules = {}
+
 -- Load is called when the addon is first enabled, and also whenever a profile
 -- is loaded
 function Addon:Load()
@@ -148,6 +150,16 @@ function Addon:Load()
     local function module_load(module, id)
         if not self.db.profile.modules[id] then
             return
+        end
+
+        -- try calling OnFirstLoad if we've not loaded this module first
+        if not initializedModules[module] then
+            local f = module.OnFirstLoad
+            if type(f) == 'function' then
+                f(module)
+            end
+
+            initializedModules[module] = true
         end
 
         local f = module.Load

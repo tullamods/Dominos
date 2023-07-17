@@ -3,15 +3,6 @@ local Dominos = LibStub("AceAddon-3.0"):GetAddon("Dominos")
 local ProgressBarModule = Dominos:NewModule("ProgressBars", "AceEvent-3.0")
 local L = LibStub("AceLocale-3.0"):GetLocale("Dominos-Progress")
 
-function ProgressBarModule:OnInitialize()
-	if StatusTrackingBarManager then
-		StatusTrackingBarManager:UnregisterAllEvents()
-		StatusTrackingBarManager:Hide()
-	end
-
-	Addon.Config:Init()
-end
-
 function ProgressBarModule:OnEnable()
 	-- common events
 	self:RegisterEvent("PLAYER_ENTERING_WORLD")
@@ -78,6 +69,15 @@ function ProgressBarModule:Unload()
 		bar:Free()
 		self.bars[i] = nil
 	end
+end
+
+function ProgressBarModule:OnFirstLoad()
+	if StatusTrackingBarManager then
+		StatusTrackingBarManager:UnregisterAllEvents()
+		StatusTrackingBarManager:Hide()
+	end
+
+	Addon.Config:Init()
 end
 
 -- events

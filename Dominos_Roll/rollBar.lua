@@ -69,28 +69,6 @@ end
 
 local AlertsBarModule = Dominos:NewModule('Alerts')
 
-function AlertsBarModule:OnInitialize()
-	if AlertFrame then
-		AlertFrame.ignoreFramePositionManager = true
-
-		hooksecurefunc(AlertFrame, "UpdateAnchors", function()
-			if self.alertsBar then
-				self.alertsBar:RepositionChildFrame()
-			end
-		end)
-	end
-
-	if GroupLootContainer then
-		GroupLootContainer.ignoreFramePositionManager = true
-
-		hooksecurefunc(AlertFrame, "UpdateAnchors", function()
-			if self.rollBar then
-				self.rollBar:RepositionChildFrame()
-			end
-		end)
-	end
-end
-
 function AlertsBarModule:Load()
 	if AlertFrame then
 		self.alertsBar = AlertsBar:New('alerts', AlertFrame)
@@ -110,5 +88,27 @@ function AlertsBarModule:Unload()
 	if self.rollBar then
 		self.rollBar:Free()
 		self.rollBar = nil
+	end
+end
+
+function AlertsBarModule:OnFirstLoad()
+	if AlertFrame then
+		AlertFrame.ignoreFramePositionManager = true
+
+		hooksecurefunc(AlertFrame, "UpdateAnchors", function()
+			if self.alertsBar then
+				self.alertsBar:RepositionChildFrame()
+			end
+		end)
+	end
+
+	if GroupLootContainer then
+		GroupLootContainer.ignoreFramePositionManager = true
+
+		hooksecurefunc(AlertFrame, "UpdateAnchors", function()
+			if self.rollBar then
+				self.rollBar:RepositionChildFrame()
+			end
+		end)
 	end
 end

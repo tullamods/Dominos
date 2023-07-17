@@ -168,7 +168,20 @@ end
 
 local BagBarModule = Addon:NewModule('BagBar', 'AceEvent-3.0')
 
-function BagBarModule:OnInitialize()
+function BagBarModule:Load()
+    if self.frame == nil then
+        self.frame = BagBar:New()
+    end
+end
+
+function BagBarModule:Unload()
+    if self.frame ~= nil then
+        self.frame:Free()
+        self.frame = nil
+    end
+end
+
+function BagBarModule:OnFirstLoad()
     -- use our own handlign for the blizzard bag bar
     if MainMenuBarManager then
         EventRegistry:UnregisterCallback("MainMenuBarManager.OnExpandChanged", MainMenuBarManager)
@@ -195,9 +208,7 @@ function BagBarModule:OnInitialize()
     self.RegisterButton = nil
 
     self:RegisterEvent("PLAYER_REGEN_ENABLED", "LayoutBagBar")
-end
 
-function BagBarModule:OnEnable()
     for _, button in pairs(BagButtons) do
         Addon:GetModule('ButtonThemer'):Register(
             button,
@@ -206,19 +217,6 @@ function BagBarModule:OnEnable()
                 Icon = button.icon
             }
         )
-    end
-end
-
-function BagBarModule:Load()
-    if self.frame == nil then
-        self.frame = BagBar:New()
-    end
-end
-
-function BagBarModule:Unload()
-    if self.frame ~= nil then
-        self.frame:Free()
-        self.frame = nil
     end
 end
 

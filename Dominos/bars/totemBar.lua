@@ -77,20 +77,6 @@ Addon.TotemBar = TotemBar
 local TotemBarModule = Addon:NewModule('TotemBar', 'AceEvent-3.0')
 
 function TotemBarModule:Load()
-    if not self.initialized then
-        MultiCastActionBarFrame.ignoreFramePositionManager = true
-
-        -- onshow/hide call UpdateManagedFramePositions on the blizzard end so
-        -- turn that bit off
-        MultiCastActionBarFrame:SetScript("OnShow", nil)
-        MultiCastActionBarFrame:SetScript("OnHide", nil)
-
-        -- also, it is repositioned on every frame? that seems silly
-        MultiCastActionBarFrame:SetScript("OnUpdate", nil)
-
-        self.initialized = true
-    end
-
     self.bar = TotemBar:New()
 end
 
@@ -99,4 +85,16 @@ function TotemBarModule:Unload()
         self.bar:Free()
         self.bar = nil
     end
+end
+
+function TotemBarModule:OnFirstLoad()
+    MultiCastActionBarFrame.ignoreFramePositionManager = true
+
+    -- onshow/hide call UpdateManagedFramePositions on the blizzard end so
+    -- turn that bit off
+    MultiCastActionBarFrame:SetScript("OnShow", nil)
+    MultiCastActionBarFrame:SetScript("OnHide", nil)
+
+    -- also, it is repositioned on every frame? that seems silly
+    MultiCastActionBarFrame:SetScript("OnUpdate", nil)
 end

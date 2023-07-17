@@ -63,21 +63,11 @@ end
 local EncounterBarModule = Addon:NewModule('EncounterBar', 'AceEvent-3.0')
 
 function EncounterBarModule:Load()
-	if not self.loaded then
-		self:OnFirstLoad()
-		self.loaded = true
-	end
-
 	self.frame = Addon.EncounterBar:New()
 end
 
 function EncounterBarModule:Unload()
 	self.frame:Free()
-end
-
-function EncounterBarModule:PLAYER_LOGOUT()
-	-- SetUserPlaced is persistent, so revert upon logout
-	PlayerPowerBarAlt:SetUserPlaced(false)
 end
 
 function EncounterBarModule:OnFirstLoad()
@@ -96,6 +86,11 @@ function EncounterBarModule:OnFirstLoad()
 	PlayerPowerBarAlt:SetScript("OnHide", nil)
 
 	self:RegisterEvent("PLAYER_LOGOUT")
+end
+
+function EncounterBarModule:PLAYER_LOGOUT()
+	-- SetUserPlaced is persistent, so revert upon logout
+	PlayerPowerBarAlt:SetUserPlaced(false)
 end
 
 -- exports

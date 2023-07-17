@@ -165,11 +165,6 @@ Addon.PossessBar = PossessBar
 local PossessBarModule = Addon:NewModule('PossessBar', 'AceEvent-3.0')
 
 function PossessBarModule:Load()
-    if not self.loaded then
-        self:OnFirstLoad()
-        self.loaded = true
-    end
-
     self.bar = PossessBar:New()
 
     self:RegisterEvent("UNIT_ENTERED_VEHICLE", "Update")
