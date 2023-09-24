@@ -20,12 +20,13 @@ function Menu:New(parent)
 
 	-- title region
 	local tr = CreateFrame('Frame', nil, menu, 'TitleDragAreaTemplate')
-	tr:SetAllPoints(menu:GetName() .. 'TitleBG')
+	tr:SetAllPoints(_G[menu:GetName() .. 'TitleBG'])
 
-	-- title text
-	local text = menu:CreateFontString(nil, 'OVERLAY', 'GameFontHighlight')
-	text:SetPoint('CENTER', tr)
-	menu.text = text
+	-- reposition close button, as it is positioned poorly in vanilla
+	if Addon:GetParent():IsBuild("wrath", "classic") then
+		local cb = _G[menu:GetName() .. 'Close']
+		cb:SetPoint("TOPRIGHT", 2, 0)
+	end
 
 	-- panels
 	menu.panels = {}
@@ -54,7 +55,7 @@ function Menu:SetOwner(owner)
 		end
 	end
 
-	self.text:SetFormattedText(L.BarSettings, owner:GetDisplayName())
+	self.Title:SetFormattedText(L.BarSettings, owner:GetDisplayName())
 	self:Anchor(owner)
 end
 

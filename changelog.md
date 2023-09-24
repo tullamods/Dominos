@@ -1,5 +1,10 @@
 # Dominos Changelog
 
+## 10.1.4
+
+* Update TOCs for 1.14.4 and 10.1.7
+* (Classic) Fix the positioning close button positioning on right click menus
+
 ## 10.1.3
 
 * Add the Evoker class bar
@@ -80,7 +85,7 @@
 
 ## 10.0.11
 
-* Fix an issue caussing the zhTW localization to not load for the cast bar
+* Fix an issue causing the zhTW localization to not load for the cast bar
 * Added some workarounds to better control the position of the extra action bar
 
 ## 10.0.10
