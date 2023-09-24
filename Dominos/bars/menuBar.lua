@@ -201,11 +201,11 @@ if Addon:IsBuild("retail") then
                 button:SetParent(PetMicroButtonFrame)
 
                 if i == 1 then
-                    button:SetPoint('BOTTOMLEFT', -9, button:GetHeight())
+                    button:SetPoint('TOPLEFT', -17, 9)
                 elseif i == 7 then
-                    button:SetPoint('TOPLEFT', MicroButtons[1], 'BOTTOMLEFT', 0, (t - b) - 3)
+                    button:SetPoint('TOPLEFT', MicroButtons[1], 'BOTTOMLEFT', 0, 6)
                 else
-                    button:SetPoint('BOTTOMLEFT', MicroButtons[i - 1], 'BOTTOMRIGHT', (l - r) + 8, 0)
+                    button:SetPoint('TOPLEFT', MicroButtons[i - 1], 'TOPRIGHT', -5, 0)
                 end
 
                 button:Show()
