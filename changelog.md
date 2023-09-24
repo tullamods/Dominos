@@ -5,7 +5,6 @@
 * Update TOCs for 1.14.4 and 10.1.7
 * (Classic) Fix the positioning close button positioning on right click menus
 * (Retail) Fix the micro menu positioning when in a pet battle
-*
 
 ## 10.1.3
 
