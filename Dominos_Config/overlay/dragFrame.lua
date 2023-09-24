@@ -289,10 +289,8 @@ function DragFrame:OnMouseDown(button)
     end
 end
 
-function DragFrame:OnMouseUp(button)
-    if button == 'LeftButton' then
-        self:SetMoving(false)
-    end
+function DragFrame:OnMouseUp()
+    self:SetMoving(false)
 end
 
 function DragFrame:OnMouseWheel(delta)
