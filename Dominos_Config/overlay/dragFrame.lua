@@ -233,7 +233,6 @@ function DragFrame:OnClick(button)
     elseif button == 'MiddleButton' then
         self:SetOwnerShown(not self:IsOwnerShown())
     end
-
     self:UpdateState()
 end
 
@@ -290,7 +289,9 @@ function DragFrame:OnMouseDown(button)
 end
 
 function DragFrame:OnMouseUp()
-    self:SetMoving(false)
+    if self.isMoving then
+        self:SetMoving(false)
+    end
 end
 
 function DragFrame:OnMouseWheel(delta)
