@@ -1,5 +1,10 @@
 # Dominos Changelog
 
+## 10.1.5
+
+* Update TOCs for 3.4.3
+* Resolve some possible null reference errors with unloading modules
+
 ## 10.1.4
 
 * Update TOCs for 1.14.4 and 10.1.7
