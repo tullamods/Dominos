@@ -136,6 +136,7 @@ end
 function ExtraAbilityBarModule:Unload()
     if self.frame then
         self.frame:Free()
+        self.frame = nil
     end
 end
 

@@ -52,11 +52,13 @@ end
 function MirrorTimerModule:Unload()
     self:UnregisterAllEvents()
 
-    for _, bar in pairs(self.bars) do
-        bar:Free()
-    end
+    if type(self.bars) == "table" then
+        for _, bar in pairs(self.bars) do
+            bar:Free()
+        end
 
-    self.bars = nil
+        self.bars = nil
+    end
 end
 
 function MirrorTimerModule:OnFirstLoad()

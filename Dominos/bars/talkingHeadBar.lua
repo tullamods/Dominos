@@ -100,6 +100,7 @@ end
 function TalkingHeadBarModule:Unload()
     if self.frame then
         self.frame:Free()
+        self.frame = nil
     end
 end
 

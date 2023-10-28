@@ -186,6 +186,7 @@ function PossessBarModule:Unload()
 
     if self.bar then
         self.bar:Free()
+        self.bar = nil
     end
 end
 
