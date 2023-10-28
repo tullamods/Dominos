@@ -65,9 +65,13 @@ function ProgressBarModule:Load()
 end
 
 function ProgressBarModule:Unload()
-	for i, bar in pairs(self.bars) do
-		bar:Free()
-		self.bars[i] = nil
+	local bars = self.bars
+
+	if type(bars) == "table" then
+		for i, bar in pairs(bars) do
+			bar:Free()
+			bars[i] = nil
+		end
 	end
 end
 
