@@ -1,5 +1,11 @@
 # Dominos Changelog
 
+## 10.2.0
+
+* Update TOCs for 10.2.0
+* Prevent Dominos Progress from registering for events before its settings have
+  been loaded
+
 ## 10.1.5
 
 * Update TOCs for 3.4.3
