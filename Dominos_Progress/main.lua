@@ -3,7 +3,45 @@ local Dominos = LibStub("AceAddon-3.0"):GetAddon("Dominos")
 local ProgressBarModule = Dominos:NewModule("ProgressBars", "AceEvent-3.0")
 local L = LibStub("AceLocale-3.0"):GetLocale("Dominos-Progress")
 
-function ProgressBarModule:OnEnable()
+function ProgressBarModule:Load()
+	if not Dominos:IsBuild("retail") then
+		self.bars = {
+			Addon.ProgressBar:New("exp", {"xp", "reputation", "gold"})
+		}
+	elseif Addon.Config:OneBarMode() then
+		self.bars = {
+			Addon.ProgressBar:New("exp", {"xp", "reputation", "honor", "artifact", "azerite", "gold"})
+		}
+	else
+		self.bars = {
+			Addon.ProgressBar:New("exp", {"xp", "reputation", "honor", "gold"}),
+			Addon.ProgressBar:New("artifact", {"azerite", "artifact"})
+		}
+	end
+end
+
+function ProgressBarModule:Unload()
+	local bars = self.bars
+
+	if type(bars) == "table" then
+		for i, bar in pairs(bars) do
+			bar:Free()
+			bars[i] = nil
+		end
+	end
+end
+
+function ProgressBarModule:OnFirstLoad()
+	-- remove UI components we're replacing
+	if StatusTrackingBarManager then
+		StatusTrackingBarManager:UnregisterAllEvents()
+		StatusTrackingBarManager:Hide()
+	end
+
+	-- initialize configuration settings
+	Addon.Config:Init()
+
+	-- register events
 	-- common events
 	self:RegisterEvent("PLAYER_ENTERING_WORLD")
 	self:RegisterEvent("PLAYER_UPDATE_RESTING")
@@ -45,43 +83,6 @@ function ProgressBarModule:OnEnable()
 	-- addon and library callbacks
 	Dominos.RegisterCallback(self, "OPTIONS_MENU_LOADING")
 	LibStub("LibSharedMedia-3.0").RegisterCallback(self, 'LibSharedMedia_Registered')
-end
-
-function ProgressBarModule:Load()
-	if not Dominos:IsBuild("retail") then
-		self.bars = {
-			Addon.ProgressBar:New("exp", {"xp", "reputation", "gold"})
-		}
-	elseif Addon.Config:OneBarMode() then
-		self.bars = {
-			Addon.ProgressBar:New("exp", {"xp", "reputation", "honor", "artifact", "azerite", "gold"})
-		}
-	else
-		self.bars = {
-			Addon.ProgressBar:New("exp", {"xp", "reputation", "honor", "gold"}),
-			Addon.ProgressBar:New("artifact", {"azerite", "artifact"})
-		}
-	end
-end
-
-function ProgressBarModule:Unload()
-	local bars = self.bars
-
-	if type(bars) == "table" then
-		for i, bar in pairs(bars) do
-			bar:Free()
-			bars[i] = nil
-		end
-	end
-end
-
-function ProgressBarModule:OnFirstLoad()
-	if StatusTrackingBarManager then
-		StatusTrackingBarManager:UnregisterAllEvents()
-		StatusTrackingBarManager:Hide()
-	end
-
-	Addon.Config:Init()
 end
 
 -- events
