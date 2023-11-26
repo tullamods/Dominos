@@ -166,23 +166,27 @@ do
     )
 end
 
--- somewhere between a debounce and a throttle
-function Addon:Defer(func, delay, arg1)
+-- debounce
+function Addon:Debounce(func, delay, ...)
     delay = delay or 0
 
-    local waiting = false
+    local callback
+    if select("#", ...) == 0 then
+        callback = func
+    else
+        local args = { ... }
 
-    local function callback()
-        func(arg1)
-
-        waiting = false
+        callback = function()
+            func(unpack(args))
+        end
     end
 
+    local timer
     return function()
-        if not waiting then
-            waiting = true
-
-            C_Timer.After(delay or 0, callback)
+        if timer then
+            timer:Cancel()
         end
+
+        timer = C_Timer.NewTimer(delay, callback)
     end
 end

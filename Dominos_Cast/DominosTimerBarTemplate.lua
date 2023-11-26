@@ -21,7 +21,7 @@ function TimerBar:OnLoad()
         insets = {left = 5, right = 5, top = 5, bottom = 5}
     }
 
-    self.Layout = Dominos:Defer(TimerBar.Layout, 0.1, self)
+    self.Layout = Dominos:Debounce(TimerBar.Layout, 0.1, self)
 end
 
 function TimerBar:OnSizeChanged()

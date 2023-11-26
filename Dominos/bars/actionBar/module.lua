@@ -2,7 +2,7 @@ local _, Addon = ...
 local ActionBarsModule = Addon:NewModule('ActionBars', 'AceEvent-3.0')
 
 function ActionBarsModule:OnEnable()
-    self.UpdateActionSlots = Addon:Defer(self.UpdateActionSlots, 0.1, self)
+    self.UpdateActionSlots = Addon:Debounce(self.UpdateActionSlots, 0.1, self)
 end
 
 function ActionBarsModule:Load()

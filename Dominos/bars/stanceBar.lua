@@ -168,7 +168,7 @@ function StanceBarModule:UpdateNumForms()
     self:UpdateStanceButtons()
 end
 
-StanceBarModule.UpdateStanceButtons = Addon:Defer(function(self)
+StanceBarModule.UpdateStanceButtons = Addon:Debounce(function(self)
     local bar = self.bar
     if bar then
         bar:UpdateActions()

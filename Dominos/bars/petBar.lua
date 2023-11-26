@@ -262,7 +262,7 @@ function PetBarModule:OnFirstLoad()
 
     -- an extremly lazy method of updating the Dominos pet bar when the
     -- normal pet bar would be updated
-    hooksecurefunc(PetActionBar, "Update", Addon:Defer(function() self:UpdateActions() end, 0.01))
+    hooksecurefunc(PetActionBar, "Update", Addon:Debounce(function() self:UpdateActions() end, 0.01))
 end
 
 function PetBarModule:PET_BAR_UPDATE_COOLDOWN()
