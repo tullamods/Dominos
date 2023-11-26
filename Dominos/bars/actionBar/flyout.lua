@@ -513,6 +513,7 @@ function SpellFlyout:Register(button)
 		frame:HookScript("OnHide", function() self:OnFlyoutHidden() end)
 
 		self:RegisterEvent("SPELL_FLYOUT_UPDATE")
+		self:RegisterEvent("PET_STABLE_UPDATE")
 
         self.frame = frame
     end
@@ -543,6 +544,15 @@ function SpellFlyout:SPELL_FLYOUT_UPDATE(_, flyoutID)
 
 	self.frame:ForShown("Update")
 end
+
+function SpellFlyout:PET_STABLE_UPDATE()
+	if InCombatLockdown() then
+		self:UpdateFlyoutSpellsWhenOutOfCombat()
+	else
+		self.frame:UpdateKnownFlyouts()
+	end
+end
+
 
 function SpellFlyout:SPELL_UPDATE_COOLDOWN()
 	self.frame:ForShown("UpdateCooldown")
