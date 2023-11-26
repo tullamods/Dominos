@@ -62,13 +62,23 @@ function MirrorTimerModule:Unload()
 end
 
 function MirrorTimerModule:OnFirstLoad()
-    UIParent:UnregisterEvent("MIRROR_TIMER_START")
+    local container = MirrorTimerContainer
+    if container then
+        container:UnregisterAllEvents()
 
-    for i = 1, MIRRORTIMER_NUMTIMERS do
-        local timer = _G["MirrorTimer" .. i]
-        if timer then
+        for _, timer in pairs(container.mirrorTimers) do
             timer:UnregisterAllEvents()
             timer:Hide()
+        end
+    else
+        UIParent:UnregisterEvent("MIRROR_TIMER_START")
+
+        for i = 1, MIRRORTIMER_NUMTIMERS do
+            local timer = _G["MirrorTimer" .. i]
+            if timer then
+                timer:UnregisterAllEvents()
+                timer:Hide()
+            end
         end
     end
 end
