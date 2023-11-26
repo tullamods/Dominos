@@ -1,5 +1,12 @@
 # Dominos Changelog
 
+## 10.2.1
+
+* Handle hiding the stock mirror timers in 10.2
+* Update TOCs for 1.15.0
+* Better updates to action flyouts when hunter pets change
+* Throttle menu bar updates
+
 ## 10.2.0
 
 * Update TOCs for 10.2.0
