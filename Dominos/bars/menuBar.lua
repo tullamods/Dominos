@@ -194,8 +194,6 @@ if Addon:IsBuild("retail") then
                 button:Show()
             end
         elseif PetMicroButtonFrame and PetMicroButtonFrame:IsVisible() then
-            local l, r, t, b = self:GetButtonInsets()
-
             for i, button in ipairs(MicroButtons) do
                 button:ClearAllPoints()
                 button:SetParent(PetMicroButtonFrame)
@@ -332,12 +330,12 @@ function MenuBarModule:OnFirstLoad()
         perf:SetPoint('BOTTOM', 0, 0)
     end
 
-    local function layout()
+    local layout = Addon:Debounce(function()
         local frame = self.frame
         if frame then
             self.frame:Layout()
         end
-    end
+    end)
 
     hooksecurefunc("UpdateMicroButtons", layout)
 
