@@ -553,7 +553,6 @@ function SpellFlyout:PET_STABLE_UPDATE()
 	end
 end
 
-
 function SpellFlyout:SPELL_UPDATE_COOLDOWN()
 	self.frame:ForShown("UpdateCooldown")
 end

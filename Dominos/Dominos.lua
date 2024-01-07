@@ -22,10 +22,8 @@ Addon.callbacks = LibStub('CallbackHandler-1.0'):New(Addon)
 -- how many action buttons we support, and what button to map keybinding presses
 if WOW_PROJECT_ID == WOW_PROJECT_MAINLINE then
     Addon.ACTION_BUTTON_COUNT = 14 * NUM_ACTIONBAR_BUTTONS
-    Addon.ACTION_BUTTON_HOTKEY_BUTTON = "LeftButton"
 else
     Addon.ACTION_BUTTON_COUNT = 10 * NUM_ACTIONBAR_BUTTONS
-    Addon.ACTION_BUTTON_HOTKEY_BUTTON = "HOTKEY"
 end
 
 --------------------------------------------------------------------------------
@@ -42,25 +40,25 @@ function Addon:OnInitialize()
     KeyBound.RegisterCallback(self, 'LIBKEYBOUND_DISABLED')
 
     -- define binding names
-    _G['BINDING_HEADER_' .. AddonName] = AddonName
+    -- _G['BINDING_HEADER_' .. AddonName] = AddonName
 
-    local hotkeyButton = Addon.ACTION_BUTTON_HOTKEY_BUTTON
-    local numActionBars = math.ceil(Addon.ACTION_BUTTON_COUNT / NUM_ACTIONBAR_BUTTONS)
+    -- local hotkeyButton = Addon.ACTION_BUTTON_HOTKEY_BUTTON
+    -- local numActionBars = math.ceil(Addon.ACTION_BUTTON_COUNT / NUM_ACTIONBAR_BUTTONS)
 
-    for barID = 1, numActionBars do
-        local offset = NUM_ACTIONBAR_BUTTONS * (barID - 1)
-        local headerKey = ('BINDING_HEADER_%sActionBar%d'):format(AddonName, barID)
-        local headerValue = L.ActionBarDisplayName:format(barID)
+    -- for barID = 1, numActionBars do
+    --     local offset = NUM_ACTIONBAR_BUTTONS * (barID - 1)
+    --     local headerKey = ('BINDING_HEADER_%sActionBar%d'):format(AddonName, barID)
+    --     local headerValue = L.ActionBarDisplayName:format(barID)
 
-        _G[headerKey] = headerValue
+    --     _G[headerKey] = headerValue
 
-        for index = 1, NUM_ACTIONBAR_BUTTONS do
-            local bindingKey = ('BINDING_NAME_CLICK %sActionButton%d:%s'):format(AddonName, index + offset, hotkeyButton)
-            local bindingValue = L.ActionBarButtonDisplayName:format(barID, index)
+    --     for index = 1, NUM_ACTIONBAR_BUTTONS do
+    --         local bindingKey = ('BINDING_NAME_CLICK %sActionButton%d:%s'):format(AddonName, index + offset, hotkeyButton)
+    --         local bindingValue = L.ActionBarButtonDisplayName:format(barID, index)
 
-            _G[bindingKey] = bindingValue
-        end
-    end
+    --         _G[bindingKey] = bindingValue
+    --     end
+    -- end
 end
 
 function Addon:OnEnable()
@@ -71,6 +69,7 @@ function Addon:OnEnable()
     -- in rapid sequence
     self.UpdateHotkeys = self:Debounce(function() self.Frame:ForEach('ForButtons', 'UpdateHotkeys') end, 0.01)
     self:RegisterEvent('UPDATE_BINDINGS')
+    self:RegisterEvent("GAME_PAD_ACTIVE_CHANGED", "UPDATE_BINDINGS")
 end
 
 -- configuration events

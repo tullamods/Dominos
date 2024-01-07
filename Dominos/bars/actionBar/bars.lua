@@ -18,10 +18,6 @@ function ActionBarsModule:Load()
 
     self:SetBarCount(Addon:NumBars())
     Addon.RegisterCallback(self, "ACTIONBAR_COUNT_UPDATED")
-
-    self:RegisterEvent("SPELLS_CHANGED")
-    self:RegisterEvent("ACTIONBAR_SLOT_CHANGED")
-    self:RegisterEvent("PLAYER_REGEN_ENABLED")
 end
 
 function ActionBarsModule:Unload()
@@ -54,23 +50,6 @@ function ActionBarsModule:UPDATE_SHAPESHIFT_FORMS()
     self:ForActive('UpdateStateDriver')
 end
 
-function ActionBarsModule:ACTIONBAR_SLOT_CHANGED(_event, slot)
-    if not self.slotsToUpdate[slot] then
-        self.slotsToUpdate[slot] = true
-        self:UpdateActionSlots()
-    end
-end
-
-function  ActionBarsModule:PLAYER_REGEN_ENABLED()
-    if next(self.slotsToUpdate) then
-        self:UpdateActionSlots()
-    end
-end
-
-function ActionBarsModule:SPELLS_CHANGED()
-    self:ForActive('ForButtons', 'UpdateShownInsecure')
-end
-
 function ActionBarsModule:SetBarCount(count)
     self:ForActive('Free')
 
@@ -91,22 +70,4 @@ function ActionBarsModule:ForActive(method, ...)
             bar:CallMethod(method, ...)
         end
     end
-end
-
-function ActionBarsModule:UpdateActionSlots()
-    if InCombatLockdown() then return end
-
-    if not next(self.slotsToUpdate) then
-        return
-    end
-
-    for _, bar in pairs(self.active) do
-        for _, button in pairs(bar.buttons) do
-            if self.slotsToUpdate[button:GetAttribute("action")] then
-                button:UpdateShownInsecure()
-            end
-        end
-    end
-
-    table.wipe(self.slotsToUpdate)
 end

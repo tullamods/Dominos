@@ -1,310 +1,395 @@
---------------------------------------------------------------------------------
--- ActionButtonMixin
--- Additional methods we define on action buttons
---------------------------------------------------------------------------------
+local _, Addon = ...
 
-local AddonName, Addon = ...
-local ActionButtonMixin = {}
-
-function ActionButtonMixin:SetActionOffsetInsecure(offset)
-    if InCombatLockdown() then
-        return
-    end
-
-    local oldActionId = self:GetAttribute('action')
-    local newActionId = self:GetAttribute('index') + (offset or 0)
-
-    if oldActionId ~= newActionId then
-        self:SetAttribute('action', newActionId)
-        self:UpdateState()
-    end
-end
-
-function ActionButtonMixin:SetShowGridInsecure(showgrid, force)
-    if InCombatLockdown() then
-        return
-    end
-
-    showgrid = tonumber(showgrid) or 0
-
-    if (self:GetAttribute("showgrid") ~= showgrid) or force then
-        self:SetAttribute("showgrid", showgrid)
-        self:UpdateShownInsecure()
-    end
-end
-
-function ActionButtonMixin:UpdateShownInsecure()
-    if InCombatLockdown() then
-        return
-    end
-
-    local show = (self:GetAttribute("showgrid") > 0 or HasAction(self:GetAttribute("action")))
-        and not self:GetAttribute("statehidden")
-
-    self:SetShown(show)
-end
-
--- configuration commands
-function ActionButtonMixin:SetFlyoutDirection(direction)
-    if InCombatLockdown() then
-        return
-    end
-
-    self:SetAttribute("flyoutDirection", direction)
-    self:UpdateFlyout()
-end
-
-function ActionButtonMixin:SetShowCountText(show)
-    if show then
-        self.Count:Show()
-    else
-        self.Count:Hide()
-    end
-end
-
-function ActionButtonMixin:SetShowMacroText(show)
-    if show then
-        self.Name:Show()
-    else
-        self.Name:Hide()
-    end
-end
-
-function ActionButtonMixin:SetShowEquippedItemBorders(show)
-    if show then
-        self.Border:SetParent(self)
-    else
-        self.Border:SetParent(Addon.ShadowUIParent)
-    end
-end
-
--- we hide cooldowns when action buttons are transparent
--- so that the sparks don't appear
-function ActionButtonMixin:SetShowCooldowns(show)
-    if show then
-        if self.cooldown:GetParent() ~= self then
-            self.cooldown:SetParent(self)
-            ActionButton_UpdateCooldown(self)
-        end
-    else
-        self.cooldown:SetParent(Addon.ShadowUIParent)
-    end
-end
-
--- in classic, blizzard action buttons don't use a mixin
--- so define some methods that we'd expect
-if not Addon:IsBuild('retail') then
-    -- ActionButtonMixin.HideGrid = ActionButton_HideGrid
-    -- ActionButtonMixin.ShowGrid = ActionButton_ShowGrid
-    ActionButtonMixin.Update = ActionButton_Update
-    ActionButtonMixin.UpdateFlyout = ActionButton_UpdateFlyout
-    ActionButtonMixin.UpdateState = ActionButton_UpdateState
-
-    hooksecurefunc("ActionButton_UpdateHotkeys", Addon.BindableButton.UpdateHotkeys)
-end
-
-Addon.ActionButtonMixin = ActionButtonMixin
-
---------------------------------------------------------------------------------
--- ActionButtons - A pool of action buttons
---------------------------------------------------------------------------------
-
-local createActionButton
+local StockActionButtons = {}
 if Addon:IsBuild("retail") then
-    local SecureHandler = Addon:CreateHiddenFrame('Frame', nil, nil, "SecureHandlerBaseTemplate")
+    local function addBar(bar, page)
+        if not (bar and bar.actionButtons) then return end
 
-    local button_OnAttributeChanged = [[
-        if name ~= "action" then return end
+        page = page or bar:GetAttribute("actionpage")
 
-        local target = self:GetFrameRef("ProxyTarget")
-
-        if target and target:GetAttribute(name) ~= value then
-            target:SetAttribute(name, value)
+        -- when assigning buttons, we skip bar 12 (totems)
+        -- so shift pages above 12 down one
+        if page > 12 then
+            page = page - 1
         end
-    ]]
 
-    -- dragonflight hack: whenever a Dominos action button's action changes
-    -- set the action of the corresponding blizzard action button
-    -- this ensures that pressing a blizzard keybinding does the same thing as
-    -- clicking a Dominos button would
-    --
-    -- We want to not remap blizzard keybindings in dragonflight, so that we can
-    -- use some behaviors only available to blizzard action buttons, mainly cast on
-    -- key down and press and hold casting
-    local function proxyActionButton(owner, target)
-        if not target then return end
+        local offset = (page - 1) * NUM_ACTIONBAR_BUTTONS
 
-        -- disable paging on the target by giving the target an ID of zero
-        target:SetID(0)
-
-        -- display the target's binding action
-        owner.commandName = target.commandName
-
-        -- mirror the owner's action on target whenever it changes
-        SecureHandlerSetFrameRef(owner, "ProxyTarget", target)
-
-        SecureHandler:WrapScript(owner, "OnAttributeChanged", button_OnAttributeChanged)
-
-        -- mirror the pushed state of the target button
-        hooksecurefunc(target, "SetButtonStateBase", function(_, state)
-            owner:SetButtonStateBase(state)
-        end)
+        for i, button in pairs(bar.actionButtons) do
+            StockActionButtons[i + offset] = button
+        end
     end
 
-    createActionButton = function(id)
-        local buttonName = ('%sActionButton%d'):format(AddonName, id)
-
-        local button = CreateFrame('CheckButton', buttonName, nil, 'ActionBarButtonTemplate')
-
-        -- inject custom flyout handling
-        Addon.SpellFlyout:Register(button)
-
-        proxyActionButton(button, Addon.BlizzardActionButtons[id])
-
-        return button
-    end
+    addBar(MainMenuBar, 1) -- 1
+    addBar(MultiBarRight) -- 3
+    addBar(MultiBarLeft) -- 4
+    addBar(MultiBarBottomRight) -- 5
+    addBar(MultiBarBottomLeft) -- 6
+    addBar(MultiBar5) -- 13
+    addBar(MultiBar6) -- 14
+    addBar(MultiBar7) -- 15
 else
-    -- ignore pickup action clicks except on key down
-    -- and ignore clicks that do not match our down state
-    local actionButton_OnClick = [[
-        if button == 'HOTKEY' then
-            if down == control:GetAttribute("CastOnKeyPress") then
-                return 'LeftButton'
-            end
-            return false
-        end
+    local function addButton(button, page)
+        page = page or button:GetParent():GetAttribute("actionpage")
 
-        if down then
-            return false
-        end
-    ]]
+        local index = button:GetID() + (page - 1) * NUM_ACTIONBAR_BUTTONS
 
-    local keyPressHandler = CreateFrame('Frame', nil, nil, 'SecureHandlerBaseTemplate')
-
-    keyPressHandler:Hide()
-
-    keyPressHandler:SetAttribute("CastOnKeyPress", GetCVarBool("ActionButtonUseKeyDown"))
-
-    keyPressHandler:SetScript("OnEvent", function(self)
-        self:SetAttribute("CastOnKeyPress", GetCVarBool("ActionButtonUseKeyDown"))
-    end)
-
-    keyPressHandler:RegisterEvent("PLAYER_ENTERING_WORLD")
-
-    local function addCastOnKeyPressSupport(button)
-        button:RegisterForClicks('AnyUp', 'AnyDown')
-        keyPressHandler:WrapScript(button, 'OnClick', actionButton_OnClick)
+        StockActionButtons[index] = button
     end
 
-    local function getBlizzardActionButtonCommandName(button)
-        if button.buttonType then
-            return button.buttonType .. button:GetID()
-        end
-
-        return button:GetName():upper()
-    end
-
-    createActionButton = function(id)
-        local button = Addon.BlizzardActionButtons[id]
-
-        if button then
-            button.commandName = getBlizzardActionButtonCommandName(button)
-
-            -- disable paging on the existing button by giving the target an ID of zero
-            button:SetID(0)
-        else
-            local name = ('%sActionButton%d'):format(AddonName, id)
-
-            button = CreateFrame('CheckButton', name, nil, 'ActionBarButtonTemplate')
-        end
-
-        addCastOnKeyPressSupport(button)
-
-        return button
+    for i = 1, NUM_ACTIONBAR_BUTTONS do
+        addButton(_G['ActionButton' .. i], 1) -- 1
+        addButton(_G['MultiBarRightButton' .. i]) -- 3
+        addButton(_G['MultiBarLeftButton' .. i]) -- 4
+        addButton(_G['MultiBarBottomRightButton' .. i]) -- 5
+        addButton(_G['MultiBarBottomLeftButton' .. i]) -- 6
     end
 end
 
--- handle notifications from our parent bar about whate the action button
--- ID offset should be
-local actionButton_OnUpdateOffset = [[
-    local offset = message or 0
-    local id = self:GetAttribute('index') + offset
+local function Cooldown_OnDone(self)
+    if self.requireCooldownUpdate and self:GetParent():IsVisible() then
+        self:GetParent():UpdateCooldown()
+    end
+end
 
-    if self:GetAttribute('action') ~= id then
-        self:SetAttribute('action', id)
-        self:RunAttribute("UpdateShown")
-        self:CallMethod('UpdateState')
+local ActionButton_OnDragStart = [[
+    if IsModifiedClick("PICKUPACTION") and HasAction(self:GetAttribute("action")) then
+        return "action", self:GetAttribute("action")
     end
 ]]
 
-local actionButton_OnUpdateShowGrid = [[
-    local new = message or 0
-    local old = self:GetAttribute("showgrid") or 0
-
-    if old ~= new then
-        self:SetAttribute("showgrid", new)
-        self:RunAttribute("UpdateShown")
-    end
-]]
-
-local actionButton_UpdateShown = [[
-    local show = (self:GetAttribute("showgrid") > 0 or HasAction(self:GetAttribute("action")))
-                 and not self:GetAttribute("statehidden")
-
-    if show then
-        self:Show(true)
+local ActionButton_OnReceiveDrag = [[
+    if kind then
+        self:SetAttribute("dragging", kind)
+        return "action", self:GetAttribute("action")
     else
-        self:Hide(true)
+        self:SetAttribute("dragging", nil)
     end
 ]]
 
--- action button creation is deferred so that we can avoid creating buttons for
--- bars set to show less than the maximum
-local ActionButtons = setmetatable({}, {
-    -- index creates & initializes buttons as we need them
-    __index = function(self, id)
-        -- validate the ID of the button we're getting is within an
-        -- our expected range
-        id = tonumber(id) or 0
-        if id < 1 then
-            error(('Usage: %s.ActionButtons[>0]'):format(AddonName), 2)
+local ActionButton = Addon:CreateClass("CheckButton")
+
+--[[ Script Handlers ]]--
+
+function ActionButton:OnCreate(id)
+    self.id = id
+    self.prevAttributeValues = {}
+
+    self:SetSize(ActionButton1:GetSize())
+
+    -- click handlers
+	self:RegisterForDrag("LeftButton", "RightButton")
+	self:RegisterForClicks("AnyUp", "LeftButtonDown", "RightButtonDown")
+    self:EnableMouseWheel()
+
+    -- script handlers
+    self:SetScript("OnAttributeChanged", self.OnAttributeChanged)
+    self:SetScript("OnEnter", self.OnEnter)
+    self:SetScript("OnLeave", self.OnLeave)
+    self:SetScript("PostClick", self.OnPostClick)
+    self:SetAttributeNoHandler("_ondragstart", ActionButton_OnDragStart)
+    self:SetAttributeNoHandler("_onreceivedrag", ActionButton_OnReceiveDrag)
+    Addon.ActionButtonScriptHandler:Wrap(self)
+
+    -- textures
+    self.Icon = self:CreateTexture(nil, "BACKGROUND")
+    self.Icon:SetAllPoints()
+
+    self.IconMask = self:CreateMaskTexture()
+    self.IconMask:SetTexture(4626072, "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
+    self.IconMask:SetPoint("CENTER", self.Icon)
+    self.Icon:AddMaskTexture(self.IconMask)
+
+    self.SlotBackground = self:CreateTexture(nil, "BACKGROUND")
+    self.SlotBackground:SetAtlas("UI-HUD-ActionBar-IconFrame-Background")
+    self.SlotBackground:SetAllPoints()
+
+    -- button.SlotArt = button:CreateTexture(nil, "BACKGROUND")
+    -- button.SlotArt:SetAtlas("ui-hud-actionbar-iconframe-slot")
+    -- button.SlotArt:SetAllPoints()
+
+    self.NormalTexture = self:CreateTexture(nil, "OVERLAY")
+    self.NormalTexture:SetAtlas("UI-HUD-ActionBar-IconFrame")
+    self.NormalTexture:SetAllPoints()
+    self:SetNormalTexture(self.NormalTexture)
+
+    self.CheckedTexture = self:CreateTexture()
+    self.CheckedTexture:SetAtlas("UI-HUD-ActionBar-IconFrame-Mouseover")
+    self.CheckedTexture:SetAllPoints()
+    self:SetCheckedTexture(self.CheckedTexture)
+
+    self.PushedTexture = self:CreateTexture(nil, "OVERLAY")
+    self.PushedTexture:SetAtlas("UI-HUD-ActionBar-IconFrame-Down")
+    self.PushedTexture:SetPoint("TOPLEFT", self.NormalTexture, -1, 1)
+    self.PushedTexture:SetPoint("BOTTOMRIGHT", self.NormalTexture, 1, -1)
+    self:SetPushedTexture(self.PushedTexture)
+
+    self.HighlightTexture = self:CreateTexture()
+    self.HighlightTexture:SetAtlas("UI-HUD-ActionBar-IconFrame-Mouseover")
+    self.HighlightTexture:SetPoint("TOPLEFT", self.NormalTexture, -2, 2)
+    self.HighlightTexture:SetPoint("BOTTOMRIGHT", self.NormalTexture, 2, -2)
+    self:SetHighlightTexture(self.HighlightTexture)
+
+    -- text
+    self.HotKey = self:CreateFontString(nil, "OVERLAY", "NumberFontNormal")
+    self.HotKey:SetPoint("TOPRIGHT", -3.5, -3)
+
+    self.Count = self:CreateFontString(nil, "OVERLAY", "NumberFontNormal")
+    self.Count:SetPoint("BOTTOMRIGHT", -3, 3.5)
+
+    self.Name = self:CreateFontString(nil, "OVERLAY", "NumberFontNormal")
+    self.Name:SetPoint("BOTTOMLEFT", 5, 5)
+
+    -- frames
+    self.Cooldown = CreateFrame("Cooldown", nil, self, "CooldownFrameTemplate")
+    self.Cooldown:SetDrawBling(true)
+    self.Cooldown:SetDrawEdge(false)
+    self.Cooldown:SetPoint("TOPLEFT", self.Icon, 3, -3)
+    self.Cooldown:SetPoint("BOTTOMRIGHT", self.Icon, -3, 3)
+    self.Cooldown:SetScript("OnCooldownDone", Cooldown_OnDone)
+
+	self.ChargeCooldown = CreateFrame("Cooldown", nil, self, "CooldownFrameTemplate")
+	self.ChargeCooldown:SetHideCountdownNumbers(true)
+	self.ChargeCooldown:SetDrawSwipe(false)
+    self.ChargeCooldown:SetPoint("TOPLEFT", self.Icon, 3, -3)
+    self.ChargeCooldown:SetPoint("BOTTOMRIGHT", self.Icon, -3, 3)
+
+    -- attributes
+	self:SetAttributeNoHandler("type", "action")
+	self:SetAttributeNoHandler("typerelease", "actionrelease")
+	self:SetAttributeNoHandler("useparent-checkbuttoncast", true)
+	self:SetAttributeNoHandler("useparent-checkfocuscast", true)
+	self:SetAttributeNoHandler("useparent-checkmouseovercast", true)
+	self:SetAttributeNoHandler("useparent-unit", true)
+
+    -- aliases
+    -- these are added for compatibility with other addons
+    self.icon = self.Icon
+    self.cooldown = self.Cooldown
+    self.chargeCooldown = self.ChargeCooldown
+
+    -- extensions
+    local action = StockActionButtons[id]
+    if action then
+        local commandName = action.commandName
+
+        if not commandName then
+            if action.buttonType then
+                commandName = action.buttonType .. action:GetID()
+            else
+                commandName = action:GetName():upper()
+            end
         end
 
-        local button = createActionButton(id)
-
-        -- apply our extra action button methods
-        Mixin(button, Addon.ActionButtonMixin)
-
-        -- apply hooks for quick binding
-        -- this must be done before we reset the button ID, as we use it
-        -- to figure out the binding action for the button
-        Addon.BindableButton:AddQuickBindingSupport(button)
-
-        -- set a handler for updating the action from a parent frame
-        button:SetAttribute('_childupdate-offset', actionButton_OnUpdateOffset)
-
-        -- set a handler for updating showgrid status
-        button:SetAttribute('_childupdate-showgrid', actionButton_OnUpdateShowGrid)
-
-        button:SetAttribute("UpdateShown", actionButton_UpdateShown)
-
-        -- reset the showgrid setting to default
-        button:SetAttribute('showgrid', 0)
-
-        button:Hide()
-
-        -- enable binding to mousewheel
-        button:EnableMouseWheel(true)
-
-        rawset(self, id, button)
-        return button
-    end,
-
-    -- newindex is set to block writes to prevent errors
-    __newindex = function()
-        error(('%s.ActionButtons does not support writes'):format(AddonName), 2)
+        if commandName then
+            self.commandName = commandName
+            self:SetOverrideBindings(GetBindingKey(commandName))
+        end
     end
-})
+
+    Addon.SpellFlyout:Register(self)
+    Addon.BindableButton:AddQuickBindingSupport(self)
+    Addon:GetModule('Tooltips'):Register(self)
+
+    -- initialization
+    self:UpdateHotkeys()
+end
+
+function ActionButton:SetOverrideBindings(...)
+    ClearOverrideBindings(self)
+
+    for i = 1, select("#", ...) do
+        SetOverrideBindingClick(self, false, select(i, ...), self:GetName(), "HOTKEY")
+    end
+end
+
+function ActionButton:OnAttributeChanged(key, value)
+    local prevValue = self.prevAttributeValues[key]
+
+    if value ~= prevValue then
+        self.prevAttributeValues[key] = value
+
+        local method = self["OnAttributeChanged_" .. key]
+        if type(method) == "function" then
+            method(self, key, value, prevValue)
+        end
+    end
+end
+
+function ActionButton:OnAttributeChanged_action(_, action, prevAction)
+    self.action = action
+
+    Addon.ActionButtons:OnActionButtonActionChanged(self, action, prevAction)
+
+    self:UpdateActive()
+    -- self:UpdateCooldown()
+    self:UpdateCount()
+    -- self:UpdateHotKey()
+    self:UpdateIcon()
+    self:UpdateShown()
+    self:UpdateUsable(true)
+end
+
+function ActionButton:OnEnter()
+    if HasAction(self:GetAttribute("action")) then
+        GameTooltip_SetDefaultAnchor(GameTooltip, self)
+        self:UpdateTooltip()
+    end
+end
+
+function ActionButton:OnLeave()
+    GameTooltip:Hide()
+end
+
+function ActionButton:UpdateTooltip()
+    GameTooltip:SetAction(self:GetAttribute("action"))
+end
+
+function ActionButton:OnPreClick()
+end
+
+function ActionButton:OnPostClick()
+    self:UpdateShown()
+    self:UpdateActive()
+end
+
+--[[ Methods ]]--
+
+function ActionButton:Update()
+    self:UpdateActive()
+    self:UpdateCooldown()
+    self:UpdateCount()
+    self:UpdateHotkeys()
+    self:UpdateIcon()
+    self:UpdateShown()
+    self:UpdateUsable(true)
+end
+
+function ActionButton:OnSlotUpdated()
+    self:UpdateActive()
+    self:UpdateCount()
+    self:UpdateIcon()
+    self:UpdateShown()
+    self:UpdateUsable(true)
+end
+
+function ActionButton:UpdateActive()
+    local action = self:GetAttribute("action")
+
+    local active = HasAction(action) and (
+        IsCurrentAction(action)
+        or IsAutoRepeatAction(action)
+        and not C_ActionBar.IsAutoCastPetAction(action)
+    )
+
+    self:SetChecked(active)
+end
+
+ActionButton.UpdateCooldown = ActionButton_UpdateCooldown
+
+function ActionButton:UpdateCount()
+    local action = self:GetAttribute("action")
+
+    if IsConsumableAction(action) or IsStackableAction(action) then
+        local count = GetActionCount(action) or 0
+
+        if count > 0 and count < 999 then
+            self.Count:SetFormattedText("%d", count)
+        else
+            self.Count:SetText("")
+        end
+    else
+        local charges, maxCharges = GetActionCharges(action)
+        if maxCharges and maxCharges > 1 then
+            self.Count:SetText(charges)
+        else
+            self.Count:SetText("")
+        end
+    end
+end
+
+function ActionButton:UpdateIcon()
+    local action = self:GetAttribute("action")
+
+    local icon = GetActionTexture(action)
+    if icon == nil then
+        self.Icon:Hide()
+    else
+        self.Icon:SetTexture(icon)
+        self.Icon:Show()
+    end
+end
+
+function ActionButton:UpdateShown()
+    if HasAction(self.action) or (self.showgrid or 0) > 0 then
+        self:SetAlpha(1)
+    else
+        self:SetAlpha(0)
+    end
+end
+
+function ActionButton:UpdateUsable(refresh)
+    if refresh then
+        local action = self.action
+
+        self.oor = IsActionInRange(action) == false
+
+        local usable, oom = IsUsableAction(action)
+        self.oom = oom
+        self.unusuable = not usable
+    end
+
+    local oor = self.oor
+    local oom = self.oom
+    local unusuable = self.unusuable
+    local icon = self.Icon
+
+    if oom then
+        icon:SetDesaturated(true)
+        icon:SetVertexColor(0.4, 0.4, 1.0)
+    elseif oor then
+        icon:SetDesaturated(true)
+        icon:SetVertexColor(1, 0.4, 0.4)
+    elseif unusuable then
+        icon:SetDesaturated(true)
+        icon:SetVertexColor(0.4, 0.4, 0.4)
+    else
+        icon:SetDesaturated(false)
+        icon:SetVertexColor(1, 1, 1)
+    end
+
+    if oor then
+        self.HotKey:SetVertexColor(1, 0, 0)
+    else
+        self.HotKey:SetVertexColor(1, 1, 1)
+    end
+end
+
+function ActionButton:SetShowGrid(reason, show, force)
+    local value = self.showgrid or 0
+
+    if show then
+        value = bit.bor(value, reason)
+    else
+        value = bit.band(value, bit.bnot(reason))
+    end
+
+    if (self.showgrid ~= value) or force then
+        self.showgrid = value
+        self:UpdateShown()
+    end
+end
+
+function ActionButton:SetInRange(hasRange, inRange)
+    self.oor = hasRange and not inRange
+    self:UpdateUsable()
+end
+
+function ActionButton:SetIsUsuable(usable, oom)
+    self.unusuable = not usable
+    self.oom = oom
+    self:UpdateUsable()
+end
 
 -- exports
-Addon.ActionButtons = ActionButtons
+Addon.ActionButton = ActionButton
