@@ -81,6 +81,7 @@ ActionBar:Extend('OnAcquire', function(self)
     self:UpdateGrid(true)
     self:UpdateTransparent(true)
     self:UpdateFlyoutDirection()
+    self:SetAttributeNoHandler("locked", GetCVarBool("lockActionBars"))
 end)
 
 -- TODO: change the position code to be based more on the number of action bars
@@ -141,22 +142,21 @@ function ActionBar:ReleaseButton(button)
 end
 
 function ActionBar:OnAttachButton(button)
-    -- button:SetActionOffsetInsecure(self:GetAttribute('actionOffset') or 0)
-    -- button:SetShowGridInsecure("showgrid", self:GetAttribute("showgrid") or 0, true)
+    button:SetAction(button:GetAttribute("index") + (self:GetAttribute("actionOffset") or 0))
+    button:SetShowGrid(ACTION_BUTTON_SHOW_GRID_REASON_ADDON, self:ShowingEmptyButtons())
+    button:SetFlyoutDirection(self:GetFlyoutDirection())
 
-    -- button:SetFlyoutDirection(self:GetFlyoutDirection())
     -- button:SetShowCountText(Addon:ShowCounts())
     -- button:SetShowMacroText(Addon:ShowMacroText())
     -- button:SetShowEquippedItemBorders(Addon:ShowEquippedItemBorders())
     -- button:SetShowCooldowns(self:GetAlpha() > 0)
-    -- button:UpdateHotkeys()
 
-    -- Addon:GetModule('ButtonThemer'):Register(button, self:GetDisplayName())
+    Addon:GetModule('ButtonThemer'):Register(button, self:GetDisplayName())
     Addon:GetModule('Tooltips'):Register(button)
 end
 
 function ActionBar:OnDetachButton(button)
-    -- Addon:GetModule('ButtonThemer'):Unregister(button, self:GetDisplayName())
+    Addon:GetModule('ButtonThemer'):Unregister(button, self:GetDisplayName())
     Addon:GetModule('Tooltips'):Unregister(button)
 end
 
