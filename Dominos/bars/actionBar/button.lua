@@ -318,11 +318,10 @@ function ActionButton:UpdateUsable(refresh)
     local action = self.action
 
     if refresh then
-        self.oor = IsActionInRange(action) == false
-
         local usable, oom = IsUsableAction(action)
-        self.oom = oom
         self.unusuable = not usable
+        self.oom = oom
+        self.oor = IsActionInRange(action) == false
     end
 
     local oor = self.oor

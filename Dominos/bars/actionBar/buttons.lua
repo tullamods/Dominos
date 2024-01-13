@@ -37,13 +37,11 @@ local function HasSpellID(action, spellID)
 end
 
 -- states
-ActionButtons.buttons = {
-    -- [button] = action
-}
+-- [button] = action
+ActionButtons.buttons = { }
 
-ActionButtons.actionButtons = setmetatable({
-    -- [action] = { [button] = true }
-}, {
+-- [action] = { [button] = true }
+ActionButtons.actionButtons = setmetatable({}, {
     __index = function(t, k)
         local r = {}
 
@@ -53,9 +51,8 @@ ActionButtons.actionButtons = setmetatable({
     end
 })
 
-ActionButtons.showGridStates = {
-    -- [reason] = show
-}
+-- [reason] = show
+ActionButtons.showGridStates = {}
 
 -- ActionButtons.blizzardButtons = {}
 -- if Addon:IsBuild("retail") then
@@ -130,7 +127,6 @@ function ActionButtons:PLAYER_LOGIN()
     self:RegisterEvent("ACTIONBAR_UPDATE_STATE")
     self:RegisterEvent("ARCHAEOLOGY_CLOSED")
     self:RegisterEvent("COMPANION_UPDATE")
-    self:RegisterEvent("CVAR_UPDATE")
     self:RegisterEvent("PET_BAR_UPDATE")
     self:RegisterEvent("PET_STABLE_SHOW")
     self:RegisterEvent("PET_STABLE_UPDATE")
@@ -205,9 +201,6 @@ function ActionButtons:ARCHAEOLOGY_CLOSED()
     self:ForAllWhere(HasAction, "UpdateActive")
 end
 
-function ActionButtons:CVAR_UPDATE(event, key)
-end
-
 function ActionButtons:COMPANION_UPDATE(companionType)
     if companionType == "MOUNT" then
         self:ForAllWhere(HasAction, "UpdateActive")
@@ -255,7 +248,7 @@ function ActionButtons:SPELL_ACTIVATION_OVERLAY_GLOW_HIDE(spellID)
 end
 
 function ActionButtons:SPELL_UPDATE_ICON()
-    self:ForAllWhere(HasAction, "UpdateIcon")
+    self:ForAllWhere(HasAction, "Update")
 end
 
 function ActionButtons:START_AUTOREPEAT_SPELL()
