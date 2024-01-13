@@ -569,7 +569,7 @@ end
 -- empty button display
 function Addon:SetShowGrid(enable)
     self.db.profile.showgrid = enable and true
-    self.Frame:ForEach('UpdateGrid')
+    self.callbacks:Fire("SHOW_EMPTY_BUTTONS_CHANGED", self:ShowGrid())
 end
 
 function Addon:ShowGrid()

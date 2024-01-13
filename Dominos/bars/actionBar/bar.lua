@@ -7,7 +7,6 @@ local AddonName, Addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(AddonName)
 
 local ACTION_BUTTON_COUNT = Addon.ACTION_BUTTON_COUNT
-local ACTION_BUTTON_SHOW_GRID_REASON_ADDON = 1024
 
 local ActionBar = Addon:CreateClass('Frame', Addon.ButtonBar)
 
@@ -78,7 +77,7 @@ ActionBar:Extend('OnAcquire', function(self)
     self:UpdateStateDriver()
     self:SetUnit(self:GetUnit())
     self:SetRightClickUnit(self:GetRightClickUnit())
-    self:UpdateGrid(true)
+    self:SetShowEmptyButtons(self:ShowingEmptyButtons())
     self:UpdateTransparent(true)
     self:UpdateFlyoutDirection()
     self:SetAttributeNoHandler("locked", GetCVarBool("lockActionBars"))
@@ -142,9 +141,9 @@ function ActionBar:ReleaseButton(button)
 end
 
 function ActionBar:OnAttachButton(button)
-    button:SetAction(button:GetAttribute("index") + (self:GetAttribute("actionOffset") or 0))
-    button:SetShowGrid(ACTION_BUTTON_SHOW_GRID_REASON_ADDON, self:ShowingEmptyButtons())
+    button:SetAttribute("action", button:GetAttribute("index") + (self:GetAttribute("actionOffset") or 0))
     button:SetFlyoutDirection(self:GetFlyoutDirection())
+    button:SetShowGrid(ACTION_BUTTON_SHOW_GRID_REASON_CVAR, self:ShowingEmptyButtons())
 
     -- button:SetShowCountText(Addon:ShowCounts())
     -- button:SetShowMacroText(Addon:ShowMacroText())
@@ -247,15 +246,10 @@ function ActionBar:IsOverrideBar()
     return Addon.db.profile.possessBar == self.id
 end
 
--- Empty button display
-function ActionBar:UpdateGrid()
-    self:SetShowEmptyButtons(Addon:ShowGrid() or self:ShowingEmptyButtons())
-end
-
 -- empty buttons
 function ActionBar:SetShowEmptyButtons(show)
     self.sets.showEmptyButtons = show and true
-    self:ForButtons('SetShowGrid', ACTION_BUTTON_SHOW_GRID_REASON_ADDON, show and true)
+    self:ForButtons('SetShowGrid', ACTION_BUTTON_SHOW_GRID_REASON_CVAR, self:ShowingEmptyButtons())
 end
 
 function ActionBar:ShowingEmptyButtons()

@@ -1,15 +1,25 @@
 local ADDON_NAME, Addon = ...
-local ActionButtons = CreateFrame("Frame")
+
+local ActionButtons = CreateFrame('Frame', nil, nil, 'SecureHandlerAttributeTemplate')
 
 -- constants
 local ACTION_BUTTON_NAME_TEMPLATE = ADDON_NAME .. "ActionButton%d"
-local ACTION_BUTTON_SHOW_GRID_REASON_KEYBOUND = 2048
 
+-- global showgrid event reasons
+local SHOW_GRID_REASONS = {
+    -- CVAR = 1,
+    GAME_EVENT = 2,
+    SPELLBOOK_SHOWN = 4,
+    KEYBOUND_EVENT = 8,
+    ADDON_SHOW_EMPTY_BUTTONS = 16
+}
+
+-- how many bars are available
 local function IsSummonPetAction(action)
     return GetActionInfo(action) == "summonpet"
 end
 
-local function IsSpellID(action, spellID)
+local function HasSpellID(action, spellID)
     local actionType, id, subType = GetActionInfo(action)
     if actionType == "spell" then
         return id == spellID
@@ -19,25 +29,79 @@ local function IsSpellID(action, spellID)
         return subType == "spell" and id == spellID
     end
 
-    if actionType == "flyout" then
+    if actionType == "flyout" and id then
         return FlyoutHasSpell(id, spellID)
     end
 
     return false
 end
 
--- configuration
-ActionButtons.buttons = {}
+-- states
+ActionButtons.buttons = {
+    -- [button] = action
+}
 
-ActionButtons.actionButtons = setmetatable({}, {
+ActionButtons.actionButtons = setmetatable({
+    -- [action] = { [button] = true }
+}, {
     __index = function(t, k)
-        local v = {}
+        local r = {}
 
-        t[k] = v
+        t[k] = r
 
-        return v
+        return r
     end
 })
+
+ActionButtons.showGridStates = {
+    -- [reason] = show
+}
+
+-- ActionButtons.blizzardButtons = {}
+-- if Addon:IsBuild("retail") then
+--     local function addBar(bar, page)
+--         if not (bar and bar.actionButtons) then return end
+
+--         page = page or bar:GetAttribute("actionpage")
+
+--         -- when assigning buttons, we skip bar 12 (totems)
+--         -- so shift pages above 12 down one
+--         if page > 12 then
+--             page = page - 1
+--         end
+
+--         local offset = (page - 1) * NUM_ACTIONBAR_BUTTONS
+
+--         for i, button in pairs(bar.actionButtons) do
+--             ActionButtons.blizzardButtons[i + offset] = button
+--         end
+--     end
+
+--     addBar(MainMenuBar, 1) -- 1
+--     addBar(MultiBarRight) -- 3
+--     addBar(MultiBarLeft) -- 4
+--     addBar(MultiBarBottomRight) -- 5
+--     addBar(MultiBarBottomLeft) -- 6
+--     addBar(MultiBar5) -- 13
+--     addBar(MultiBar6) -- 14
+--     addBar(MultiBar7) -- 15
+-- else
+--     local function addButton(button, page)
+--         page = page or button:GetParent():GetAttribute("actionpage")
+
+--         local index = button:GetID() + (page - 1) * NUM_ACTIONBAR_BUTTONS
+
+--         ActionButtons.blizzardButtons[index] = button
+--     end
+
+--     for i = 1, NUM_ACTIONBAR_BUTTONS do
+--         addButton(_G['ActionButton' .. i], 1) -- 1
+--         addButton(_G['MultiBarRightButton' .. i]) -- 3
+--         addButton(_G['MultiBarLeftButton' .. i]) -- 4
+--         addButton(_G['MultiBarBottomRightButton' .. i]) -- 5
+--         addButton(_G['MultiBarBottomLeftButton' .. i]) -- 6
+--     end
+-- end
 
 -- we use a traditional event handler so that we can take
 -- advantage of unit event registration
@@ -54,16 +118,19 @@ ActionButtons:RegisterEvent("PLAYER_LOGIN")
 
 -- events
 function ActionButtons:PLAYER_LOGIN()
-    self:Hide()
+    self:Initialize()
 
     -- game events
     self:RegisterEvent("ACTION_RANGE_CHECK_UPDATE")
     self:RegisterEvent("ACTION_USABLE_CHANGED")
+    self:RegisterEvent("ACTIONBAR_HIDEGRID")
+    self:RegisterEvent("ACTIONBAR_SHOWGRID")
     self:RegisterEvent("ACTIONBAR_SLOT_CHANGED")
     self:RegisterEvent("ACTIONBAR_UPDATE_COOLDOWN")
     self:RegisterEvent("ACTIONBAR_UPDATE_STATE")
     self:RegisterEvent("ARCHAEOLOGY_CLOSED")
     self:RegisterEvent("COMPANION_UPDATE")
+    self:RegisterEvent("CVAR_UPDATE")
     self:RegisterEvent("PET_BAR_UPDATE")
     self:RegisterEvent("PET_STABLE_SHOW")
     self:RegisterEvent("PET_STABLE_UPDATE")
@@ -91,11 +158,13 @@ function ActionButtons:PLAYER_LOGIN()
     self:RegisterUnitEvent("UNIT_FLAGS", "pet")
 
     -- addon callbacks
-    local keybound = LibStub("LibKeybound-3.0", true)
+    local keybound = LibStub("LibKeyBound-1.0", true)
     if keybound then
         keybound.RegisterCallback(self, 'LIBKEYBOUND_ENABLED')
         keybound.RegisterCallback(self, 'LIBKEYBOUND_DISABLED')
     end
+
+    Addon.RegisterCallback(self, "SHOW_EMPTY_BUTTONS_CHANGED")
 end
 
 function ActionButtons:ACTION_RANGE_CHECK_UPDATE(slot, isInRange, checksRange)
@@ -103,9 +172,17 @@ function ActionButtons:ACTION_RANGE_CHECK_UPDATE(slot, isInRange, checksRange)
 end
 
 function ActionButtons:ACTION_USABLE_CHANGED(changes)
-    for _, change in ipairs(changes) do
+    for _, change in pairs(changes) do
         self:ForActionSlot(change.slot, "SetIsUsable", change.usuable, change.noMana)
     end
+end
+
+function ActionButtons:ACTIONBAR_SHOWGRID()
+    self:SetShowGrid(SHOW_GRID_REASONS.GAME_EVENT, true)
+end
+
+function ActionButtons:ACTIONBAR_HIDEGRID()
+    self:SetShowGrid(SHOW_GRID_REASONS.GAME_EVENT, false)
 end
 
 function ActionButtons:ACTIONBAR_UPDATE_STATE()
@@ -126,6 +203,9 @@ end
 
 function ActionButtons:ARCHAEOLOGY_CLOSED()
     self:ForAllWhere(HasAction, "UpdateActive")
+end
+
+function ActionButtons:CVAR_UPDATE(event, key)
 end
 
 function ActionButtons:COMPANION_UPDATE(companionType)
@@ -227,16 +307,20 @@ function ActionButtons:UNIT_FLAGS()
     self:ForAllWhere(HasAction, "UpdateActive")
 end
 
--- callbacks
+-- addon callbacks
 function ActionButtons:LIBKEYBOUND_ENABLED()
-    self:ForAll("SetShowGrid", ACTION_BUTTON_SHOW_GRID_REASON_KEYBOUND, true)
+    self:SetShowGrid(SHOW_GRID_REASONS.KEYBOUND_EVENT, true)
 end
 
 function ActionButtons:LIBKEYBOUND_DISABLED()
-    self:ForAll("SetShowGrid", ACTION_BUTTON_SHOW_GRID_REASON_KEYBOUND, false)
+    self:SetShowGrid(SHOW_GRID_REASONS.KEYBOUND_EVENT, false)
 end
 
-function ActionButtons:OnActionButtonActionChanged(button, action, prevAction)
+function ActionButtons:SHOW_EMPTY_BUTTONS_CHANGED(_, show)
+    self:SetShowGrid(SHOW_GRID_REASONS.ADDON_SHOW_EMPTY_BUTTONS, show)
+end
+
+function ActionButtons:OnActionChanged(button, action, prevAction)
     if prevAction ~= nil then
         self.actionButtons[prevAction][button] = nil
     end
@@ -248,21 +332,111 @@ function ActionButtons:OnActionButtonActionChanged(button, action, prevAction)
 end
 
 -- api
+local ActionButton_ClickBefore = [[
+    if button == "HOTKEY" then
+        return "LeftButton"
+    end
+
+    if down then
+        control:CallMethod("SaveActionButtonUseKeyDown")
+        return false
+    end
+
+    return nil, "RESTORE"
+]]
+
+local ActionButton_ClickAfter = [[
+    if message == "RESTORE" then
+        control:CallMethod("RestoreActionButtonUseKeyDown")
+    end
+]]
+
+local ActionButton_ReceiveDragBefore = [[
+    if kind then
+        return "message", kind
+    end
+]]
+
+local ActionButton_ReceiveDragAfter = [[
+    self:CallMethod("UpdateShown")
+]]
+
 function ActionButtons:GetOrCreateActionButton(id, parent)
     local name = ACTION_BUTTON_NAME_TEMPLATE:format(id)
-
     local button = _G[name]
+
     if button == nil then
         button = CreateFrame("CheckButton", name, parent, "SecureActionButtonTemplate, SecureHandlerDragTemplate")
 
         Addon.ActionButton:Bind(button)
 
         button:OnCreate(id)
+
+        self:WrapScript(button, "OnClick", ActionButton_ClickBefore, ActionButton_ClickAfter)
+        self:WrapScript(button, "OnReceiveDrag", ActionButton_ReceiveDragBefore, ActionButton_ReceiveDragAfter)
+
+        -- initialize showgrid values
+        self:LoadShowGrid(button)
+
+        -- local blizzardButton = self.blizzardButtons[id]
+        -- if blizzardButton then
+        --     local commandName = blizzardButton.commandName
+
+        --     if not commandName then
+        --         if blizzardButton.buttonType then
+        --             commandName = blizzardButton.buttonType .. blizzardButton:GetID()
+        --         else
+        --             commandName = blizzardButton:GetName():upper()
+        --         end
+        --     end
+
+        --     if commandName then
+        --         button.commandName = commandName
+        --         button:SetOverrideBindings(GetBindingKey(commandName))
+        --     end
+        -- end
     end
 
     return button
 end
 
+function ActionButtons:Initialize()
+    self.showGridStates[SHOW_GRID_REASONS.ADDON_SHOW_EMPTY_BUTTONS] = Addon:ShowGrid()
+
+    local keybound = LibStub("LibKeyBound-1.0", true)
+    if keybound then
+        self.showGridStates[SHOW_GRID_REASONS.KEYBOUND_EVENT] = keybound:IsShown()
+    end
+end
+
+function ActionButtons:LoadShowGrid(button)
+    local states = self.showGridStates
+
+    for _, reason in pairs(SHOW_GRID_REASONS) do
+        button:SetShowGrid(reason, states[reason] and true)
+    end
+end
+
+function ActionButtons:SetShowGrid(reason, show)
+    self.showGridStates[reason] = show and true or nil
+    self:ForAll("SetShowGrid", reason, show)
+end
+
+function ActionButtons:SaveActionButtonUseKeyDown()
+    if GetCVarBool("ActionButtonUseKeyDown") then
+        SetCVar("ActionButtonUseKeyDown", 0)
+        self.restoreKeyDown = true
+    end
+end
+
+function ActionButtons:RestoreActionButtonUseKeyDown()
+    if self.restoreKeyDown then
+        SetCVar("ActionButtonUseKeyDown", 1)
+        self.restoreKeyDown = nil
+    end
+end
+
+-- collection metamethods
 function ActionButtons:ForAll(method, ...)
     for button in pairs(self.buttons) do
         local callback = button[method]
@@ -306,7 +480,7 @@ end
 
 function ActionButtons:ForSpellID(spellID, method, ...)
     for action, buttons in pairs(self.actionButtons) do
-        if next(buttons) ~= nil and IsSpellID(action, spellID) then
+        if next(buttons) ~= nil and HasSpellID(action, spellID) then
             for button in pairs(buttons) do
                 local callback = button[method]
                 if type(callback) == "function" then

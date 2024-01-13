@@ -27,7 +27,6 @@ core\tooltipController.lua
 core\blizzardHider.lua
 core\blizzardHider.classic.lua
 # builtin bars
-bars\actionBar\scriptHandler.lua
 bars\actionBar\flyout.lua
 bars\actionBar\button.lua
 bars\actionBar\buttons.lua
@@ -51,4 +50,3 @@ plugins\slashCommands.lua
 plugins\launcher.lua
 plugins\buttonThemer.lua
 plugins\getActionReagentUses.lua
-plugins\multiActionBarFixer.classic.lua
