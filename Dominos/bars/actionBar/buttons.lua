@@ -1,6 +1,6 @@
 local ADDON_NAME, Addon = ...
 
-local ActionButtons = CreateFrame('Frame', nil, nil, 'SecureHandlerAttributeTemplate')
+local ActionButtons = CreateFrame('Frame', nil, nil, 'SecureHandlerBaseTemplate')
 
 -- constants
 local ACTION_BUTTON_NAME_TEMPLATE = ADDON_NAME .. "ActionButton%d"
@@ -54,51 +54,8 @@ ActionButtons.actionButtons = setmetatable({}, {
 -- [reason] = show
 ActionButtons.showGridStates = {}
 
--- ActionButtons.blizzardButtons = {}
--- if Addon:IsBuild("retail") then
---     local function addBar(bar, page)
---         if not (bar and bar.actionButtons) then return end
-
---         page = page or bar:GetAttribute("actionpage")
-
---         -- when assigning buttons, we skip bar 12 (totems)
---         -- so shift pages above 12 down one
---         if page > 12 then
---             page = page - 1
---         end
-
---         local offset = (page - 1) * NUM_ACTIONBAR_BUTTONS
-
---         for i, button in pairs(bar.actionButtons) do
---             ActionButtons.blizzardButtons[i + offset] = button
---         end
---     end
-
---     addBar(MainMenuBar, 1) -- 1
---     addBar(MultiBarRight) -- 3
---     addBar(MultiBarLeft) -- 4
---     addBar(MultiBarBottomRight) -- 5
---     addBar(MultiBarBottomLeft) -- 6
---     addBar(MultiBar5) -- 13
---     addBar(MultiBar6) -- 14
---     addBar(MultiBar7) -- 15
--- else
---     local function addButton(button, page)
---         page = page or button:GetParent():GetAttribute("actionpage")
-
---         local index = button:GetID() + (page - 1) * NUM_ACTIONBAR_BUTTONS
-
---         ActionButtons.blizzardButtons[index] = button
---     end
-
---     for i = 1, NUM_ACTIONBAR_BUTTONS do
---         addButton(_G['ActionButton' .. i], 1) -- 1
---         addButton(_G['MultiBarRightButton' .. i]) -- 3
---         addButton(_G['MultiBarLeftButton' .. i]) -- 4
---         addButton(_G['MultiBarBottomRightButton' .. i]) -- 5
---         addButton(_G['MultiBarBottomLeftButton' .. i]) -- 6
---     end
--- end
+-- dirty secure attributes
+ActionButtons.dirtyAttributes = {}
 
 -- we use a traditional event handler so that we can take
 -- advantage of unit event registration
@@ -127,6 +84,7 @@ function ActionButtons:PLAYER_LOGIN()
     self:RegisterEvent("ACTIONBAR_UPDATE_STATE")
     self:RegisterEvent("ARCHAEOLOGY_CLOSED")
     self:RegisterEvent("COMPANION_UPDATE")
+    self:RegisterEvent("CVAR_UPDATE")
     self:RegisterEvent("PET_BAR_UPDATE")
     self:RegisterEvent("PET_STABLE_SHOW")
     self:RegisterEvent("PET_STABLE_UPDATE")
@@ -134,6 +92,7 @@ function ActionButtons:PLAYER_LOGIN()
     self:RegisterEvent("PLAYER_ENTERING_WORLD")
     self:RegisterEvent("PLAYER_LEAVE_COMBAT")
     self:RegisterEvent("PLAYER_MOUNT_DISPLAY_CHANGED")
+    self:RegisterEvent("PLAYER_REGEN_ENABLED")
     self:RegisterEvent("SPELL_ACTIVATION_OVERLAY_GLOW_HIDE")
     self:RegisterEvent("SPELL_ACTIVATION_OVERLAY_GLOW_SHOW")
     self:RegisterEvent("SPELL_UPDATE_CHARGES")
@@ -201,6 +160,12 @@ function ActionButtons:ARCHAEOLOGY_CLOSED()
     self:ForAllWhere(HasAction, "UpdateActive")
 end
 
+function ActionButtons:CVAR_UPDATE(name, ...)
+    if name == "lockActionBars" then
+        self:TrySetAttribute(name, GetCVarBool(name))
+    end
+end
+
 function ActionButtons:COMPANION_UPDATE(companionType)
     if companionType == "MOUNT" then
         self:ForAllWhere(HasAction, "UpdateActive")
@@ -233,6 +198,13 @@ end
 
 function ActionButtons:PLAYER_MOUNT_DISPLAY_CHANGED()
     self:ForAllWhere(HasAction, "UpdateUsable")
+end
+
+function ActionButtons:PLAYER_REGEN_ENABLED()
+    for k, v in pairs(self.dirtyAttributes) do
+        self:SetAttribute(k, v)
+        self.dirtyAttributes[k] = nil
+    end
 end
 
 function ActionButtons:SPELL_UPDATE_CHARGES()
@@ -344,6 +316,12 @@ local ActionButton_ClickAfter = [[
     end
 ]]
 
+local ActionButton_DragStartBefore = [[
+    if not (IsModifiedClick("PICKUPACTION") or not control:GetAttribute("lockActionBars")) then
+        return false
+    end
+]]
+
 local ActionButton_ReceiveDragBefore = [[
     if kind then
         return "message", kind
@@ -366,40 +344,26 @@ function ActionButtons:GetOrCreateActionButton(id, parent)
         button:OnCreate(id)
 
         self:WrapScript(button, "OnClick", ActionButton_ClickBefore, ActionButton_ClickAfter)
+        self:WrapScript(button, "OnDragStart", ActionButton_DragStartBefore)
         self:WrapScript(button, "OnReceiveDrag", ActionButton_ReceiveDragBefore, ActionButton_ReceiveDragAfter)
 
         -- initialize showgrid values
         self:LoadShowGrid(button)
-
-        -- local blizzardButton = self.blizzardButtons[id]
-        -- if blizzardButton then
-        --     local commandName = blizzardButton.commandName
-
-        --     if not commandName then
-        --         if blizzardButton.buttonType then
-        --             commandName = blizzardButton.buttonType .. blizzardButton:GetID()
-        --         else
-        --             commandName = blizzardButton:GetName():upper()
-        --         end
-        --     end
-
-        --     if commandName then
-        --         button.commandName = commandName
-        --         button:SetOverrideBindings(GetBindingKey(commandName))
-        --     end
-        -- end
     end
 
     return button
 end
 
 function ActionButtons:Initialize()
+    -- load show grid states
     self.showGridStates[SHOW_GRID_REASONS.ADDON_SHOW_EMPTY_BUTTONS] = Addon:ShowGrid()
 
     local keybound = LibStub("LibKeyBound-1.0", true)
     if keybound then
         self.showGridStates[SHOW_GRID_REASONS.KEYBOUND_EVENT] = keybound:IsShown()
     end
+
+    self:SetAttribute("lockActionBars", GetCVarBool("lockActionBars"))
 end
 
 function ActionButtons:LoadShowGrid(button)
@@ -427,6 +391,16 @@ function ActionButtons:RestoreActionButtonUseKeyDown()
         SetCVar("ActionButtonUseKeyDown", 1)
         self.restoreKeyDown = nil
     end
+end
+
+function ActionButtons:TrySetAttribute(key, value)
+    if InCombatLockdown() then
+        self.dirtyAttributes[key] = value
+        return false
+    end
+
+    self:SetAttribute(key, value)
+    return true
 end
 
 -- collection metamethods

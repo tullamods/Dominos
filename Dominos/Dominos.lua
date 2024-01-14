@@ -654,6 +654,8 @@ function Addon:SetOverrideBar(id)
 
     prevBar:UpdateOverrideBar()
     newBar:UpdateOverrideBar()
+
+    self.callbacks:Fire('OVERRIDE_BAR_UPDATED', id)
 end
 
 function Addon:GetOverrideBar()

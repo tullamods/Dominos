@@ -1,5 +1,50 @@
 local _, Addon = ...
 
+local function GetActionButtonCommand(id)
+    -- 0
+    if id <= 0 then
+        return
+    -- 1
+    elseif id <= 12 then
+        return "ACTIONBUTTON" .. id
+    -- 2
+    elseif id <= 24 then
+        return
+    -- 3
+    elseif id <= 36 then
+        return "MULTIACTIONBAR3BUTTON" .. (id - 24)
+    -- 4
+    elseif id <= 48 then
+        return "MULTIACTIONBAR4BUTTON" .. (id - 36)
+    -- 5
+    elseif id <= 60 then
+        return "MULTIACTIONBAR2BUTTON" .. (id - 48)
+    -- 6
+    elseif id <= 72 then
+        return "MULTIACTIONBAR1BUTTON" .. (id - 60)
+    -- 7-12
+    elseif id <= 120 then
+        return
+    -- 13
+    elseif id <= 132 then
+        return "MULTIACTIONBAR5BUTTON" .. (id - 120)
+    -- 14
+    elseif id <= 144 then
+        return "MULTIACTIONBAR6BUTTON" .. (id - 132)
+    -- 15
+    elseif id <= 156 then
+        return "MULTIACTIONBAR7BUTTON" .. (id - 144)
+    end
+end
+
+local function SetOverrideClickBindings(owner, button, ...)
+    ClearOverrideBindings(owner)
+
+    for i = 1, select("#", ...) do
+        SetOverrideBindingClick(owner, false, select(i, ...), owner:GetName(), button)
+    end
+end
+
 local function Cooldown_OnDone(self)
     if self.requireCooldownUpdate and self:GetParent():IsVisible() then
         self:GetParent():UpdateCooldown()
@@ -19,6 +64,7 @@ function ActionButton:OnCreate(id)
     self.id = id
     self.action = 0
     self.showgrid = 0
+    self.commandName = GetActionButtonCommand(id)
 
     -- initialize secure state
     self:SetAttributeNoHandler("action", 0)
@@ -44,7 +90,8 @@ function ActionButton:OnCreate(id)
 
     self:SetAttributeNoHandler("_ondragstart", [[
         local action = self:GetAttribute("action")
-        if HasAction(action) and (IsModifiedClick("PICKUPACTION") or not self:GetAttribute("locked")) then
+
+        if HasAction(action) then
             return "action", action
         end
     ]])
@@ -62,6 +109,7 @@ function ActionButton:OnCreate(id)
     Addon.SpellFlyout:Register(self)
     Addon.BindableButton:AddQuickBindingSupport(self)
 
+    self:UpdateOverrideBindings()
     self:UpdateHotkeys()
 end
 
@@ -201,6 +249,7 @@ function ActionButton:Construct()
 
     self.FlyoutArrowContainer = CreateFrame("Frame", nil, self)
     self.FlyoutArrowContainer:SetAllPoints()
+    self.FlyoutArrowContainer:Hide()
 
     self.FlyoutArrowContainer.FlyoutArrowNormal = self:CreateTexture(nil, "ARTWORK", nil, 2)
     self.FlyoutArrowContainer.FlyoutArrowNormal:Hide()
@@ -302,6 +351,13 @@ function ActionButton:UpdateIcon()
     end
 end
 
+function ActionButton:UpdateOverrideBindings()
+    local command = self.commandName
+    if command then
+        SetOverrideClickBindings(self, "HOTKEY", GetBindingKey(command))
+    end
+end
+
 function ActionButton:UpdateShown()
     if self.showgrid > 0 or HasAction(self.action) then
         self:SetAlpha(1)
@@ -373,14 +429,6 @@ function ActionButton:SetIsUsable(usable, oom)
     self:UpdateUsable()
 end
 
-function ActionButton:SetOverrideBindings(...)
-    self:ClearOverrideBindings()
-
-    for i = 1, select("#", ...) do
-        SetOverrideBindingClick(self, false, select(i, ...), self:GetName(), "HOTKEY")
-    end
-end
-
 function ActionButton:SetShowGrid(reason, show, force)
     local showgrid
     if show then
@@ -396,7 +444,6 @@ function ActionButton:SetShowGrid(reason, show, force)
 end
 
 -- standard method references
-ActionButton.ClearOverrideBindings = ClearOverrideBindings
 ActionButton.UpdateCooldown = ActionButton_UpdateCooldown
 ActionButton.UpdateFlyout = ActionBarActionButtonMixin.UpdateFlyout
 ActionButton.ShowOverlayGlow = ActionButton_ShowOverlayGlow
