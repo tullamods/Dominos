@@ -30,7 +30,9 @@ core\blizzardHider.classic.lua
 bars\actionBar\bindings.lua
 bars\actionBar\flyout.lua
 bars\actionBar\button.lua
+bars\actionBar\button.classic.lua
 bars\actionBar\buttons.lua
+bars\actionBar\buttons.classic.lua
 bars\actionBar\bar.lua
 bars\actionBar\menu.lua
 bars\actionBar\bars.lua

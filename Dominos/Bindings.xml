@@ -3,6 +3,7 @@
 	<ModifiedClick action="DOMINOS_IGNORE_STICKY_FRAMES" default="ALT"/>
 
 	<!-- action button bindings -->
+	<!-- 1 -->
     <!-- <Binding name="CLICK DominosActionButton1:HOTKEY" category="BINDING_HEADER_Dominos" header="DominosActionBar1" />
 	<Binding name="CLICK DominosActionButton2:HOTKEY" category="BINDING_HEADER_Dominos" />
 	<Binding name="CLICK DominosActionButton3:HOTKEY" category="BINDING_HEADER_Dominos" />

@@ -7,6 +7,7 @@ local AddonName, Addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(AddonName)
 
 local ACTION_BUTTON_COUNT = Addon.ACTION_BUTTON_COUNT
+local ADDON_SHOW_EMPTY_BUTTONS_PER_BAR = 32
 
 local ActionBar = Addon:CreateClass('Frame', Addon.ButtonBar)
 
@@ -143,7 +144,7 @@ end
 function ActionBar:OnAttachButton(button)
     button:SetAttribute("action", button:GetAttribute("index") + (self:GetAttribute("actionOffset") or 0))
     button:SetFlyoutDirection(self:GetFlyoutDirection())
-    button:SetShowGrid(ACTION_BUTTON_SHOW_GRID_REASON_CVAR, self:ShowingEmptyButtons())
+    button:SetShowGrid(ADDON_SHOW_EMPTY_BUTTONS_PER_BAR, self:ShowingEmptyButtons(), true)
     button:SetShowCountText(Addon:ShowCounts())
     button:SetShowMacroText(Addon:ShowMacroText())
     button:SetShowEquippedItemBorders(Addon:ShowEquippedItemBorders())
@@ -248,7 +249,7 @@ end
 -- empty buttons
 function ActionBar:SetShowEmptyButtons(show)
     self.sets.showEmptyButtons = show and true
-    self:ForButtons('SetShowGrid', ACTION_BUTTON_SHOW_GRID_REASON_CVAR, self:ShowingEmptyButtons())
+    self:ForButtons('SetShowGrid', ADDON_SHOW_EMPTY_BUTTONS_PER_BAR, self:ShowingEmptyButtons())
 end
 
 function ActionBar:ShowingEmptyButtons()

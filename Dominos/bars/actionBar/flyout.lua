@@ -115,15 +115,11 @@ end
 
 function SpellFlyoutButtonMixin:UpdateUsable()
 	local usable, oom = IsUsableSpell(self.spellID)
-	local oor = IsSpellInRange(self.spellID, "target") == 0
     local icon = self.icon
 
     if oom then
         icon:SetDesaturated(true)
         icon:SetVertexColor(0.4, 0.4, 1.0)
-    elseif oor then
-        icon:SetDesaturated(true)
-        icon:SetVertexColor(1, 0.4, 0.4)
     elseif usable then
         icon:SetDesaturated(false)
         icon:SetVertexColor(1, 1, 1)

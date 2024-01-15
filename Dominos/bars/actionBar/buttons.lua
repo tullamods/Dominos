@@ -1,4 +1,5 @@
 local AddonName, Addon = ...
+if not Addon:IsBuild("retail") then return end
 
 local ActionButtons = CreateFrame('Frame', nil, nil, 'SecureHandlerBaseTemplate')
 
@@ -51,7 +52,8 @@ ActionButtons.actionButtons = setmetatable({}, {
     end
 })
 
--- ActionButtons.actionStates = {}
+-- [action] = oor
+ActionButtons.actionStates = {}
 
 -- [reason] = show
 ActionButtons.showGridStates = {}
@@ -79,9 +81,6 @@ function ActionButtons:PLAYER_LOGIN()
     -- game events
     self:RegisterEvent("ACTION_RANGE_CHECK_UPDATE")
     self:RegisterEvent("ACTION_USABLE_CHANGED")
-
-    -- self:RegisterEvent("ACTIONBAR_UPDATE_USABLE")
-
     self:RegisterEvent("ACTIONBAR_HIDEGRID")
     self:RegisterEvent("ACTIONBAR_SHOWGRID")
     self:RegisterEvent("ACTIONBAR_SLOT_CHANGED")
@@ -125,41 +124,6 @@ function ActionButtons:PLAYER_LOGIN()
     end
 
     Addon.RegisterCallback(self, "SHOW_EMPTY_BUTTONS_CHANGED")
-
-    -- start a timer for monitoring usability and range checks
-    -- self.timer = C_Timer.NewTicker(0.1, function(timer)
-    --     local owner = timer.owner
-    --     local isUsable = IsUsableAction
-    --     local isInRange = IsActionInRange
-    --     local states = owner.actionStates
-
-    --     for action, buttons in pairs(owner.actionButtons) do
-    --         local usable, oom = isUsable(action)
-    --         local oor = isInRange(action) == false
-
-    --         local state = 0
-    --         if not usable then
-    --             state = state + 1
-
-    --             if oom then
-    --                 state = state + 2
-    --             end
-    --         end
-
-    --         if oor then
-    --             state = state + 4
-    --         end
-
-    --         if states[action] ~= state then
-    --             states[state] = state
-
-    --             for button in pairs(buttons) do
-    --                 button:UpdateUsable(usable, oom, oor)
-    --             end
-    --         end
-    --     end
-    -- end)
-    -- self.timer.owner = self
 end
 
 function ActionButtons:ACTION_RANGE_CHECK_UPDATE(slot, isInRange, checksRange)
@@ -200,10 +164,6 @@ end
 function ActionButtons:ACTIONBAR_UPDATE_STATE()
     self:ForAllWhere(HasAction, "UpdateActive")
 end
-
--- function ActionButtons:ACTIONBAR_UPDATE_USABLE()
---     self:ForAllWhere(HasAction, "UpdateUsable")
--- end
 
 function ActionButtons:ACTIONBAR_SLOT_CHANGED(slot)
     if slot == 0 or slot == nil then

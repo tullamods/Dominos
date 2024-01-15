@@ -1,4 +1,5 @@
 local _, Addon = ...
+if not Addon:IsBuild("retail") then return end
 
 local function GetActionButtonCommand(id)
     -- 0
@@ -106,8 +107,8 @@ function ActionButton:OnCreate(id)
     ]])
 
     -- ...and the rest
-    Addon.SpellFlyout:Register(self)
     Addon.BindableButton:AddQuickBindingSupport(self)
+    Addon.SpellFlyout:Register(self)
 
     self:UpdateOverrideBindings()
     self:UpdateHotkeys()
@@ -276,7 +277,7 @@ function ActionButton:Construct()
     self.AutoCastShine:SetSize(40, 40)
     self.AutoCastShine:SetPoint("CENTER")
 
-    -- aliases, these are added for compatibility with other addons
+    -- these aliases are added for compatibility with other addons
     self.icon = self.Icon
     self.cooldown = self.Cooldown
     self.chargeCooldown = self.ChargeCooldown
