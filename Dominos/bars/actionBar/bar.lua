@@ -144,10 +144,9 @@ function ActionBar:OnAttachButton(button)
     button:SetAttribute("action", button:GetAttribute("index") + (self:GetAttribute("actionOffset") or 0))
     button:SetFlyoutDirection(self:GetFlyoutDirection())
     button:SetShowGrid(ACTION_BUTTON_SHOW_GRID_REASON_CVAR, self:ShowingEmptyButtons())
-
-    -- button:SetShowCountText(Addon:ShowCounts())
-    -- button:SetShowMacroText(Addon:ShowMacroText())
-    -- button:SetShowEquippedItemBorders(Addon:ShowEquippedItemBorders())
+    button:SetShowCountText(Addon:ShowCounts())
+    button:SetShowMacroText(Addon:ShowMacroText())
+    button:SetShowEquippedItemBorders(Addon:ShowEquippedItemBorders())
     -- button:SetShowCooldowns(self:GetAlpha() > 0)
 
     Addon:GetModule('ButtonThemer'):Register(button, self:GetDisplayName())
