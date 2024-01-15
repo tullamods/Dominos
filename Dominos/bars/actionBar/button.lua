@@ -291,7 +291,7 @@ function ActionButton:Update()
     self:UpdateFlyout()
     self:UpdateIcon()
     self:UpdateShown()
-    self:UpdateUsable(true)
+    self:UpdateUsable()
 end
 
 function ActionButton:UpdateActive()
@@ -307,7 +307,7 @@ function ActionButton:UpdateActive()
 end
 
 function ActionButton:UpdateBorder()
-    self.Border:SetShown(IsEquippedAction(self.action))
+    self.Border:SetShown((not self.hideBorders) and IsEquippedAction(self.action))
 end
 
 function ActionButton:UpdateCount()
@@ -315,17 +315,24 @@ function ActionButton:UpdateCount()
 
     if IsConsumableAction(action) or IsStackableAction(action) then
         local count = GetActionCount(action) or 0
-        if count > 0 and count < 999 then
+        if count > 999 then
+            self.Count:SetFormattedText("%.1f%k", count / 1000)
+            self.Name:SetText("")
+        elseif count > 0 then
             self.Count:SetText(count)
+            self.Name:SetText("")
         else
             self.Count:SetText("")
+            self.Name:SetText(GetActionText(action) or "")
         end
     else
         local charges, maxCharges = GetActionCharges(action)
         if maxCharges and maxCharges > 1 then
             self.Count:SetText(charges)
+            self.Name:SetText("")
         else
             self.Count:SetText("")
+            self.Name:SetText(GetActionText(action) or "")
         end
     end
 end
@@ -373,23 +380,24 @@ function ActionButton:UpdateTooltip()
     GameTooltip:SetAction(self.action)
 end
 
-function ActionButton:UpdateUsable(refresh)
-    local action = self.action
+function ActionButton:UpdateUsable(usable, oom, oor)
+    if usable == nil then
+        usable, oom = IsUsableAction(self.action)
+    end
 
-    if refresh then
-        self.usable, self.oom = IsUsableAction(action)
-        self.oor = IsActionInRange(action) == false
+    if oor == nil then
+        oor = IsActionInRange(self.action) == false
     end
 
     local icon = self.Icon
 
-    if self.oom then
+    if oom then
         icon:SetDesaturated(true)
         icon:SetVertexColor(0.4, 0.4, 1.0)
-    elseif self.oor then
+    elseif oor then
         icon:SetDesaturated(true)
         icon:SetVertexColor(1, 0.4, 0.4)
-    elseif self.usable then
+    elseif usable then
         icon:SetDesaturated(false)
         icon:SetVertexColor(1, 1, 1)
     else
@@ -397,7 +405,7 @@ function ActionButton:UpdateUsable(refresh)
         icon:SetVertexColor(0.4, 0.4, 0.4)
     end
 
-    if self.oor then
+    if oor then
         self.HotKey:SetVertexColor(1, 0, 0)
     else
         self.HotKey:SetVertexColor(1, 1, 1)
@@ -416,12 +424,18 @@ function ActionButton:SetFlyoutDirection(direction, force)
     end
 end
 
-function ActionButton:SetUsable(usable, oom, oor)
-    self.usable = usable
-    self.oom = oom
-    self.oor = oor
+function ActionButton:SetShowCountText(show)
+    self.Count:SetShown(show and true)
+end
 
-    self:UpdateUsable()
+function ActionButton:SetShowEquippedItemBorders(show)
+    self.hideBorders = (not show) or nil
+
+    self:UpdateBorder()
+end
+
+function ActionButton:SetShowMacroText(show)
+    self.Name:SetShown(show and true)
 end
 
 function ActionButton:SetShowGrid(reason, show, force)

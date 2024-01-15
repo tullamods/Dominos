@@ -1,9 +1,9 @@
-local ADDON_NAME, Addon = ...
+local AddonName, Addon = ...
 
 local ActionButtons = CreateFrame('Frame', nil, nil, 'SecureHandlerBaseTemplate')
 
 -- constants
-local ACTION_BUTTON_NAME_TEMPLATE = ADDON_NAME .. "ActionButton%d"
+local ACTION_BUTTON_NAME_TEMPLATE = AddonName .. "ActionButton%d"
 
 -- global showgrid event reasons
 local SHOW_GRID_REASONS = {
@@ -154,7 +154,7 @@ function ActionButtons:PLAYER_LOGIN()
     --             states[state] = state
 
     --             for button in pairs(buttons) do
-    --                 button:SetUsable(usable, oom, oor)
+    --                 button:UpdateUsable(usable, oom, oor)
     --             end
     --         end
     --     end
@@ -170,7 +170,7 @@ function ActionButtons:ACTION_RANGE_CHECK_UPDATE(slot, isInRange, checksRange)
         local oor = checksRange and not isInRange
 
         for button in pairs(buttons) do
-            button:SetUsable(usable, oom, oor)
+            button:UpdateUsable(usable, oom, oor)
         end
     end
 end
@@ -183,7 +183,7 @@ function ActionButtons:ACTION_USABLE_CHANGED(changes)
             local oor = IsActionInRange(change.slot) == false
 
             for button in pairs(buttons) do
-                button:SetUsable(change.usable, change.noMana, oor)
+                button:UpdateUsable(change.usable, change.noMana, oor)
             end
         end
     end
@@ -207,8 +207,10 @@ end
 
 function ActionButtons:ACTIONBAR_SLOT_CHANGED(slot)
     if slot == 0 or slot == nil then
+        -- table.wipe(self.actionStates)
         self:ForAll("Update")
     else
+        -- self.actionStates[slot] = nil
         self:ForActionSlot(slot, "Update")
     end
 end
@@ -254,6 +256,7 @@ function ActionButtons:PLAYER_LEAVE_COMBAT()
 end
 
 function ActionButtons:PLAYER_ENTERING_WORLD()
+    -- table.wipe(self.actionStates)
     self:ForAll("Update")
 end
 
