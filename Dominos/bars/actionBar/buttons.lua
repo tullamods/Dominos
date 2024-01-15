@@ -64,12 +64,7 @@ ActionButtons.dirtyAttributes = {}
 -- we use a traditional event handler so that we can take
 -- advantage of unit event registration
 ActionButtons:SetScript("OnEvent", function(self, event, ...)
-    local handler = self[event]
-    if type(handler) == "function" then
-        handler(self, ...)
-    else
-        error(("%s is missing a handler for %q"):format("ActionButtons", event))
-    end
+    self[event](self, ...)
 end)
 
 ActionButtons:RegisterEvent("PLAYER_LOGIN")
@@ -79,42 +74,41 @@ function ActionButtons:PLAYER_LOGIN()
     self:Initialize()
 
     -- game events
-    self:RegisterEvent("ACTION_RANGE_CHECK_UPDATE")
-    self:RegisterEvent("ACTION_USABLE_CHANGED")
-    self:RegisterEvent("ACTIONBAR_HIDEGRID")
-    self:RegisterEvent("ACTIONBAR_SHOWGRID")
-    self:RegisterEvent("ACTIONBAR_SLOT_CHANGED")
-    self:RegisterEvent("ACTIONBAR_UPDATE_COOLDOWN")
-    self:RegisterEvent("ACTIONBAR_UPDATE_STATE")
-    self:RegisterEvent("ARCHAEOLOGY_CLOSED")
-    self:RegisterEvent("COMPANION_UPDATE")
-    self:RegisterEvent("CVAR_UPDATE")
-    self:RegisterEvent("PET_BAR_UPDATE")
-    self:RegisterEvent("PET_STABLE_SHOW")
-    self:RegisterEvent("PET_STABLE_UPDATE")
-    self:RegisterEvent("PLAYER_ENTER_COMBAT")
-    self:RegisterEvent("PLAYER_ENTERING_WORLD")
-    self:RegisterEvent("PLAYER_LEAVE_COMBAT")
-    self:RegisterEvent("PLAYER_MOUNT_DISPLAY_CHANGED")
-    self:RegisterEvent("PLAYER_REGEN_ENABLED")
-    self:RegisterEvent("SPELL_ACTIVATION_OVERLAY_GLOW_HIDE")
-    self:RegisterEvent("SPELL_ACTIVATION_OVERLAY_GLOW_SHOW")
-    self:RegisterEvent("SPELL_UPDATE_CHARGES")
-    self:RegisterEvent("SPELL_UPDATE_ICON")
-    self:RegisterEvent("START_AUTOREPEAT_SPELL")
-    self:RegisterEvent("STOP_AUTOREPEAT_SPELL")
-    self:RegisterEvent("TRADE_SKILL_CLOSE")
-    self:RegisterEvent("TRADE_SKILL_SHOW")
-    self:RegisterEvent("UPDATE_SHAPESHIFT_FORM")
-    self:RegisterEvent("UPDATE_SUMMONPETS_ACTION")
+    self:TryRegisterEvent("ACTION_RANGE_CHECK_UPDATE")
+    self:TryRegisterEvent("ACTION_USABLE_CHANGED")
+    self:TryRegisterEvent("ACTIONBAR_HIDEGRID")
+    self:TryRegisterEvent("ACTIONBAR_SHOWGRID")
+    self:TryRegisterEvent("ACTIONBAR_SLOT_CHANGED")
+    self:TryRegisterEvent("ACTIONBAR_UPDATE_COOLDOWN")
+    self:TryRegisterEvent("ACTIONBAR_UPDATE_STATE")
+    self:TryRegisterEvent("ARCHAEOLOGY_CLOSED")
+    self:TryRegisterEvent("COMPANION_UPDATE")
+    self:TryRegisterEvent("CVAR_UPDATE")
+    self:TryRegisterEvent("PET_BAR_UPDATE")
+    self:TryRegisterEvent("PET_STABLE_SHOW")
+    self:TryRegisterEvent("PET_STABLE_UPDATE")
+    self:TryRegisterEvent("PLAYER_ENTER_COMBAT")
+    self:TryRegisterEvent("PLAYER_ENTERING_WORLD")
+    self:TryRegisterEvent("PLAYER_LEAVE_COMBAT")
+    self:TryRegisterEvent("PLAYER_REGEN_ENABLED")
+    self:TryRegisterEvent("SPELL_ACTIVATION_OVERLAY_GLOW_HIDE")
+    self:TryRegisterEvent("SPELL_ACTIVATION_OVERLAY_GLOW_SHOW")
+    self:TryRegisterEvent("SPELL_UPDATE_CHARGES")
+    self:TryRegisterEvent("SPELL_UPDATE_ICON")
+    self:TryRegisterEvent("START_AUTOREPEAT_SPELL")
+    self:TryRegisterEvent("STOP_AUTOREPEAT_SPELL")
+    self:TryRegisterEvent("TRADE_SKILL_CLOSE")
+    self:TryRegisterEvent("TRADE_SKILL_SHOW")
+    self:TryRegisterEvent("UPDATE_SHAPESHIFT_FORM")
+    self:TryRegisterEvent("UPDATE_SUMMONPETS_ACTION")
 
     -- unit events
-    self:RegisterUnitEvent("LOSS_OF_CONTROL_ADDED", "player")
-    self:RegisterUnitEvent("LOSS_OF_CONTROL_UPDATE", "player")
-    self:RegisterUnitEvent("UNIT_AURA", "pet")
-    self:RegisterUnitEvent("UNIT_ENTERED_VEHICLE", "player")
-    self:RegisterUnitEvent("UNIT_EXITED_VEHICLE", "player")
-    self:RegisterUnitEvent("UNIT_FLAGS", "pet")
+    self:TryRegisterUnitEvent("LOSS_OF_CONTROL_ADDED", "player")
+    self:TryRegisterUnitEvent("LOSS_OF_CONTROL_UPDATE", "player")
+    self:TryRegisterUnitEvent("UNIT_AURA", "pet")
+    self:TryRegisterUnitEvent("UNIT_ENTERED_VEHICLE", "player")
+    self:TryRegisterUnitEvent("UNIT_EXITED_VEHICLE", "player")
+    self:TryRegisterUnitEvent("UNIT_FLAGS", "pet")
 
     -- addon callbacks
     local keybound = LibStub("LibKeyBound-1.0", true)
@@ -219,10 +213,6 @@ function ActionButtons:PLAYER_ENTERING_WORLD()
     -- table.wipe(self.actionStates)
     self:ForAll("Update")
 end
-
--- function ActionButtons:PLAYER_MOUNT_DISPLAY_CHANGED()
---     self:ForAllWhere(HasAction, "UpdateUsable")
--- end
 
 function ActionButtons:PLAYER_REGEN_ENABLED()
     for k, v in pairs(self.dirtyAttributes) do
@@ -425,6 +415,22 @@ function ActionButtons:TrySetAttribute(key, value)
 
     self:SetAttribute(key, value)
     return true
+end
+
+function ActionButtons:TryRegisterEvent(event)
+    if type(self[event]) ~= "function" then
+        error(("Cannot register event %q - Handler is missing"):format(event), 2)
+    end
+
+    self:RegisterEvent(event)
+end
+
+function ActionButtons:TryRegisterUnitEvent(event, ...)
+    if type(self[event]) ~= "function" then
+        error(("Cannot register unit event %q - Handler is missing"):format(event), 2)
+    end
+
+    self:RegisterUnitEvent(event, ...)
 end
 
 -- collection metamethods
