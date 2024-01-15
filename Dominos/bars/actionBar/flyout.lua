@@ -114,15 +114,23 @@ function SpellFlyoutButtonMixin:UpdateState()
 end
 
 function SpellFlyoutButtonMixin:UpdateUsable()
-	local isUsable, notEnoughMana = IsUsableSpell(self.spellID)
+	local usable, oom = IsUsableSpell(self.spellID)
+	local oor = IsSpellInRange(self.spellID, "target") == 0
+    local icon = self.icon
 
-	if isUsable then
-		self.icon:SetVertexColor(1, 1, 1)
-	elseif notEnoughMana then
-		self.icon:SetVertexColor(0.5, 0.5, 1)
-	else
-		self.icon:SetVertexColor(0.4, 0.4, 0.4)
-	end
+    if oom then
+        icon:SetDesaturated(true)
+        icon:SetVertexColor(0.4, 0.4, 1.0)
+    elseif oor then
+        icon:SetDesaturated(true)
+        icon:SetVertexColor(1, 0.4, 0.4)
+    elseif usable then
+        icon:SetDesaturated(false)
+        icon:SetVertexColor(1, 1, 1)
+    else
+        icon:SetDesaturated(true)
+        icon:SetVertexColor(0.4, 0.4, 0.4)
+    end
 end
 
 function SpellFlyoutButtonMixin:UpdateCount()
