@@ -65,8 +65,6 @@ Binder:SetAttributeNoHandler("_onstate-bind", [[
 Binder:SetAttributeNoHandler("SetBindings", [[
     local command = ...
 
-    print("SetBindings", ...)
-
     for i = 2, select("#", ...) do
         self:SetBinding(true, select(i, ...), command)
     end
