@@ -377,32 +377,27 @@ function ActionButton:UpdateUsable(refresh)
     local action = self.action
 
     if refresh then
-        local usable, oom = IsUsableAction(action)
-        self.unusuable = not usable
-        self.oom = oom
+        self.usable, self.oom = IsUsableAction(action)
         self.oor = IsActionInRange(action) == false
     end
 
-    local oor = self.oor
-    local oom = self.oom
-    local unusuable = self.unusuable
     local icon = self.Icon
 
-    if oom then
+    if self.oom then
         icon:SetDesaturated(true)
         icon:SetVertexColor(0.4, 0.4, 1.0)
-    elseif oor then
+    elseif self.oor then
         icon:SetDesaturated(true)
         icon:SetVertexColor(1, 0.4, 0.4)
-    elseif unusuable then
-        icon:SetDesaturated(true)
-        icon:SetVertexColor(0.4, 0.4, 0.4)
-    else
+    elseif self.usable then
         icon:SetDesaturated(false)
         icon:SetVertexColor(1, 1, 1)
+    else
+        icon:SetDesaturated(true)
+        icon:SetVertexColor(0.4, 0.4, 0.4)
     end
 
-    if oor then
+    if self.oor then
         self.HotKey:SetVertexColor(1, 0, 0)
     else
         self.HotKey:SetVertexColor(1, 1, 1)
@@ -421,14 +416,11 @@ function ActionButton:SetFlyoutDirection(direction, force)
     end
 end
 
-function ActionButton:SetInRange(hasRange, inRange)
-    self.oor = hasRange and not inRange
-    self:UpdateUsable()
-end
-
-function ActionButton:SetIsUsable(usable, oom)
-    self.unusuable = not usable
+function ActionButton:SetUsable(usable, oom, oor)
+    self.usable = usable
     self.oom = oom
+    self.oor = oor
+
     self:UpdateUsable()
 end
 
