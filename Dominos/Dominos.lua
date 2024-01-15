@@ -15,6 +15,7 @@ end
 
 local CONFIG_ADDON_NAME = AddonName .. '_Config'
 local DB_SCHEMA_VERSION = 2
+local BINDINGS_VERSION = 3
 
 -- setup custom callbacks
 Addon.callbacks = LibStub('CallbackHandler-1.0'):New(Addon)
@@ -38,30 +39,10 @@ function Addon:OnInitialize()
     -- register keybound callbacks
     KeyBound.RegisterCallback(self, 'LIBKEYBOUND_ENABLED')
     KeyBound.RegisterCallback(self, 'LIBKEYBOUND_DISABLED')
-
-    -- define binding names
-    -- _G['BINDING_HEADER_' .. AddonName] = AddonName
-
-    -- local hotkeyButton = Addon.ACTION_BUTTON_HOTKEY_BUTTON
-    -- local numActionBars = math.ceil(Addon.ACTION_BUTTON_COUNT / NUM_ACTIONBAR_BUTTONS)
-
-    -- for barID = 1, numActionBars do
-    --     local offset = NUM_ACTIONBAR_BUTTONS * (barID - 1)
-    --     local headerKey = ('BINDING_HEADER_%sActionBar%d'):format(AddonName, barID)
-    --     local headerValue = L.ActionBarDisplayName:format(barID)
-
-    --     _G[headerKey] = headerValue
-
-    --     for index = 1, NUM_ACTIONBAR_BUTTONS do
-    --         local bindingKey = ('BINDING_NAME_CLICK %sActionButton%d:%s'):format(AddonName, index + offset, hotkeyButton)
-    --         local bindingValue = L.ActionBarButtonDisplayName:format(barID, index)
-
-    --         _G[bindingKey] = bindingValue
-    --     end
-    -- end
 end
 
 function Addon:OnEnable()
+    self:MigrateBindings()
     self:UpdateUseOverrideUI()
     self:Load()
 
@@ -289,6 +270,45 @@ function Addon:UpgradeDatabase()
         self:OnUpgradeAddon(addonVersion, ADDON_VERSION)
         self.db.global.addonVersion = ADDON_VERSION
     end
+end
+
+-- migrate legacy bindings from LeftButton to HOTKEY
+function Addon:MigrateBindings()
+    local bindingSet = GetCurrentBindingSet()
+    local dbIndex = bindingSet == 2 and "char" or "global"
+
+    if self.db[dbIndex].bindingsVersion == BINDINGS_VERSION then return end
+
+    --- @param command string the command to bind keys to
+    --- @param ... string all the keys to remap
+    --- @return boolean
+    local function setBindings(command, ...)
+        local saved = false
+
+        for i = 1, select("#", ...) do
+            if SetBinding(select(i, ...), command) then
+                saved = true
+            end
+        end
+
+        return saved
+    end
+
+    local legacy = 'CLICK ' .. AddonName .. 'ActionButton%d:LeftButton'
+    local modern = 'CLICK ' .. AddonName .. 'ActionButton%d:HOTKEY'
+    local migrated = false
+
+    for i = 1, Addon.ACTION_BUTTON_COUNT do
+        if setBindings(modern:format(i), GetBindingKey(legacy:format(i))) then
+            migrated = true
+        end
+    end
+
+    if migrated then
+        SaveBindings(bindingSet)
+    end
+
+    self.db[dbIndex].bindingsVersion = BINDINGS_VERSION
 end
 
 --------------------------------------------------------------------------------
