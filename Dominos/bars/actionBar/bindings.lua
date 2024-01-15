@@ -1,5 +1,4 @@
-local AddonName, Addon = ...
-local L = LibStub('AceLocale-3.0'):GetLocale(AddonName)
+if not OverrideActionBar then return end
 
 --------------------------------------------------------------------------------
 -- Sets priority bindings to the Pet Battle and Override UI when either frame
@@ -77,24 +76,6 @@ Binder:SetScript("OnEvent", function(self, event)
     -- initialize secure state
     self:SetAttribute("state-overrideui", self:IsVisible() and 1 or 0)
     RegisterStateDriver(self, "petabattleui", "[petbattle]1;0")
-
-    -- define action bar binding names
-    _G['BINDING_HEADER_' .. AddonName] = AddonName
-
-    local numActionBars = math.ceil(Addon.ACTION_BUTTON_COUNT / NUM_ACTIONBAR_BUTTONS)
-
-    for barID = 1, numActionBars do
-        local offset = NUM_ACTIONBAR_BUTTONS * (barID - 1)
-        local headerKey = ('BINDING_HEADER_%sActionBar%d'):format(AddonName, barID)
-
-        _G[headerKey] = L.ActionBarDisplayName:format(barID)
-
-        for i = 1, NUM_ACTIONBAR_BUTTONS do
-            local bindingKey = ('BINDING_NAME_CLICK %sActionButton%d:HOTKEY'):format(AddonName, i + offset)
-
-            _G[bindingKey] = L.ActionBarButtonDisplayName:format(barID, i)
-        end
-    end
 end)
 
 Binder:RegisterEvent("PLAYER_LOGIN")

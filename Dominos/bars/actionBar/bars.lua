@@ -1,8 +1,27 @@
-local _, Addon = ...
+local AddonName, Addon = ...
 local ActionBarsModule = Addon:NewModule('ActionBars', 'AceEvent-3.0')
+local L = LibStub('AceLocale-3.0'):GetLocale(AddonName)
 
 function ActionBarsModule:OnEnable()
     self.UpdateActionSlots = Addon:Debounce(self.UpdateActionSlots, 0.1, self)
+
+    -- define action bar binding names
+    _G['BINDING_HEADER_' .. AddonName] = AddonName
+
+    local numActionBars = math.ceil(Addon.ACTION_BUTTON_COUNT / NUM_ACTIONBAR_BUTTONS)
+
+    for barID = 1, numActionBars do
+        local offset = NUM_ACTIONBAR_BUTTONS * (barID - 1)
+        local headerKey = ('BINDING_HEADER_%sActionBar%d'):format(AddonName, barID)
+
+        _G[headerKey] = L.ActionBarDisplayName:format(barID)
+
+        for i = 1, NUM_ACTIONBAR_BUTTONS do
+            local bindingKey = ('BINDING_NAME_CLICK %sActionButton%d:HOTKEY'):format(AddonName, i + offset)
+
+            _G[bindingKey] = L.ActionBarButtonDisplayName:format(barID, i)
+        end
+    end
 end
 
 function ActionBarsModule:Load()
