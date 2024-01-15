@@ -53,9 +53,6 @@ ActionButtons.actionButtons = setmetatable({}, {
     end
 })
 
--- [action] = oor
-ActionButtons.actionStates = {}
-
 -- [reason] = show
 ActionButtons.showGridStates = {}
 
@@ -162,10 +159,8 @@ end
 
 function ActionButtons:ACTIONBAR_SLOT_CHANGED(slot)
     if slot == 0 or slot == nil then
-        -- table.wipe(self.actionStates)
         self:ForAll("Update")
     else
-        -- self.actionStates[slot] = nil
         self:ForActionSlot(slot, "Update")
     end
 end
@@ -211,7 +206,6 @@ function ActionButtons:PLAYER_LEAVE_COMBAT()
 end
 
 function ActionButtons:PLAYER_ENTERING_WORLD()
-    -- table.wipe(self.actionStates)
     self:ForAll("Update")
 end
 
