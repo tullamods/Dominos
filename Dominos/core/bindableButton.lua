@@ -1,6 +1,7 @@
 -- Binding code that's shared between the various flavors of action buttons
 local AddonName, Addon = ...
 local KeyBound = LibStub('LibKeyBound-1.0')
+local COMMAND_TEMPLATE = 'CLICK %s:HOTKEY'
 
 -- binding method definitions
 -- returns the binding action associated with the button
@@ -8,12 +9,8 @@ local KeyBound = LibStub('LibKeyBound-1.0')
 -- we use a virtual button (arbitrarily named HOTKEY)
 -- to enable cast on key press support
 local function getButtonBindingAction(button)
-    local commandName = button.commandName
-    if commandName then
-        return commandName
-    end
-
-    return ('CLICK %s:HOTKEY'):format(button:GetName())
+    return button.commandName
+        or COMMAND_TEMPLATE:format(button:GetName())
 end
 
 local function getButtonBindingActionName(button)
