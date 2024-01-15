@@ -77,6 +77,7 @@ function ActionButtons:PLAYER_LOGIN()
     -- game events
     self:RegisterEvent("ACTION_RANGE_CHECK_UPDATE")
     self:RegisterEvent("ACTION_USABLE_CHANGED")
+    self:RegisterEvent("ACTIONBAR_UPDATE_USABLE")
     self:RegisterEvent("ACTIONBAR_HIDEGRID")
     self:RegisterEvent("ACTIONBAR_SHOWGRID")
     self:RegisterEvent("ACTIONBAR_SLOT_CHANGED")
@@ -142,6 +143,10 @@ end
 
 function ActionButtons:ACTIONBAR_UPDATE_STATE()
     self:ForAllWhere(HasAction, "UpdateActive")
+end
+
+function ActionButtons:ACTIONBAR_UPDATE_USABLE()
+    self:ForAllWhere(HasAction, "UpdateUsable")
 end
 
 function ActionButtons:ACTIONBAR_SLOT_CHANGED(slot)
