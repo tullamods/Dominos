@@ -148,7 +148,7 @@ function ActionBar:OnAttachButton(button)
     button:SetShowCountText(Addon:ShowCounts())
     button:SetShowMacroText(Addon:ShowMacroText())
     button:SetShowEquippedItemBorders(Addon:ShowEquippedItemBorders())
-    -- button:SetShowCooldowns(self:GetAlpha() > 0)
+    button:SetShowCooldowns(self:GetAlpha() > 0)
 
     Addon:GetModule('ButtonThemer'):Register(button, self:GetDisplayName())
     Addon:GetModule('Tooltips'):Register(button)
@@ -308,7 +308,6 @@ function ActionBar:UpdateTransparent(force)
 
     if (self.__transparent ~= isTransparent) or force then
         self.__transparent = isTransparent
-
         self:ForButtons('SetShowCooldowns', not isTransparent)
     end
 end

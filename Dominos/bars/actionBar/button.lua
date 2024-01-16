@@ -300,18 +300,11 @@ end
 
 function ActionButton:UpdateActive()
     local action = self.action
-
-    local active = HasAction(action) and (
-        IsCurrentAction(action)
-        or IsAutoRepeatAction(action)
-        and not C_ActionBar.IsAutoCastPetAction(action)
-    )
-
+    local active = IsCurrentAction(action) or IsAutoRepeatAction(action)
     local autocastable = C_ActionBar.IsAutoCastPetAction(action)
-    local autocasting = autocastable and C_ActionBar.IsEnabledAutoCastPetAction(action)
+    local autocasting = C_ActionBar.IsEnabledAutoCastPetAction(action)
 
-    self:SetChecked(active)
-
+    self:SetChecked(active and not autocastable)
     self.AutoCastable:SetShown(autocastable)
     self.AutoCastShine:SetShown(autocasting)
 
@@ -456,6 +449,19 @@ end
 
 function ActionButton:SetShowCountText(show)
     self.Count:SetShown(show and true)
+end
+
+-- we hide cooldowns when action buttons are transparent
+-- so that the sparks don't appear
+function ActionButton:SetShowCooldowns(show)
+    if show then
+        if self.cooldown:GetParent() ~= self then
+            self.cooldown:SetParent(self)
+            self:UpdateCooldown()
+        end
+    else
+        self.cooldown:SetParent(Addon.ShadowUIParent)
+    end
 end
 
 function ActionButton:SetShowEquippedItemBorders(show)
