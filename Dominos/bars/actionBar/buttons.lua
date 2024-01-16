@@ -307,6 +307,11 @@ end
 
 -- api
 local ActionButton_ClickBefore = [[
+    local actionType, id = GetActionInfo(self:GetAttribute("action"))
+    if actionType == "spell" then
+        self:SetAttribute("pressAndHoldAction", IsPressHoldReleaseSpell(id))
+    end
+
     if button == "HOTKEY" then
         return "LeftButton"
     end
