@@ -128,6 +128,8 @@ function ActionButton:OnAttributeChanged(key, value)
 end
 
 function ActionButton:OnEnter()
+    self:UpdateAutocast()
+
     if HasAction(self.action) then
         GameTooltip_SetDefaultAnchor(GameTooltip, self)
         self:UpdateTooltip()
@@ -255,27 +257,27 @@ function ActionButton:Construct()
     local flyoutArrowNormal = self.FlyoutArrowContainer:CreateTexture(nil, "ARTWORK", nil, 2)
     flyoutArrowNormal:Hide()
     flyoutArrowNormal:SetAtlas("UI-HUD-ActionBar-Flyout")
-    flyoutArrowNormal:SetSize(18, 7)
     flyoutArrowNormal:SetPoint("TOP")
+    flyoutArrowNormal:SetSize(18, 7)
     self.FlyoutArrowContainer.FlyoutArrowNormal = flyoutArrowNormal
 
     local flyoutArrowPushed = self.FlyoutArrowContainer:CreateTexture(nil, "ARTWORK", nil, 2)
     flyoutArrowPushed:Hide()
     flyoutArrowPushed:SetAtlas("UI-HUD-ActionBar-Flyout-Down")
-    flyoutArrowPushed:SetSize(18, 8)
     flyoutArrowPushed:SetPoint("TOP")
+    flyoutArrowPushed:SetSize(18, 8)
     self.FlyoutArrowContainer.FlyoutArrowPushed = flyoutArrowNormal
 
     local flyoutArrowHighlight = self.FlyoutArrowContainer:CreateTexture(nil, "ARTWORK", nil, 2)
     flyoutArrowHighlight:Hide()
     flyoutArrowHighlight:SetAtlas("UI-HUD-ActionBar-Flyout-Mouseover")
-    flyoutArrowHighlight:SetSize(18, 7)
     flyoutArrowHighlight:SetPoint("TOP")
+    flyoutArrowHighlight:SetSize(18, 7)
     self.FlyoutArrowContainer.FlyoutArrowHighlight = flyoutArrowHighlight
 
     self.AutoCastShine = CreateFrame("Frame", "$parentShine", self, "AutoCastShineTemplate")
-    self.AutoCastShine:SetSize(40, 40)
     self.AutoCastShine:SetPoint("CENTER")
+    self.AutoCastShine:SetSize(40, 40)
 
     -- these aliases are added for compatibility with other addons
     self.icon = self.Icon
@@ -285,6 +287,7 @@ end
 
 function ActionButton:Update()
     self:UpdateActive()
+    self:UpdateAutocast()
     self:UpdateBorder()
     self:UpdateCooldown()
     self:UpdateCount()
@@ -304,7 +307,33 @@ function ActionButton:UpdateActive()
         and not C_ActionBar.IsAutoCastPetAction(action)
     )
 
+    local autocastable = C_ActionBar.IsAutoCastPetAction(action)
+    local autocasting = autocastable and C_ActionBar.IsEnabledAutoCastPetAction(action)
+
     self:SetChecked(active)
+
+    self.AutoCastable:SetShown(autocastable)
+    self.AutoCastShine:SetShown(autocasting)
+
+    if autocasting then
+        AutoCastShine_AutoCastStart(self.AutoCastShine)
+    else
+        AutoCastShine_AutoCastStop(self.AutoCastShine)
+    end
+end
+
+function ActionButton:UpdateAutocast()
+    if InCombatLockdown() then return end
+
+    local action = self.action
+    if C_ActionBar.IsAutoCastPetAction(action) then
+        local _, id = GetActionInfo(action)
+        self:SetAttribute("type2", "macro")
+        self:SetAttribute("macrotext", "/petautocasttoggle " .. id)
+    elseif self:GetAttribute("type2") then
+        self:SetAttribute("type2", nil)
+        self:SetAttribute("macro", nil)
+    end
 end
 
 function ActionButton:UpdateBorder()
