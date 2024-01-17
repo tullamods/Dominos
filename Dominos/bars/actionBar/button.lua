@@ -46,12 +46,6 @@ local function SetOverrideClickBindings(owner, button, ...)
     end
 end
 
-local function Cooldown_OnDone(self)
-    if self.requireCooldownUpdate and self:GetParent():IsVisible() then
-        self:GetParent():UpdateCooldown()
-    end
-end
-
 local ATTACK_BUTTON_FLASH_TIME = ATTACK_BUTTON_FLASH_TIME * 1.5
 
 local ActionButton = Addon:CreateClass("CheckButton")
@@ -61,15 +55,22 @@ local ActionButton = Addon:CreateClass("CheckButton")
 function ActionButton:OnCreate(id)
     self:Construct()
 
+    -- unmix BaseActionButtonMixin to reduce conflicts with our stuff
+    for k, v in pairs(BaseActionButtonMixin) do
+        if type(v) == "function" then
+            self[k] = nil
+        end
+    end
+
     -- initialize state
     self.id = id
     self.action = 0
-    self.showgrid = 0
     self.commandName = GetActionButtonCommand(id)
 
     -- initialize secure state
     self:SetAttributeNoHandler("action", 0)
     self:SetAttributeNoHandler("id", id)
+    self:SetAttributeNoHandler("showgrid", 0)
     self:SetAttributeNoHandler("type", "action")
     self:SetAttributeNoHandler("typerelease", "actionrelease")
     self:SetAttributeNoHandler("useparent-checkbuttoncast", true)
@@ -80,14 +81,20 @@ function ActionButton:OnCreate(id)
 
     -- register for clicks
 	self:RegisterForDrag("LeftButton", "RightButton")
-	self:RegisterForClicks("AnyUp", "LeftButtonDown", "RightButtonDown")
+	self:RegisterForClicks("AnyUp", "AnyDown")
     self:EnableMouseWheel()
 
     -- script handlers
-    self:SetScript("OnAttributeChanged", self.OnAttributeChanged)
     self:SetScript("OnEnter", self.OnEnter)
     self:SetScript("OnLeave", self.OnLeave)
     self:SetScript("PostClick", self.OnPostClick)
+
+    self:SetAttributeNoHandler("_onattributechanged", [[
+        if name == "action" then
+            self:RunAttribute("UpdateShown")
+            self:CallMethod("OnActionChanged", value)
+        end
+    ]])
 
     self:SetAttributeNoHandler("_ondragstart", [[
         local action = self:GetAttribute("action")
@@ -106,6 +113,44 @@ function ActionButton:OnCreate(id)
         end
     ]])
 
+    self:SetAttributeNoHandler("SetShowGrid", [[
+        local reason, show = ...
+        local value = self:GetAttribute("showgrid")
+        local prevValue = value
+
+        if show then
+            if value % (reason * 2) < reason then
+                value = value + reason
+            end
+        elseif value % (reason * 2) >= reason then
+            value = value - reason
+        end
+
+        if prevValue ~= value then
+            self:SetAttribute("showgrid", value)
+
+            local show = (value > 0 or HasAction(self:GetAttribute("action")))
+                and not self:GetAttribute("statehidden")
+
+            if show then
+                self:Show(true)
+            else
+                self:Hide(true)
+            end
+        end
+    ]])
+
+    self:SetAttributeNoHandler("UpdateShown", [[
+        local show = (self:GetAttribute("showgrid") > 0 or HasAction(self:GetAttribute("action")))
+            and not self:GetAttribute("statehidden")
+
+        if show then
+            self:Show(true)
+        else
+            self:Hide(true)
+        end
+    ]])
+
     -- ...and the rest
     Addon.BindableButton:AddQuickBindingSupport(self)
     Addon.SpellFlyout:Register(self)
@@ -114,15 +159,9 @@ function ActionButton:OnCreate(id)
     self:UpdateHotkeys()
 end
 
-function ActionButton:OnAttributeChanged(key, value)
-    if key ~= "action" then return end
-
-    local oldAction = self.action
-    if value ~= oldAction then
-        self.action = value
-
-        Addon.ActionButtons:OnActionChanged(self, value, oldAction)
-
+function ActionButton:OnActionChanged(action)
+    if action ~= self.action then
+        self.action = action
         self:Update()
     end
 end
@@ -150,33 +189,8 @@ end
 
 -- setup all of the necessary frames and textures
 function ActionButton:Construct()
-    if self.Icon then return end
-
-    self:SetSize(ActionButton1:GetSize())
-
-    -- textures - background
-    self.Icon = self:CreateTexture(nil, "BACKGROUND")
-    self.Icon:SetAllPoints()
-
-    self.IconMask = self:CreateMaskTexture(nil, "BACKGROUND")
-    self.IconMask:SetTexture(4626072, "CLAMPTOBLACKADDITIVE", "CLAMPTOBLACKADDITIVE")
-    self.IconMask:SetPoint("CENTER", self.Icon)
-    self.Icon:AddMaskTexture(self.IconMask)
-
-    self.SlotBackground = self:CreateTexture(nil, "BACKGROUND")
-    self.SlotBackground:SetAtlas("UI-HUD-ActionBar-IconFrame-Background")
-    self.SlotBackground:SetAllPoints()
-
-    -- self.SlotArt = self:CreateTexture(nil, "BACKGROUND")
-    -- self.SlotArt:SetAtlas("ui-hud-actionbar-iconframe-slot")
-    -- self.SlotArt:SetAllPoints()
 
     -- textures - artwork
-    self.Flash = self:CreateTexture(nil, "ARTWORK", nil, 1)
-    self.Flash:SetAtlas("UI-HUD-ActionBar-IconFrame-Flash", true)
-    self.Flash:SetPoint("TOPLEFT")
-    self.Flash:Hide()
-
     self.Flash.Animation = self.Flash:CreateAnimationGroup()
     self.Flash.Animation:SetLooping("BOUNCE")
 
@@ -184,105 +198,6 @@ function ActionButton:Construct()
     self.Flash.Animation.Alpha:SetDuration(ATTACK_BUTTON_FLASH_TIME)
     self.Flash.Animation.Alpha:SetFromAlpha(0)
     self.Flash.Animation.Alpha:SetToAlpha(1)
-
-    self.FlyoutBorderShadow = self:CreateTexture(nil, "ARTWORK", nil, 1)
-    self.FlyoutBorderShadow:SetSize(52, 52)
-    self.FlyoutBorderShadow:SetPoint("CENTER", self.Icon, "CENTER", 0.2, 0.5)
-    self.FlyoutBorderShadow:SetAtlas("UI-HUD-ActionBar-IconFrame-FlyoutBorderShadow")
-    self.FlyoutBorderShadow:Hide()
-
-    -- textures - overlway
-    self.Border = self:CreateTexture(nil, "OVERLAY")
-    self.Border:SetAtlas("UI-HUD-ActionBar-IconFrame-Border", true)
-    self.Border:SetPoint("TOPLEFT")
-    self.Border:SetVertexColor(0, 1, 0, 0.5)
-    self.Border:Hide()
-
-    self.AutoCastable = self:CreateTexture(nil, "OVERLAY", nil, 1)
-    self.AutoCastable:SetTexture("Interface\\Buttons\\UI-AutoCastableOverlay")
-    self.AutoCastable:SetSize(80, 80)
-    self.AutoCastable:SetPoint("CENTER", 1, -1)
-    self.AutoCastable:Hide()
-
-    self.NormalTexture = self:CreateTexture(nil, "OVERLAY")
-    self.NormalTexture:SetAtlas("UI-HUD-ActionBar-IconFrame")
-    self.NormalTexture:SetAllPoints()
-    self:SetNormalTexture(self.NormalTexture)
-
-    self.CheckedTexture = self:CreateTexture()
-    self.CheckedTexture:SetAtlas("UI-HUD-ActionBar-IconFrame-Mouseover")
-    self.CheckedTexture:SetAllPoints()
-    self:SetCheckedTexture(self.CheckedTexture)
-
-    self.PushedTexture = self:CreateTexture(nil, "OVERLAY")
-    self.PushedTexture:SetAtlas("UI-HUD-ActionBar-IconFrame-Down")
-    self.PushedTexture:SetPoint("TOPLEFT", self.NormalTexture, -1, 1)
-    self.PushedTexture:SetPoint("BOTTOMRIGHT", self.NormalTexture, 1, -1)
-    self:SetPushedTexture(self.PushedTexture)
-
-    self.HighlightTexture = self:CreateTexture()
-    self.HighlightTexture:SetAtlas("UI-HUD-ActionBar-IconFrame-Mouseover")
-    self.HighlightTexture:SetPoint("TOPLEFT", self.NormalTexture, -2, 2)
-    self.HighlightTexture:SetPoint("BOTTOMRIGHT", self.NormalTexture, 2, -2)
-    self:SetHighlightTexture(self.HighlightTexture)
-
-    -- text
-    self.HotKey = self:CreateFontString(nil, "OVERLAY", "NumberFontNormal")
-    self.HotKey:SetPoint("TOPRIGHT", -3.5, -3)
-
-    self.Count = self:CreateFontString(nil, "OVERLAY", "NumberFontNormal")
-    self.Count:SetPoint("BOTTOMRIGHT", -3, 3.5)
-
-    self.Name = self:CreateFontString(nil, "OVERLAY", "NumberFontNormal")
-    self.Name:SetPoint("BOTTOMLEFT", 5, 5)
-
-    -- frames
-    self.Cooldown = CreateFrame("Cooldown", nil, self, "CooldownFrameTemplate")
-    self.Cooldown:SetDrawBling(true)
-    self.Cooldown:SetDrawEdge(false)
-    self.Cooldown:SetPoint("TOPLEFT", self.Icon, 3, -3)
-    self.Cooldown:SetPoint("BOTTOMRIGHT", self.Icon, -3, 3)
-    self.Cooldown:SetScript("OnCooldownDone", Cooldown_OnDone)
-
-    self.ChargeCooldown = CreateFrame("Cooldown", nil, self, "CooldownFrameTemplate")
-    self.ChargeCooldown:SetHideCountdownNumbers(true)
-    self.ChargeCooldown:SetDrawSwipe(false)
-    self.ChargeCooldown:SetPoint("TOPLEFT", self.Icon, 3, -3)
-    self.ChargeCooldown:SetPoint("BOTTOMRIGHT", self.Icon, -3, 3)
-
-    self.FlyoutArrowContainer = CreateFrame("Frame", nil, self)
-    self.FlyoutArrowContainer:SetAllPoints()
-    self.FlyoutArrowContainer:Hide()
-
-    local flyoutArrowNormal = self.FlyoutArrowContainer:CreateTexture(nil, "ARTWORK", nil, 2)
-    flyoutArrowNormal:Hide()
-    flyoutArrowNormal:SetAtlas("UI-HUD-ActionBar-Flyout")
-    flyoutArrowNormal:SetPoint("TOP")
-    flyoutArrowNormal:SetSize(18, 7)
-    self.FlyoutArrowContainer.FlyoutArrowNormal = flyoutArrowNormal
-
-    local flyoutArrowPushed = self.FlyoutArrowContainer:CreateTexture(nil, "ARTWORK", nil, 2)
-    flyoutArrowPushed:Hide()
-    flyoutArrowPushed:SetAtlas("UI-HUD-ActionBar-Flyout-Down")
-    flyoutArrowPushed:SetPoint("TOP")
-    flyoutArrowPushed:SetSize(18, 8)
-    self.FlyoutArrowContainer.FlyoutArrowPushed = flyoutArrowNormal
-
-    local flyoutArrowHighlight = self.FlyoutArrowContainer:CreateTexture(nil, "ARTWORK", nil, 2)
-    flyoutArrowHighlight:Hide()
-    flyoutArrowHighlight:SetAtlas("UI-HUD-ActionBar-Flyout-Mouseover")
-    flyoutArrowHighlight:SetPoint("TOP")
-    flyoutArrowHighlight:SetSize(18, 7)
-    self.FlyoutArrowContainer.FlyoutArrowHighlight = flyoutArrowHighlight
-
-    self.AutoCastShine = CreateFrame("Frame", "$parentShine", self, "AutoCastShineTemplate")
-    self.AutoCastShine:SetPoint("CENTER")
-    self.AutoCastShine:SetSize(40, 40)
-
-    -- these aliases are added for compatibility with other addons
-    self.icon = self.Icon
-    self.cooldown = self.Cooldown
-    self.chargeCooldown = self.ChargeCooldown
 end
 
 function ActionButton:Update()
@@ -294,7 +209,7 @@ function ActionButton:Update()
     self:UpdateFlashing()
     self:UpdateFlyout()
     self:UpdateIcon()
-    self:UpdateShown()
+    -- self:UpdateShown()
     self:UpdateUsable()
 end
 
@@ -377,10 +292,10 @@ end
 function ActionButton:UpdateIcon()
     local icon = GetActionTexture(self.action)
     if icon then
-        self.Icon:SetTexture(icon)
-        self.Icon:Show()
+        self.icon:SetTexture(icon)
+        self.icon:Show()
     else
-        self.Icon:Hide()
+        self.icon:Hide()
     end
 end
 
@@ -392,11 +307,14 @@ function ActionButton:UpdateOverrideBindings()
 end
 
 function ActionButton:UpdateShown()
-    if self.showgrid > 0 or HasAction(self.action) then
-        self:SetAlpha(1)
-    else
-        self:SetAlpha(0)
-    end
+    if InCombatLockdown() then return end
+
+    local show = (
+        (self:GetAttribute("showgrid") > 0 or HasAction(self:GetAttribute("action")))
+        and not self:GetAttribute("statehidden")
+    )
+
+    self:SetShown(show)
 end
 
 function ActionButton:UpdateTooltip()
@@ -412,7 +330,7 @@ function ActionButton:UpdateUsable(usable, oom, oor)
         oor = IsActionInRange(self.action) == false
     end
 
-    local icon = self.Icon
+    local icon = self.icon
 
     if oom then
         icon:SetDesaturated(true)
@@ -436,9 +354,7 @@ function ActionButton:UpdateUsable(usable, oom, oor)
 end
 
 function ActionButton:SetFlyoutDirection(direction, force)
-    if InCombatLockdown() then
-        return
-    end
+    if InCombatLockdown() then return end
 
     if (self.flyoutDirection ~= direction) or force then
         self.flyoutDirection = direction
@@ -475,17 +391,25 @@ function ActionButton:SetShowMacroText(show)
 end
 
 function ActionButton:SetShowGrid(reason, show, force)
-    local showgrid
+    if InCombatLockdown() then return end
+
+    local value = self:GetAttribute("showgrid") or 0
+    local prevValue = value
+
     if show then
-        showgrid = bit.bor(self.showgrid, reason)
+        value = bit.bor(value, reason)
     else
-        showgrid = bit.band(self.showgrid, bit.bnot(reason))
+        value = bit.band(value, bit.bnot(reason))
     end
 
-    if (self.showgrid ~= showgrid) or force then
-        self.showgrid = showgrid
+    if (value ~= prevValue) or force then
+        self:SetAttribute("showgrid", value)
         self:UpdateShown()
     end
+end
+
+function ActionButton:GetShowGrid()
+	return self:GetAttribute("showgrid") > 0
 end
 
 -- standard method references

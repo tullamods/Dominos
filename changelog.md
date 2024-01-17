@@ -8,16 +8,18 @@ Action Buttons in retail are no longer derived from ActionBarButtonTemplate. The
 in classic should be about the same as it was before.
 
 Benefits:
+
 * You'll (hopefully) no longer see cases where action buttons would randomly stop working when switching zones.
 * Generally action button behavior should be more consistent across all action buttons
 
 Drawbacks:
+
 * Press and hold casting is no longer supported. (This is an API limitation of using completely custom action buttons)
-* Empty buttons are no longer truly hidden, instead they're now transparent.
 * Addons that modify the stock action won't just work with Dominos anymore. They'll need to code in their own support
   (sorry).
 
 Other:
+
 * I've built tullaRange (coloring your action button completely red with out of range) into the retail version of the
   addon.
 

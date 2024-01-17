@@ -66,6 +66,7 @@ ActionButtons:SetScript("OnEvent", function(self, event, ...)
 end)
 
 ActionButtons:RegisterEvent("PLAYER_LOGIN")
+ActionButtons:Execute([[ ActionButtons = table.new() ]])
 
 -- events
 function ActionButtons:PLAYER_LOGIN()
@@ -116,6 +117,62 @@ function ActionButtons:PLAYER_LOGIN()
     end
 
     Addon.RegisterCallback(self, "SHOW_EMPTY_BUTTONS_CHANGED")
+
+    -- showgrid hack
+    self:SetAttributeNoHandler("showgrid", 0)
+    -- self:SetAttributeNoHandler("sgc", 1)
+    -- RegisterAttributeDriver(self, "sgc", 1)
+
+    -- self:SetAttributeNoHandler("_onattributechanged", [[
+    --     if name == "sgc" and value == 1 then
+    --         for button in pairs(ActionButtons) do
+    --             button:RunAttribute("UpdateShown")
+    --         end
+    --     end
+    -- ]])
+
+    self:SetAttributeNoHandler("SetShowGrid", [[
+        local reason, show = ...
+        local value = self:GetAttribute("showgrid")
+        local prevValue = value
+
+        if show then
+            if value % (reason * 2) < reason then
+                value = value + reason
+            end
+        elseif value % (reason * 2) >= reason then
+            value = value - reason
+        end
+
+        if prevValue ~= value then
+            self:SetAttribute("showgrid", value)
+
+            for button in pairs(ActionButtons) do
+                button:RunAttribute("SetShowGrid", reason, show)
+            end
+
+            -- self:SetAttribute("sgc", 0)
+        end
+    ]])
+
+    self:SetAttributeNoHandler("ForActionSlot", [[
+        local id, method = ...
+        for button, action in pairs(ActionButtons) do
+            if action == id then
+                button:RunAttribute(method)
+            end
+        end
+    ]])
+
+    ActionButton1:SetAttributeNoHandler("showgrid", 0)
+
+    self:WrapScript(ActionButton1, "OnAttributeChanged", [[
+        if name ~= "showgrid" then return end
+
+        for reason = 2, 4, 2 do
+            control:RunAttribute("SetShowGrid", reason, value % (reason * 2) >= reason)
+        end
+    ]])
 end
 
 function ActionButtons:ACTION_RANGE_CHECK_UPDATE(slot, isInRange, checksRange)
@@ -294,7 +351,12 @@ function ActionButtons:SHOW_EMPTY_BUTTONS_CHANGED(_, show)
     self:SetShowGrid(SHOW_GRID_REASONS.ADDON_SHOW_EMPTY_BUTTONS, show)
 end
 
-function ActionButtons:OnActionChanged(button, action, prevAction)
+function ActionButtons:OnActionChanged(buttonName, action, prevAction)
+    local button = _G[buttonName]
+    if button == nil then
+        return
+    end
+
     if prevAction ~= nil then
         self.actionButtons[prevAction][button] = nil
     end
@@ -306,6 +368,16 @@ function ActionButtons:OnActionChanged(button, action, prevAction)
 end
 
 -- api
+local ActionButton_AttributeChangedBefore = [[
+    if name == "action" then
+        local prevValue = ActionButtons[self]
+        if prevValue ~= value then
+            ActionButtons[self] = value
+            control:CallMethod("OnActionChanged", self:GetName(), value, prevValue)
+        end
+    end
+]]
+
 local ActionButton_ClickBefore = [[
     local actionType, id = GetActionInfo(self:GetAttribute("action"))
     if actionType == "spell" then
@@ -343,7 +415,11 @@ local ActionButton_ReceiveDragBefore = [[
 ]]
 
 local ActionButton_ReceiveDragAfter = [[
-    self:CallMethod("UpdateShown")
+    control:RunAttribute("ForActionSlot", self:GetAttribute("action"), "UpdateShown")
+]]
+
+local ActionButton_PostClickBefore = [[
+    control:RunAttribute("ForActionSlot", self:GetAttribute("action"), "UpdateShown")
 ]]
 
 function ActionButtons:GetOrCreateActionButton(id, parent)
@@ -351,15 +427,25 @@ function ActionButtons:GetOrCreateActionButton(id, parent)
     local button = _G[name]
 
     if button == nil then
-        button = CreateFrame("CheckButton", name, parent, "SecureActionButtonTemplate, SecureHandlerDragTemplate")
+        button = CreateFrame("CheckButton", name, parent, "SecureHandlerAttributeTemplate, SecureActionButtonTemplate, SecureHandlerDragTemplate, ActionButtonTemplate")
 
         Addon.ActionButton:Bind(button)
 
         button:OnCreate(id)
 
+        self:WrapScript(button, "OnAttributeChanged", ActionButton_AttributeChangedBefore)
         self:WrapScript(button, "OnClick", ActionButton_ClickBefore, ActionButton_ClickAfter)
         self:WrapScript(button, "OnDragStart", ActionButton_DragStartBefore)
         self:WrapScript(button, "OnReceiveDrag", ActionButton_ReceiveDragBefore, ActionButton_ReceiveDragAfter)
+        self:WrapScript(button, "PostClick", ActionButton_PostClickBefore)
+
+        -- register the button with the controller
+        self:SetFrameRef("add", button)
+
+        self:Execute([[
+            local button = self:GetFrameRef("add")
+            ActionButtons[button] = button:GetAttribute("action") or 0
+        ]])
 
         -- initialize showgrid values
         self:LoadShowGrid(button)
