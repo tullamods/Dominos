@@ -238,6 +238,7 @@ function Addon:GetDatabaseDefaults()
             showEquippedItemBorders = true,
             showTooltips = true,
             showTooltipsCombat = true,
+            showSpellGlows = true,
             useOverrideUI = self:IsBuild('retail', 'wrath'),
 
             minimap = { hide = false },
@@ -630,7 +631,7 @@ function Addon:ShowMacroText()
     return self.db.profile.showMacroText
 end
 
--- border
+-- equipped item borders
 function Addon:SetShowEquippedItemBorders(enable)
     self.db.profile.showEquippedItemBorders = enable and true
     self.Frame:ForEach('ForButtons', 'SetShowEquippedItemBorders', enable)
@@ -638,6 +639,16 @@ end
 
 function Addon:ShowEquippedItemBorders()
     return self.db.profile.showEquippedItemBorders
+end
+
+-- spell overlay glows
+function Addon:SetShowSpellGlows(enable)
+    self.db.profile.showSpellGlows = enable and true
+    self.callbacks:Fire("SHOW_SPELL_GLOWS_CHANGED", self:ShowingSpellGlows())
+end
+
+function Addon:ShowingSpellGlows()
+    return self.db.profile.showSpellGlows
 end
 
 -- override ui

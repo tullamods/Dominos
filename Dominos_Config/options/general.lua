@@ -155,6 +155,15 @@ Addon:AddOptionsPanel(
                 end,
                 width = 1.5,
             },
+            check(L.ShowSpellGlows) {
+                get = function()
+                    return ParentAddon:ShowingSpellGlows()
+                end,
+                set = function(_, enable)
+                    ParentAddon:SetShowSpellGlows(enable)
+                end,
+                width = 1.5,
+            },
             check(L.ThemeActionButtons) {
                 get = function()
                     return ParentAddon:ThemeButtons()

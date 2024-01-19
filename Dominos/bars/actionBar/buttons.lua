@@ -68,7 +68,11 @@ ActionButtons:Execute([[ ActionButtons = table.new() ]])
 
 -- events
 function ActionButtons:PLAYER_LOGIN()
-    self:Initialize()
+    -- initialize state
+    self:SetAttributeNoHandler("showgrid", 0)
+    self:SetAttribute("lockActionBars", GetCVarBool("lockActionBars"))
+    self:SetShowSpellGlows(Addon:ShowingSpellGlows())
+    self:SetShowGrid(self.ShowGridReasons.SHOW_EMPTY_BUTTONS, Addon:ShowGrid())
 
     -- game events
     self:TryRegisterEvent("ACTION_RANGE_CHECK_UPDATE")
@@ -88,8 +92,8 @@ function ActionButtons:PLAYER_LOGIN()
     self:TryRegisterEvent("PLAYER_ENTERING_WORLD")
     self:TryRegisterEvent("PLAYER_LEAVE_COMBAT")
     self:TryRegisterEvent("PLAYER_REGEN_ENABLED")
-    self:TryRegisterEvent("SPELL_ACTIVATION_OVERLAY_GLOW_HIDE")
-    self:TryRegisterEvent("SPELL_ACTIVATION_OVERLAY_GLOW_SHOW")
+    -- self:TryRegisterEvent("SPELL_ACTIVATION_OVERLAY_GLOW_HIDE")
+    -- self:TryRegisterEvent("SPELL_ACTIVATION_OVERLAY_GLOW_SHOW")
     self:TryRegisterEvent("SPELL_UPDATE_CHARGES")
     self:TryRegisterEvent("SPELL_UPDATE_ICON")
     self:TryRegisterEvent("START_AUTOREPEAT_SPELL")
@@ -112,23 +116,14 @@ function ActionButtons:PLAYER_LOGIN()
     if keybound then
         keybound.RegisterCallback(self, 'LIBKEYBOUND_ENABLED')
         keybound.RegisterCallback(self, 'LIBKEYBOUND_DISABLED')
+        self:SetShowGrid(self.ShowGridReasons.KEYBOUND_EVENT, keybound:IsShown())
     end
 
     Addon.RegisterCallback(self, "SHOW_EMPTY_BUTTONS_CHANGED")
+    Addon.RegisterCallback(self, "SHOW_SPELL_GLOWS_CHANGED")
+    Addon.RegisterCallback(self, "LAYOUT_LOADED")
 
     -- showgrid hack
-    self:SetAttributeNoHandler("showgrid", 0)
-    -- self:SetAttributeNoHandler("sgc", 1)
-    -- RegisterAttributeDriver(self, "sgc", 1)
-
-    -- self:SetAttributeNoHandler("_onattributechanged", [[
-    --     if name == "sgc" and value == 1 then
-    --         for button in pairs(ActionButtons) do
-    --             button:RunAttribute("UpdateShown")
-    --         end
-    --     end
-    -- ]])
-
     self:SetAttributeNoHandler("SetShowGrid", [[
         local reason, show = ...
         local value = self:GetAttribute("showgrid")
@@ -349,6 +344,15 @@ function ActionButtons:SHOW_EMPTY_BUTTONS_CHANGED(_, show)
     self:SetShowGrid(self.ShowGridReasons.SHOW_EMPTY_BUTTONS, show)
 end
 
+function ActionButtons:SHOW_SPELL_GLOWS_CHANGED(_, show)
+    self:SetShowSpellGlows(show)
+end
+
+function ActionButtons:LAYOUT_LOADED()
+    self:SetShowSpellGlows(Addon:ShowingSpellGlows())
+    self:SetShowGrid(self.ShowGridReasons.SHOW_EMPTY_BUTTONS, Addon:ShowGrid())
+end
+
 function ActionButtons:OnActionChanged(buttonName, action, prevAction)
     local button = _G[buttonName]
     if button == nil then
@@ -449,12 +453,23 @@ function ActionButtons:GetOrCreateActionButton(id, parent)
     return button
 end
 
-function ActionButtons:Initialize()
-    self:SetAttribute("lockActionBars", GetCVarBool("lockActionBars"))
-end
-
 function ActionButtons:SetShowGrid(reason, show)
     self:ForAll("SetShowGrid", reason, show)
+end
+
+function ActionButtons:SetShowSpellGlows(enable)
+    if enable then
+        if not self:IsEventRegistered("SPELL_ACTIVATION_OVERLAY_GLOW_SHOW") then
+            self:TryRegisterEvent("SPELL_ACTIVATION_OVERLAY_GLOW_HIDE")
+            self:TryRegisterEvent("SPELL_ACTIVATION_OVERLAY_GLOW_SHOW")
+        end
+    else
+        if self:IsEventRegistered("SPELL_ACTIVATION_OVERLAY_GLOW_SHOW") then
+            self:UnregisterEvent("SPELL_ACTIVATION_OVERLAY_GLOW_HIDE")
+            self:UnregisterEvent("SPELL_ACTIVATION_OVERLAY_GLOW_SHOW")
+            self:ForAll("HideOverlayGlow")
+        end
+    end
 end
 
 function ActionButtons:SaveActionButtonUseKeyDown()
