@@ -19,9 +19,6 @@ ActionButtons.ShowGridReasons = {
 -- [button] = id
 ActionButtons.buttons = {}
 
--- [reason] = show
-ActionButtons.showGridStates = {}
-
 -- dirty secure attributes
 ActionButtons.dirtyAttributes = {}
 
@@ -62,15 +59,15 @@ function ActionButtons:CVAR_UPDATE(name)
 end
 
 function ActionButtons:LIBKEYBOUND_ENABLED()
-    self:SetShowGrid(SHOW_GRID_REASONS.KEYBOUND_EVENT, true)
+    self:SetShowGrid(self.ShowGridReasons.KEYBOUND_EVENT, true)
 end
 
 function ActionButtons:LIBKEYBOUND_DISABLED()
-    self:SetShowGrid(SHOW_GRID_REASONS.KEYBOUND_EVENT, false)
+    self:SetShowGrid(self.ShowGridReasons.KEYBOUND_EVENT, false)
 end
 
 function ActionButtons:SHOW_EMPTY_BUTTONS_CHANGED(_, show)
-    self:SetShowGrid(SHOW_GRID_REASONS.ADDON_SHOW_EMPTY_BUTTONS, show)
+    self:SetShowGrid(self.ShowGridReasons.SHOW_EMPTY_BUTTONS, show)
 end
 
 -- api
@@ -124,7 +121,6 @@ function ActionButtons:GetOrCreateActionButton(id, parent)
         Mixin(button, Addon.ActionButton)
         button:OnCreate(id)
         self:WrapScript(button, "OnClick", ActionButton_ClickBefore)
-        self:LoadShowGrid(button)
 
         self.buttons[button] = id
     -- a standard UI button we're reusing
@@ -140,7 +136,6 @@ function ActionButtons:GetOrCreateActionButton(id, parent)
         button:OnCreate(id)
 
         self:WrapScript(button, "OnClick", ActionButton_ClickBefore)
-        self:LoadShowGrid(button)
 
         self.buttons[button] = id
     end
@@ -149,28 +144,11 @@ function ActionButtons:GetOrCreateActionButton(id, parent)
 end
 
 function ActionButtons:Initialize()
-    -- load show grid states
-    self.showGridStates[SHOW_GRID_REASONS.ADDON_SHOW_EMPTY_BUTTONS] = Addon:ShowGrid()
-
-    local keybound = LibStub("LibKeyBound-1.0", true)
-    if keybound then
-        self.showGridStates[SHOW_GRID_REASONS.KEYBOUND_EVENT] = keybound:IsShown()
-    end
-
     self:SetAttribute("lockActionBars", GetCVarBool("lockActionBars"))
     self:SetAttribute("ActionButtonUseKeyDown", GetCVarBool("ActionButtonUseKeyDown"))
 end
 
-function ActionButtons:LoadShowGrid(button)
-    local states = self.showGridStates
-
-    for _, reason in pairs(SHOW_GRID_REASONS) do
-        button:SetShowGrid(reason, states[reason] and true)
-    end
-end
-
 function ActionButtons:SetShowGrid(reason, show)
-    self.showGridStates[reason] = show and true or nil
     self:ForAll("SetShowGrid", reason, show)
 end
 
@@ -194,6 +172,10 @@ function ActionButtons:ForAll(method, ...)
             error(("ActionButton %d does not have a method named %q"):format(button.id, method))
         end
     end
+end
+
+function ActionButtons:GetAll()
+    return pairs(self.buttons)
 end
 
 -- exports

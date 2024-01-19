@@ -346,7 +346,7 @@ function ActionButtons:LIBKEYBOUND_DISABLED()
 end
 
 function ActionButtons:SHOW_EMPTY_BUTTONS_CHANGED(_, show)
-    self:SetShowGrid(self.ShowGridReasons.ADDON_SHOW_EMPTY_BUTTONS, show)
+    self:SetShowGrid(self.ShowGridReasons.SHOW_EMPTY_BUTTONS, show)
 end
 
 function ActionButtons:OnActionChanged(buttonName, action, prevAction)
