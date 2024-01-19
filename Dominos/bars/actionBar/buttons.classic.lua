@@ -94,16 +94,16 @@ local function GetActionButtonName(id)
         return ACTION_BUTTON_NAME_TEMPLATE:format(id)
     -- 3
     elseif id <= 36 then
-        return "VerticalMultiBar3Button" .. (id - 24)
+        return "MultiBarRightButton" .. (id - 24)
     -- 4
     elseif id <= 48 then
-        return "VerticalMultiBar4Button" .. (id - 36)
+        return "MultiBarLeftButton" .. (id - 36)
     -- 5
     elseif id <= 60 then
-        return "HorizontalMultiBar2Button" .. (id - 48)
+        return "MultiBarBottomRightButton" .. (id - 48)
     -- 6
     elseif id <= 72 then
-        return "HorizontalMultiBar1Button" .. (id - 60)
+        return "MultiBarBottomLeftButton" .. (id - 60)
     -- 7+
     else
         return ACTION_BUTTON_NAME_TEMPLATE:format(id)
@@ -126,17 +126,10 @@ function ActionButtons:GetOrCreateActionButton(id, parent)
     -- a standard UI button we're reusing
     elseif self.buttons[button] == nil then
         Mixin(button, Addon.ActionButton)
-
         button:SetID(0)
-
-        if not button.commandName then
-            button.commandName = button:GetName():upper()
-        end
-
         button:OnCreate(id)
 
         self:WrapScript(button, "OnClick", ActionButton_ClickBefore)
-
         self.buttons[button] = id
     end
 

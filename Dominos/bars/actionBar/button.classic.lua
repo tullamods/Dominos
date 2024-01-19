@@ -8,10 +8,52 @@ if Addon:IsBuild("retail") then return end
 
 local ActionButton = { }
 
+local function GetActionButtonCommand(id)
+    -- 0
+    if id <= 0 then
+        return
+    -- 1
+    elseif id <= 12 then
+        return "ACTIONBUTTON" .. id
+    -- 2
+    elseif id <= 24 then
+        return
+    -- 3
+    elseif id <= 36 then
+        return "MULTIACTIONBAR3BUTTON" .. (id - 24)
+    -- 4
+    elseif id <= 48 then
+        return "MULTIACTIONBAR4BUTTON" .. (id - 36)
+    -- 5
+    elseif id <= 60 then
+        return "MULTIACTIONBAR2BUTTON" .. (id - 48)
+    -- 6
+    elseif id <= 72 then
+        return "MULTIACTIONBAR1BUTTON" .. (id - 60)
+    -- 7-11
+    elseif id <= 132 then
+        return
+    -- 12
+    elseif id <= 144 then
+        return "MULTIACTIONBAR5BUTTON" .. (id - 132)
+    -- 13
+    elseif id <= 156 then
+        return "MULTIACTIONBAR6BUTTON" .. (id - 144)
+    -- 14
+    elseif id <= 168 then
+        return "MULTIACTIONBAR7BUTTON" .. (id - 156)
+    end
+end
+
+
 function ActionButton:OnCreate(id)
     -- initialize state
     self.id = id
     self.action = 0
+
+    if self.commandName == nil then
+        self.commandName = GetActionButtonCommand(id)
+    end
 
     -- initialize secure state
     self:SetAttributeNoHandler("action", 0)
