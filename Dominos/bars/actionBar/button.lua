@@ -5,34 +5,34 @@ local function GetActionButtonCommand(id)
     -- 0
     if id <= 0 then
         return
-    -- 1
+        -- 1
     elseif id <= 12 then
         return "ACTIONBUTTON" .. id
-    -- 2
+        -- 2
     elseif id <= 24 then
         return
-    -- 3
+        -- 3
     elseif id <= 36 then
         return "MULTIACTIONBAR3BUTTON" .. (id - 24)
-    -- 4
+        -- 4
     elseif id <= 48 then
         return "MULTIACTIONBAR4BUTTON" .. (id - 36)
-    -- 5
+        -- 5
     elseif id <= 60 then
         return "MULTIACTIONBAR2BUTTON" .. (id - 48)
-    -- 6
+        -- 6
     elseif id <= 72 then
         return "MULTIACTIONBAR1BUTTON" .. (id - 60)
-    -- 7-11
+        -- 7-11
     elseif id <= 132 then
         return
-    -- 12
+        -- 12
     elseif id <= 144 then
         return "MULTIACTIONBAR5BUTTON" .. (id - 132)
-    -- 13
+        -- 13
     elseif id <= 156 then
         return "MULTIACTIONBAR6BUTTON" .. (id - 144)
-    -- 14
+        -- 14
     elseif id <= 168 then
         return "MULTIACTIONBAR7BUTTON" .. (id - 156)
     end
@@ -80,8 +80,8 @@ function ActionButton:OnCreate(id)
     self:SetAttributeNoHandler("useparent-unit", true)
 
     -- register for clicks
-	self:RegisterForDrag("LeftButton", "RightButton")
-	self:RegisterForClicks("AnyUp", "AnyDown")
+    self:RegisterForDrag("LeftButton", "RightButton")
+    self:RegisterForClicks("AnyUp", "AnyDown")
     self:EnableMouseWheel()
 
     -- script handlers
@@ -189,7 +189,6 @@ end
 
 -- setup all of the necessary frames and textures
 function ActionButton:Construct()
-
     -- textures - artwork
     self.Flash.Animation = self.Flash:CreateAnimationGroup()
     self.Flash.Animation:SetLooping("BOUNCE")
@@ -198,6 +197,9 @@ function ActionButton:Construct()
     self.Flash.Animation.Alpha:SetDuration(ATTACK_BUTTON_FLASH_TIME)
     self.Flash.Animation.Alpha:SetFromAlpha(0)
     self.Flash.Animation.Alpha:SetToAlpha(1)
+
+    self.Border:SetVertexColor(0, 1.0, 0, 0.5)
+    self.cooldown:SetScript("OnCooldownDone", self.OnCooldownDone)
 end
 
 function ActionButton:Update()
@@ -250,9 +252,9 @@ end
 
 function ActionButton:UpdateCount()
     local action = self.action
+    local count = GetActionCount(action) or 0
 
-    if IsConsumableAction(action) or IsStackableAction(action) then
-        local count = GetActionCount(action) or 0
+    if IsConsumableAction(action) or IsStackableAction(action) or (not IsItemAction(action) and count > 0) then
         if count > 999 then
             self.Count:SetFormattedText("%.1f%k", count / 1000)
             self.Name:SetText("")
@@ -342,7 +344,7 @@ function ActionButton:UpdateUsable(usable, oom, oor)
         icon:SetDesaturated(false)
         icon:SetVertexColor(1, 1, 1)
     else
-        icon:SetDesaturated(true)
+        icon:SetDesaturated(false)
         icon:SetVertexColor(0.4, 0.4, 0.4)
     end
 
@@ -409,7 +411,90 @@ function ActionButton:SetShowGrid(reason, show, force)
 end
 
 function ActionButton:GetShowGrid()
-	return self:GetAttribute("showgrid") > 0
+    return self:GetAttribute("showgrid") > 0
+end
+
+-- this is mostly a revert of the 10.1.x behavior to prior versions
+function ActionButton:UpdateCooldown()
+    local action = self.action
+    local actionType, actionID
+    if action then
+        actionType, actionID = GetActionInfo(action)
+    end
+
+    local onEquipPassiveSpellID
+    if actionID then
+        onEquipPassiveSpellID = C_ActionBar.GetItemActionOnEquipSpellID(action)
+    end
+
+    local passiveCooldownSpellID
+    if onEquipPassiveSpellID then
+        passiveCooldownSpellID = C_UnitAuras.GetCooldownAuraBySpellID(onEquipPassiveSpellID)
+    elseif (actionType and actionType == "spell") and actionID then
+        passiveCooldownSpellID = C_UnitAuras.GetCooldownAuraBySpellID(actionID)
+    end
+
+    local auraData
+    if passiveCooldownSpellID and passiveCooldownSpellID ~= 0 then
+        auraData = C_UnitAuras.GetPlayerAuraBySpellID(passiveCooldownSpellID)
+    end
+
+    local locStart, locDuration
+    local start, duration, enable, charges, maxCharges, chargeStart, chargeDuration
+    local modRate, chargeModRate
+
+    if auraData then
+        local currentTime = GetTime()
+        local timeUntilExpire = auraData.expirationTime - currentTime
+        local howMuchTimeHasPassed = auraData.duration - timeUntilExpire
+
+        locStart = currentTime - howMuchTimeHasPassed
+        locDuration = auraData.expirationTime - currentTime
+        start = currentTime - howMuchTimeHasPassed
+        duration = auraData.duration
+        modRate = auraData.timeMod
+        charges = auraData.charges
+        maxCharges = auraData.maxCharges
+        chargeStart = currentTime * 0.001
+        chargeDuration = duration * 0.001
+        chargeModRate = modRate
+        enable = 1
+    else
+        locStart, locDuration = GetActionLossOfControlCooldown(self.action)
+        start, duration, enable, modRate = GetActionCooldown(self.action)
+        charges, maxCharges, chargeStart, chargeDuration, chargeModRate = GetActionCharges(self.action)
+    end
+
+    if (locStart + locDuration) > (start + duration) then
+        if self.cooldown.currentCooldownType ~= COOLDOWN_TYPE_LOSS_OF_CONTROL then
+            self.cooldown:SetEdgeTexture("Interface\\Cooldown\\edge-LoC")
+            self.cooldown:SetSwipeColor(0.17, 0, 0)
+            self.cooldown:SetHideCountdownNumbers(true)
+            self.cooldown.currentCooldownType = COOLDOWN_TYPE_LOSS_OF_CONTROL
+        end
+
+        CooldownFrame_Set(self.cooldown, locStart, locDuration, true, true, modRate)
+        ClearChargeCooldown(self)
+    else
+        if self.cooldown.currentCooldownType ~= COOLDOWN_TYPE_NORMAL then
+            self.cooldown:SetEdgeTexture("Interface\\Cooldown\\edge")
+            self.cooldown:SetSwipeColor(0, 0, 0)
+            self.cooldown:SetHideCountdownNumbers(false)
+            self.cooldown.currentCooldownType = COOLDOWN_TYPE_NORMAL
+        end
+
+        if charges and maxCharges and maxCharges > 1 and charges < maxCharges then
+            StartChargeCooldown(self, chargeStart, chargeDuration, chargeModRate)
+        else
+            ClearChargeCooldown(self)
+        end
+
+        CooldownFrame_Set(self.cooldown, start, duration, enable, false, modRate)
+    end
+end
+
+function ActionButton.OnCooldownDone(cooldown)
+    cooldown:GetParent():UpdateCooldown()
 end
 
 -- standard method references
