@@ -48,7 +48,11 @@ function Addon:OnEnable()
 
     -- watch for binding updates, updating all bars on the last one that happens
     -- in rapid sequence
-    self.UpdateHotkeys = self:Debounce(function() self.Frame:ForEach('ForButtons', 'UpdateHotkeys') end, 0.01)
+    self.UpdateHotkeys = self:Debounce(function()
+        self.Frame:ForEach('ForButtons', 'UpdateOverrideBindings')
+        self.Frame:ForEach('ForButtons', 'UpdateHotkeys')
+    end, 0.01)
+
     self:RegisterEvent('UPDATE_BINDINGS')
     self:RegisterEvent("GAME_PAD_ACTIVE_CHANGED", "UPDATE_BINDINGS")
 end

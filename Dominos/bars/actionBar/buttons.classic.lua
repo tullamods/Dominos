@@ -7,11 +7,12 @@ local ActionButtons = CreateFrame('Frame', nil, nil, 'SecureHandlerBaseTemplate'
 local ACTION_BUTTON_NAME_TEMPLATE = AddonName .. "ActionButton%d"
 
 -- global showgrid event reasons
-local SHOW_GRID_REASONS = {
+ActionButtons.ShowGridReasons = {
     -- GAME_EVENT = 1,
-    KEYBOUND_EVENT = 8,
-    ADDON_SHOW_EMPTY_BUTTONS = 16,
-    ADDON_SHOW_EMPTY_BUTTONS_PER_BAR = 32
+    -- SPELLBOOK_SHOWN = 2,
+    KEYBOUND_EVENT = 16,
+    SHOW_EMPTY_BUTTONS = 32,
+    SHOW_EMPTY_BUTTONS_PER_BAR = 64
 }
 
 -- states

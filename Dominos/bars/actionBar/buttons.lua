@@ -7,13 +7,14 @@ local ActionButtons = CreateFrame('Frame', nil, nil, 'SecureHandlerBaseTemplate'
 local ACTION_BUTTON_NAME_TEMPLATE = AddonName .. "ActionButton%d"
 
 -- global showgrid event reasons
-local SHOW_GRID_REASONS = {
+ActionButtons.ShowGridReasons = {
     -- CVAR = 1,
     GAME_EVENT = 2,
     SPELLBOOK_SHOWN = 4,
-    KEYBOUND_EVENT = 8,
-    ADDON_SHOW_EMPTY_BUTTONS = 16,
-    ADDON_SHOW_EMPTY_BUTTONS_PER_BAR = 32
+
+    KEYBOUND_EVENT = 16,
+    SHOW_EMPTY_BUTTONS = 32,
+    SHOW_EMPTY_BUTTONS_PER_BAR = 64
 }
 
 -- how many bars are available
@@ -52,9 +53,6 @@ ActionButtons.actionButtons = setmetatable({}, {
         return r
     end
 })
-
--- [reason] = show
-ActionButtons.showGridStates = {}
 
 -- dirty secure attributes
 ActionButtons.dirtyAttributes = {}
@@ -203,11 +201,11 @@ function ActionButtons:ACTION_USABLE_CHANGED(changes)
 end
 
 function ActionButtons:ACTIONBAR_SHOWGRID()
-    self:SetShowGrid(SHOW_GRID_REASONS.GAME_EVENT, true)
+    self:SetShowGrid(self.ShowGridReasons.GAME_EVENT, true)
 end
 
 function ActionButtons:ACTIONBAR_HIDEGRID()
-    self:SetShowGrid(SHOW_GRID_REASONS.GAME_EVENT, false)
+    self:SetShowGrid(self.ShowGridReasons.GAME_EVENT, false)
 end
 
 function ActionButtons:ACTIONBAR_UPDATE_STATE()
@@ -340,15 +338,15 @@ end
 
 -- addon callbacks
 function ActionButtons:LIBKEYBOUND_ENABLED()
-    self:SetShowGrid(SHOW_GRID_REASONS.KEYBOUND_EVENT, true)
+    self:SetShowGrid(self.ShowGridReasons.KEYBOUND_EVENT, true)
 end
 
 function ActionButtons:LIBKEYBOUND_DISABLED()
-    self:SetShowGrid(SHOW_GRID_REASONS.KEYBOUND_EVENT, false)
+    self:SetShowGrid(self.ShowGridReasons.KEYBOUND_EVENT, false)
 end
 
 function ActionButtons:SHOW_EMPTY_BUTTONS_CHANGED(_, show)
-    self:SetShowGrid(SHOW_GRID_REASONS.ADDON_SHOW_EMPTY_BUTTONS, show)
+    self:SetShowGrid(self.ShowGridReasons.ADDON_SHOW_EMPTY_BUTTONS, show)
 end
 
 function ActionButtons:OnActionChanged(buttonName, action, prevAction)
@@ -446,36 +444,16 @@ function ActionButtons:GetOrCreateActionButton(id, parent)
             local button = self:GetFrameRef("add")
             ActionButtons[button] = button:GetAttribute("action") or 0
         ]])
-
-        -- initialize showgrid values
-        self:LoadShowGrid(button)
     end
 
     return button
 end
 
 function ActionButtons:Initialize()
-    -- load show grid states
-    self.showGridStates[SHOW_GRID_REASONS.ADDON_SHOW_EMPTY_BUTTONS] = Addon:ShowGrid()
-
-    local keybound = LibStub("LibKeyBound-1.0", true)
-    if keybound then
-        self.showGridStates[SHOW_GRID_REASONS.KEYBOUND_EVENT] = keybound:IsShown()
-    end
-
     self:SetAttribute("lockActionBars", GetCVarBool("lockActionBars"))
 end
 
-function ActionButtons:LoadShowGrid(button)
-    local states = self.showGridStates
-
-    for _, reason in pairs(SHOW_GRID_REASONS) do
-        button:SetShowGrid(reason, states[reason] and true)
-    end
-end
-
 function ActionButtons:SetShowGrid(reason, show)
-    self.showGridStates[reason] = show and true or nil
     self:ForAll("SetShowGrid", reason, show)
 end
 
@@ -574,6 +552,10 @@ function ActionButtons:ForSpellID(spellID, method, ...)
             end
         end
     end
+end
+
+function ActionButtons:GetAll()
+    return pairs(self.actionButtons)
 end
 
 -- exports

@@ -23,18 +23,18 @@ local function GetActionButtonCommand(id)
     -- 6
     elseif id <= 72 then
         return "MULTIACTIONBAR1BUTTON" .. (id - 60)
-    -- 7-12
-    elseif id <= 120 then
-        return
-    -- 13
+    -- 7-11
     elseif id <= 132 then
-        return "MULTIACTIONBAR5BUTTON" .. (id - 120)
-    -- 14
+        return
+    -- 12
     elseif id <= 144 then
-        return "MULTIACTIONBAR6BUTTON" .. (id - 132)
-    -- 15
+        return "MULTIACTIONBAR5BUTTON" .. (id - 132)
+    -- 13
     elseif id <= 156 then
-        return "MULTIACTIONBAR7BUTTON" .. (id - 144)
+        return "MULTIACTIONBAR6BUTTON" .. (id - 144)
+    -- 14
+    elseif id <= 168 then
+        return "MULTIACTIONBAR7BUTTON" .. (id - 156)
     end
 end
 
