@@ -555,7 +555,7 @@ function ActionButtons:ForSpellID(spellID, method, ...)
 end
 
 function ActionButtons:GetAll()
-    return pairs(self.actionButtons)
+    return pairs(self.buttons)
 end
 
 -- exports
