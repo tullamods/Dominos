@@ -37,18 +37,22 @@ ActionButtons:RegisterEvent("PLAYER_LOGIN")
 
 -- events
 function ActionButtons:PLAYER_LOGIN()
-    self:Initialize()
-
+    self:SetAttribute("lockActionBars", GetCVarBool("lockActionBars"))
+    self:SetAttribute("ActionButtonUseKeyDown", GetCVarBool("ActionButtonUseKeyDown"))
     self:RegisterEvent("CVAR_UPDATE")
 
-    -- addon callbacks
+    -- watch the global showgrid setting
+    self:SetShowGrid(Addon:ShowGrid(), self.ShowGridReasons.SHOW_EMPTY_BUTTONS)
+    Addon.RegisterCallback(self, "SHOW_EMPTY_BUTTONS_CHANGED")
+    Addon.RegisterCallback(self, "LAYOUT_LOADED")
+
+    -- watch for keybound show/hide
     local keybound = LibStub("LibKeyBound-1.0", true)
     if keybound then
         keybound.RegisterCallback(self, 'LIBKEYBOUND_ENABLED')
         keybound.RegisterCallback(self, 'LIBKEYBOUND_DISABLED')
+        self:SetShowGrid(keybound:IsShown(), self.ShowGridReasons.KEYBOUND_EVENT)
     end
-
-    Addon.RegisterCallback(self, "SHOW_EMPTY_BUTTONS_CHANGED")
 end
 
 -- addon callbacks
@@ -59,15 +63,19 @@ function ActionButtons:CVAR_UPDATE(name)
 end
 
 function ActionButtons:LIBKEYBOUND_ENABLED()
-    self:SetShowGrid(self.ShowGridReasons.KEYBOUND_EVENT, true)
+    self:SetShowGrid(true, self.ShowGridReasons.KEYBOUND_EVENT)
 end
 
 function ActionButtons:LIBKEYBOUND_DISABLED()
-    self:SetShowGrid(self.ShowGridReasons.KEYBOUND_EVENT, false)
+    self:SetShowGrid(false, self.ShowGridReasons.KEYBOUND_EVENT)
 end
 
 function ActionButtons:SHOW_EMPTY_BUTTONS_CHANGED(_, show)
-    self:SetShowGrid(self.ShowGridReasons.SHOW_EMPTY_BUTTONS, show)
+    self:SetShowGrid(show, self.ShowGridReasons.SHOW_EMPTY_BUTTONS)
+end
+
+function ActionButtons:LAYOUT_LOADED()
+    self:SetShowGrid(Addon:ShowGrid(), self.ShowGridReasons.SHOW_EMPTY_BUTTONS)
 end
 
 -- api
@@ -136,13 +144,8 @@ function ActionButtons:GetOrCreateActionButton(id, parent)
     return button
 end
 
-function ActionButtons:Initialize()
-    self:SetAttribute("lockActionBars", GetCVarBool("lockActionBars"))
-    self:SetAttribute("ActionButtonUseKeyDown", GetCVarBool("ActionButtonUseKeyDown"))
-end
-
-function ActionButtons:SetShowGrid(reason, show)
-    self:ForAll("SetShowGrid", reason, show)
+function ActionButtons:SetShowGrid(show, reason)
+    self:ForAll("SetShowGrid", show, reason)
 end
 
 function ActionButtons:TrySetAttribute(key, value)

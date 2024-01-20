@@ -72,7 +72,7 @@ function ActionButtons:PLAYER_LOGIN()
     self:SetAttributeNoHandler("showgrid", 0)
     self:SetAttribute("lockActionBars", GetCVarBool("lockActionBars"))
     self:SetShowSpellGlows(Addon:ShowingSpellGlows())
-    self:SetShowGrid(self.ShowGridReasons.SHOW_EMPTY_BUTTONS, Addon:ShowGrid())
+    self:SetShowGrid(Addon:ShowGrid(), self.ShowGridReasons.SHOW_EMPTY_BUTTONS)
 
     -- game events
     self:TryRegisterEvent("ACTION_RANGE_CHECK_UPDATE")
@@ -112,20 +112,20 @@ function ActionButtons:PLAYER_LOGIN()
     self:TryRegisterUnitEvent("UNIT_FLAGS", "pet")
 
     -- addon callbacks
-    local keybound = LibStub("LibKeyBound-1.0", true)
-    if keybound then
-        keybound.RegisterCallback(self, 'LIBKEYBOUND_ENABLED')
-        keybound.RegisterCallback(self, 'LIBKEYBOUND_DISABLED')
-        self:SetShowGrid(self.ShowGridReasons.KEYBOUND_EVENT, keybound:IsShown())
-    end
-
     Addon.RegisterCallback(self, "SHOW_EMPTY_BUTTONS_CHANGED")
     Addon.RegisterCallback(self, "SHOW_SPELL_GLOWS_CHANGED")
     Addon.RegisterCallback(self, "LAYOUT_LOADED")
 
+    local keybound = LibStub("LibKeyBound-1.0", true)
+    if keybound then
+        keybound.RegisterCallback(self, 'LIBKEYBOUND_ENABLED')
+        keybound.RegisterCallback(self, 'LIBKEYBOUND_DISABLED')
+        self:SetShowGrid(keybound:IsShown(), self.ShowGridReasons.KEYBOUND_EVENT)
+    end
+
     -- showgrid hack
     self:SetAttributeNoHandler("SetShowGrid", [[
-        local reason, show = ...
+        local show, reason, force = ...
         local value = self:GetAttribute("showgrid")
         local prevValue = value
 
@@ -137,14 +137,12 @@ function ActionButtons:PLAYER_LOGIN()
             value = value - reason
         end
 
-        if prevValue ~= value then
+        if (prevValue ~= value) or force then
             self:SetAttribute("showgrid", value)
 
             for button in pairs(ActionButtons) do
-                button:RunAttribute("SetShowGrid", reason, show)
+                button:RunAttribute("SetShowGrid", show, reason)
             end
-
-            -- self:SetAttribute("sgc", 0)
         end
     ]])
 
@@ -163,7 +161,8 @@ function ActionButtons:PLAYER_LOGIN()
         if name ~= "showgrid" then return end
 
         for reason = 2, 4, 2 do
-            control:RunAttribute("SetShowGrid", reason, value % (reason * 2) >= reason)
+            local show = value % (reason * 2) >= reason
+            control:RunAttribute("SetShowGrid", show, reason)
         end
     ]])
 end
@@ -196,11 +195,11 @@ function ActionButtons:ACTION_USABLE_CHANGED(changes)
 end
 
 function ActionButtons:ACTIONBAR_SHOWGRID()
-    self:SetShowGrid(self.ShowGridReasons.GAME_EVENT, true)
+    self:SetShowGrid(true, self.ShowGridReasons.GAME_EVENT)
 end
 
 function ActionButtons:ACTIONBAR_HIDEGRID()
-    self:SetShowGrid(self.ShowGridReasons.GAME_EVENT, false)
+    self:SetShowGrid(false, self.ShowGridReasons.GAME_EVENT)
 end
 
 function ActionButtons:ACTIONBAR_UPDATE_STATE()
@@ -333,15 +332,15 @@ end
 
 -- addon callbacks
 function ActionButtons:LIBKEYBOUND_ENABLED()
-    self:SetShowGrid(self.ShowGridReasons.KEYBOUND_EVENT, true)
+    self:SetShowGrid(true, self.ShowGridReasons.KEYBOUND_EVENT)
 end
 
 function ActionButtons:LIBKEYBOUND_DISABLED()
-    self:SetShowGrid(self.ShowGridReasons.KEYBOUND_EVENT, false)
+    self:SetShowGrid(false, self.ShowGridReasons.KEYBOUND_EVENT)
 end
 
 function ActionButtons:SHOW_EMPTY_BUTTONS_CHANGED(_, show)
-    self:SetShowGrid(self.ShowGridReasons.SHOW_EMPTY_BUTTONS, show)
+    self:SetShowGrid(show, self.ShowGridReasons.SHOW_EMPTY_BUTTONS)
 end
 
 function ActionButtons:SHOW_SPELL_GLOWS_CHANGED(_, show)
@@ -350,7 +349,7 @@ end
 
 function ActionButtons:LAYOUT_LOADED()
     self:SetShowSpellGlows(Addon:ShowingSpellGlows())
-    self:SetShowGrid(self.ShowGridReasons.SHOW_EMPTY_BUTTONS, Addon:ShowGrid())
+    self:SetShowGrid(Addon:ShowGrid(), self.ShowGridReasons.SHOW_EMPTY_BUTTONS)
 end
 
 function ActionButtons:OnActionChanged(buttonName, action, prevAction)
@@ -453,8 +452,8 @@ function ActionButtons:GetOrCreateActionButton(id, parent)
     return button
 end
 
-function ActionButtons:SetShowGrid(reason, show)
-    self:ForAll("SetShowGrid", reason, show)
+function ActionButtons:SetShowGrid(show, reason)
+    self:ForAll("SetShowGrid", show, reason)
 end
 
 function ActionButtons:SetShowSpellGlows(enable)

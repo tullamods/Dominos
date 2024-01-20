@@ -114,7 +114,7 @@ function ActionButton:OnCreate(id)
     ]])
 
     self:SetAttributeNoHandler("SetShowGrid", [[
-        local reason, show = ...
+        local show, reason, force = ...
         local value = self:GetAttribute("showgrid")
         local prevValue = value
 
@@ -126,7 +126,7 @@ function ActionButton:OnCreate(id)
             value = value - reason
         end
 
-        if prevValue ~= value then
+        if (prevValue ~= value) or force then
             self:SetAttribute("showgrid", value)
 
             local show = (value > 0 or HasAction(self:GetAttribute("action")))
@@ -392,8 +392,12 @@ function ActionButton:SetShowMacroText(show)
     self.Name:SetShown(show and true)
 end
 
-function ActionButton:SetShowGrid(reason, show, force)
+function ActionButton:SetShowGrid(show, reason, force)
     if InCombatLockdown() then return end
+
+    if reason == nil then
+        error("Usage: ActionButton:SetShowGrid(show, reason, [, force?])", 2)
+    end
 
     local value = self:GetAttribute("showgrid") or 0
     local prevValue = value

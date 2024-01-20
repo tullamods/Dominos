@@ -45,7 +45,6 @@ local function GetActionButtonCommand(id)
     end
 end
 
-
 function ActionButton:OnCreate(id)
     -- initialize state
     self.id = id
@@ -78,12 +77,12 @@ function ActionButton:OnCreate(id)
     self:Hide()
 end
 
-function ActionButton:SetShowGrid(reason, show, force)
-    if reason == nil then
-        error("Usage: ActionButton:SetShowGrid(reason, show [, force?])", 2)
-    end
-
+function ActionButton:SetShowGrid(show, reason, force)
     if InCombatLockdown() then return end
+
+    if reason == nil then
+        error("Usage: ActionButton:SetShowGrid(show, reason, [, force?])", 2)
+    end
 
     local value = self:GetAttribute("showgrid") or 0
     local prevValue = value
@@ -101,9 +100,7 @@ function ActionButton:SetShowGrid(reason, show, force)
 end
 
 function ActionButton:UpdateShown()
-    if InCombatLockdown() then
-        return
-    end
+    if InCombatLockdown() then return end
 
     local show = (self:GetAttribute("showgrid") > 0 or HasAction(self:GetAttribute("action")))
         and not self:GetAttribute("statehidden")
@@ -113,9 +110,7 @@ end
 
 -- configuration commands
 function ActionButton:SetFlyoutDirection(direction)
-    if InCombatLockdown() then
-        return
-    end
+    if InCombatLockdown() then return end
 
     self:SetAttribute("flyoutDirection", direction)
     self:UpdateFlyout()
