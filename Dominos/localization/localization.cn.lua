@@ -9,7 +9,6 @@ local L = LibStub('AceLocale-3.0'):NewLocale(AddonName, 'zhCN')
 if not L then return end
 
 L.ActionBarDisplayName = "动作条 %d"
-L.ActionButtonDisplayName = "动作按钮 %d"
 L.AlertsBarDisplayName = "警报"
 L.AvailableProfiles = '可用配置'
 L.BagBarDisplayName = "背包"

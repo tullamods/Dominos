@@ -7,8 +7,6 @@ local AddonName, Addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(AddonName)
 
 local ACTION_BUTTON_COUNT = Addon.ACTION_BUTTON_COUNT
-local ACTION_BUTTON_SHOW_GRID_REASON_ADDON = 1024
-local ACTION_BUTTON_SHOW_GRID_REASON_KEYBOUND = 2048
 
 local ActionBar = Addon:CreateClass('Frame', Addon.ButtonBar)
 
@@ -76,11 +74,10 @@ end)
 
 ActionBar:Extend('OnAcquire', function(self)
     self:LoadStateController()
-    self:LoadShowGridController()
     self:UpdateStateDriver()
     self:SetUnit(self:GetUnit())
     self:SetRightClickUnit(self:GetRightClickUnit())
-    self:UpdateGrid(true)
+    self:SetShowEmptyButtons(self:ShowingEmptyButtons())
     self:UpdateTransparent(true)
     self:UpdateFlyoutDirection()
 end)
@@ -114,10 +111,24 @@ end
 
 function ActionBar:AcquireButton(index)
     local id = index + (self.id - 1) * self:MaxLength()
-    local button = Addon.ActionButtons[id]
 
-    button:SetAttribute('index', index)
-    button:SetAttribute('statehidden', nil)
+    local button = Addon.ActionButtons:GetOrCreateActionButton(id, self)
+
+    button:SetAttributeNoHandler('index', index)
+    button:SetAttributeNoHandler('statehidden', nil)
+
+    -- set a handler for updating the action from a parent frame
+    button:SetAttributeNoHandler('_childupdate-offset', [[
+        local offset = message or 0
+        local id = self:GetAttribute('index') + offset
+
+        if self:GetAttribute('action') ~= id then
+            self:SetAttribute('action', id)
+        end
+    ]])
+
+    button:Show()
+
     button.displayName = L.ActionBarButtonDisplayName:format(self.id, index)
 
     return button
@@ -125,19 +136,19 @@ end
 
 function ActionBar:ReleaseButton(button)
     button:SetAttribute('statehidden', true)
-    button:SetShowGridInsecure("showgrid", 0, true)
+    button:Hide()
 end
 
 function ActionBar:OnAttachButton(button)
-    button:SetActionOffsetInsecure(self:GetAttribute('actionOffset') or 0)
-    button:SetShowGridInsecure("showgrid", self:GetAttribute("showgrid") or 0, true)
-
+    button:SetAttribute("action", button:GetAttribute("index") + (self:GetAttribute("actionOffset") or 0))
     button:SetFlyoutDirection(self:GetFlyoutDirection())
+    button:SetShowGrid(Addon:ShowGrid(), Addon.ActionButtons.ShowGridReasons.SHOW_EMPTY_BUTTONS)
+    button:SetShowGrid(self:ShowingEmptyButtons(), Addon.ActionButtons.ShowGridReasons.SHOW_EMPTY_BUTTONS_PER_BAR)
     button:SetShowCountText(Addon:ShowCounts())
     button:SetShowMacroText(Addon:ShowMacroText())
     button:SetShowEquippedItemBorders(Addon:ShowEquippedItemBorders())
     button:SetShowCooldowns(self:GetAlpha() > 0)
-    button:UpdateHotkeys()
+    button:UpdateShown()
 
     Addon:GetModule('ButtonThemer'):Register(button, self:GetDisplayName())
     Addon:GetModule('Tooltips'):Register(button)
@@ -225,16 +236,6 @@ function ActionBar:LoadStateController()
     self:UpdateOverrideBar()
 end
 
--- watch for cursor changes, so that we can control action button visibility
--- on pickup
-function ActionBar:LoadShowGridController()
-    if not Addon:IsBuild("retail") then return end
-
-    self:SetAttribute("OnShowGridChanged", [[ control:ChildUpdate("showgrid", ...); ]])
-
-    Addon:RegisterShowGridEvents(self)
-end
-
 function ActionBar:UpdateOverrideBar()
     self:SetAttribute('state-overridebar', self:IsOverrideBar())
 end
@@ -245,52 +246,10 @@ function ActionBar:IsOverrideBar()
     return Addon.db.profile.possessBar == self.id
 end
 
--- Empty button display
-local function hasFlag(value, flag)
-    return value % (2 * flag) >= flag
-end
-
-function ActionBar:SetShowGrid(reason, show, force)
-    if InCombatLockdown() then return end
-
-    local result = self:GetAttribute("showgrid") or 0
-    local updated = force and true
-
-    if show then
-        if not hasFlag(result, reason) then
-            result = result + reason
-            updated = true
-        end
-    elseif hasFlag(result, reason) then
-        result = result - reason
-        updated = true
-    end
-
-    if updated then
-        self:SetAttribute("showgrid", result)
-        self:ForButtons('SetShowGridInsecure', result, force)
-    end
-end
-
-function ActionBar:UpdateGrid(force)
-    local show = Addon:ShowGrid() or self:ShowingEmptyButtons()
-
-    self:SetShowGrid(ACTION_BUTTON_SHOW_GRID_REASON_ADDON, show, force)
-end
-
--- keybound support
-function ActionBar:KEYBOUND_ENABLED()
-    self:SetShowGrid(ACTION_BUTTON_SHOW_GRID_REASON_KEYBOUND, true)
-end
-
-function ActionBar:KEYBOUND_DISABLED()
-    self:SetShowGrid(ACTION_BUTTON_SHOW_GRID_REASON_KEYBOUND, false)
-end
-
 -- empty buttons
 function ActionBar:SetShowEmptyButtons(show)
     self.sets.showEmptyButtons = show and true
-    self:UpdateGrid()
+    self:ForButtons('SetShowGrid', self:ShowingEmptyButtons(), Addon.ActionButtons.ShowGridReasons.SHOW_EMPTY_BUTTONS_PER_BAR)
 end
 
 function ActionBar:ShowingEmptyButtons()
@@ -349,7 +308,6 @@ function ActionBar:UpdateTransparent(force)
 
     if (self.__transparent ~= isTransparent) or force then
         self.__transparent = isTransparent
-
         self:ForButtons('SetShowCooldowns', not isTransparent)
     end
 end

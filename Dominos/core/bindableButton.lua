@@ -1,21 +1,16 @@
 -- Binding code that's shared between the various flavors of action buttons
 local AddonName, Addon = ...
 local KeyBound = LibStub('LibKeyBound-1.0')
+local COMMAND_TEMPLATE = 'CLICK %s:HOTKEY'
 
 -- binding method definitions
 -- returns the binding action associated with the button
 
--- retail, we can use normal LeftButton clicks
--- in classic, we need to use a virtual button (arbitrarily named HOTKEY)
+-- we use a virtual button (arbitrarily named HOTKEY)
 -- to enable cast on key press support
-
 local function getButtonBindingAction(button)
-    local commandName = button.commandName
-    if commandName then
-        return commandName
-    end
-
-    return ('CLICK %s:%s'):format(button:GetName(), Addon.ACTION_BUTTON_HOTKEY_BUTTON)
+    return button.commandName
+        or COMMAND_TEMPLATE:format(button:GetName())
 end
 
 local function getButtonBindingActionName(button)
@@ -123,17 +118,12 @@ function BindableButton:AddQuickBindingSupport(button, bindingAction)
 end
 
 function BindableButton:UpdateHotkeys()
-    local key = getButtonHotkey(self)
-
-    if key ~= '' and Addon:ShowBindingText() then
-        self.HotKey:SetText(key)
-        self.HotKey:Show()
-    else
-        -- blank out non blank text, such as RANGE_INDICATOR
-        self.HotKey:SetText('')
-        self.HotKey:Hide()
-    end
+    local hotkey = self.HotKey
+    hotkey:SetText(getButtonHotkey(self))
+    hotkey:SetShown(Addon:ShowBindingText())
 end
+
+BindableButton.GetHotkey = getButtonHotkey
 
 function BindableButton:OnEnter()
     if not KeyBound:IsShown() then
@@ -141,8 +131,8 @@ function BindableButton:OnEnter()
     end
 
     BindableButtonProxy:ClearAllPoints()
-    BindableButtonProxy:SetAllPoints(self)
     BindableButtonProxy:SetParent(self)
+    BindableButtonProxy:SetAllPoints()
 
     KeyBound:Set(BindableButtonProxy)
 end

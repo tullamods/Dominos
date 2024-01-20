@@ -3,10 +3,10 @@
     zhTW (convert from zhCN)
     xuxianhe@gmail.com
     yaroot##gmail#com
-	
-	
+
+
 	2016/7/18 New translations by 彩虹ui https://www.facebook.com/rainbowui/
-	
+
 	Triditional Chinese 繁體中文
 ]]
 
@@ -14,7 +14,6 @@ local L = LibStub('AceLocale-3.0'):NewLocale('Dominos', 'zhTW')
 if not L then return end
 
 L.ActionBarDisplayName = "快捷列 %d"
-L.ActionButtonDisplayName = "快捷列按鈕 %d"
 L.ActionBarButtonDisplayName = "快捷列 %d 按鈕 %d"
 L.AlertsBarDisplayName = "通知"
 L.AvailableProfiles = '可用的設定檔'

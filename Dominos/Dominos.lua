@@ -15,6 +15,7 @@ end
 
 local CONFIG_ADDON_NAME = AddonName .. '_Config'
 local DB_SCHEMA_VERSION = 2
+local BINDINGS_VERSION = 3
 
 -- setup custom callbacks
 Addon.callbacks = LibStub('CallbackHandler-1.0'):New(Addon)
@@ -22,10 +23,8 @@ Addon.callbacks = LibStub('CallbackHandler-1.0'):New(Addon)
 -- how many action buttons we support, and what button to map keybinding presses
 if WOW_PROJECT_ID == WOW_PROJECT_MAINLINE then
     Addon.ACTION_BUTTON_COUNT = 14 * NUM_ACTIONBAR_BUTTONS
-    Addon.ACTION_BUTTON_HOTKEY_BUTTON = "LeftButton"
 else
     Addon.ACTION_BUTTON_COUNT = 10 * NUM_ACTIONBAR_BUTTONS
-    Addon.ACTION_BUTTON_HOTKEY_BUTTON = "HOTKEY"
 end
 
 --------------------------------------------------------------------------------
@@ -40,37 +39,22 @@ function Addon:OnInitialize()
     -- register keybound callbacks
     KeyBound.RegisterCallback(self, 'LIBKEYBOUND_ENABLED')
     KeyBound.RegisterCallback(self, 'LIBKEYBOUND_DISABLED')
-
-    -- define binding names
-    _G['BINDING_HEADER_' .. AddonName] = AddonName
-
-    local hotkeyButton = Addon.ACTION_BUTTON_HOTKEY_BUTTON
-    local numActionBars = math.ceil(Addon.ACTION_BUTTON_COUNT / NUM_ACTIONBAR_BUTTONS)
-
-    for barID = 1, numActionBars do
-        local offset = NUM_ACTIONBAR_BUTTONS * (barID - 1)
-        local headerKey = ('BINDING_HEADER_%sActionBar%d'):format(AddonName, barID)
-        local headerValue = L.ActionBarDisplayName:format(barID)
-
-        _G[headerKey] = headerValue
-
-        for index = 1, NUM_ACTIONBAR_BUTTONS do
-            local bindingKey = ('BINDING_NAME_CLICK %sActionButton%d:%s'):format(AddonName, index + offset, hotkeyButton)
-            local bindingValue = L.ActionBarButtonDisplayName:format(barID, index)
-
-            _G[bindingKey] = bindingValue
-        end
-    end
 end
 
 function Addon:OnEnable()
+    self:MigrateBindings()
     self:UpdateUseOverrideUI()
     self:Load()
 
     -- watch for binding updates, updating all bars on the last one that happens
     -- in rapid sequence
-    self.UpdateHotkeys = self:Debounce(function() self.Frame:ForEach('ForButtons', 'UpdateHotkeys') end, 0.01)
+    self.UpdateHotkeys = self:Debounce(function()
+        self.Frame:ForEach('ForButtons', 'UpdateOverrideBindings')
+        self.Frame:ForEach('ForButtons', 'UpdateHotkeys')
+    end, 0.01)
+
     self:RegisterEvent('UPDATE_BINDINGS')
+    self:RegisterEvent("GAME_PAD_ACTIVE_CHANGED", "UPDATE_BINDINGS")
 end
 
 -- configuration events
@@ -254,6 +238,7 @@ function Addon:GetDatabaseDefaults()
             showEquippedItemBorders = true,
             showTooltips = true,
             showTooltipsCombat = true,
+            showSpellGlows = true,
             useOverrideUI = self:IsBuild('retail', 'wrath'),
 
             minimap = { hide = false },
@@ -290,6 +275,45 @@ function Addon:UpgradeDatabase()
         self:OnUpgradeAddon(addonVersion, ADDON_VERSION)
         self.db.global.addonVersion = ADDON_VERSION
     end
+end
+
+-- migrate legacy bindings from LeftButton to HOTKEY
+function Addon:MigrateBindings()
+    local bindingSet = GetCurrentBindingSet()
+    local dbIndex = bindingSet == 2 and "char" or "global"
+
+    if self.db[dbIndex].bindingsVersion == BINDINGS_VERSION then return end
+
+    --- @param command string the command to bind keys to
+    --- @param ... string all the keys to remap
+    --- @return boolean
+    local function setBindings(command, ...)
+        local saved = false
+
+        for i = 1, select("#", ...) do
+            if SetBinding(select(i, ...), command) then
+                saved = true
+            end
+        end
+
+        return saved
+    end
+
+    local legacy = 'CLICK ' .. AddonName .. 'ActionButton%d:LeftButton'
+    local modern = 'CLICK ' .. AddonName .. 'ActionButton%d:HOTKEY'
+    local migrated = false
+
+    for i = 1, Addon.ACTION_BUTTON_COUNT do
+        if setBindings(modern:format(i), GetBindingKey(legacy:format(i))) then
+            migrated = true
+        end
+    end
+
+    if migrated then
+        SaveBindings(bindingSet)
+    end
+
+    self.db[dbIndex].bindingsVersion = BINDINGS_VERSION
 end
 
 --------------------------------------------------------------------------------
@@ -570,7 +594,7 @@ end
 -- empty button display
 function Addon:SetShowGrid(enable)
     self.db.profile.showgrid = enable and true
-    self.Frame:ForEach('UpdateGrid')
+    self.callbacks:Fire("SHOW_EMPTY_BUTTONS_CHANGED", self:ShowGrid())
 end
 
 function Addon:ShowGrid()
@@ -607,7 +631,7 @@ function Addon:ShowMacroText()
     return self.db.profile.showMacroText
 end
 
--- border
+-- equipped item borders
 function Addon:SetShowEquippedItemBorders(enable)
     self.db.profile.showEquippedItemBorders = enable and true
     self.Frame:ForEach('ForButtons', 'SetShowEquippedItemBorders', enable)
@@ -615,6 +639,16 @@ end
 
 function Addon:ShowEquippedItemBorders()
     return self.db.profile.showEquippedItemBorders
+end
+
+-- spell overlay glows
+function Addon:SetShowSpellGlows(enable)
+    self.db.profile.showSpellGlows = enable and true
+    self.callbacks:Fire("SHOW_SPELL_GLOWS_CHANGED", self:ShowingSpellGlows())
+end
+
+function Addon:ShowingSpellGlows()
+    return self.db.profile.showSpellGlows
 end
 
 -- override ui
@@ -655,6 +689,8 @@ function Addon:SetOverrideBar(id)
 
     prevBar:UpdateOverrideBar()
     newBar:UpdateOverrideBar()
+
+    self.callbacks:Fire('OVERRIDE_BAR_UPDATED', id)
 end
 
 function Addon:GetOverrideBar()

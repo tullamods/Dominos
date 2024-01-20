@@ -1,4 +1,4 @@
-## Interface: 100200
+## Interface: 100205
 ## Interface-Wrath: 30403
 ## Interface-Classic: 11500
 ## Title: Dominos
@@ -16,7 +16,6 @@ localization.xml
 Dominos.lua
 core\helpers.lua
 core\barStates.lua
-core\secureEnv.lua
 core\shadowUIParent.lua
 core\frame.lua
 core\buttonBar.lua
@@ -28,12 +27,15 @@ core\tooltipController.lua
 core\blizzardHider.lua
 core\blizzardHider.classic.lua
 # builtin bars
+bars\actionBar\bindings.lua
 bars\actionBar\flyout.lua
-bars\actionBar\actionButtonMap.lua
 bars\actionBar\button.lua
+bars\actionBar\button.classic.lua
+bars\actionBar\buttons.lua
+bars\actionBar\buttons.classic.lua
 bars\actionBar\bar.lua
 bars\actionBar\menu.lua
-bars\actionBar\module.lua
+bars\actionBar\bars.lua
 bars\bagBar.lua
 bars\extraAbilityBar.lua
 bars\encounterBar.lua
@@ -51,4 +53,3 @@ plugins\slashCommands.lua
 plugins\launcher.lua
 plugins\buttonThemer.lua
 plugins\getActionReagentUses.lua
-plugins\multiActionBarFixer.classic.lua

@@ -1,5 +1,28 @@
 # Dominos Changelog
 
+## 10.2.5
+
+### THIS IS A MAJOR BREAKING UPDATE
+
+Action Buttons in retail are no longer derived from ActionBarButtonTemplate. The behavior
+in classic should be about the same as it was before.
+
+Benefits:
+
+* You'll (hopefully) no longer see cases where action buttons would randomly stop working when switching zones.
+* Generally action button behavior should be more consistent across all action buttons
+
+Drawbacks:
+
+* Press and hold casting is no longer supported. (This is an API limitation of using completely custom action buttons)
+* Addons that modify the stock action won't just work with Dominos anymore. They'll need to code in their own support
+  (sorry).
+
+Other Changes:
+
+* (Retail) Out of range coloring is now builtin
+* (Retail) Spell activation glows can now be disabled. They're also a bit less dramatic.
+
 ## 10.2.1
 
 * Handle hiding the stock mirror timers in 10.2
