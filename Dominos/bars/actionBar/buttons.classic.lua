@@ -40,6 +40,7 @@ function ActionButtons:PLAYER_LOGIN()
     self:SetAttribute("lockActionBars", GetCVarBool("lockActionBars"))
     self:SetAttribute("ActionButtonUseKeyDown", GetCVarBool("ActionButtonUseKeyDown"))
     self:RegisterEvent("CVAR_UPDATE")
+    self:RegisterEvent("PLAYER_REGEN_ENABLED")
 
     -- watch the global showgrid setting
     self:SetShowGrid(Addon:ShowGrid(), self.ShowGridReasons.SHOW_EMPTY_BUTTONS)
@@ -57,8 +58,15 @@ end
 
 -- addon callbacks
 function ActionButtons:CVAR_UPDATE(name)
-    if name == "lockActionBars" or name == "ActionButtonUseKeyDown" then
+    if name == "lockActionBars" or name == "ActionButtonUseKeyDown" or name == "alwaysShowActionBars" then
         self:TrySetAttribute(name, GetCVarBool(name))
+    end
+end
+
+function ActionButtons:PLAYER_REGEN_ENABLED()
+    for k, v in pairs(self.dirtyAttributes) do
+        self:SetAttribute(k, v)
+        self.dirtyAttributes[k] = nil
     end
 end
 
@@ -134,10 +142,12 @@ function ActionButtons:GetOrCreateActionButton(id, parent)
     -- a standard UI button we're reusing
     elseif self.buttons[button] == nil then
         Mixin(button, Addon.ActionButton)
-        button:SetID(0)
-        button:OnCreate(id)
 
+        button:SetID(0)
+        button.noGrid = true
+        button:OnCreate(id)
         self:WrapScript(button, "OnClick", ActionButton_ClickBefore)
+
         self.buttons[button] = id
     end
 
