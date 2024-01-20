@@ -80,7 +80,6 @@ ActionBar:Extend('OnAcquire', function(self)
     self:SetShowEmptyButtons(self:ShowingEmptyButtons())
     self:UpdateTransparent(true)
     self:UpdateFlyoutDirection()
-    self:SetAttributeNoHandler("locked", GetCVarBool("lockActionBars"))
 end)
 
 -- TODO: change the position code to be based more on the number of action bars

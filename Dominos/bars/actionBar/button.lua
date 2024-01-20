@@ -76,7 +76,6 @@ function ActionButton:OnCreate(id)
     self:SetAttributeNoHandler("useparent-checkbuttoncast", true)
     self:SetAttributeNoHandler("useparent-checkfocuscast", true)
     self:SetAttributeNoHandler("useparent-checkmouseovercast", true)
-    self:SetAttributeNoHandler("useparent-locked", true)
     self:SetAttributeNoHandler("useparent-unit", true)
 
     -- register for clicks
@@ -198,8 +197,7 @@ function ActionButton:Construct()
     self.Flash.Animation.Alpha:SetFromAlpha(0)
     self.Flash.Animation.Alpha:SetToAlpha(1)
 
-    self.Border:SetVertexColor(0, 1.0, 0, 0.5)
-    self.cooldown:SetScript("OnCooldownDone", self.OnCooldownDone)
+    self.Border:SetVertexColor(0, 1, 0, 0.5)
 end
 
 function ActionButton:Update()
@@ -213,6 +211,10 @@ function ActionButton:Update()
     self:UpdateIcon()
     -- self:UpdateShown()
     self:UpdateUsable()
+
+    if Addon:ShowingSpellGlows() then
+        self:UpdateOverlayGlow()
+    end
 end
 
 function ActionButton:UpdateActive()
@@ -279,15 +281,16 @@ end
 
 function ActionButton:UpdateFlashing()
     local action = self.action
+    local flash = self.Flash
 
     if (IsAttackAction(action) and IsCurrentAction(action)) or IsAutoRepeatAction(action) then
-        if not self.Flash:IsShown() then
-            self.Flash:Show()
-            self.Flash.Animation:Play()
+        if not flash:IsShown() then
+            flash:Show()
+            flash.Animation:Play()
         end
-    elseif self.Flash:IsShown() then
-        self.Flash.Animation:Stop()
-        self.Flash:Hide()
+    elseif flash:IsShown() then
+        flash.Animation:Stop()
+        flash:Hide()
     end
 end
 
@@ -333,25 +336,33 @@ function ActionButton:UpdateUsable(usable, oom, oor)
     end
 
     local icon = self.icon
-
-    if oom then
+    if usable then
+        if oor then
+            icon:SetDesaturated(true)
+            icon:SetVertexColor(1, 0.4, 0.4)
+        else
+            icon:SetDesaturated(false)
+            icon:SetVertexColor(1, 1, 1)
+        end
+    elseif oom then
         icon:SetDesaturated(true)
         icon:SetVertexColor(0.4, 0.4, 1.0)
-    elseif oor then
-        icon:SetDesaturated(true)
-        icon:SetVertexColor(1, 0.4, 0.4)
-    elseif usable then
-        icon:SetDesaturated(false)
-        icon:SetVertexColor(1, 1, 1)
     else
         icon:SetDesaturated(false)
         icon:SetVertexColor(0.4, 0.4, 0.4)
     end
 
+    local hotkey = self.HotKey
     if oor then
-        self.HotKey:SetVertexColor(1, 0, 0)
+        hotkey:SetVertexColor(1, 0, 0)
+        if (hotkey:GetText() or '') == '' then
+            hotkey:SetText(RANGE_INDICATOR)
+        end
     else
-        self.HotKey:SetVertexColor(1, 1, 1)
+        hotkey:SetVertexColor(1, 1, 1)
+        if hotkey:GetText() == RANGE_INDICATOR then
+            hotkey:SetText(self:GetHotkey())
+        end
     end
 end
 
@@ -418,95 +429,77 @@ function ActionButton:GetShowGrid()
     return self:GetAttribute("showgrid") > 0
 end
 
--- this is mostly a revert of the 10.1.x behavior to prior versions
-function ActionButton:UpdateCooldown()
-    local action = self.action
-    local actionType, actionID
-    if action then
-        actionType, actionID = GetActionInfo(action)
+function ActionButton:ShowOverlayGlow()
+    local alert = self.SpellActivationAlert
+
+    if not alert then
+        alert = CreateFrame("Frame", nil, self)
+        alert:Hide()
+
+        local w, h = self:GetSize()
+        alert:SetSize(w * 1.4, h * 1.4)
+        alert:SetPoint("CENTER")
+
+        local flipbook = alert:CreateTexture(nil, "OVERLAY")
+        flipbook:SetAtlas("UI-HUD-ActionBar-Proc-Loop-Flipbook", false)
+        flipbook:SetVertexColor(0.8, 0.8, 0.8, 0.5)
+        flipbook:SetAllPoints()
+        -- flipbook:SetAlpha(0.5)
+        alert.ProcLoopFlipbook = flipbook
+
+        local loop = alert:CreateAnimationGroup()
+        loop:SetLooping("REPEAT")
+
+        local fb = loop:CreateAnimation("FlipBook")
+        fb:SetChildKey("ProcLoopFlipbook")
+        fb:SetDuration(1)
+        fb:SetOrder(0)
+        fb:SetFlipBookRows(6)
+        fb:SetFlipBookColumns(5)
+        fb:SetFlipBookFrames(30)
+        fb:SetFlipBookFrameWidth(0)
+        fb:SetFlipBookFrameHeight(0)
+
+        alert.ProcLoop = loop
+
+        self.SpellActivationAlert = alert
     end
 
-    local onEquipPassiveSpellID
-    if actionID then
-        onEquipPassiveSpellID = C_ActionBar.GetItemActionOnEquipSpellID(action)
-    end
-
-    local passiveCooldownSpellID
-    if onEquipPassiveSpellID then
-        passiveCooldownSpellID = C_UnitAuras.GetCooldownAuraBySpellID(onEquipPassiveSpellID)
-    elseif (actionType and actionType == "spell") and actionID then
-        passiveCooldownSpellID = C_UnitAuras.GetCooldownAuraBySpellID(actionID)
-    end
-
-    local auraData
-    if passiveCooldownSpellID and passiveCooldownSpellID ~= 0 then
-        auraData = C_UnitAuras.GetPlayerAuraBySpellID(passiveCooldownSpellID)
-    end
-
-    local locStart, locDuration
-    local start, duration, enable, charges, maxCharges, chargeStart, chargeDuration
-    local modRate, chargeModRate
-
-    if auraData then
-        local currentTime = GetTime()
-        local timeUntilExpire = auraData.expirationTime - currentTime
-        local howMuchTimeHasPassed = auraData.duration - timeUntilExpire
-
-        locStart = currentTime - howMuchTimeHasPassed
-        locDuration = auraData.expirationTime - currentTime
-        start = currentTime - howMuchTimeHasPassed
-        duration = auraData.duration
-        modRate = auraData.timeMod
-        charges = auraData.charges
-        maxCharges = auraData.maxCharges
-        chargeStart = currentTime * 0.001
-        chargeDuration = duration * 0.001
-        chargeModRate = modRate
-        enable = 1
-    else
-        locStart, locDuration = GetActionLossOfControlCooldown(self.action)
-        start, duration, enable, modRate = GetActionCooldown(self.action)
-        charges, maxCharges, chargeStart, chargeDuration, chargeModRate = GetActionCharges(self.action)
-    end
-
-    if (locStart + locDuration) > (start + duration) then
-        if self.cooldown.currentCooldownType ~= COOLDOWN_TYPE_LOSS_OF_CONTROL then
-            self.cooldown:SetEdgeTexture("Interface\\Cooldown\\edge-LoC")
-            self.cooldown:SetSwipeColor(0.17, 0, 0)
-            self.cooldown:SetHideCountdownNumbers(true)
-            self.cooldown.currentCooldownType = COOLDOWN_TYPE_LOSS_OF_CONTROL
-        end
-
-        CooldownFrame_Set(self.cooldown, locStart, locDuration, true, true, modRate)
-        ClearChargeCooldown(self)
-    else
-        if self.cooldown.currentCooldownType ~= COOLDOWN_TYPE_NORMAL then
-            self.cooldown:SetEdgeTexture("Interface\\Cooldown\\edge")
-            self.cooldown:SetSwipeColor(0, 0, 0)
-            self.cooldown:SetHideCountdownNumbers(false)
-            self.cooldown.currentCooldownType = COOLDOWN_TYPE_NORMAL
-        end
-
-        if charges and maxCharges and maxCharges > 1 and charges < maxCharges then
-            StartChargeCooldown(self, chargeStart, chargeDuration, chargeModRate)
-        else
-            ClearChargeCooldown(self)
-        end
-
-        CooldownFrame_Set(self.cooldown, start, duration, enable, false, modRate)
-    end
+    if not alert:IsShown() then
+		alert:Show()
+        alert.ProcLoop:Play()
+	end
 end
 
-function ActionButton.OnCooldownDone(cooldown)
-    cooldown:GetParent():UpdateCooldown()
+function ActionButton:HideOverlayGlow()
+    local alert = self.SpellActivationAlert
+
+    if alert and alert:IsShown() then
+	    alert:Hide()
+        alert.ProcLoop:Stop()
+	end
+end
+
+function ActionButton:UpdateOverlayGlow()
+	local spellType, id  = GetActionInfo(self.action)
+
+	if spellType == "spell" and id and IsSpellOverlayed(id) then
+		self:ShowOverlayGlow()
+	elseif spellType == "macro" then
+		if id and IsSpellOverlayed(id) then
+			self:ShowOverlayGlow()
+		else
+			self:HideOverlayGlow()
+		end
+	else
+		self:HideOverlayGlow()
+	end
 end
 
 -- standard method references
 ActionButton.UpdateCooldown = ActionButton_UpdateCooldown
 ActionButton.UpdateFlyout = ActionBarActionButtonMixin.UpdateFlyout
-ActionButton.ShowOverlayGlow = ActionButton_ShowOverlayGlow
-ActionButton.HideOverlayGlow = ActionButton_HideOverlayGlow
-ActionButton.UpdateOverlayGlow = ActionBarActionButtonMixin.UpdateOverlayGlow
 
 -- exports
 Addon.ActionButton = ActionButton
+

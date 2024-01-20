@@ -115,19 +115,25 @@ function BindableButton:AddQuickBindingSupport(button, bindingAction)
     else
         button.UpdateHotkeys = BindableButton.UpdateHotkeys
     end
+
+    if not button.GetHotkey then
+        button.GetHotkey = BindableButton.GetHotkey
+    end
 end
 
 function BindableButton:UpdateHotkeys()
-    local key = getButtonHotkey(self)
+    self.HotKey:SetText(self:GetHotkey() or '')
+    self.HotKey:SetShown(Addon:ShowBindingText())
+end
 
-    if key ~= '' and Addon:ShowBindingText() then
-        self.HotKey:SetText(key)
-        self.HotKey:Show()
-    else
-        -- blank out non blank text, such as RANGE_INDICATOR
-        self.HotKey:SetText('')
-        self.HotKey:Hide()
+function BindableButton:GetHotkey()
+    local key = (getButtonBindings(self))
+
+    if key then
+        return KeyBound:ToShortKey(key) or ''
     end
+
+    return ''
 end
 
 function BindableButton:OnEnter()
@@ -136,8 +142,8 @@ function BindableButton:OnEnter()
     end
 
     BindableButtonProxy:ClearAllPoints()
-    BindableButtonProxy:SetAllPoints(self)
     BindableButtonProxy:SetParent(self)
+    BindableButtonProxy:SetAllPoints()
 
     KeyBound:Set(BindableButtonProxy)
 end
