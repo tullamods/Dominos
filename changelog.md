@@ -1,6 +1,6 @@
 # Dominos Changelog
 
-## 10.2.5-beta
+## 10.2.5
 
 ### THIS IS A MAJOR BREAKING UPDATE
 
@@ -18,10 +18,10 @@ Drawbacks:
 * Addons that modify the stock action won't just work with Dominos anymore. They'll need to code in their own support
   (sorry).
 
-Other:
+Other Changes:
 
-* I've built tullaRange (coloring your action button completely red with out of range) into the retail version of the
-  addon.
+* (Retail) Out of range coloring is now builtin
+* (Retail) Spell activation glows can now be disabled. They're also a bit less dramatic.
 
 ## 10.2.1
 
