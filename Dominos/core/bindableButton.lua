@@ -115,26 +115,15 @@ function BindableButton:AddQuickBindingSupport(button, bindingAction)
     else
         button.UpdateHotkeys = BindableButton.UpdateHotkeys
     end
-
-    if not button.GetHotkey then
-        button.GetHotkey = BindableButton.GetHotkey
-    end
 end
 
 function BindableButton:UpdateHotkeys()
-    self.HotKey:SetText(self:GetHotkey() or '')
-    self.HotKey:SetShown(Addon:ShowBindingText())
+    local hotkey = self.HotKey
+    hotkey:SetText(getButtonHotkey(self))
+    hotkey:SetShown(Addon:ShowBindingText())
 end
 
-function BindableButton:GetHotkey()
-    local key = (getButtonBindings(self))
-
-    if key then
-        return KeyBound:ToShortKey(key) or ''
-    end
-
-    return ''
-end
+BindableButton.GetHotkey = getButtonHotkey
 
 function BindableButton:OnEnter()
     if not KeyBound:IsShown() then

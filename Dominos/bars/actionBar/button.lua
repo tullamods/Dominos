@@ -499,6 +499,7 @@ end
 -- standard method references
 ActionButton.UpdateCooldown = ActionButton_UpdateCooldown
 ActionButton.UpdateFlyout = ActionBarActionButtonMixin.UpdateFlyout
+ActionButton.GetHotkey = Addon.BindableButton.GetHotkey
 
 -- exports
 Addon.ActionButton = ActionButton
