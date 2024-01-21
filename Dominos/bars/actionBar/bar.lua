@@ -73,6 +73,10 @@ ActionBar:Extend('OnLoadSettings', function(self)
 end)
 
 ActionBar:Extend('OnAcquire', function(self)
+	self:SetAttribute("checkselfcast", true)
+	self:SetAttribute("checkfocuscast", true)
+	self:SetAttribute("checkmouseovercast", true)
+
     self:LoadStateController()
     self:UpdateStateDriver()
     self:SetUnit(self:GetUnit())
