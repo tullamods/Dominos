@@ -209,6 +209,7 @@ function ActionButton:Update()
     self:UpdateFlashing()
     self:UpdateFlyout()
     self:UpdateIcon()
+    self:UpdateProfessionQuality()
     self:UpdateShown()
     self:UpdateUsable()
 
@@ -431,12 +432,14 @@ end
 
 
 -- standard method references
-ActionButton.UpdateCooldown = ActionButton_UpdateCooldown
-ActionButton.UpdateFlyout = ActionBarActionButtonMixin.UpdateFlyout
+ActionButton.ClearProfessionQuality = ActionBarActionButtonMixin.ClearProfessionQuality
 ActionButton.GetHotkey = Addon.BindableButton.GetHotkey
 ActionButton.HideOverlayGlow = ActionButton_HideOverlayGlow
 ActionButton.ShowOverlayGlow = ActionButton_ShowOverlayGlow
+ActionButton.UpdateCooldown = ActionButton_UpdateCooldown
+ActionButton.UpdateFlyout = ActionBarActionButtonMixin.UpdateFlyout
 ActionButton.UpdateOverlayGlow = ActionBarActionButtonMixin.UpdateOverlayGlow
+ActionButton.UpdateProfessionQuality = ActionBarActionButtonMixin.UpdateProfessionQuality
 
 -- exports
 Addon.ActionButton = ActionButton
