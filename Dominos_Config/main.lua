@@ -95,9 +95,14 @@ function env.radio_group(name)
     return option {name = name, type = 'select', style = 'radio'}
 end
 
-function env.group(name)
+function env.group(name, inline)
     return function(children)
-        return option {type = 'group', name = name, args = make_args(children)}
+        return option {
+            type = 'group',
+            name = name,
+            inline = inline,
+            args = make_args(children)
+        }
     end
 end
 

@@ -339,22 +339,22 @@ function ActionButton:UpdateUsable(usable, oom, oor)
         oor = IsActionInRange(self.action) == false
     end
 
-    local state
+    local iconState
     if usable then
         if oor then
-            state = "oor"
+            iconState = "oor"
         else
-            state = "normal"
+            iconState = "normal"
         end
     elseif oom then
-        state = "oom"
+        iconState = "oom"
     else
-        state = "unusuable"
+        iconState = "unusable"
     end
 
     local icon = self.icon
     local iconColors = Addon.db.profile.actionColors
-    local c = iconColors[state]
+    local c = iconColors[iconState]
     if c.enabled then
         icon:SetVertexColor(c.r, c.g, c.b, c.a)
         icon:SetDesaturated(c.desaturate)

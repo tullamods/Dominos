@@ -5,6 +5,7 @@
 * Add profession quality indicators
 * Icon coloring is now configurable. Defaults have been reverted to those of the
   base UI
+* Hid extraneous options from Classic builds
 
 ## 10.2.6
 

@@ -521,9 +521,10 @@ function ActionButtons:ForAll(method, ...)
     end
 end
 
-function ActionButtons:ForAllWhere(condition, method, ...)
+
+function ActionButtons:ForAllWhere(predicate, method, ...)
     for action, buttons in pairs(self.actionButtons) do
-        if next(buttons) ~= nil and condition(action) then
+        if next(buttons) ~= nil and predicate(action) then
             for button in pairs(buttons) do
                 local callback = button[method]
                 if type(callback) == "function" then
@@ -561,6 +562,32 @@ function ActionButtons:ForSpellID(spellID, method, ...)
                 else
                     error(("ActionButton %d does not have a method named %q"):format(button.id, method))
                 end
+            end
+        end
+    end
+end
+
+function ActionButtons:ForVisible(method, ...)
+    for button in pairs(self.buttons) do
+        if button:IsVisible() then
+            local callback = button[method]
+            if type(callback) == "function" then
+                callback(button, ...)
+            else
+                error(("ActionButton %d does not have a method named %q"):format(button.id, method))
+            end
+        end
+    end
+end
+
+function ActionButtons:ForVisibleWhere(predicate, method, ...)
+    for button, action in pairs(self.buttons) do
+        if button:IsVisible() and predicate(action) then
+            local callback = button[method]
+            if type(callback) == "function" then
+                callback(button, ...)
+            else
+                error(("ActionButton %d does not have a method named %q"):format(button.id, method))
             end
         end
     end
