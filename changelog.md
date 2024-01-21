@@ -1,5 +1,11 @@
 # Dominos Changelog
 
+## 10.2.6
+
+* Resolve issues with focus, self, and mouseover cast not working
+* Revert overlay glow behavior
+* Update bar visibility when entering/leaving areas
+
 ## 10.2.5
 
 ### THIS IS A MAJOR BREAKING UPDATE

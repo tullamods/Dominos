@@ -209,7 +209,7 @@ function ActionButton:Update()
     self:UpdateFlashing()
     self:UpdateFlyout()
     self:UpdateIcon()
-    -- self:UpdateShown()
+    self:UpdateShown()
     self:UpdateUsable()
 
     if Addon:ShowingSpellGlows() then
@@ -429,77 +429,14 @@ function ActionButton:GetShowGrid()
     return self:GetAttribute("showgrid") > 0
 end
 
-function ActionButton:ShowOverlayGlow()
-    local alert = self.SpellActivationAlert
-
-    if not alert then
-        alert = CreateFrame("Frame", nil, self)
-        alert:Hide()
-
-        local w, h = self:GetSize()
-        alert:SetSize(w * 1.4, h * 1.4)
-        alert:SetPoint("CENTER")
-
-        local flipbook = alert:CreateTexture(nil, "OVERLAY")
-        flipbook:SetAtlas("UI-HUD-ActionBar-Proc-Loop-Flipbook", false)
-        flipbook:SetVertexColor(0.8, 0.8, 0.8, 0.5)
-        flipbook:SetAllPoints()
-        -- flipbook:SetAlpha(0.5)
-        alert.ProcLoopFlipbook = flipbook
-
-        local loop = alert:CreateAnimationGroup()
-        loop:SetLooping("REPEAT")
-
-        local fb = loop:CreateAnimation("FlipBook")
-        fb:SetChildKey("ProcLoopFlipbook")
-        fb:SetDuration(1)
-        fb:SetOrder(0)
-        fb:SetFlipBookRows(6)
-        fb:SetFlipBookColumns(5)
-        fb:SetFlipBookFrames(30)
-        fb:SetFlipBookFrameWidth(0)
-        fb:SetFlipBookFrameHeight(0)
-
-        alert.ProcLoop = loop
-
-        self.SpellActivationAlert = alert
-    end
-
-    if not alert:IsShown() then
-		alert:Show()
-        alert.ProcLoop:Play()
-	end
-end
-
-function ActionButton:HideOverlayGlow()
-    local alert = self.SpellActivationAlert
-
-    if alert and alert:IsShown() then
-	    alert:Hide()
-        alert.ProcLoop:Stop()
-	end
-end
-
-function ActionButton:UpdateOverlayGlow()
-	local spellType, id  = GetActionInfo(self.action)
-
-	if spellType == "spell" and id and IsSpellOverlayed(id) then
-		self:ShowOverlayGlow()
-	elseif spellType == "macro" then
-		if id and IsSpellOverlayed(id) then
-			self:ShowOverlayGlow()
-		else
-			self:HideOverlayGlow()
-		end
-	else
-		self:HideOverlayGlow()
-	end
-end
 
 -- standard method references
 ActionButton.UpdateCooldown = ActionButton_UpdateCooldown
 ActionButton.UpdateFlyout = ActionBarActionButtonMixin.UpdateFlyout
 ActionButton.GetHotkey = Addon.BindableButton.GetHotkey
+ActionButton.HideOverlayGlow = ActionButton_HideOverlayGlow
+ActionButton.ShowOverlayGlow = ActionButton_ShowOverlayGlow
+ActionButton.UpdateOverlayGlow = ActionBarActionButtonMixin.UpdateOverlayGlow
 
 -- exports
 Addon.ActionButton = ActionButton
