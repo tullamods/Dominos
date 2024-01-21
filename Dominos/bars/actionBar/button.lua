@@ -257,7 +257,10 @@ function ActionButton:UpdateCount()
     local action = self.action
     local count = GetActionCount(action) or 0
 
-    if IsConsumableAction(action) or IsStackableAction(action) or (not IsItemAction(action) and count > 0) then
+    if not HasAction(action) then
+        self.Count:SetText("")
+        self.Name:SetText("")
+    elseif IsConsumableAction(action) or IsStackableAction(action) or (not IsItemAction(action) and count > 0) then
         if count > 999 then
             self.Count:SetFormattedText("%.1f%k", count / 1000)
             self.Name:SetText("")
@@ -336,31 +339,43 @@ function ActionButton:UpdateUsable(usable, oom, oor)
         oor = IsActionInRange(self.action) == false
     end
 
-    local icon = self.icon
+    local state
     if usable then
         if oor then
-            icon:SetDesaturated(true)
-            icon:SetVertexColor(1, 0.4, 0.4)
+            state = "oor"
         else
-            icon:SetDesaturated(false)
-            icon:SetVertexColor(1, 1, 1)
+            state = "normal"
         end
     elseif oom then
-        icon:SetDesaturated(true)
-        icon:SetVertexColor(0.4, 0.4, 1.0)
+        state = "oom"
     else
+        state = "unusuable"
+    end
+
+    local icon = self.icon
+    local iconColors = Addon.db.profile.actionColors
+    local c = iconColors[state]
+    if c.enabled then
+        icon:SetVertexColor(c.r, c.g, c.b, c.a)
+        icon:SetDesaturated(c.desaturate)
+    else
+        icon:SetVertexColor(1, 1, 1)
         icon:SetDesaturated(false)
-        icon:SetVertexColor(0.4, 0.4, 0.4)
     end
 
     local hotkey = self.HotKey
-    if oor then
-        hotkey:SetVertexColor(1, 0, 0)
+    local hotkeyColors = Addon.db.profile.hotkeyColors
+
+    if oor and hotkeyColors.oor.enabled then
+        c = hotkeyColors.oor
+        hotkey:SetTextColor(c.r, c.g, c.b, c.a)
+
         if (hotkey:GetText() or '') == '' then
             hotkey:SetText(RANGE_INDICATOR)
         end
     else
-        hotkey:SetVertexColor(1, 1, 1)
+        hotkey:SetTextColor(1, 1, 1, 1)
+
         if hotkey:GetText() == RANGE_INDICATOR then
             hotkey:SetText(self:GetHotkey())
         end
@@ -408,7 +423,7 @@ function ActionButton:SetShowGrid(show, reason, force)
     if InCombatLockdown() then return end
 
     if reason == nil then
-        error("Usage: ActionButton:SetShowGrid(show, reason, [, force?])", 2)
+        error("Usage: ActionButton:SetShowGrid(show, reason, force?)", 2)
     end
 
     local value = self:GetAttribute("showgrid") or 0

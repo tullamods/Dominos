@@ -1,5 +1,11 @@
 # Dominos Changelog
 
+## 10.2.7
+
+* Add profession quality indicators
+* Icon coloring is now configurable. Defaults have been reverted to those of the
+  base UI
+
 ## 10.2.6
 
 * Resolve issues with focus, self, and mouseover cast not working
