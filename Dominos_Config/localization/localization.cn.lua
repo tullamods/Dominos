@@ -22,6 +22,7 @@ L.BarSettings = '%s 动作条设置'
 L.Buttons = "按钮"
 L.ClickThrough = '允许穿透点击'
 L.Columns = '一行按钮数'
+L.Colors = "颜色"
 L.CommandKey = 'Command 键'
 L.ConfirmCopyProfile = '从 %s 复制配置到当前配置?'
 L.ConfirmDeleteProfile = '删除配置 %s?'
