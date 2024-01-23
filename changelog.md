@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 10.2.8
+
+* Updated LibUIDropDownMenu to prevent an error with opening right click menus that contain well, dropdowns.
+
 ## 10.2.7
 
 * Add profession quality indicators
