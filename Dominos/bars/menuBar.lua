@@ -8,7 +8,7 @@
 local AddonName, Addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(AddonName)
 
-local MicroButtons = { }
+local MicroButtons = {}
 local PetMicroButtonFrame = PetBattleFrame and PetBattleFrame.BottomFrame.MicroButtonFrame
 
 if MicroMenu then
@@ -17,7 +17,7 @@ if MicroMenu then
             local button = select(i, ...)
 
             if button:IsShown() then
-                MicroButtons[#MicroButtons+1] = button
+                MicroButtons[#MicroButtons + 1] = button
             end
         end
     end
@@ -80,7 +80,7 @@ function MenuBar:GetDisplayName()
 end
 
 MenuBar:Extend('OnCreate', function(self)
-    self.activeButtons = { }
+    self.activeButtons = {}
 end)
 
 function MenuBar:GetDefaults()
@@ -122,7 +122,7 @@ function MenuBar:UpdateActiveButtons()
 
     for _, button in ipairs(MicroButtons) do
         if self:IsMenuButtonEnabled(button) then
-            self.activeButtons[#self.activeButtons+1] = button
+            self.activeButtons[#self.activeButtons + 1] = button
         end
     end
 end
@@ -146,7 +146,7 @@ function MenuBar:SetEnableMenuButton(button, enabled)
         local disabled = self.sets.disabled
 
         if not disabled then
-            disabled = { }
+            disabled = {}
             self.sets.disabled = disabled
         end
 
@@ -166,37 +166,29 @@ if Addon:IsBuild("retail") then
     function MenuBar:Layout()
         for _, button in pairs(MicroButtons) do
             button:Hide()
+            button:ClearAllPoints()
         end
 
         if OverrideActionBar and OverrideActionBar:IsVisible() then
-            local l, r, t, b = self:GetButtonInsets()
-
             for i, button in ipairs(MicroButtons) do
-                button:ClearAllPoints()
                 button:SetParent(OverrideActionBar)
+                button:SetScale(0.8)
 
                 if i == 1 then
                     local x, y = OverrideActionBar:GetMicroButtonAnchor()
-
-                    x = x - 12
-
-                    if MicroMenu then
-                        y = y + button:GetHeight()
-                    end
-
-                    button:SetPoint('BOTTOMLEFT', x, y)
+                    button:SetPoint('BOTTOMLEFT', x + button:GetWidth(), y + button:GetHeight())
                 elseif i == 7 then
-                    button:SetPoint('TOPLEFT', MicroButtons[1], 'BOTTOMLEFT', 0, (t - b) - 3)
+                    button:SetPoint('TOPLEFT', MicroButtons[1], 'BOTTOMLEFT', 0, 0)
                 else
-                    button:SetPoint('BOTTOMLEFT', MicroButtons[i - 1], 'BOTTOMRIGHT', (l - r) + 6, 0)
+                    button:SetPoint('BOTTOMLEFT', MicroButtons[i - 1], 'BOTTOMRIGHT', 0, 0)
                 end
 
                 button:Show()
             end
         elseif PetMicroButtonFrame and PetMicroButtonFrame:IsVisible() then
             for i, button in ipairs(MicroButtons) do
-                button:ClearAllPoints()
                 button:SetParent(PetMicroButtonFrame)
+                button:SetScale(1)
 
                 if i == 1 then
                     button:SetPoint('TOPLEFT', -17, 9)
@@ -210,6 +202,7 @@ if Addon:IsBuild("retail") then
             end
         else
             for _, button in pairs(self.buttons) do
+                button:SetScale(1)
                 button:Show()
             end
 
