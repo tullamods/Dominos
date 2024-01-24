@@ -309,6 +309,8 @@ function ActionButton:UpdateIcon()
 end
 
 function ActionButton:UpdateOverrideBindings()
+    if InCombatLockdown() then return end
+
     local command = self.commandName
     if command then
         SetOverrideClickBindings(self, "HOTKEY", GetBindingKey(command))
