@@ -262,7 +262,7 @@ function ActionButton:UpdateCount()
         self.Name:SetText("")
     elseif IsConsumableAction(action) or IsStackableAction(action) or (not IsItemAction(action) and count > 0) then
         if count > 999 then
-            self.Count:SetFormattedText("%.1f%k", count / 1000)
+            self.Count:SetFormattedText("%.1fk", count / 1000)
             self.Name:SetText("")
         elseif count > 0 then
             self.Count:SetText(count)
