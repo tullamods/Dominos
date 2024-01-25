@@ -447,16 +447,34 @@ function ActionButton:GetShowGrid()
     return self:GetAttribute("showgrid") > 0
 end
 
-
 -- standard method references
 ActionButton.ClearProfessionQuality = ActionBarActionButtonMixin.ClearProfessionQuality
 ActionButton.GetHotkey = Addon.BindableButton.GetHotkey
-ActionButton.HideOverlayGlow = ActionButton_HideOverlayGlow
-ActionButton.ShowOverlayGlow = ActionButton_ShowOverlayGlow
-ActionButton.UpdateCooldown = ActionButton_UpdateCooldown
 ActionButton.UpdateFlyout = ActionBarActionButtonMixin.UpdateFlyout
 ActionButton.UpdateOverlayGlow = ActionBarActionButtonMixin.UpdateOverlayGlow
 ActionButton.UpdateProfessionQuality = ActionBarActionButtonMixin.UpdateProfessionQuality
+
+-- methods we want to bind to on first usage
+-- the intent here is defer until other addons have had a chance to hook
+-- the methods we want to use
+local function latebind(self, method, globalName)
+    if type(_G[globalName]) ~= "function" then
+        error(("Global method %q was not found"):format(globalName), 2)
+    end
+
+    self[method] = function(...)
+        local func = _G[globalName]
+
+        self[method] = func
+
+        return func(...)
+    end
+end
+
+latebind(ActionButton, "HideOverlayGlow", "ActionButton_HideOverlayGlow")
+latebind(ActionButton, "ShowOverlayGlow", "ActionButton_ShowOverlayGlow")
+latebind(ActionButton, "UpdateCooldown", "ActionButton_UpdateCooldown")
+
 
 -- exports
 Addon.ActionButton = ActionButton
