@@ -4,6 +4,7 @@
 
 * (Retail) Fix Override Bar micro menu button positioning
 * (Retail) Improved support for addons like HideActionbarAnimations by deferring some function bindings until later
+* (Retail) Fixed an issue with displaying counts of at least 1000 on actions
 * Updated LibUIDropDownMenu to resolve the NewFeature error
 
 ## 10.2.8
