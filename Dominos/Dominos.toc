@@ -22,7 +22,6 @@ core\buttonBar.lua
 core\bindableButton.lua
 core\fadeManager.lua
 core\overrideController.lua
-core\overrideController.bcc.lua
 core\tooltipController.lua
 core\blizzardHider.lua
 core\blizzardHider.classic.lua
