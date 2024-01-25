@@ -1,4 +1,5 @@
-if not OverrideActionBar then return end
+local _, Addon = ...
+if not Addon:IsBuild("retail") then return end
 
 --------------------------------------------------------------------------------
 -- Sets priority bindings to the Pet Battle and Override UI when either frame

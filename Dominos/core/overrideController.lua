@@ -1,7 +1,5 @@
 local _, Addon = ...
-if not Addon:IsBuild('retail', 'wrath') then
-    return
-end
+if not Addon:IsBuild('retail', 'wrath') then return end
 
 local OverrideController = Addon:CreateHiddenFrame('Frame', nil, UIParent, 'SecureHandlerStateTemplate')
 
