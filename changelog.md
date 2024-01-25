@@ -1,5 +1,10 @@
 # Dominos Changelog
 
+## 10.2.9
+
+* (Retail) Fix Override Bar micro menu button positioning
+* Updated LibUIDropDownMenu to resolve the NewFeature error
+
 ## 10.2.8
 
 * Updated LibUIDropDownMenu to prevent an error with opening right click menus that contain well, dropdowns.
