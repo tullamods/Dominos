@@ -166,11 +166,11 @@ if Addon:IsBuild("retail") then
     function MenuBar:Layout()
         for _, button in pairs(MicroButtons) do
             button:Hide()
-            button:ClearAllPoints()
         end
 
         if OverrideActionBar and OverrideActionBar:IsVisible() then
             for i, button in ipairs(MicroButtons) do
+                button:ClearAllPoints()
                 button:SetParent(OverrideActionBar)
                 button:SetScale(0.8)
 
@@ -187,6 +187,7 @@ if Addon:IsBuild("retail") then
             end
         elseif PetMicroButtonFrame and PetMicroButtonFrame:IsVisible() then
             for i, button in ipairs(MicroButtons) do
+                button:ClearAllPoints()
                 button:SetParent(PetMicroButtonFrame)
                 button:SetScale(1)
 
