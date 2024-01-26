@@ -129,7 +129,7 @@ local DragFrameLabelFont = CreateFont(AddonName .. 'DragFrameFont')
 
 DragFrameLabelFont:CopyFontObject('GameFontNormal')
 DragFrameLabelFont:SetJustifyH('CENTER')
-DragFrameLabelFont:SetJustifyV('CENTER')
+DragFrameLabelFont:SetJustifyV('MIDDLE')
 
 local DragFrameLabelHighlightFont = CreateFont(AddonName .. 'DragFrameHighlightFont')
 
@@ -139,7 +139,7 @@ DragFrameLabelHighlightFont:SetTextColor(HIGHLIGHT_FONT_COLOR:GetRGBA())
 local DragFrameTextFont = CreateFont(AddonName .. 'DragFrameContentFont')
 DragFrameTextFont:CopyFontObject('GameFontNormal')
 DragFrameTextFont:SetJustifyH('CENTER')
-DragFrameTextFont:SetJustifyV('CENTER')
+DragFrameTextFont:SetJustifyV('MIDDLE')
 
 --------------------------------------------------------------------------------
 -- Events
@@ -179,7 +179,7 @@ function DragFrame:OnLoad(parent)
     self.label:SetPoint('BOTTOMRIGHT', -BORDER_THICKNESS * 2, BORDER_THICKNESS * 2)
 
     -- contextual text
-    self.text = self.frame:CreateFontString(nil, 'OVERLAY', nil, 2)
+    self.text = self.frame:CreateFontString(nil, 'OVERLAY')
     self.text:SetFontObject(DragFrameTextFont)
     self.text:SetPoint('CENTER')
     self.text:Hide()
