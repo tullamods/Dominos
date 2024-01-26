@@ -1,7 +1,7 @@
 local _, Addon = ...
 if not Addon:IsBuild('retail', 'wrath') then return end
 
-local OverrideController = Addon:CreateHiddenFrame('Frame', nil, UIParent, 'SecureHandlerStateTemplate')
+local OverrideController = CreateFrame('Frame', nil, nil, 'SecureHandlerStateTemplate')
 
 local overrideBarStates = {
 	form = '[form]1;0',
@@ -13,20 +13,13 @@ local overrideBarStates = {
 }
 
 function OverrideController:OnLoad()
-	-- Override UI Detection
-	local watcher = CreateFrame('Frame', nil, OverrideActionBar, 'SecureHandlerShowHideTemplate')
-
-	watcher:SetFrameRef('controller', self)
-
-	watcher:SetAttribute('_onshow', [[
-		self:GetFrameRef('controller'):SetAttribute('state-isoverrideuishown', true)
+	self:WrapScript(OverrideActionBar, "OnShow", [[
+		control:SetAttribute('state-isoverrideuishown', true)
 	]])
 
-	watcher:SetAttribute('_onhide', [[
-		self:GetFrameRef('controller'):SetAttribute('state-isoverrideuishown', false)
+	self:WrapScript(OverrideActionBar, "OnHide", [[
+		control:SetAttribute('state-isoverrideuishown', false)
 	]])
-
-	self.overrideUIWatcher = watcher
 
 	self:SetAttribute('_onstate-isoverrideuishown', [[
 		self:RunAttribute('updateOverrideUI')
@@ -100,7 +93,7 @@ function OverrideController:OnLoad()
 
 	self:Execute([[ myFrames = table.new() ]])
 
-	self:SetAttribute('state-isoverrideuishown', self.overrideUIWatcher:IsVisible() and true)
+	self:SetAttribute('state-isoverrideuishown', OverrideActionBar:IsVisible() and true)
 
 	RegisterStateDriver(self, 'petbattleui', '[petbattle]1;0')
 
@@ -108,6 +101,7 @@ function OverrideController:OnLoad()
 		RegisterStateDriver(self, state, values)
 	end
 
+	self:Hide()
 	self.OnLoad = nil
 end
 

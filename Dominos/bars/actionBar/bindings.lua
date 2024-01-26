@@ -11,13 +11,13 @@ if not Addon:IsBuild("retail") then return end
 -- from those
 --------------------------------------------------------------------------------
 
-local Binder = CreateFrame("Frame", nil, OverrideActionBar, "SecureHandlerStateTemplate, SecureHandlerShowHideTemplate")
+local Binder = CreateFrame("Frame", nil, nil, "SecureHandlerStateTemplate")
 
-Binder:SetAttributeNoHandler("_onshow", [[
+Binder:WrapScript(OverrideActionBar, "OnShow", [[
     self:SetAttribute("state-overrideui", 1)
 ]])
 
-Binder:SetAttributeNoHandler("_onhide", [[
+Binder:WrapScript(OverrideActionBar, "OnHide", [[
     self:SetAttribute("state-overrideui", 0)
 ]])
 
@@ -75,7 +75,7 @@ Binder:SetScript("OnEvent", function(self, event)
     self:SetScript("OnEvent", nil)
 
     -- initialize secure state
-    self:SetAttribute("state-overrideui", self:IsVisible() and 1 or 0)
+    self:SetAttribute("state-overrideui", OverrideActionBar:IsVisible() and 1 or 0)
     RegisterStateDriver(self, "petabattleui", "[petbattle]1;0")
 end)
 
