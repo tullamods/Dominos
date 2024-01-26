@@ -10,8 +10,9 @@ function GoldBar:Init()
 end
 
 function GoldBar:Update()
-	local gold = GetMoney("player")
+	local gold = GetMoney()
 	local max = Addon.Config:GoldGoal()
+	local realm
 
 	if DataStore then
 		realm = 0

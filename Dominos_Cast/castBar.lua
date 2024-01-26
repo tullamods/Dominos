@@ -650,7 +650,7 @@ function CastBar:OnCreateMenu(menu)
     menu:HookScript("OnHide", function()
         self.menuShown = nil
 
-        if state == "demo" then
+        if self:GetProperty("state") == "demo" then
             self:Stop()
         end
     end)
