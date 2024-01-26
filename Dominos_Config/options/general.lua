@@ -114,6 +114,7 @@ Addon:AddOptionsPanelOptions("general", {
             type = "toggle",
             name = L.ShowOverrideUI,
             desc = L.ShowOverrideUIDesc,
+            disabled = InCombatLockdown(),
             hidden = ParentAddon:IsBuild("classic"),
             get = function()
                 return ParentAddon:UsingOverrideUI()
@@ -270,7 +271,7 @@ Addon:AddOptionsPanelOptions("general", {
                     ParentAddon:SetShowTooltips(false)
                     ParentAddon:SetShowCombatTooltips(false)
                 else
-                    error(("%s - Unknown tooltip option %q"):format(ParentAddonName, value))
+                    error(("%s - Unknown tooltip option %q"):format(ParentAddon:GetName(), value))
                 end
             end
         },
