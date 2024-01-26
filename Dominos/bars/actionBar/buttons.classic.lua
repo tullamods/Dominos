@@ -132,7 +132,7 @@ function ActionButtons:GetOrCreateActionButton(id, parent)
 
     -- a button we're creating
     if button == nil then
-        button = CreateFrame("CheckButton", name, parent, "SecureHandlerDragTemplate, ActionBarButtonTemplate")
+        button = CreateFrame("CheckButton", name, parent, "ActionBarButtonTemplate")
 
         Mixin(button, Addon.ActionButton)
         button:OnCreate(id)
