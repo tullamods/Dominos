@@ -49,7 +49,10 @@ function Addon:OnEnable()
     -- watch for binding updates, updating all bars on the last one that happens
     -- in rapid sequence
     self.UpdateHotkeys = self:Debounce(function()
+        if not InCombatLockdown() then
         self.Frame:ForEach('ForButtons', 'UpdateOverrideBindings')
+        end
+
         self.Frame:ForEach('ForButtons', 'UpdateHotkeys')
     end, 0.01)
 
