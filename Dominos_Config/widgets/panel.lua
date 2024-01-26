@@ -3,7 +3,7 @@
 local AddonName, Addon = ...
 local Panel = Addon:CreateClass('Frame')
 local L = LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')
-local ParentAddonName = GetAddOnDependencies(AddonName)
+local ParentAddonName = (C_AddOns.GetAddOnDependencies or GetAddOnDependencies)(AddonName)
 local ParentAddon = _G[ParentAddonName]
 
 local max = math.max
