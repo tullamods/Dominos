@@ -73,9 +73,9 @@ function ActionButton:OnCreate(id)
     self:SetAttributeNoHandler("showgrid", 0)
     self:SetAttributeNoHandler("type", "action")
     self:SetAttributeNoHandler("typerelease", "actionrelease")
-	self:SetAttributeNoHandler("useparent-checkselfcast", true)
-	self:SetAttributeNoHandler("useparent-checkfocuscast", true)
-	self:SetAttributeNoHandler("useparent-checkmouseovercast", true)
+    self:SetAttributeNoHandler("useparent-checkselfcast", true)
+    self:SetAttributeNoHandler("useparent-checkfocuscast", true)
+    self:SetAttributeNoHandler("useparent-checkmouseovercast", true)
     self:SetAttributeNoHandler("useparent-unit", true)
 
     -- register for clicks
@@ -478,4 +478,3 @@ latebind(ActionButton, "UpdateCooldown", "ActionButton_UpdateCooldown")
 
 -- exports
 Addon.ActionButton = ActionButton
-
