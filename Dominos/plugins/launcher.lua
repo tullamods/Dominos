@@ -54,25 +54,7 @@ function Launcher:CreateDataBrokerObject()
                     GameTooltip_AddBlankLinesToTooltip(tooltip, 1)
 
                     local _, _, latencyHome, latencyWorld = GetNetStats()
-                    local latency = latencyHome > latencyWorld and latencyHome or latencyWorld
-                    local latencyColor
-                    if (latency > PERFORMANCEBAR_MEDIUM_LATENCY) then
-                        latencyColor = CreateColor(1, 0, 0)
-                    elseif (latency > PERFORMANCEBAR_LOW_LATENCY) then
-                        latencyColor = CreateColor(1, 1, 0)
-                    else
-                        latencyColor = CreateColor(0, 1, 0)
-                    end
-
-                    GameTooltip_AddNormalLine(
-                        tooltip,
-                        ('%s |c%s%s%s|r'):format(
-                            MAINMENUBAR_LATENCY_LABEL,
-                            latencyColor:GenerateHexColor(),
-                            latency,
-                            MILLISECONDS_ABBR
-                        )
-                    )
+                    GameTooltip_AddNormalLine(tooltip, MAINMENUBAR_LATENCY_LABEL:format(latencyHome, latencyWorld))
                 end
             end
         }
