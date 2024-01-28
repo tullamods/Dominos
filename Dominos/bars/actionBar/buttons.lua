@@ -6,6 +6,10 @@ local ActionButtons = CreateFrame('Frame', nil, nil, 'SecureHandlerBaseTemplate'
 -- constants
 local ACTION_BUTTON_NAME_TEMPLATE = AddonName .. "ActionButton%d"
 
+--------------------------------------------------------------------------------
+-- State
+--------------------------------------------------------------------------------
+
 -- global showgrid event reasons
 ActionButtons.ShowGridReasons = {
     -- CVAR = 1,
@@ -41,7 +45,7 @@ end
 
 -- states
 -- [button] = action
-ActionButtons.buttons = { }
+ActionButtons.buttons = {}
 
 -- [action] = { [button] = true }
 ActionButtons.actionButtons = setmetatable({}, {
@@ -55,7 +59,7 @@ ActionButtons.actionButtons = setmetatable({}, {
 })
 
 -- dirty secure attributes
-ActionButtons.dirtyAttributes = {}
+ActionButtons.dirtyCvars = {}
 
 -- we use a traditional event handler so that we can take
 -- advantage of unit event registration
@@ -66,7 +70,10 @@ end)
 ActionButtons:RegisterEvent("PLAYER_LOGIN")
 ActionButtons:Execute([[ ActionButtons = table.new() ]])
 
--- events
+--------------------------------------------------------------------------------
+-- Event and Callback Handling
+--------------------------------------------------------------------------------
+
 function ActionButtons:PLAYER_LOGIN()
     -- initialize state
     self:SetAttributeNoHandler("showgrid", 0)
@@ -222,7 +229,7 @@ end
 
 function ActionButtons:CVAR_UPDATE(name, ...)
     if name == "lockActionBars" then
-        self:TrySetAttribute(name, GetCVarBool(name))
+        self:TrySetCVarAttribute(name, GetCVarBool(name))
     end
 end
 
@@ -257,9 +264,9 @@ function ActionButtons:PLAYER_ENTERING_WORLD()
 end
 
 function ActionButtons:PLAYER_REGEN_ENABLED()
-    for k, v in pairs(self.dirtyAttributes) do
-        self:SetAttribute(k, v)
-        self.dirtyAttributes[k] = nil
+    for k in pairs(self.dirtyCvars) do
+        self:SetAttribute(k, GetCVarBool(k))
+        self.dirtyCvars[k] = nil
     end
 end
 
@@ -366,21 +373,58 @@ function ActionButtons:OnActionChanged(buttonName, action, prevAction)
     C_ActionBar.EnableActionRangeCheck(action, true)
 end
 
--- api
-local ActionButton_AttributeChangedBefore = [[
-    if name == "action" then
-        local prevValue = ActionButtons[self]
-        if prevValue ~= value then
-            ActionButtons[self] = value
-            control:CallMethod("OnActionChanged", self:GetName(), value, prevValue)
+--------------------------------------------------------------------------------
+-- ActionButton Handlers
+--------------------------------------------------------------------------------
+
+local ActionButton_AttributeChanged = [[
+    if name ~= "action" then return end
+
+    local prevValue = ActionButtons[self]
+    if prevValue ~= value then
+        ActionButtons[self] = value
+        control:CallMethod("OnActionChanged", self:GetName(), value, prevValue)
+    end
+]]
+
+-- pre click:
+-- update press and hold action state
+local ActionButton_PreClick = [[
+    local actionType, id = GetActionInfo(self:GetAttribute("action"))
+
+    if actionType == "spell" then
+        local ph = IsPressHoldReleaseSpell(id)
+        if self:GetAttribute("pressAndHoldAction") ~= ph then
+            self:SetAttribute("pressAndHoldAction", ph)
         end
     end
 ]]
 
-local ActionButton_ClickBefore = [[
-    local actionType, id = GetActionInfo(self:GetAttribute("action"))
-    if actionType == "spell" then
-        self:SetAttribute("pressAndHoldAction", IsPressHoldReleaseSpell(id))
+-- on click:
+-- remap hotkey presses to LeftButton and let both down and up clicks through
+-- prevent activating actions on mouse button clicks. This is to avoid conflicts
+-- with drag and drop behaviors
+--
+-- When filtering out mouse button down presses, we need to also temporarily
+-- turn off the cast on key down behavior. We restore it after the mouse button
+-- was released
+--
+-- /click macros complicate this a bit. The simplest version, /click Button only
+-- triggers the default click (left button up). So to handle these, we keep
+-- track of the button that was originally clicked. The original button will
+-- disable the cast on key press setting for any mouse button down call.
+-- Any buttons clicked during the click of that button will adjust the setting
+-- on an up click
+local ActionButton_Click = [[
+    local callerName = control:GetAttribute("caller")
+    local buttonName = self:GetName()
+    local isCaller
+
+    if callerName == nil then
+        control:SetAttribute("caller", buttonName)
+        isCaller = true
+    else
+        isCaller = callerName == buttonName
     end
 
     if button == "HOTKEY" then
@@ -388,20 +432,38 @@ local ActionButton_ClickBefore = [[
     end
 
     if down then
-        control:CallMethod("SaveActionButtonUseKeyDown")
+        if isCaller then
+            control:CallMethod("SaveActionButtonUseKeyDown", buttonName)
+        end
         return false
     end
 
-    return nil, "RESTORE"
+    if not isCaller then
+        control:CallMethod("SaveActionButtonUseKeyDown", buttonName)
+    end
+    return nil, true
 ]]
 
 local ActionButton_ClickAfter = [[
-    if message == "RESTORE" then
-        control:CallMethod("RestoreActionButtonUseKeyDown")
+    local buttonName = self:GetName()
+
+    if control:GetFrameRef("caller") == buttonName then
+        control:SetFrameRef("caller", nil)
     end
+
+    control:CallMethod("RestoreActionButtonUseKeyDown", buttonName)
 ]]
 
-local ActionButton_DragStartBefore = [[
+-- post click:
+-- update the visibility of any button with the same action as this one
+-- this is to handle cases where a person has picked up a spell, released the
+-- mouse button, and then clicked on the button to place an action
+local ActionButton_PostClick = [[
+    control:RunAttribute("ForActionSlot", self:GetAttribute("action"), "UpdateShown")
+]]
+
+-- drag & drop
+local ActionButton_DragStart = [[
     if not (IsModifiedClick("PICKUPACTION") or not control:GetAttribute("lockActionBars")) then
         return false
     end
@@ -417,26 +479,29 @@ local ActionButton_ReceiveDragAfter = [[
     control:RunAttribute("ForActionSlot", self:GetAttribute("action"), "UpdateShown")
 ]]
 
-local ActionButton_PostClickBefore = [[
-    control:RunAttribute("ForActionSlot", self:GetAttribute("action"), "UpdateShown")
-]]
+--------------------------------------------------------------------------------
+-- Methods
+--------------------------------------------------------------------------------
 
 function ActionButtons:GetOrCreateActionButton(id, parent)
     local name = ACTION_BUTTON_NAME_TEMPLATE:format(id)
     local button = _G[name]
 
     if button == nil then
-        button = CreateFrame("CheckButton", name, parent, "SecureHandlerAttributeTemplate, SecureActionButtonTemplate, SecureHandlerDragTemplate, ActionButtonTemplate")
+        button = CreateFrame("CheckButton", name, parent, "SecureActionButtonTemplate, SecureHandlerAttributeTemplate, SecureHandlerDragTemplate, ActionButtonTemplate")
 
         Addon.ActionButton:Bind(button)
 
         button:OnCreate(id)
 
-        self:WrapScript(button, "OnAttributeChanged", ActionButton_AttributeChangedBefore)
-        self:WrapScript(button, "OnClick", ActionButton_ClickBefore, ActionButton_ClickAfter)
-        self:WrapScript(button, "OnDragStart", ActionButton_DragStartBefore)
+        self:WrapScript(button, "OnAttributeChanged", ActionButton_AttributeChanged)
+
+        self:WrapScript(button, "PreClick", ActionButton_PreClick)
+        self:WrapScript(button, "OnClick", ActionButton_Click, ActionButton_ClickAfter)
+        self:WrapScript(button, "PostClick", ActionButton_PostClick)
+
+        self:WrapScript(button, "OnDragStart", ActionButton_DragStart)
         self:WrapScript(button, "OnReceiveDrag", ActionButton_ReceiveDragBefore, ActionButton_ReceiveDragAfter)
-        self:WrapScript(button, "PostClick", ActionButton_PostClickBefore)
 
         -- register the button with the controller
         self:SetFrameRef("add", button)
@@ -469,26 +534,27 @@ function ActionButtons:SetShowSpellGlows(enable)
     end
 end
 
-function ActionButtons:SaveActionButtonUseKeyDown()
-    if GetCVarBool("ActionButtonUseKeyDown") then
+function ActionButtons:SaveActionButtonUseKeyDown(owner)
+    if self.restoreKeyDown == nil and GetCVarBool("ActionButtonUseKeyDown") then
         SetCVar("ActionButtonUseKeyDown", 0)
-        self.restoreKeyDown = true
+        self.restoreKeyDown = owner
     end
 end
 
-function ActionButtons:RestoreActionButtonUseKeyDown()
-    if self.restoreKeyDown then
+function ActionButtons:RestoreActionButtonUseKeyDown(owner)
+    if self.restoreKeyDown == owner then
         SetCVar("ActionButtonUseKeyDown", 1)
         self.restoreKeyDown = nil
     end
 end
 
-function ActionButtons:TrySetAttribute(key, value)
+function ActionButtons:TrySetCVarAttribute(key, value)
     if InCombatLockdown() then
-        self.dirtyAttributes[key] = value
+        self.dirtyCvars[key] = true
         return false
     end
 
+    self.dirtyCvars[key] = nil
     self:SetAttribute(key, value)
     return true
 end
@@ -520,7 +586,6 @@ function ActionButtons:ForAll(method, ...)
         end
     end
 end
-
 
 function ActionButtons:ForAllWhere(predicate, method, ...)
     for action, buttons in pairs(self.actionButtons) do
