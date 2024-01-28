@@ -10,11 +10,12 @@ local COMMAND_TEMPLATE = 'CLICK %s:HOTKEY'
 -- to enable cast on key press support
 local function getButtonBindingAction(button)
     return button.commandName
+        or button:GetAttribute("commandName")
         or COMMAND_TEMPLATE:format(button:GetName())
 end
 
 local function getButtonBindingActionName(button)
-    local displayName = button.displayName
+    local displayName = button.displayName or button:GetAttribute("displayName")
     if displayName then
         return displayName
     end

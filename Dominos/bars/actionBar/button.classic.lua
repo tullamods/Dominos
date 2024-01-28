@@ -47,11 +47,8 @@ end
 
 function ActionButton:OnCreate(id)
     -- initialize state
-    self.id = id
-    self.action = 0
-
     if self.commandName == nil then
-        self.commandName = GetActionButtonCommand(id)
+        self:SetAttributeNoHandler("commandName", GetActionButtonCommand(id))
     end
 
     -- initialize secure state
@@ -72,8 +69,7 @@ function ActionButton:OnCreate(id)
     Addon.BindableButton:AddQuickBindingSupport(self)
     self:UpdateHotkeys()
 
-    -- hide b default
-    self:SetAttributeNoHandler("showgrid", 0)
+    -- hide by default
     self:Hide()
 end
 

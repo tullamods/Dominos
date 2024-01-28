@@ -110,16 +110,16 @@ local function GetActionButtonName(id)
         return ACTION_BUTTON_NAME_TEMPLATE:format(id)
     -- 3
     elseif id <= 36 then
-        return "MultiBarRightButton" .. (id - 24)
+        return "MultiBarRightButton" .. (id - 24), true
     -- 4
     elseif id <= 48 then
-        return "MultiBarLeftButton" .. (id - 36)
+        return "MultiBarLeftButton" .. (id - 36), true
     -- 5
     elseif id <= 60 then
-        return "MultiBarBottomRightButton" .. (id - 48)
+        return "MultiBarBottomRightButton" .. (id - 48), true
     -- 6
     elseif id <= 72 then
-        return "MultiBarBottomLeftButton" .. (id - 60)
+        return "MultiBarBottomLeftButton" .. (id - 60), true
     -- 7+
     else
         return ACTION_BUTTON_NAME_TEMPLATE:format(id)
@@ -127,7 +127,7 @@ local function GetActionButtonName(id)
 end
 
 function ActionButtons:GetOrCreateActionButton(id, parent)
-    local name = GetActionButtonName(id)
+    local name, noGrid = GetActionButtonName(id)
     local button = _G[name]
 
     -- a button we're creating
@@ -135,6 +135,7 @@ function ActionButtons:GetOrCreateActionButton(id, parent)
         button = CreateFrame("CheckButton", name, parent, "ActionBarButtonTemplate")
 
         Mixin(button, Addon.ActionButton)
+
         button:OnCreate(id)
         self:WrapScript(button, "OnClick", ActionButton_ClickBefore)
 
@@ -144,7 +145,9 @@ function ActionButtons:GetOrCreateActionButton(id, parent)
         Mixin(button, Addon.ActionButton)
 
         button:SetID(0)
-        button.noGrid = true
+        if noGrid then
+            button.noGrid = true
+        end
         button:OnCreate(id)
         self:WrapScript(button, "OnClick", ActionButton_ClickBefore)
 
