@@ -21,7 +21,6 @@ ActionButtons.ShowGridReasons = {
     SHOW_EMPTY_BUTTONS_PER_BAR = 64
 }
 
-
 local function HasSpellID(action, spellID)
     local actionType, id, subType = GetActionInfo(action)
     if actionType == "spell" then
@@ -279,7 +278,6 @@ function ActionButtons:SetShowSpellGlows(enable)
         end
     end
 end
-
 
 function ActionButtons:SetShowSpellAnimations(enable)
     local f = ActionBarActionEventsFrame
