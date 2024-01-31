@@ -35,7 +35,7 @@ local function disableActionButtons(frame)
 
     for _, button in pairs(buttons) do
         button:UnregisterAllEvents()
-        button:SetAttributeNoHandler('statehidden', true)
+        button:SetAttributeNoHandler("statehidden", true)
         button:Hide()
     end
 end

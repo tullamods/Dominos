@@ -35,7 +35,6 @@ end
 
 function Addon:OnEnable()
     self:MigrateBindings()
-    self:UpdateUseOverrideUI()
     self:Load()
 
     -- watch for binding updates, updating all bars on the last one that happens
@@ -703,30 +702,10 @@ end
 function Addon:SetUseOverrideUI(enable)
     self.db.profile.useOverrideUI = enable and true
     self.callbacks:Fire("USE_OVERRRIDE_UI_CHANGED", self:UsingOverrideUI())
-    self:UpdateUseOverrideUI()
 end
 
 function Addon:UsingOverrideUI()
     return self.db.profile.useOverrideUI and self:IsBuild('retail', 'wrath')
-end
-
-function Addon:UpdateUseOverrideUI()
-    if not self.OverrideController then return end
-
-    local useOverrideUi = self:UsingOverrideUI()
-
-    self.OverrideController:SetAttribute('state-useoverrideui', useOverrideUi)
-
-    local oab = _G.OverrideActionBar
-    if oab then
-        oab:ClearAllPoints()
-
-        if useOverrideUi then
-            oab:SetPoint('BOTTOM')
-        else
-            oab:SetPoint('LEFT', oab:GetParent(), 'RIGHT', 100, 0)
-        end
-    end
 end
 
 -- override action bar selection
@@ -739,7 +718,7 @@ function Addon:SetOverrideBar(id)
     prevBar:UpdateOverrideBar()
     newBar:UpdateOverrideBar()
 
-    self.callbacks:Fire('OVERRIDE_BAR_UPDATED', id)
+    self.callbacks:Fire('OVERRIDE_BAR_UPDATED', newBar)
 end
 
 function Addon:GetOverrideBar()
