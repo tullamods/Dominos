@@ -9,11 +9,11 @@ function OverrideController:OnLoad()
 	self:SetAttributeNoHandler("_onattributechanged", [[
 		if name == "overrideui" then
 			for _, frame in pairs(myFrames) do
-				frame:SetAttribute('state-overrideui', value == 1)
+				frame:SetAttribute("state-overrideui", value == 1)
 			end
 		elseif name == "petbattleui" then
 			for _, frame in pairs(myFrames) do
-				frame:SetAttribute('state-petbattleui', value == 1)
+				frame:SetAttribute("state-petbattleui", value == 1)
 			end
 		elseif name == "overridepage" then
 			for _, frame in pairs(myFrames) do
@@ -55,7 +55,7 @@ function OverrideController:OnLoad()
 		sstemp = '[shapeshift]1;0',
 		vehicle = '[@vehicle,exists]1;0',
 		vehicleui = '[vehicleui]1;0',
-		petbattle = '[petbattle]1;0'
+		petbattleui = '[petbattle]1;0'
 	} do
 		RegisterAttributeDriver(self, attribute, driver)
 	end
