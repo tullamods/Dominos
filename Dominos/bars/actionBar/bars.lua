@@ -1,27 +1,8 @@
-local AddonName, Addon = ...
+local _, Addon = ...
 local ActionBarsModule = Addon:NewModule('ActionBars', 'AceEvent-3.0')
-local L = LibStub('AceLocale-3.0'):GetLocale(AddonName)
 
 function ActionBarsModule:OnEnable()
     self.UpdateActionSlots = Addon:Debounce(self.UpdateActionSlots, 0.1, self)
-
-    -- define action bar binding names
-    _G['BINDING_HEADER_' .. AddonName] = AddonName
-
-    local numActionBars = math.ceil(Addon.ACTION_BUTTON_COUNT / NUM_ACTIONBAR_BUTTONS)
-
-    for barID = 1, numActionBars do
-        local offset = NUM_ACTIONBAR_BUTTONS * (barID - 1)
-        local headerKey = ('BINDING_HEADER_%sActionBar%d'):format(AddonName, barID)
-
-        _G[headerKey] = L.ActionBarDisplayName:format(barID)
-
-        for i = 1, NUM_ACTIONBAR_BUTTONS do
-            local bindingKey = ('BINDING_NAME_CLICK %sActionButton%d:HOTKEY'):format(AddonName, i + offset)
-
-            _G[bindingKey] = L.ActionBarButtonDisplayName:format(barID, i)
-        end
-    end
 end
 
 function ActionBarsModule:Load()
@@ -37,6 +18,10 @@ function ActionBarsModule:Load()
 
     self:SetBarCount(Addon:NumBars())
     Addon.RegisterCallback(self, "ACTIONBAR_COUNT_UPDATED")
+
+    self:RegisterEvent("SPELLS_CHANGED")
+    self:RegisterEvent("ACTIONBAR_SLOT_CHANGED")
+    self:RegisterEvent("PLAYER_REGEN_ENABLED")
 end
 
 function ActionBarsModule:Unload()
@@ -69,6 +54,23 @@ function ActionBarsModule:UPDATE_SHAPESHIFT_FORMS()
     self:ForActive('UpdateStateDriver')
 end
 
+function ActionBarsModule:ACTIONBAR_SLOT_CHANGED(_event, slot)
+    if not self.slotsToUpdate[slot] then
+        self.slotsToUpdate[slot] = true
+        self:UpdateActionSlots()
+    end
+end
+
+function  ActionBarsModule:PLAYER_REGEN_ENABLED()
+    if next(self.slotsToUpdate) then
+        self:UpdateActionSlots()
+    end
+end
+
+function ActionBarsModule:SPELLS_CHANGED()
+    self:ForActive('ForButtons', 'UpdateShown')
+end
+
 function ActionBarsModule:SetBarCount(count)
     self:ForActive('Free')
 
@@ -89,4 +91,22 @@ function ActionBarsModule:ForActive(method, ...)
             bar:CallMethod(method, ...)
         end
     end
+end
+
+function ActionBarsModule:UpdateActionSlots()
+    if InCombatLockdown() then return end
+
+    if not next(self.slotsToUpdate) then
+        return
+    end
+
+    for _, bar in pairs(self.active) do
+        for _, button in pairs(bar.buttons) do
+            if self.slotsToUpdate[button:GetAttribute("action")] then
+                button:UpdateShown()
+            end
+        end
+    end
+
+    table.wipe(self.slotsToUpdate)
 end

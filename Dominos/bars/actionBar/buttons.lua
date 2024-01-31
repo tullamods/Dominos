@@ -123,7 +123,7 @@ function ActionButtons:PLAYER_LOGIN()
         end
     ]])
 
-    ActionButton1:SetAttributeNoHandler("showgrid", 0)
+    ActionButton1:SetAttribute("showgrid", 0)
 
     self:WrapScript(ActionButton1, "OnAttributeChanged", [[
         if name ~= "showgrid" then return end

@@ -185,7 +185,7 @@ function ActionButton:SetShowCooldowns(show)
     if show then
         if self.cooldown:GetParent() ~= self then
             self.cooldown:SetParent(self)
-            self:UpdateCooldown()
+            ActionButton_UpdateCooldown(self)
         end
     else
         self.cooldown:SetParent(Addon.ShadowUIParent)
