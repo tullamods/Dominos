@@ -158,7 +158,7 @@ function ActionButtons:GetOrCreateActionButton(id, parent)
 end
 
 function ActionButtons:SetShowGrid(show, reason)
-    self:ForAll("SetShowGrid", show, reason)
+    self:ForAll("SetShowGridInsecure", show, reason)
 end
 
 function ActionButtons:TrySetAttribute(key, value)

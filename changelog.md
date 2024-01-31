@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 10.2.12b
+
+* Fix error on load in Classic
+
 ## 10.2.12
 
 * (Retail) Revert back most of the post 10.2.1 changes
