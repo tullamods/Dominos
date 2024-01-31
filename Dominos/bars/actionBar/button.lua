@@ -69,7 +69,7 @@ function ActionButton:OnCreate(id)
     self:SetAttributeNoHandler("action", 0)
     self:SetAttributeNoHandler("id", id)
     self:SetAttributeNoHandler("showgrid", 0)
-    self:SetAttributeNoHandler("commandName", GetActionButtonCommand(id))
+    self:SetAttributeNoHandler("commandName", GetActionButtonCommand(id) or ("CLICK %s:HOTKEY"):format(self:GetName()))
     self:SetAttributeNoHandler("useparent-checkselfcast", true)
     self:SetAttributeNoHandler("useparent-checkfocuscast", true)
     self:SetAttributeNoHandler("useparent-checkmouseovercast", true)
@@ -90,6 +90,7 @@ function ActionButton:OnCreate(id)
     bind:SetAttributeNoHandler("useparent-unit", true)
     bind:SetAttributeNoHandler("useparent-flyoutDirection", true)
     bind:SetAttributeNoHandler("useparent-pressAndHoldAction", true)
+    bind:EnableMouseWheel()
     bind:RegisterForClicks("AnyUp", "AnyDown")
     bind:SetScript("PreClick", bind_PreClick)
 
@@ -147,7 +148,7 @@ end
 function ActionButton:UpdateOverrideBindings()
     if InCombatLockdown() then return end
 
-    local command = self:GetAttribute("commandName") or ("CLICK %s:HOTKEY"):format(self:GetName())
+    local command = self:GetAttribute("commandName")
     if command then
         SetOverrideClickBindings(self.bind, "HOTKEY", GetBindingKey(command))
     end
