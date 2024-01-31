@@ -145,9 +145,9 @@ end
 
 function ActionBar:OnAttachButton(button)
     button:SetAttribute("action", button:GetAttribute("index") + (self:GetAttribute("actionOffset") or 0))
-    button:SetFlyoutDirection(self:GetFlyoutDirection())
-    button:SetShowGrid(Addon:ShowGrid(), Addon.ActionButtons.ShowGridReasons.SHOW_EMPTY_BUTTONS)
-    button:SetShowGrid(self:ShowingEmptyButtons(), Addon.ActionButtons.ShowGridReasons.SHOW_EMPTY_BUTTONS_PER_BAR)
+    button:SetFlyoutDirectionInsecure(self:GetFlyoutDirection())
+    button:SetShowGridInsecure(Addon:ShowGrid(), Addon.ActionButtons.ShowGridReasons.SHOW_EMPTY_BUTTONS)
+    button:SetShowGridInsecure(self:ShowingEmptyButtons(), Addon.ActionButtons.ShowGridReasons.SHOW_EMPTY_BUTTONS_PER_BAR)
     button:SetShowCountText(Addon:ShowCounts())
     button:SetShowMacroText(Addon:ShowMacroText())
     button:SetShowEquippedItemBorders(Addon:ShowEquippedItemBorders())
@@ -253,7 +253,7 @@ end
 -- empty buttons
 function ActionBar:SetShowEmptyButtons(show)
     self.sets.showEmptyButtons = show and true
-    self:ForButtons('SetShowGrid', self:ShowingEmptyButtons(), Addon.ActionButtons.ShowGridReasons.SHOW_EMPTY_BUTTONS_PER_BAR)
+    self:ForButtons('SetShowGridInsecure', self:ShowingEmptyButtons(), Addon.ActionButtons.ShowGridReasons.SHOW_EMPTY_BUTTONS_PER_BAR)
 end
 
 function ActionBar:ShowingEmptyButtons()
@@ -356,7 +356,7 @@ function ActionBar:SetFlyoutDirection(direction)
 end
 
 function ActionBar:UpdateFlyoutDirection()
-    self:ForButtons('SetFlyoutDirection', self:GetFlyoutDirection())
+    self:ForButtons('SetFlyoutDirectionInsecure', self:GetFlyoutDirection())
 end
 
 ActionBar:Extend("Layout", ActionBar.UpdateFlyoutDirection)

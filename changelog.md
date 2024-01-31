@@ -1,5 +1,10 @@
 # Dominos Changelog
 
+## 10.2.12
+
+* (Retail) Revert back most of the post 10.2.1 changes
+* (Retail) Added an option to toggle spell animations
+
 ## 10.2.11
 
 * (Retail) Fix issues causing keybindings to not properly from and to the Override UI

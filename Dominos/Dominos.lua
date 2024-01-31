@@ -233,6 +233,7 @@ function Addon:GetDatabaseDefaults()
             showTooltips = true,
             showTooltipsCombat = true,
             showSpellGlows = true,
+            showSpellAnimations = true,
             useOverrideUI = self:IsBuild('retail', 'wrath'),
 
             ab = {
@@ -696,6 +697,16 @@ end
 
 function Addon:ShowingSpellGlows()
     return self.db.profile.showSpellGlows
+end
+
+-- spell animations
+function Addon:SetShowSpellAnimations(enable)
+    self.db.profile.showSpellAnimations = enable and true
+    self.callbacks:Fire("SHOW_SPELL_ANIMATIONS_CHANGED", self:ShowingSpellAnimations())
+end
+
+function Addon:ShowingSpellAnimations()
+    return self.db.profile.showSpellAnimations
 end
 
 -- override ui

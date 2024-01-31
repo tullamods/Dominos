@@ -73,11 +73,11 @@ function ActionButton:OnCreate(id)
     self:Hide()
 end
 
-function ActionButton:SetShowGrid(show, reason, force)
+function ActionButton:SetShowGridInsecure(show, reason, force)
     if InCombatLockdown() then return end
 
     if reason == nil then
-        error("Usage: ActionButton:SetShowGrid(show, reason, [, force?])", 2)
+        error("Usage: ActionButton:SetShowGridInsecure(show, reason, force?)", 2)
     end
 
     local value = self:GetAttribute("showgrid") or 0
@@ -105,7 +105,7 @@ function ActionButton:UpdateShown()
 end
 
 -- configuration commands
-function ActionButton:SetFlyoutDirection(direction)
+function ActionButton:SetFlyoutDirectionInsecure(direction)
     if InCombatLockdown() then return end
 
     self:SetAttribute("flyoutDirection", direction)

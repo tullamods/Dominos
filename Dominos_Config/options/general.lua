@@ -216,6 +216,19 @@ Addon:AddOptionsPanelOptions("general", {
 
         {
             type = "toggle",
+            name = L.ShowSpellAnimations,
+            hidden = not ParentAddon:IsBuild("retail"),
+            get = function()
+                return ParentAddon:ShowingSpellAnimations()
+            end,
+            set = function(_, enable)
+                ParentAddon:SetShowSpellAnimations(enable)
+            end,
+            width  = 1.5,
+        },
+
+        {
+            type = "toggle",
             name = L.ShowSpellGlows,
             hidden = not ParentAddon:IsBuild("retail"),
             get = function()
@@ -275,75 +288,5 @@ Addon:AddOptionsPanelOptions("general", {
                 end
             end
         },
-
-        {
-            type = "group",
-            name = L.ActionButtonColoring,
-            inline = true,
-            hidden = not ParentAddon:IsBuild("retail"),
-            args = (function()
-                local results = {}
-
-                for i, state in ipairs { "oor", "oom", "unusable" } do
-                    results[state] = {
-                        type = "group",
-                        name = L["ActionStates_" .. state],
-                        inline = true,
-                        order = i,
-                        width = 0.5,
-                        args = {
-                            enable = {
-                                type = "toggle",
-                                name = L.Enable,
-                                get = function()
-                                    return ParentAddon.db.profile.actionColors[state].enabled
-                                end,
-                                set = function(_, enable)
-                                    ParentAddon.db.profile.actionColors[state].enabled = enable
-                                    ParentAddon.ActionButtons:ForVisible("UpdateUsable")
-                                end,
-                                order = 0,
-                            },
-
-                            color = {
-                                type = "color",
-                                name = L.Color,
-                                hasAlpha = true,
-                                get = function()
-                                    local c = ParentAddon.db.profile.actionColors[state]
-                                    return c.r, c.g, c.b, c.a
-                                end,
-                                set = function(_, r, g, b, a)
-                                    local c = ParentAddon.db.profile.actionColors[state]
-
-                                    c.r = r
-                                    c.g = g
-                                    c.b = b
-                                    c.a = a
-
-                                    ParentAddon.ActionButtons:ForVisible("UpdateUsable")
-                                end,
-                                order = 1,
-                            },
-
-                            desaturate = {
-                                type = "toggle",
-                                name = L.Desaturate,
-                                get = function()
-                                    return ParentAddon.db.profile.actionColors[state].desaturate
-                                end,
-                                set = function(_, enable)
-                                    ParentAddon.db.profile.actionColors[state].desaturate = enable
-                                    ParentAddon.ActionButtons:ForVisible("UpdateUsable")
-                                end,
-                                order = 2,
-                            },
-                        }
-                    }
-                end
-
-                return results
-            end)()
-        }
     }
 })
