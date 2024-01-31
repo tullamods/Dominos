@@ -244,7 +244,7 @@ function ActionButtons:GetOrCreateActionButton(id, parent)
         button:OnCreate(id)
 
         self:WrapScript(button, "OnAttributeChanged", ActionButton_AttributeChanged)
-        self:WrapScript(button, "OnClick", ActionButton_Click)
+        self:WrapScript(button.bind, "OnClick", ActionButton_Click)
         self:WrapScript(button, "PostClick", ActionButton_PostClick)
         self:WrapScript(button, "OnReceiveDrag", ActionButton_ReceiveDragBefore, ActionButton_ReceiveDragAfter)
 

@@ -494,10 +494,10 @@ local SpellFlyout = { }
 LibStub('AceEvent-3.0'):Embed(SpellFlyout)
 
 local button_OnClick = [[
-    local type, id = GetActionInfo(self:GetAttribute('action'))
+    local type, id = GetActionInfo(self:GetEffectiveAttribute("action", button))
     if type == 'flyout' then
 		if not down then
-			control:SetAttribute("caller", self)
+			control:SetAttribute("caller", self:GetFrameRef("owner") or self)
 			control:RunAttribute("Toggle", id)
 		end
         return false

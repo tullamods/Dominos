@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 10.2.13
+
+* (Retail) Reimplement cast on key press support
+
 ## 10.2.12b
 
 * Fix error on load in Classic

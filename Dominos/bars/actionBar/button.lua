@@ -50,6 +50,20 @@ local ActionButton = {}
 
 --[[ Script Handlers ]]--
 
+local function bind_PreClick(self, _, down)
+    local owner = self:GetParent()
+
+    if down then
+        if owner:GetButtonState() == "NORMAL" then
+            owner:SetButtonState("PUSHED")
+        end
+    else
+        if owner:GetButtonState() == "PUSHED" then
+            owner:SetButtonState("NORMAL")
+        end
+    end
+end
+
 function ActionButton:OnCreate(id)
     -- initialize secure state
     self:SetAttributeNoHandler("action", 0)
@@ -64,6 +78,24 @@ function ActionButton:OnCreate(id)
     -- register for clicks
     self:EnableMouseWheel()
     self:RegisterForClicks("AnyUp", "AnyDown")
+
+    -- cast on keypress support
+    local bind = CreateFrame("Button", "$parentHotkey", self, "SecureActionButtonTemplate")
+    bind:SetAttributeNoHandler("type", "action")
+    bind:SetAttributeNoHandler("typerelease", "actionrelease")
+    bind:SetAttributeNoHandler("useparent-action", true)
+    bind:SetAttributeNoHandler("useparent-checkselfcast", true)
+    bind:SetAttributeNoHandler("useparent-checkfocuscast", true)
+    bind:SetAttributeNoHandler("useparent-checkmouseovercast", true)
+    bind:SetAttributeNoHandler("useparent-unit", true)
+    bind:SetAttributeNoHandler("useparent-flyoutDirection", true)
+    bind:SetAttributeNoHandler("useparent-pressAndHoldAction", true)
+    bind:RegisterForClicks("AnyUp", "AnyDown")
+    bind:SetScript("PreClick", bind_PreClick)
+
+    SecureHandlerSetFrameRef(bind, "owner", self)
+    Addon.SpellFlyout:Register(bind)
+    self.bind = bind
 
     -- script handlers
     self:SetAttributeNoHandler("SetShowGrid", [[
@@ -115,9 +147,9 @@ end
 function ActionButton:UpdateOverrideBindings()
     if InCombatLockdown() then return end
 
-    local command = self:GetAttribute("commandName")
+    local command = self:GetAttribute("commandName") or ("CLICK %s:HOTKEY"):format(self:GetName())
     if command then
-        SetOverrideClickBindings(self, "HOTKEY", GetBindingKey(command))
+        SetOverrideClickBindings(self.bind, "HOTKEY", GetBindingKey(command))
     end
 end
 
