@@ -216,9 +216,8 @@ local ActionButton_AttributeChanged = [[
         ActionButtons[self] = value
         DirtyButtons[self] = value
 
-        self:RunAttribute("UpdateShown")
-        control:CallMethod("OnActionChanged", self:GetName(), value, prevValue)
         control:SetAttribute("commit", 0)
+        control:CallMethod("OnActionChanged", self:GetName(), value, prevValue)
     end
 ]]
 
@@ -246,6 +245,14 @@ local ActionButton_ReceiveDragAfter = [[
     control:RunAttribute("ForActionSlot", self:GetAttribute("action"), "UpdateShown")
 ]]
 
+local ActionButton_OnShow = [[
+    self:RunAttribute("UpdateShown")
+]]
+
+local ActionButton_OnHide = [[
+    self:RunAttribute("UpdateShown")
+]]
+
 --------------------------------------------------------------------------------
 -- Methods
 --------------------------------------------------------------------------------
@@ -265,6 +272,8 @@ function ActionButtons:GetOrCreateActionButton(id, parent)
         self:WrapScript(button.bind, "OnClick", ActionButton_Click)
         self:WrapScript(button, "PostClick", ActionButton_PostClick)
         self:WrapScript(button, "OnReceiveDrag", ActionButton_ReceiveDragBefore, ActionButton_ReceiveDragAfter)
+        self:WrapScript(button, "OnShow", ActionButton_OnShow)
+        self:WrapScript(button, "OnHide", ActionButton_OnHide)
 
         -- register the button with the controller
         self:SetFrameRef("add", button)
