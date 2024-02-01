@@ -1,5 +1,10 @@
 # Dominos Changelog
 
+## 10.2.14
+
+* Add a workaround for missing icons when switching forms/etc
+* Fix typo in pet battle detection
+
 ## 10.2.13
 
 * (Retail) Reimplement cast on key press support
