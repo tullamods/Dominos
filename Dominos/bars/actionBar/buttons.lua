@@ -1,7 +1,7 @@
 local AddonName, Addon = ...
 if not Addon:IsBuild("retail") then return end
 
-local ActionButtons = CreateFrame('Frame', nil, nil, 'SecureHandlerBaseTemplate')
+local ActionButtons = CreateFrame('Frame', nil, nil, 'SecureHandlerAttributeTemplate')
 
 -- constants
 local ACTION_BUTTON_NAME_TEMPLATE = AddonName .. "ActionButton%d"
@@ -52,9 +52,6 @@ end
 -- [button] = action
 ActionButtons.buttons = {}
 
--- dirty secure attributes
-ActionButtons.dirtyCvars = {}
-
 -- we use a traditional event handler so that we can take
 -- advantage of unit event registration
 ActionButtons:SetScript("OnEvent", function(self, event, ...)
@@ -62,7 +59,7 @@ ActionButtons:SetScript("OnEvent", function(self, event, ...)
 end)
 
 ActionButtons:RegisterEvent("PLAYER_LOGIN")
-ActionButtons:Execute([[ ActionButtons = table.new() ]])
+ActionButtons:Execute([[ ActionButtons = table.new(); DirtyButtons = table.new() ]])
 
 --------------------------------------------------------------------------------
 -- Event and Callback Handling
@@ -71,12 +68,11 @@ ActionButtons:Execute([[ ActionButtons = table.new() ]])
 function ActionButtons:PLAYER_LOGIN()
     -- initialize state
     self:SetAttributeNoHandler("showgrid", 0)
-    self:SetAttribute("lockActionBars", GetCVarBool("lockActionBars"))
 
     -- game events
     self:TryRegisterEvent("ACTIONBAR_HIDEGRID")
     self:TryRegisterEvent("ACTIONBAR_SHOWGRID")
-    self:TryRegisterEvent("PLAYER_ENTERING_WORLD")
+    self:TryRegisterEvent("ACTIONBAR_SLOT_CHANGED")
 
     -- addon callbacks
     Addon.RegisterCallback(self, "SHOW_EMPTY_BUTTONS_CHANGED")
@@ -91,7 +87,15 @@ function ActionButtons:PLAYER_LOGIN()
         self:SetShowGrid(keybound:IsShown(), self.ShowGridReasons.KEYBOUND_EVENT)
     end
 
-    -- showgrid hack
+    self:SetAttributeNoHandler("_onattributechanged", [[
+        if name == "commit" and value == 1 then
+            for button in pairs(DirtyButtons) do
+                button:RunAttribute("UpdateShown")
+                DirtyButtons[button] = nil
+            end
+        end
+    ]])
+
     self:SetAttributeNoHandler("SetShowGrid", [[
         local show, reason, force = ...
         local value = self:GetAttribute("showgrid")
@@ -123,6 +127,8 @@ function ActionButtons:PLAYER_LOGIN()
         end
     ]])
 
+    -- show grid hack: monitor ActionButton1's attribute for this
+    -- notify us when either of the game event reasons change
     ActionButton1:SetAttribute("showgrid", 0)
 
     self:WrapScript(ActionButton1, "OnAttributeChanged", [[
@@ -133,6 +139,8 @@ function ActionButtons:PLAYER_LOGIN()
             control:RunAttribute("SetShowGrid", show, reason)
         end
     ]])
+
+    RegisterAttributeDriver(self, "commit", 1)
 end
 
 function ActionButtons:ACTIONBAR_SHOWGRID()
@@ -141,6 +149,14 @@ end
 
 function ActionButtons:ACTIONBAR_HIDEGRID()
     self:SetShowGrid(false, self.ShowGridReasons.GAME_EVENT)
+end
+
+function ActionButtons:ACTIONBAR_SLOT_CHANGED(slot)
+    if slot == 0 or slot == nil then
+        self:ForAll("UpdateIcon")
+    else
+        self:ForActionSlot(slot, "UpdateIcon")
+    end
 end
 
 function ActionButtons:PLAYER_ENTERING_WORLD()
@@ -198,8 +214,11 @@ local ActionButton_AttributeChanged = [[
     local prevValue = ActionButtons[self]
     if prevValue ~= value then
         ActionButtons[self] = value
+        DirtyButtons[self] = value
+
         self:RunAttribute("UpdateShown")
         control:CallMethod("OnActionChanged", self:GetName(), value, prevValue)
+        control:SetAttribute("commit", 0)
     end
 ]]
 
@@ -313,17 +332,6 @@ function ActionButtons:SetShowSpellAnimations(enable)
             f:UnregisterEvent("UNIT_SPELLCAST_SUCCEEDED")
         end
     end
-end
-
-function ActionButtons:TrySetCVarAttribute(key, value)
-    if InCombatLockdown() then
-        self.dirtyCvars[key] = true
-        return false
-    end
-
-    self.dirtyCvars[key] = nil
-    self:SetAttribute(key, value)
-    return true
 end
 
 function ActionButtons:TryRegisterEvent(event)

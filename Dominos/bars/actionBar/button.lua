@@ -165,6 +165,16 @@ function ActionButton:UpdateShown()
     self:SetShown(show)
 end
 
+function ActionButton:UpdateIcon()
+    local icon = GetActionTexture(self.action)
+    if icon then
+        self.icon:SetTexture(icon)
+        self.icon:Show()
+    else
+        self.icon:Hide()
+    end
+end
+
 function ActionButton:SetFlyoutDirectionInsecure(direction, force)
     if InCombatLockdown() then return end
 
