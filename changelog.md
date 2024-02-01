@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 10.2.14b
+
+* Make workaround a bit more consistent
+
 ## 10.2.14
 
 * Add a workaround for missing icons when switching forms/etc
