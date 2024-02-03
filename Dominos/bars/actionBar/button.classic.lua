@@ -44,7 +44,6 @@ function ActionButton:OnCreate(id)
     -- initialize secure state
     self:SetAttributeNoHandler("action", 0)
     self:SetAttributeNoHandler("commandName", GetActionButtonCommand(id) or ("CLICK %s:HOTKEY"):format(self:GetName()))
-    self:SetAttributeNoHandler("id", id)
     self:SetAttributeNoHandler("showgrid", 0)
     self:SetAttributeNoHandler("type", "action")
     self:SetAttributeNoHandler("useparent-checkbuttoncast", true)
@@ -58,19 +57,15 @@ function ActionButton:OnCreate(id)
 
     -- bindings setup
     Addon.BindableButton:AddQuickBindingSupport(self)
-    self:UpdateHotkeys()
-
-    -- hide by default
-    self:Hide()
 end
 
 function ActionButton:UpdateShown()
     if InCombatLockdown() then return end
 
-    local show = (self:GetAttribute("showgrid") > 0 or HasAction(self:GetAttribute("action")))
+    self:SetShown(
+        (self:GetAttribute("showgrid") > 0 or HasAction(self:GetAttribute("action")))
         and not self:GetAttribute("statehidden")
-
-    self:SetShown(show)
+    )
 end
 
 --------------------------------------------------------------------------------
@@ -95,24 +90,18 @@ function ActionButton:SetFlyoutDirectionInsecure(direction)
     if InCombatLockdown() then return end
 
     self:SetAttribute("flyoutDirection", direction)
-    self:UpdateFlyout()
+    ActionButton_UpdateFlyout(self)
 end
 
 
 function ActionButton:SetShowCountText(show)
-    if show then
-        self.Count:Show()
-    else
-        self.Count:Hide()
-    end
+    self.Count:SetShown(show)
 end
 
 function ActionButton:SetShowEquippedItemBorders(show)
-    if show then
-        self.Border:SetParent(self)
-    else
-        self.Border:SetParent(Addon.ShadowUIParent)
-    end
+    local parent = (show and self) or Addon.ShadowUIParent
+
+    self.Border:SetParent(parent)
 end
 
 function ActionButton:SetShowGridInsecure(show, reason, force)
@@ -138,14 +127,9 @@ function ActionButton:SetShowGridInsecure(show, reason, force)
 end
 
 function ActionButton:SetShowMacroText(show)
-    if show then
-        self.Name:Show()
-    else
-        self.Name:Hide()
-    end
+    self.Name:SetShown(show)
 end
 
-ActionButton.UpdateFlyout = ActionButton_UpdateFlyout
 hooksecurefunc("ActionButton_UpdateHotkeys", Addon.BindableButton.UpdateHotkeys)
 
 Addon.ActionButton = ActionButton
