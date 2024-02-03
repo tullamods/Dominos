@@ -16,7 +16,7 @@ Addon.callbacks = LibStub('CallbackHandler-1.0'):New(Addon)
 if WOW_PROJECT_ID == WOW_PROJECT_MAINLINE then
     Addon.ACTION_BUTTON_COUNT = 14 * NUM_ACTIONBAR_BUTTONS
 else
-    Addon.ACTION_BUTTON_COUNT = 10 * NUM_ACTIONBAR_BUTTONS
+    Addon.ACTION_BUTTON_COUNT = 14 * NUM_ACTIONBAR_BUTTONS
 end
 
 --------------------------------------------------------------------------------
@@ -31,24 +31,17 @@ function Addon:OnInitialize()
     -- register keybound callbacks
     KeyBound.RegisterCallback(self, 'LIBKEYBOUND_ENABLED')
     KeyBound.RegisterCallback(self, 'LIBKEYBOUND_DISABLED')
+
+    -- debounce UPDATE_BINDINGS call
+    self.UPDATE_BINDINGS = self:Debounce(self.UPDATE_BINDINGS, 0.1, self)
 end
 
 function Addon:OnEnable()
     self:MigrateBindings()
-    self:Load()
-
-    -- watch for binding updates, updating all bars on the last one that happens
-    -- in rapid sequence
-    self.UpdateHotkeys = self:Debounce(function()
-        if not InCombatLockdown() then
-            self.Frame:ForEach('ForButtons', 'UpdateOverrideBindings')
-        end
-
-        self.Frame:ForEach('ForButtons', 'UpdateHotkeys')
-    end, 0.01)
-
     self:RegisterEvent('UPDATE_BINDINGS')
     self:RegisterEvent("GAME_PAD_ACTIVE_CHANGED", "UPDATE_BINDINGS")
+
+    self:Load()
 end
 
 -- configuration events
@@ -75,7 +68,11 @@ end
 
 -- binding events
 function Addon:UPDATE_BINDINGS()
-    self:UpdateHotkeys()
+    self.Frame:ForEach('ForButtons', 'UpdateHotkeys')
+
+    if not InCombatLockdown() then
+        self.Frame:ForEach('ForButtons', 'UpdateOverrideBindings')
+    end
 end
 
 function Addon:LIBKEYBOUND_ENABLED()
