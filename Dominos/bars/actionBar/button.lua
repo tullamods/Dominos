@@ -40,33 +40,11 @@ local function GetActionButtonCommand(id)
     end
 end
 
-local function SetOverrideClickBindings(owner, button, ...)
-    ClearOverrideBindings(owner)
-
-    for i = 1, select("#", ...) do
-        SetOverrideBindingClick(owner, false, select(i, ...), owner:GetName(), button)
-    end
-end
-
-local function bindButton_OnClick(self, _, down)
-    local owner = self:GetParent()
-
-    if down then
-        if owner:GetButtonState() == "NORMAL" then
-            owner:SetButtonState("PUSHED")
-        end
-    else
-        if owner:GetButtonState() == "PUSHED" then
-            owner:SetButtonState("NORMAL")
-        end
-    end
-end
 
 function ActionButton:OnCreate(id)
     -- initialize secure state
     self:SetAttributeNoHandler("action", 0)
     self:SetAttributeNoHandler("commandName", GetActionButtonCommand(id) or ("CLICK %s:HOTKEY"):format(self:GetName()))
-    self:SetAttributeNoHandler("id", id)
     self:SetAttributeNoHandler("showgrid", 0)
     self:SetAttributeNoHandler("useparent-checkfocuscast", true)
     self:SetAttributeNoHandler("useparent-checkmouseovercast", true)
@@ -75,29 +53,6 @@ function ActionButton:OnCreate(id)
     -- register for clicks on all buttons, and enable mousewheel bindings
     self:EnableMouseWheel()
     self:RegisterForClicks("AnyUp", "AnyDown")
-
-    -- cast on keypress support is implemented by using a second hidden button
-    -- that mirrors all ofthe attributes of its parent button. This is to work
-    -- around inconsistent handling of drag and drop if we just use the
-    -- SecureActionButtonTemplate for buttons, as well as the OnClick handler
-    -- for action buttons only triggering actions on key release.
-    local bind = CreateFrame("Button", "$parentHotkey", self, "SecureActionButtonTemplate")
-    bind:SetAttributeNoHandler("type", "action")
-    bind:SetAttributeNoHandler("typerelease", "actionrelease")
-    bind:SetAttributeNoHandler("useparent-action", true)
-    bind:SetAttributeNoHandler("useparent-checkfocuscast", true)
-    bind:SetAttributeNoHandler("useparent-checkmouseovercast", true)
-    bind:SetAttributeNoHandler("useparent-checkselfcast", true)
-    bind:SetAttributeNoHandler("useparent-flyoutDirection", true)
-    bind:SetAttributeNoHandler("useparent-pressAndHoldAction", true)
-    bind:SetAttributeNoHandler("useparent-unit", true)
-    bind:EnableMouseWheel()
-    bind:RegisterForClicks("AnyUp", "AnyDown")
-    bind:SetScript("PreClick", bindButton_OnClick)
-
-    SecureHandlerSetFrameRef(bind, "owner", self)
-    Addon.SpellFlyout:Register(bind)
-    self.bind = bind
 
     -- secure handlers
     self:SetAttributeNoHandler("SetShowGrid", [[
@@ -142,7 +97,6 @@ function ActionButton:OnCreate(id)
     Addon.BindableButton:AddQuickBindingSupport(self)
     Addon.SpellFlyout:Register(self)
 
-    self:UpdateOverrideBindings()
     self:UpdateHotkeys()
 end
 
@@ -159,10 +113,7 @@ end
 function ActionButton:UpdateOverrideBindings()
     if InCombatLockdown() then return end
 
-    local command = self:GetAttribute("commandName")
-    if command then
-        SetOverrideClickBindings(self.bind, "HOTKEY", GetBindingKey(command))
-    end
+    self.bind:SetOverrideBindings(GetBindingKey(self:GetAttribute("commandName")))
 end
 
 function ActionButton:UpdateShown()
@@ -192,11 +143,7 @@ function ActionButton:SetShowCooldowns(show)
 end
 
 function ActionButton:SetShowCountText(show)
-    if show then
-        self.Count:Show()
-    else
-        self.Count:Hide()
-    end
+    self.Count:SetShown(show)
 end
 
 function ActionButton:SetFlyoutDirectionInsecure(direction)
@@ -207,17 +154,17 @@ function ActionButton:SetFlyoutDirectionInsecure(direction)
 end
 
 function ActionButton:SetShowEquippedItemBorders(show)
-    if show then
-        self.Border:SetParent(self)
-    else
-        self.Border:SetParent(Addon.ShadowUIParent)
+    local parent = (show and self) or Addon.ShadowUIParent
+
+    if self.Border:GetParent() ~= parent then
+        self.Border:SetParent(parent)
     end
 end
 
 function ActionButton:SetShowGridInsecure(show, reason, force)
     if InCombatLockdown() then return end
 
-    if reason == nil then
+    if type(reason) ~= "number" then
         error("Usage: ActionButton:SetShowGridInsecure(show, reason, force?)", 2)
     end
 
@@ -237,11 +184,7 @@ function ActionButton:SetShowGridInsecure(show, reason, force)
 end
 
 function ActionButton:SetShowMacroText(show)
-    if show then
-        self.Name:Show()
-    else
-        self.Name:Hide()
-    end
+    self.Name:SetShown(show and true)
 end
 
 -- exports
