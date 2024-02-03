@@ -1,5 +1,5 @@
 --------------------------------------------------------------------------------
--- This manual handles securely overriding tooltips
+-- Handles securely overriding tooltips
 --------------------------------------------------------------------------------
 
 local _, Addon = ...
