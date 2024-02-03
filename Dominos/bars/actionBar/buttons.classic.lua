@@ -30,17 +30,18 @@ ActionButtons.dirtyAttributes = {}
 -- Event and Callback Handling
 --------------------------------------------------------------------------------
 
-ActionButtons:SetScript("OnEvent", function(self, event, ...)
-    self[event](self, ...)
-end)
+function ActionButtons:Initialize()
+    self:SetScript("OnEvent", function(f, event, ...) f[event](f, ...) end)
 
-function ActionButtons:PLAYER_LOGIN()
+    -- load initial state
     self:SetAttribute("ActionButtonUseKeyDown", GetCVarBool("ActionButtonUseKeyDown"))
+
+    -- watch game events
     self:RegisterEvent("CVAR_UPDATE")
+    self:RegisterEvent("PLAYER_ENTERING_WORLD")
     self:RegisterEvent("PLAYER_REGEN_ENABLED")
 
     -- watch the global showgrid setting
-    self:SetShowGrid(Addon:ShowGrid(), self.ShowGridReasons.SHOW_EMPTY_BUTTONS)
     Addon.RegisterCallback(self, "SHOW_EMPTY_BUTTONS_CHANGED")
     Addon.RegisterCallback(self, "LAYOUT_LOADED")
 
@@ -51,12 +52,20 @@ function ActionButtons:PLAYER_LOGIN()
         keybound.RegisterCallback(self, 'LIBKEYBOUND_DISABLED')
         self:SetShowGrid(keybound:IsShown(), self.ShowGridReasons.KEYBOUND_EVENT)
     end
+
+    self.Initialize = nil
 end
 
 -- addon callbacks
 function ActionButtons:CVAR_UPDATE(name)
     if name == "ActionButtonUseKeyDown" then
         self:TrySetAttribute(name, GetCVarBool(name))
+    end
+end
+
+function ActionButtons:PLAYER_ENTERING_WORLD(_, isInitialLogin, isReloadingUi)
+    if isInitialLogin or isReloadingUi then
+        self:SetShowGrid(Addon:ShowGrid(), self.ShowGridReasons.SHOW_EMPTY_BUTTONS)
     end
 end
 
@@ -193,6 +202,6 @@ function ActionButtons:GetAll()
 end
 
 -- startup and export
-ActionButtons:RegisterEvent("PLAYER_LOGIN")
+ActionButtons:Initialize()
 
 Addon.ActionButtons = ActionButtons

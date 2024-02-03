@@ -27,8 +27,8 @@ local function unregisterEvents(frame)
     frame:UnregisterAllEvents()
 end
 
-local function disableActionButtons(frame)
-    local buttons = frame.actionButtons
+local function disableActionButtons(bar)
+    local buttons = bar.actionButtons
     if type(buttons) ~= "table" then
         return
     end
@@ -38,6 +38,10 @@ local function disableActionButtons(frame)
         button:SetAttributeNoHandler("statehidden", true)
         button:Hide()
     end
+end
+
+local function wipeActionButtons(bar)
+    table.wipe(bar.actionButtons)
 end
 
 apply(banish,
@@ -79,4 +83,14 @@ apply(disableActionButtons,
     "MultiBarRight",
     "PossessActionBar",
     "StanceBar"
+)
+
+apply(wipeActionButtons,
+    "MultiBar5",
+    "MultiBar6",
+    "MultiBar7",
+    "MultiBarBottomLeft",
+    "MultiBarBottomRight",
+    "MultiBarLeft",
+    "MultiBarRight"
 )

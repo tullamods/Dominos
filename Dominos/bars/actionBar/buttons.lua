@@ -34,25 +34,21 @@ ActionButtons:Execute([[
 -- Event and Callback Handling
 --------------------------------------------------------------------------------
 
-ActionButtons:SetScript("OnEvent", function(self, event, ...)
-    self[event](self, ...)
-end)
-
-function ActionButtons:PLAYER_LOGIN()
-    -- initialize state
-    self:SetAttributeNoHandler("showgrid", 0)
-
-    -- game events
+function ActionButtons:Initialize()
+    -- register game events
+    self:SetScript("OnEvent", function(f, event, ...) f[event](f, ...); end)
     self:RegisterEvent("ACTIONBAR_HIDEGRID")
     self:RegisterEvent("ACTIONBAR_SHOWGRID")
     self:RegisterEvent("ACTIONBAR_SLOT_CHANGED")
+    self:RegisterEvent("PLAYER_ENTERING_WORLD")
 
     -- addon callbacks
+    Addon.RegisterCallback(self, "LAYOUT_LOADED")
     Addon.RegisterCallback(self, "SHOW_EMPTY_BUTTONS_CHANGED")
     Addon.RegisterCallback(self, "SHOW_SPELL_ANIMATIONS_CHANGED")
     Addon.RegisterCallback(self, "SHOW_SPELL_GLOWS_CHANGED")
-    Addon.RegisterCallback(self, "LAYOUT_LOADED")
 
+    -- library callbacks
     local keybound = LibStub("LibKeyBound-1.0", true)
     if keybound then
         keybound.RegisterCallback(self, 'LIBKEYBOUND_ENABLED')
@@ -117,8 +113,6 @@ function ActionButtons:PLAYER_LOGIN()
     -- Propagate those changes to all the buttons managed by the controller.
     -- This allows us to properly show and hide action buttons in combat
     -- when the player is attempting to drag and drop abilities
-    ActionButton1:SetAttribute("showgrid", 0)
-
     self:WrapScript(ActionButton1, "OnAttributeChanged", [[
         if name ~= "showgrid" then return end
 
@@ -127,6 +121,8 @@ function ActionButtons:PLAYER_LOGIN()
             control:RunAttribute("SetShowGrid", show, reason)
         end
     ]])
+
+    self.Initialize = nil
 end
 
 function ActionButtons:ACTIONBAR_SHOWGRID()
@@ -145,8 +141,19 @@ function ActionButtons:ACTIONBAR_SLOT_CHANGED(slot)
     end
 end
 
-function ActionButtons:PLAYER_ENTERING_WORLD()
+function ActionButtons:PLAYER_ENTERING_WORLD(isInitialLogin, isReloadingUi)
+    if isInitialLogin or isReloadingUi then
+        self:LAYOUT_LOADED()
+    end
+
     self:ForAll("UpdateShown")
+end
+
+-- reset grid state at login. This covers waiting for the game to apply the
+-- always show buttons state to the main bar
+function ActionButtons:PLAYER_LOGIN()
+    self:SetAttributeNoHandler("showgrid", 0)
+    ActionButton1:SetAttribute("showgrid", 0)
 end
 
 -- addon callbacks
@@ -191,23 +198,16 @@ end
 -- mark the button as dirty when the action changes, so that we can make sure
 -- it is properly shown later
 local ActionButton_AttributeChanged = [[
-    if name ~= "action" then return end
+    if name == "action" then
+        local prevValue = ActionButtons[self]
+        if prevValue ~= value then
+            ActionButtons[self] = value
 
-    local prevValue = ActionButtons[self]
-    if prevValue ~= value then
-        ActionButtons[self] = value
+            DirtyButtons[self] = value
+            control:SetAttribute("commit", 0)
 
-        DirtyButtons[self] = value
-        control:SetAttribute("commit", 0)
-
-        control:CallMethod("OnActionChanged", self:GetName(), value, prevValue)
-    end
-]]
-
--- translate HOTKEY clicks into LeftButton
-local ActionButton_Click = [[
-    if button == "HOTKEY" then
-        return "LeftButton"
+            control:CallMethod("OnActionChanged", self:GetName(), value, prevValue)
+        end
     end
 ]]
 
@@ -235,51 +235,181 @@ local ActionButton_OnShowHide = [[
     self:RunAttribute("UpdateShown")
 ]]
 
-function ActionButtons:GetOrCreateActionButton(id, parent)
-    local name = ACTION_BUTTON_NAME_TEMPLATE:format(id)
-    local button = _G[name]
+local function GetActionButtonName(id)
+    if id <= 0 then
+        return
+    -- 1, 2
+    elseif id <= 24 then
+        return ACTION_BUTTON_NAME_TEMPLATE:format(id)
+    -- 3
+    elseif id <= 36 then
+        return ("MultiBarRightActionButton%d"):format(id - 24)
+    -- 4
+    elseif id <= 48 then
+        return ("MultiBarLeftActionButton%d"):format(id - 36)
+    -- 5
+    elseif id <= 60 then
+        return ("MultiBarBottomRightActionButton%d"):format(id - 48)
+    -- 6
+    elseif id <= 72 then
+        return ("MultiBarBottomLeftActionButton%d"):format(id - 60)
+    -- 7-11
+    elseif id <= 132 then
+        return ACTION_BUTTON_NAME_TEMPLATE:format(id)
+    -- 12
+    elseif id <= 144 then
+        return ("MultiBar5ActionButton%d"):format(id - 132)
+    -- 13
+    elseif id <= 156 then
+        return ("MultiBar6ActionButton%d"):format(id - 144)
+    -- 14
+    elseif id <= 168 then
+        return ("MultiBar7ActionButton%d"):format(id - 156)
+    end
+end
 
+local function SafeMixin(button, trait)
+    for k, v in pairs(trait) do
+        if rawget(button, k) ~= nil then
+            error(("%s[%q] has alrady been set"):format(button:GetName(), k), 2)
+        end
+
+        button[k] = v
+    end
+end
+
+function ActionButtons:GetOrCreateActionButton(id, parent)
+    local name = GetActionButtonName(id)
+    if name == nil then
+        error(("Invalid Action ID %q"):format(id))
+    end
+
+    local button = _G[name]
+    local created = false
+
+    -- button not found, create a new one
     if button == nil then
         button = CreateFrame("CheckButton", name, parent, "ActionBarButtonTemplate")
 
         -- add custom methods
-        for k, v in pairs(Addon.ActionButton) do
-            if rawget(button, k) ~= nil then
-                error(("%s[%q] has alrady been set"):format(button:GetName(), k), 2)
-            end
-
-            button[k] = v
-        end
+        SafeMixin(button, Addon.ActionButton)
 
         -- initialize the button
         button:OnCreate(id)
+        created = true
+    -- button found, but not yet registered, reuse
+    elseif self.buttons[button] == nil then
+        -- add custom methods
+        SafeMixin(button, Addon.ActionButton)
 
+        -- reset the id of a button to zero to avoid triggering the paging
+        -- logic of the standard UI
+        button:SetParent(parent)
+        button:SetID(0)
+
+        -- drop the reference to the bar's original parent, which would otherwise
+        -- call thing we do not want
+        button.Bar = nil
+
+        -- initialize the button
+        button:OnCreate(id)
+        created = true
+    end
+
+    if created then
         -- add secure handlers
         self:WrapScript(button, "OnAttributeChanged", ActionButton_AttributeChanged)
-        self:WrapScript(button.bind, "OnClick", ActionButton_Click)
         self:WrapScript(button, "PostClick", ActionButton_PostClick)
         self:WrapScript(button, "OnReceiveDrag", ActionButton_ReceiveDragBefore, ActionButton_ReceiveDragAfter)
         self:WrapScript(button, "OnShow", ActionButton_OnShowHide)
         self:WrapScript(button, "OnHide", ActionButton_OnShowHide)
 
+        self:AddCastOnKeyPressSupport(button)
+
         -- register the button with the controller
         self:SetFrameRef("add", button)
 
         self:Execute([[
-            local button = self:GetFrameRef("add")
-            ActionButtons[button] = button:GetAttribute("action") or 0
+            local b = self:GetFrameRef("add")
+            ActionButtons[b] = b:GetAttribute("action") or 0
         ]])
+
+        self.buttons[button] = 0
     end
 
     return button
+end
+
+local bindButton_Click = [[
+    if button == "HOTKEY" then
+        return "LeftButton"
+    end
+]]
+
+-- update the pushed state of our parent button when pressing and releasing
+-- the button's hotkey
+local function bindButton_PreClick(self, _, down)
+    local owner = self:GetParent()
+
+    if down then
+        if owner:GetButtonState() == "NORMAL" then
+            owner:SetButtonState("PUSHED")
+        end
+    else
+        if owner:GetButtonState() == "PUSHED" then
+            owner:SetButtonState("NORMAL")
+        end
+    end
+end
+
+local function bindButton_SetOverrideBindings(self, ...)
+    ClearOverrideBindings(self)
+
+    local name = self:GetName()
+    for i = 1, select("#", ...) do
+        SetOverrideBindingClick(self, false, select(i, ...), name, "HOTKEY")
+    end
+end
+
+-- cast on keypress support is implemented by using a second hidden button
+-- that mirrors all ofthe attributes of its parent button. This is to work
+-- around inconsistent handling of drag and drop if we just use the
+-- SecureActionButtonTemplate for buttons, as well as the OnClick handler
+-- for action buttons only triggering actions on key release.
+function ActionButtons:AddCastOnKeyPressSupport(button)
+    local bind = CreateFrame("Button", "$parentHotkey", button, "SecureActionButtonTemplate")
+
+    bind:SetAttributeNoHandler("type", "action")
+    bind:SetAttributeNoHandler("typerelease", "actionrelease")
+    bind:SetAttributeNoHandler("useparent-action", true)
+    bind:SetAttributeNoHandler("useparent-checkfocuscast", true)
+    bind:SetAttributeNoHandler("useparent-checkmouseovercast", true)
+    bind:SetAttributeNoHandler("useparent-checkselfcast", true)
+    bind:SetAttributeNoHandler("useparent-flyoutDirection", true)
+    bind:SetAttributeNoHandler("useparent-pressAndHoldAction", true)
+    bind:SetAttributeNoHandler("useparent-unit", true)
+    SecureHandlerSetFrameRef(bind, "owner", button)
+
+    bind:EnableMouseWheel()
+    bind:RegisterForClicks("AnyUp", "AnyDown")
+
+    bind:SetScript("PreClick", bindButton_PreClick)
+
+    bind.SetOverrideBindings = bindButton_SetOverrideBindings
+
+    Addon.SpellFlyout:Register(bind)
+    self:WrapScript(bind, "OnClick", bindButton_Click)
+
+    button.bind = bind
+    button:UpdateOverrideBindings()
 end
 
 --------------------------------------------------------------------------------
 -- Configuration
 --------------------------------------------------------------------------------
 
-function ActionButtons:SetShowGrid(show, reason)
-    self:ForAll("SetShowGridInsecure", show, reason)
+function ActionButtons:SetShowGrid(show, reason, force)
+    self:ForAll("SetShowGridInsecure", show, reason, force)
 end
 
 function ActionButtons:SetShowSpellGlows(enable)
@@ -357,6 +487,6 @@ function ActionButtons:GetAll()
 end
 
 -- startup and export
-ActionButtons:RegisterEvent("PLAYER_LOGIN")
+ActionButtons:Initialize()
 
 Addon.ActionButtons = ActionButtons
