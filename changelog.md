@@ -3,6 +3,7 @@
 ## 10.2.15-beta
 
 * (Retail) Enabled reuse of Blizzard Action Bars 2-8
+* (Wrath, Classic) Added action bars 11-14
 * Immaterial code optimizations and cleanup
 
 ## 10.2.14b
