@@ -13,11 +13,7 @@ local BINDINGS_VERSION = 3
 Addon.callbacks = LibStub('CallbackHandler-1.0'):New(Addon)
 
 -- how many action buttons we support, and what button to map keybinding presses
-if WOW_PROJECT_ID == WOW_PROJECT_MAINLINE then
-    Addon.ACTION_BUTTON_COUNT = 14 * NUM_ACTIONBAR_BUTTONS
-else
-    Addon.ACTION_BUTTON_COUNT = 14 * NUM_ACTIONBAR_BUTTONS
-end
+Addon.ACTION_BUTTON_COUNT = 14 * NUM_ACTIONBAR_BUTTONS
 
 --------------------------------------------------------------------------------
 -- Events
