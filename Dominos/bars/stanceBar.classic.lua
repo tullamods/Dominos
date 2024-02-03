@@ -31,18 +31,20 @@ end
 -- Button setup
 --------------------------------------------------------------------------------
 
-local function getStanceButton(id)
-    return _G[('StanceButton%d'):format(id)]
-end
+local StanceButtons = setmetatable({}, {
+    __index = function(self, id)
+        local button =  _G['StanceButton' .. id]
 
-for id = 1, NUM_STANCE_SLOTS do
-    local button = getStanceButton(id)
+        if button then
+            button.commandName = ("SHAPESHIFTBUTTON%d"):format(id)
+            Addon.BindableButton:AddQuickBindingSupport(button)
 
-    button.commandName = ('SHAPESHIFTBUTTON%d'):format(id)
+            self[id] = button
+        end
 
-    -- add quick binding support
-    Addon.BindableButton:AddQuickBindingSupport(button)
-end
+        return button
+    end
+})
 
 --------------------------------------------------------------------------------
 -- Bar setup
@@ -70,12 +72,13 @@ function StanceBar:NumButtons()
 end
 
 function StanceBar:AcquireButton(index)
-    return getStanceButton(index)
+    return StanceButtons[index]
 end
 
 function StanceBar:OnAttachButton(button)
     button:UpdateHotkeys()
     button:Show()
+
     Addon:GetModule('ButtonThemer'):Register(button, 'Class Bar')
     Addon:GetModule('Tooltips'):Register(button)
 end
@@ -100,7 +103,6 @@ function StanceBarModule:Load()
     self:RegisterEvent('UPDATE_SHAPESHIFT_FORMS', 'UpdateNumForms')
     self:RegisterEvent('PLAYER_REGEN_ENABLED', 'UpdateNumForms')
     self:RegisterEvent('PLAYER_ENTERING_WORLD', 'UpdateNumForms')
-    self:RegisterEvent('UPDATE_BINDINGS')
 end
 
 function StanceBarModule:Unload()
@@ -118,8 +120,4 @@ function StanceBarModule:UpdateNumForms()
     end
 
     self.bar:UpdateNumButtons()
-end
-
-function StanceBarModule:UPDATE_BINDINGS()
-    self.bar:ForButtons('UpdateHotkeys')
 end

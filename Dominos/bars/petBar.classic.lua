@@ -12,16 +12,20 @@ local L = LibStub('AceLocale-3.0'):GetLocale(AddonName)
 -- Pet Button Setup
 --------------------------------------------------------------------------------
 
-local function getPetButton(id)
-    return _G[('PetActionButton%d'):format(id)]
-end
+local PetButtons = setmetatable({}, {
+    __index = function(self, id)
+        local button =  _G['PetActionButton' .. id]
 
-for id = 1, NUM_PET_ACTION_SLOTS do
-    local button = getPetButton(id)
+        if button then
+            button.commandName = ("BONUSACTIONBUTTON%d"):format(id)
+            Addon.BindableButton:AddQuickBindingSupport(button)
 
-    button.commandName = ("BONUSACTIONBUTTON%d"):format(id)
-    Addon.BindableButton:AddQuickBindingSupport(button)
-end
+            self[id] = button
+        end
+
+        return button
+    end
+})
 
 --------------------------------------------------------------------------------
 -- The Pet Bar
@@ -74,7 +78,7 @@ function PetBar:NumButtons()
 end
 
 function PetBar:AcquireButton(index)
-    return getPetButton(index)
+    return PetButtons[index]
 end
 
 function PetBar:OnAttachButton(button)
@@ -111,23 +115,15 @@ end
 -- the module
 --------------------------------------------------------------------------------
 
-local PetBarModule = Addon:NewModule('PetBar', 'AceEvent-3.0')
+local PetBarModule = Addon:NewModule('PetBar')
 
 function PetBarModule:Load()
     self.bar = PetBar:New()
-
-    self:RegisterEvent('UPDATE_BINDINGS')
 end
 
 function PetBarModule:Unload()
-    self:UnregisterAllEvents()
-
     if self.bar then
         self.bar:Free()
         self.bar = nil
     end
-end
-
-function PetBarModule:UPDATE_BINDINGS()
-    self.bar:ForButtons('UpdateHotkeys')
 end
