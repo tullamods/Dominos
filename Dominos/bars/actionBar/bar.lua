@@ -131,8 +131,6 @@ function ActionBar:AcquireButton(index)
         end
     ]])
 
-    button:Show()
-
     button:SetAttributeNoHandler("displayName", L.ActionBarButtonDisplayName:format(self.id, index))
 
     return button
