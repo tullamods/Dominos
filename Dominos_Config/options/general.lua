@@ -114,7 +114,6 @@ Addon:AddOptionsPanelOptions("general", {
             type = "toggle",
             name = L.ShowOverrideUI,
             desc = L.ShowOverrideUIDesc,
-            disabled = InCombatLockdown(),
             hidden = ParentAddon:IsBuild("classic"),
             get = function()
                 return ParentAddon:UsingOverrideUI()

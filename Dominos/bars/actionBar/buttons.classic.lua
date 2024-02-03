@@ -6,6 +6,10 @@ local ActionButtons = CreateFrame('Frame', nil, nil, 'SecureHandlerBaseTemplate'
 -- constants
 local ACTION_BUTTON_NAME_TEMPLATE = AddonName .. "ActionButton%d"
 
+--------------------------------------------------------------------------------
+-- State
+--------------------------------------------------------------------------------
+
 -- global showgrid event reasons
 ActionButtons.ShowGridReasons = {
     -- GAME_EVENT = 1,
@@ -22,22 +26,15 @@ ActionButtons.buttons = {}
 -- dirty secure attributes
 ActionButtons.dirtyAttributes = {}
 
--- we use a traditional event handler so that we can take
--- advantage of unit event registration
+--------------------------------------------------------------------------------
+-- Event and Callback Handling
+--------------------------------------------------------------------------------
+
 ActionButtons:SetScript("OnEvent", function(self, event, ...)
-    local handler = self[event]
-    if type(handler) == "function" then
-        handler(self, ...)
-    else
-        error(("%s is missing a handler for %q"):format("ActionButtons", event))
-    end
+    self[event](self, ...)
 end)
 
-ActionButtons:RegisterEvent("PLAYER_LOGIN")
-
--- events
 function ActionButtons:PLAYER_LOGIN()
-    self:SetAttribute("lockActionBars", GetCVarBool("lockActionBars"))
     self:SetAttribute("ActionButtonUseKeyDown", GetCVarBool("ActionButtonUseKeyDown"))
     self:RegisterEvent("CVAR_UPDATE")
     self:RegisterEvent("PLAYER_REGEN_ENABLED")
@@ -58,7 +55,7 @@ end
 
 -- addon callbacks
 function ActionButtons:CVAR_UPDATE(name)
-    if name == "lockActionBars" or name == "ActionButtonUseKeyDown" or name == "alwaysShowActionBars" then
+    if name == "ActionButtonUseKeyDown" then
         self:TrySetAttribute(name, GetCVarBool(name))
     end
 end
@@ -86,14 +83,29 @@ function ActionButtons:LAYOUT_LOADED()
     self:SetShowGrid(Addon:ShowGrid(), self.ShowGridReasons.SHOW_EMPTY_BUTTONS)
 end
 
--- api
+function ActionButtons:TrySetAttribute(key, value)
+    if InCombatLockdown() then
+        self.dirtyAttributes[key] = value
+        return false
+    end
+
+    self:SetAttribute(key, value)
+    return true
+end
+
+--------------------------------------------------------------------------------
+-- Action Button Constrution
+--------------------------------------------------------------------------------
+
 local ActionButton_ClickBefore = [[
     if button == "HOTKEY" then
         if down == control:GetAttribute("ActionButtonUseKeyDown") then
             return "LeftButton"
         end
         return false
-    elseif down then
+    end
+
+    if down then
         return false
     end
 ]]
@@ -148,6 +160,7 @@ function ActionButtons:GetOrCreateActionButton(id, parent)
         if noGrid then
             button.noGrid = true
         end
+
         button:OnCreate(id)
         self:WrapScript(button, "OnClick", ActionButton_ClickBefore)
 
@@ -157,29 +170,21 @@ function ActionButtons:GetOrCreateActionButton(id, parent)
     return button
 end
 
+--------------------------------------------------------------------------------
+-- Configuration
+--------------------------------------------------------------------------------
+
 function ActionButtons:SetShowGrid(show, reason)
     self:ForAll("SetShowGridInsecure", show, reason)
 end
 
-function ActionButtons:TrySetAttribute(key, value)
-    if InCombatLockdown() then
-        self.dirtyAttributes[key] = value
-        return false
-    end
+--------------------------------------------------------------------------------
+-- Collection Methods
+--------------------------------------------------------------------------------
 
-    self:SetAttribute(key, value)
-    return true
-end
-
--- collection metamethods
 function ActionButtons:ForAll(method, ...)
     for button in pairs(self.buttons) do
-        local callback = button[method]
-        if type(callback) == "function" then
-            callback(button, ...)
-        else
-            error(("ActionButton %d does not have a method named %q"):format(button.id, method))
-        end
+        button[method](button, ...)
     end
 end
 
@@ -187,5 +192,7 @@ function ActionButtons:GetAll()
     return pairs(self.buttons)
 end
 
--- exports
+-- startup and export
+ActionButtons:RegisterEvent("PLAYER_LOGIN")
+
 Addon.ActionButtons = ActionButtons

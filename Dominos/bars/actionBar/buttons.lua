@@ -21,58 +21,31 @@ ActionButtons.ShowGridReasons = {
     SHOW_EMPTY_BUTTONS_PER_BAR = 64
 }
 
-local function HasSpellID(action, spellID)
-    local actionType, id, subType = GetActionInfo(action)
-    if actionType == "spell" then
-        return id == spellID
-    end
-
-    if actionType == "macro" then
-        return subType == "spell" and id == spellID
-    end
-
-    if actionType == "flyout" and id then
-        return FlyoutHasSpell(id, spellID)
-    end
-
-    return false
-end
-
-local function SafeMixin(button, trait)
-    for k, v in pairs(trait) do
-        if rawget(button, k) ~= nil then
-            error(("%s[%q] has alrady been set"):format(button:GetName(), k), 2)
-        end
-
-        button[k] = v
-    end
-end
-
 -- states
 -- [button] = action
 ActionButtons.buttons = {}
 
--- we use a traditional event handler so that we can take
--- advantage of unit event registration
-ActionButtons:SetScript("OnEvent", function(self, event, ...)
-    self[event](self, ...)
-end)
-
-ActionButtons:RegisterEvent("PLAYER_LOGIN")
-ActionButtons:Execute([[ ActionButtons = table.new(); DirtyButtons = table.new() ]])
+ActionButtons:Execute([[
+    ActionButtons = table.new()
+    DirtyButtons = table.new()
+]])
 
 --------------------------------------------------------------------------------
 -- Event and Callback Handling
 --------------------------------------------------------------------------------
+
+ActionButtons:SetScript("OnEvent", function(self, event, ...)
+    self[event](self, ...)
+end)
 
 function ActionButtons:PLAYER_LOGIN()
     -- initialize state
     self:SetAttributeNoHandler("showgrid", 0)
 
     -- game events
-    self:TryRegisterEvent("ACTIONBAR_HIDEGRID")
-    self:TryRegisterEvent("ACTIONBAR_SHOWGRID")
-    self:TryRegisterEvent("ACTIONBAR_SLOT_CHANGED")
+    self:RegisterEvent("ACTIONBAR_HIDEGRID")
+    self:RegisterEvent("ACTIONBAR_SHOWGRID")
+    self:RegisterEvent("ACTIONBAR_SLOT_CHANGED")
 
     -- addon callbacks
     Addon.RegisterCallback(self, "SHOW_EMPTY_BUTTONS_CHANGED")
@@ -87,15 +60,7 @@ function ActionButtons:PLAYER_LOGIN()
         self:SetShowGrid(keybound:IsShown(), self.ShowGridReasons.KEYBOUND_EVENT)
     end
 
-    self:SetAttributeNoHandler("_onattributechanged", [[
-        if name == "commit" and value == 1 then
-            for button in pairs(DirtyButtons) do
-                button:RunAttribute("UpdateShown")
-                DirtyButtons[button] = nil
-            end
-        end
-    ]])
-
+    -- secure methods
     self:SetAttributeNoHandler("SetShowGrid", [[
         local show, reason, force = ...
         local value = self:GetAttribute("showgrid")
@@ -127,8 +92,31 @@ function ActionButtons:PLAYER_LOGIN()
         end
     ]])
 
-    -- show grid hack: monitor ActionButton1's attribute for this
-    -- notify us when either of the game event reasons change
+    -- commit hack:
+    -- we can leverage and attribute or secure state driver driver in order to
+    -- cause something to happen on the next frame or so. We do this by marking
+    -- buttons as dirty when something changes that we want to handle later, and
+    -- then setting the commit attribute to 0. After STATE_DRIVER_UPDATE_THROTTLE
+    -- duration (200ms), the value of commit will reset to our constant value of
+    -- 1 and we'll apply the visibility change
+    RegisterAttributeDriver(self, "commit", 1)
+
+    self:SetAttributeNoHandler("_onattributechanged", [[
+        if name == "commit" and value == 1 then
+            for button in pairs(DirtyButtons) do
+                button:RunAttribute("UpdateShown")
+                DirtyButtons[button] = nil
+            end
+        end
+    ]])
+
+    -- showgrid hack:
+    -- monitor ActionButton1's attribute changes to its showgrid attribute.
+    -- When it changes, update the controller's show grid attribute for any of
+    -- of the reasons only triggered by game events (like ACTIONBAR_SHOWGRID).
+    -- Propagate those changes to all the buttons managed by the controller.
+    -- This allows us to properly show and hide action buttons in combat
+    -- when the player is attempting to drag and drop abilities
     ActionButton1:SetAttribute("showgrid", 0)
 
     self:WrapScript(ActionButton1, "OnAttributeChanged", [[
@@ -139,8 +127,6 @@ function ActionButtons:PLAYER_LOGIN()
             control:RunAttribute("SetShowGrid", show, reason)
         end
     ]])
-
-    RegisterAttributeDriver(self, "commit", 1)
 end
 
 function ActionButtons:ACTIONBAR_SHOWGRID()
@@ -161,13 +147,6 @@ end
 
 function ActionButtons:PLAYER_ENTERING_WORLD()
     self:ForAll("UpdateShown")
-end
-
-function ActionButtons:PLAYER_REGEN_ENABLED()
-    for k in pairs(self.dirtyCvars) do
-        self:SetAttribute(k, GetCVarBool(k))
-        self.dirtyCvars[k] = nil
-    end
 end
 
 -- addon callbacks
@@ -205,36 +184,41 @@ function ActionButtons:OnActionChanged(buttonName, action)
 end
 
 --------------------------------------------------------------------------------
--- ActionButton Handlers
+-- Action Button Constrution
 --------------------------------------------------------------------------------
 
+-- keep track of the current action associated with a button
+-- mark the button as dirty when the action changes, so that we can make sure
+-- it is properly shown later
 local ActionButton_AttributeChanged = [[
     if name ~= "action" then return end
 
     local prevValue = ActionButtons[self]
     if prevValue ~= value then
         ActionButtons[self] = value
-        DirtyButtons[self] = value
 
+        DirtyButtons[self] = value
         control:SetAttribute("commit", 0)
+
         control:CallMethod("OnActionChanged", self:GetName(), value, prevValue)
     end
 ]]
 
+-- translate HOTKEY clicks into LeftButton
 local ActionButton_Click = [[
     if button == "HOTKEY" then
         return "LeftButton"
     end
 ]]
 
--- post click:
--- update the visibility of any button with the same action as this one
--- this is to handle cases where a person has picked up a spell, released the
--- mouse button, and then clicked on the button to place an action
+-- after clicking a button, or after dragging something onto a button, update
+-- the visibility of any button with the same action. This is to handle placing
+-- new actions on a button
 local ActionButton_PostClick = [[
     control:RunAttribute("ForActionSlot", self:GetAttribute("action"), "UpdateShown")
 ]]
 
+-- if we're dragging something onto a button, make sure to update the visibil;it
 local ActionButton_ReceiveDragBefore = [[
     if kind then
         return "message", kind
@@ -245,17 +229,11 @@ local ActionButton_ReceiveDragAfter = [[
     control:RunAttribute("ForActionSlot", self:GetAttribute("action"), "UpdateShown")
 ]]
 
-local ActionButton_OnShow = [[
+-- when showing or hiding a button, reapply the visibility of the button to
+-- work around delayed updates and help mitigate flashing
+local ActionButton_OnShowHide = [[
     self:RunAttribute("UpdateShown")
 ]]
-
-local ActionButton_OnHide = [[
-    self:RunAttribute("UpdateShown")
-]]
-
---------------------------------------------------------------------------------
--- Methods
---------------------------------------------------------------------------------
 
 function ActionButtons:GetOrCreateActionButton(id, parent)
     local name = ACTION_BUTTON_NAME_TEMPLATE:format(id)
@@ -264,16 +242,25 @@ function ActionButtons:GetOrCreateActionButton(id, parent)
     if button == nil then
         button = CreateFrame("CheckButton", name, parent, "ActionBarButtonTemplate")
 
-        SafeMixin(button, Addon.ActionButton)
+        -- add custom methods
+        for k, v in pairs(Addon.ActionButton) do
+            if rawget(button, k) ~= nil then
+                error(("%s[%q] has alrady been set"):format(button:GetName(), k), 2)
+            end
 
+            button[k] = v
+        end
+
+        -- initialize the button
         button:OnCreate(id)
 
+        -- add secure handlers
         self:WrapScript(button, "OnAttributeChanged", ActionButton_AttributeChanged)
         self:WrapScript(button.bind, "OnClick", ActionButton_Click)
         self:WrapScript(button, "PostClick", ActionButton_PostClick)
         self:WrapScript(button, "OnReceiveDrag", ActionButton_ReceiveDragBefore, ActionButton_ReceiveDragAfter)
-        self:WrapScript(button, "OnShow", ActionButton_OnShow)
-        self:WrapScript(button, "OnHide", ActionButton_OnHide)
+        self:WrapScript(button, "OnShow", ActionButton_OnShowHide)
+        self:WrapScript(button, "OnHide", ActionButton_OnShowHide)
 
         -- register the button with the controller
         self:SetFrameRef("add", button)
@@ -286,6 +273,10 @@ function ActionButtons:GetOrCreateActionButton(id, parent)
 
     return button
 end
+
+--------------------------------------------------------------------------------
+-- Configuration
+--------------------------------------------------------------------------------
 
 function ActionButtons:SetShowGrid(show, reason)
     self:ForAll("SetShowGridInsecure", show, reason)
@@ -343,34 +334,13 @@ function ActionButtons:SetShowSpellAnimations(enable)
     end
 end
 
-function ActionButtons:TryRegisterEvent(event)
-    if type(self[event]) ~= "function" then
-        error(("Cannot register event %q - Handler is missing"):format(event), 2)
-    end
+--------------------------------------------------------------------------------
+-- Collection Methods
+--------------------------------------------------------------------------------
 
-    self:RegisterEvent(event)
-end
-
-function ActionButtons:TryRegisterUnitEvent(event, ...)
-    if type(self[event]) ~= "function" then
-        error(("Cannot register unit event %q - Handler is missing"):format(event), 2)
-    end
-
-    self:RegisterUnitEvent(event, ...)
-end
-
--- collection metamethods
 function ActionButtons:ForAll(method, ...)
     for button in pairs(self.buttons) do
         button[method](button, ...)
-    end
-end
-
-function ActionButtons:ForAllWhere(predicate, method, ...)
-    for button, action in pairs(self.buttons) do
-        if predicate(action) then
-            button[method](button, ...)
-        end
     end
 end
 
@@ -382,34 +352,11 @@ function ActionButtons:ForActionSlot(slot, method, ...)
     end
 end
 
-function ActionButtons:ForSpellID(spellID, method, ...)
-    local hasSpellID = HasSpellID
-    for button, action in pairs(self.buttons) do
-        if  hasSpellID(action, spellID) then
-            button[method](button, ...)
-        end
-    end
-end
-
-function ActionButtons:ForVisible(method, ...)
-    for button in pairs(self.buttons) do
-        if button:IsVisible() then
-            button[method](button, ...)
-        end
-    end
-end
-
-function ActionButtons:ForVisibleWhere(predicate, method, ...)
-    for button, action in pairs(self.buttons) do
-        if button:IsVisible() and predicate(action) then
-            button[method](button, ...)
-        end
-    end
-end
-
 function ActionButtons:GetAll()
     return pairs(self.buttons)
 end
 
--- exports
+-- startup and export
+ActionButtons:RegisterEvent("PLAYER_LOGIN")
+
 Addon.ActionButtons = ActionButtons

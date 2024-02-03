@@ -1,12 +1,7 @@
---------------------------------------------------------------------------------
--- ActionButtonMixin
--- Additional methods we define on action buttons
---------------------------------------------------------------------------------
-
 local _, Addon = ...
 if Addon:IsBuild("retail") then return end
 
-local ActionButton = { }
+local ActionButton = {}
 
 local function GetActionButtonCommand(id)
     -- 0
@@ -46,16 +41,12 @@ local function GetActionButtonCommand(id)
 end
 
 function ActionButton:OnCreate(id)
-    -- initialize state
-    if self.commandName == nil then
-        self:SetAttributeNoHandler("commandName", GetActionButtonCommand(id))
-    end
-
     -- initialize secure state
     self:SetAttributeNoHandler("action", 0)
+    self:SetAttributeNoHandler("commandName", GetActionButtonCommand(id) or ("CLICK %s:HOTKEY"):format(self:GetName()))
     self:SetAttributeNoHandler("id", id)
-    self:SetAttributeNoHandler("type", "action")
     self:SetAttributeNoHandler("showgrid", 0)
+    self:SetAttributeNoHandler("type", "action")
     self:SetAttributeNoHandler("useparent-checkbuttoncast", true)
     self:SetAttributeNoHandler("useparent-checkfocuscast", true)
     self:SetAttributeNoHandler("useparent-checkmouseovercast", true)
@@ -71,6 +62,57 @@ function ActionButton:OnCreate(id)
 
     -- hide by default
     self:Hide()
+end
+
+function ActionButton:UpdateShown()
+    if InCombatLockdown() then return end
+
+    local show = (self:GetAttribute("showgrid") > 0 or HasAction(self:GetAttribute("action")))
+        and not self:GetAttribute("statehidden")
+
+    self:SetShown(show)
+end
+
+--------------------------------------------------------------------------------
+-- configuration
+--------------------------------------------------------------------------------
+
+-- we hide cooldowns when action buttons are transparent
+-- so that the sparks don't appear
+function ActionButton:SetShowCooldowns(show)
+    if show then
+        if self.cooldown:GetParent() ~= self then
+            self.cooldown:SetParent(self)
+            ActionButton_UpdateCooldown(self)
+        end
+    else
+        self.cooldown:SetParent(Addon.ShadowUIParent)
+    end
+end
+
+-- configuration commands
+function ActionButton:SetFlyoutDirectionInsecure(direction)
+    if InCombatLockdown() then return end
+
+    self:SetAttribute("flyoutDirection", direction)
+    self:UpdateFlyout()
+end
+
+
+function ActionButton:SetShowCountText(show)
+    if show then
+        self.Count:Show()
+    else
+        self.Count:Hide()
+    end
+end
+
+function ActionButton:SetShowEquippedItemBorders(show)
+    if show then
+        self.Border:SetParent(self)
+    else
+        self.Border:SetParent(Addon.ShadowUIParent)
+    end
 end
 
 function ActionButton:SetShowGridInsecure(show, reason, force)
@@ -95,31 +137,6 @@ function ActionButton:SetShowGridInsecure(show, reason, force)
     end
 end
 
-function ActionButton:UpdateShown()
-    if InCombatLockdown() then return end
-
-    local show = (self:GetAttribute("showgrid") > 0 or HasAction(self:GetAttribute("action")))
-        and not self:GetAttribute("statehidden")
-
-    self:SetShown(show)
-end
-
--- configuration commands
-function ActionButton:SetFlyoutDirectionInsecure(direction)
-    if InCombatLockdown() then return end
-
-    self:SetAttribute("flyoutDirection", direction)
-    self:UpdateFlyout()
-end
-
-function ActionButton:SetShowCountText(show)
-    if show then
-        self.Count:Show()
-    else
-        self.Count:Hide()
-    end
-end
-
 function ActionButton:SetShowMacroText(show)
     if show then
         self.Name:Show()
@@ -128,30 +145,7 @@ function ActionButton:SetShowMacroText(show)
     end
 end
 
-function ActionButton:SetShowEquippedItemBorders(show)
-    if show then
-        self.Border:SetParent(self)
-    else
-        self.Border:SetParent(Addon.ShadowUIParent)
-    end
-end
-
--- we hide cooldowns when action buttons are transparent
--- so that the sparks don't appear
-function ActionButton:SetShowCooldowns(show)
-    if show then
-        if self.cooldown:GetParent() ~= self then
-            self.cooldown:SetParent(self)
-            ActionButton_UpdateCooldown(self)
-        end
-    else
-        self.cooldown:SetParent(Addon.ShadowUIParent)
-    end
-end
-
-ActionButton.Update = ActionButton_Update
 ActionButton.UpdateFlyout = ActionButton_UpdateFlyout
-ActionButton.UpdateState = ActionButton_UpdateState
 hooksecurefunc("ActionButton_UpdateHotkeys", Addon.BindableButton.UpdateHotkeys)
 
 Addon.ActionButton = ActionButton
