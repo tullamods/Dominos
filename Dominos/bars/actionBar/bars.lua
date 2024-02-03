@@ -2,10 +2,9 @@ local _, Addon = ...
 local ActionBarsModule = Addon:NewModule('ActionBars', 'AceEvent-3.0')
 
 function ActionBarsModule:Load()
-    self:RegisterEvent('UPDATE_SHAPESHIFT_FORMS')
-
     self:SetBarCount(Addon:NumBars())
 
+    self:RegisterEvent('UPDATE_SHAPESHIFT_FORMS')
     Addon.RegisterCallback(self, "ACTIONBAR_COUNT_UPDATED")
 end
 

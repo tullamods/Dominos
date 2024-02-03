@@ -41,6 +41,7 @@ function ActionButtons:Initialize()
     self:RegisterEvent("ACTIONBAR_SHOWGRID")
     self:RegisterEvent("ACTIONBAR_SLOT_CHANGED")
     self:RegisterEvent("PLAYER_ENTERING_WORLD")
+    self:RegisterEvent("PLAYER_LOGIN")
 
     -- addon callbacks
     Addon.RegisterCallback(self, "LAYOUT_LOADED")
@@ -59,7 +60,7 @@ function ActionButtons:Initialize()
     -- secure methods
     self:SetAttributeNoHandler("SetShowGrid", [[
         local show, reason, force = ...
-        local value = self:GetAttribute("showgrid")
+        local value = self:GetAttribute("showgrid") or 0
         local prevValue = value
 
         if show then
@@ -141,19 +142,15 @@ function ActionButtons:ACTIONBAR_SLOT_CHANGED(slot)
     end
 end
 
-function ActionButtons:PLAYER_ENTERING_WORLD(isInitialLogin, isReloadingUi)
-    if isInitialLogin or isReloadingUi then
-        self:LAYOUT_LOADED()
-    end
-
+function ActionButtons:PLAYER_ENTERING_WORLD()
     self:ForAll("UpdateShown")
 end
 
 -- reset grid state at login. This covers waiting for the game to apply the
 -- always show buttons state to the main bar
 function ActionButtons:PLAYER_LOGIN()
-    self:SetAttributeNoHandler("showgrid", 0)
     ActionButton1:SetAttribute("showgrid", 0)
+    self:LAYOUT_LOADED()
 end
 
 -- addon callbacks

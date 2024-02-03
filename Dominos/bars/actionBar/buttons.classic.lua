@@ -38,7 +38,7 @@ function ActionButtons:Initialize()
 
     -- watch game events
     self:RegisterEvent("CVAR_UPDATE")
-    self:RegisterEvent("PLAYER_ENTERING_WORLD")
+    self:RegisterEvent("PLAYER_LOGIN")
     self:RegisterEvent("PLAYER_REGEN_ENABLED")
 
     -- watch the global showgrid setting
@@ -63,10 +63,8 @@ function ActionButtons:CVAR_UPDATE(name)
     end
 end
 
-function ActionButtons:PLAYER_ENTERING_WORLD(_, isInitialLogin, isReloadingUi)
-    if isInitialLogin or isReloadingUi then
-        self:SetShowGrid(Addon:ShowGrid(), self.ShowGridReasons.SHOW_EMPTY_BUTTONS)
-    end
+function ActionButtons:PLAYER_LOGIN()
+    self:SetShowGrid(Addon:ShowGrid(), self.ShowGridReasons.SHOW_EMPTY_BUTTONS)
 end
 
 function ActionButtons:PLAYER_REGEN_ENABLED()
