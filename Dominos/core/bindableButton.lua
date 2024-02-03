@@ -116,6 +116,8 @@ function BindableButton:AddQuickBindingSupport(button, bindingAction)
     else
         button.UpdateHotkeys = BindableButton.UpdateHotkeys
     end
+
+    button:UpdateHotkeys()
 end
 
 function BindableButton:UpdateHotkeys()
