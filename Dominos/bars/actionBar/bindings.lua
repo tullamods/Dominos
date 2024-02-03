@@ -1,7 +1,3 @@
-local _, Addon = ...
-if not Addon:IsBuild("retail") then return end
-if not OverrideActionBar then return end
-
 --------------------------------------------------------------------------------
 -- Sets priority bindings to the Pet Battle and Override UI when either frame
 -- is visible
@@ -11,6 +7,10 @@ if not OverrideActionBar then return end
 -- override bar. Ensure that the bindings displayed for those frames are sourced
 -- from those
 --------------------------------------------------------------------------------
+
+local _, Addon = ...
+if not Addon:IsBuild("retail") then return end
+if not OverrideActionBar then return end
 
 local Binder = CreateFrame("Frame", nil, nil, "SecureHandlerAttributeTemplate")
 
