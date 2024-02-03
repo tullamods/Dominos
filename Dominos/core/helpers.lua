@@ -170,15 +170,17 @@ end
 function Addon:Debounce(func, delay, ...)
     delay = delay or 0
 
+    local argCount = select("#", ...)
     local callback
-    if select("#", ...) == 0 then
+
+    if argCount == 0 then
         callback = func
+    elseif argCount == 1 then
+        local arg = ...
+        callback = function() func(arg) end
     else
         local args = { ... }
-
-        callback = function()
-            func(unpack(args))
-        end
+        callback = function() func(unpack(args)) end
     end
 
     local timer
