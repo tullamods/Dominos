@@ -1,6 +1,6 @@
 # Dominos Changelog
 
-## 10.2.15-beta
+## 10.2.15
 
 * (Retail) Enabled reuse of Blizzard Action Bars 2-8
 * (Wrath, Classic) Added action bars 11-14
