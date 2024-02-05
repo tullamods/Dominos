@@ -42,6 +42,7 @@ function ActionButtons:Initialize()
     self:RegisterEvent("ACTIONBAR_SLOT_CHANGED")
     self:RegisterEvent("PLAYER_ENTERING_WORLD")
     self:RegisterEvent("PLAYER_LOGIN")
+    self:RegisterEvent("SPELLS_CHANGED")
 
     -- addon callbacks
     Addon.RegisterCallback(self, "LAYOUT_LOADED")
@@ -151,6 +152,12 @@ end
 function ActionButtons:PLAYER_LOGIN()
     ActionButton1:SetAttribute("showgrid", 0)
     self:LAYOUT_LOADED()
+end
+
+-- force a visibility updates when spells changed (typically called when
+-- switching talents)
+function ActionButtons:SPELLS_CHANGED()
+    self:ForAll("UpdateShown")
 end
 
 -- addon callbacks
@@ -337,12 +344,6 @@ function ActionButtons:GetOrCreateActionButton(id, parent)
     return button
 end
 
-local bindButton_Click = [[
-    if button == "HOTKEY" then
-        return "LeftButton"
-    end
-]]
-
 -- update the pushed state of our parent button when pressing and releasing
 -- the button's hotkey
 local function bindButton_PreClick(self, _, down)
@@ -395,7 +396,13 @@ function ActionButtons:AddCastOnKeyPressSupport(button)
     bind.SetOverrideBindings = bindButton_SetOverrideBindings
 
     Addon.SpellFlyout:Register(bind)
-    self:WrapScript(bind, "OnClick", bindButton_Click)
+
+    -- translate HOTKEY button "clicks" into LeftButton
+    self:WrapScript(bind, "OnClick", [[
+        if button == "HOTKEY" then
+            return "LeftButton"
+        end
+    ]])
 
     button.bind = bind
     button:UpdateOverrideBindings()
