@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 10.2.16
+
+* (Retail) Fix an issue causing slots to appear empty when switching specs
+
 ## 10.2.15
 
 * (Retail) Enabled reuse of Blizzard Action Bars 2-8
