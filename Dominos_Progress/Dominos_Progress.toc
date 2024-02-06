@@ -1,6 +1,6 @@
 ## Interface: 100205
 ## Interface-Wrath: 30403
-## Interface-Classic: 11500
+## Interface-Classic: 11501
 ## Title: Dominos Progress
 ## Title-zhCN: Dominos 进度条模块
 ## Notes: Progress bars of all sorts

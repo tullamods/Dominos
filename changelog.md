@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 10.2.17
+
+* Update TOC file versions for 1.15.1
+
 ## 10.2.16
 
 * (Retail) Fix an issue causing slots to appear empty when switching specs
