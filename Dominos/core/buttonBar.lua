@@ -188,7 +188,7 @@ end
 -- | Padding
 -- v
 function ButtonBar:Layout()
-    local numButtons = #self.buttons
+    local numButtons = self:NumButtons()
     if numButtons < 1 then
         ButtonBar.proto.Layout(self)
         return
@@ -212,7 +212,12 @@ function ButtonBar:Layout()
     local xOff = pW - l
     local yOff = pH - t
 
-    for i, button in pairs(self.buttons) do
+    for i = 1, numButtons do
+        local button = self.buttons[i]
+        if not button then
+            break
+        end
+
         local row = floor((i - 1) / cols)
         if not isTopToBottom then
             row = rows - (row + 1)
