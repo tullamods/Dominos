@@ -111,6 +111,33 @@ function PetBar:KEYBOUND_DISABLED()
     end
 end
 
+PetBar:Extend('OnAcquire', function(self) self:UpdateTransparent(true) end)
+
+function PetBar:OnSetAlpha()
+    self:UpdateTransparent()
+end
+
+function PetBar:UpdateTransparent(force)
+    local transparent = self:GetAlpha() == 0
+    if (self.transparent ~= transparent) or force then
+        self.transparent = transparent
+
+        if transparent then
+            for _, button in pairs(self.buttons) do
+                if button.cooldown:GetParent() ~= Addon.ShadowUIParent then
+                    button.cooldown:SetParent(Addon.ShadowUIParent)
+                end
+            end
+        else
+            for _, button in pairs(self.buttons) do
+                if button.cooldown:GetParent() ~= button then
+                    button.cooldown:SetParent(button)
+                end
+            end
+        end
+    end
+end
+
 --------------------------------------------------------------------------------
 -- the module
 --------------------------------------------------------------------------------

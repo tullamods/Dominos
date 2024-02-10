@@ -88,6 +88,33 @@ function StanceBar:OnDetachButton(button)
     Addon:GetModule('Tooltips'):Unregister(button)
 end
 
+StanceBar:Extend('OnAcquire', function(self) self:UpdateTransparent(true) end)
+
+function StanceBar:OnSetAlpha()
+    self:UpdateTransparent()
+end
+
+function StanceBar:UpdateTransparent(force)
+    local transparent = self:GetAlpha() == 0
+    if (self.transparent ~= transparent) or force then
+        self.transparent = transparent
+
+        if transparent then
+            for _, button in pairs(self.buttons) do
+                if button.cooldown:GetParent() ~= Addon.ShadowUIParent then
+                    button.cooldown:SetParent(Addon.ShadowUIParent)
+                end
+            end
+        else
+            for _, button in pairs(self.buttons) do
+                if button.cooldown:GetParent() ~= button then
+                    button.cooldown:SetParent(button)
+                end
+            end
+        end
+    end
+end
+
 -- export
 Addon.StanceBar = StanceBar
 
