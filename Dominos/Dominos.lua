@@ -15,6 +15,22 @@ Addon.callbacks = LibStub('CallbackHandler-1.0'):New(Addon)
 -- how many action buttons we support, and what button to map keybinding presses
 Addon.ACTION_BUTTON_COUNT = 14 * NUM_ACTIONBAR_BUTTONS
 
+local WOW_BUILD
+do
+    local l = LE_EXPANSION_LEVEL_CURRENT
+    if l == LE_EXPANSION_CLASSIC then
+        WOW_BUILD = 'classic'
+    elseif l == LE_EXPANSION_BURNING_CRUSADE then
+        WOW_BUILD = 'bcc'
+    elseif l == LE_EXPANSION_WRATH_OF_THE_LICH_KING then
+        WOW_BUILD = 'wrath'
+    elseif l == LE_EXPANSION_CATACLYSM then
+        WOW_BUILD = 'cata'
+    else
+        WOW_BUILD = 'retail'
+    end
+end
+
 --------------------------------------------------------------------------------
 -- Events
 --------------------------------------------------------------------------------
@@ -59,7 +75,7 @@ function Addon:OnUpgradeDatabase(oldVersion, newVersion)
 end
 
 function Addon:OnUpgradeAddon(oldVersion, newVersion)
-    self:Printf(L.Updated, ADDON_VERSION, self:GetWowBuild())
+    self:Printf(L.Updated, ADDON_VERSION, WOW_BUILD)
 end
 
 -- binding events
@@ -854,41 +870,12 @@ end
 
 -- display the current addon build being used
 function Addon:PrintVersion()
-    self:Printf('%s-%s', ADDON_VERSION, self:GetWowBuild())
-end
-
--- get the current World of Warcraft build being used
-function Addon:GetWowBuild()
-    local project = WOW_PROJECT_ID
-
-    if project == WOW_PROJECT_MAINLINE then
-        return 'retail'
-    end
-
-    if project == WOW_PROJECT_CLASSIC then
-        return 'classic'
-    end
-
-    local exLevel = LE_EXPANSION_LEVEL_CURRENT
-
-    if exLevel == LE_EXPANSION_WRATH_OF_THE_LICH_KING or exLevel == LE_EXPANSION_NORTHREND then
-        return 'wrath'
-    end
-
-    if exLevel == LE_EXPANSION_BURNING_CRUSADE then
-        return 'bcc'
-    end
-
-    if exLevel == LE_EXPANSION_CLASSIC then
-        return 'classic'
-    end
-
-    return 'unknown'
+    self:Printf('%s-%s', ADDON_VERSION, WOW_BUILD)
 end
 
 -- check if we're running the addon on one of a given set of wow versions
 function Addon:IsBuild(...)
-    local build = self:GetWowBuild()
+    local build = WOW_BUILD
 
     for i = 1, select('#', ...) do
         if build == select(i, ...):lower() then
