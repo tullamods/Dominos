@@ -40,7 +40,6 @@ local function GetActionButtonCommand(id)
     end
 end
 
-
 function ActionButton:OnCreate(id)
     -- initialize secure state
     self:SetAttributeNoHandler("action", 0)

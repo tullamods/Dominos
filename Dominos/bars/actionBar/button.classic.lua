@@ -45,15 +45,13 @@ function ActionButton:OnCreate(id)
     self:SetAttributeNoHandler("action", 0)
     self:SetAttributeNoHandler("commandName", GetActionButtonCommand(id) or ("CLICK %s:HOTKEY"):format(self:GetName()))
     self:SetAttributeNoHandler("showgrid", 0)
-    self:SetAttributeNoHandler("type", "action")
-    self:SetAttributeNoHandler("useparent-checkbuttoncast", true)
     self:SetAttributeNoHandler("useparent-checkfocuscast", true)
     self:SetAttributeNoHandler("useparent-checkmouseovercast", true)
+    self:SetAttributeNoHandler("useparent-checkselfcast", true)
 
-    -- register for clicks
-	self:RegisterForDrag("LeftButton", "RightButton")
-	self:RegisterForClicks("AnyUp", "AnyDown")
+    -- register for clicks on all buttons, and enable mousewheel bindings
     self:EnableMouseWheel()
+    self:RegisterForClicks("AnyUp", "AnyDown")
 
     -- bindings setup
     Addon.BindableButton:AddQuickBindingSupport(self)
@@ -85,7 +83,10 @@ function ActionButton:SetShowCooldowns(show)
     end
 end
 
--- configuration commands
+function ActionButton:SetShowCountText(show)
+    self.Count:SetShown(show)
+end
+
 function ActionButton:SetFlyoutDirectionInsecure(direction)
     if InCombatLockdown() then return end
 
@@ -93,21 +94,18 @@ function ActionButton:SetFlyoutDirectionInsecure(direction)
     ActionButton_UpdateFlyout(self)
 end
 
-
-function ActionButton:SetShowCountText(show)
-    self.Count:SetShown(show)
-end
-
 function ActionButton:SetShowEquippedItemBorders(show)
     local parent = (show and self) or Addon.ShadowUIParent
 
-    self.Border:SetParent(parent)
+    if self.Border:GetParent() ~= parent then
+        self.Border:SetParent(parent)
+    end
 end
 
 function ActionButton:SetShowGridInsecure(show, reason, force)
     if InCombatLockdown() then return end
 
-    if reason == nil then
+    if type(reason) ~= "number" then
         error("Usage: ActionButton:SetShowGridInsecure(show, reason, force?)", 2)
     end
 
@@ -127,9 +125,10 @@ function ActionButton:SetShowGridInsecure(show, reason, force)
 end
 
 function ActionButton:SetShowMacroText(show)
-    self.Name:SetShown(show)
+    self.Name:SetShown(show and true)
 end
 
 hooksecurefunc("ActionButton_UpdateHotkeys", Addon.BindableButton.UpdateHotkeys)
 
+-- exports
 Addon.ActionButton = ActionButton
