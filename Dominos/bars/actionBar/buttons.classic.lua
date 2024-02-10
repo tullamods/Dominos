@@ -140,7 +140,7 @@ local function GetActionButtonName(id)
     elseif id <= 72 then
         return "MultiBarBottomLeftButton" .. (id - 60), true
     -- 7+
-    else
+    elseif id <= 168 then
         return ACTION_BUTTON_NAME_TEMPLATE:format(id)
     end
 end
