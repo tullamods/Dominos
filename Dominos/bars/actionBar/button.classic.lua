@@ -49,6 +49,16 @@ function ActionButton:OnCreate(id)
     self:SetAttributeNoHandler("useparent-checkmouseovercast", true)
     self:SetAttributeNoHandler("useparent-checkselfcast", true)
 
+    -- secure handlers
+    self:SetAttributeNoHandler('_childupdate-offset', [[
+        local offset = message or 0
+        local id = self:GetAttribute('index') + offset
+
+        if self:GetAttribute('action') ~= id then
+            self:SetAttribute('action', id)
+        end
+    ]])
+
     -- register for clicks on all buttons, and enable mousewheel bindings
     self:EnableMouseWheel()
     self:RegisterForClicks("AnyUp", "AnyDown")
