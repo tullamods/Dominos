@@ -132,6 +132,15 @@ function ButtonBar:GetSpacing()
     return self.sets.spacing or 0
 end
 
+function ButtonBar:SetRowOffset(rowOffset)
+    self.sets.rowOffset = rowOffset
+    self:Layout()
+end
+
+function ButtonBar:GetRowOffset()
+    return self.sets.rowOffset or 0
+end
+
 -- the wackiness here is for backward compaitbility reasons, since I did not
 -- implement true defaults
 function ButtonBar:SetLeftToRight(isLeftToRight)
@@ -188,7 +197,7 @@ end
 -- | Padding
 -- v
 function ButtonBar:Layout()
-    local numButtons = self:NumButtons()
+    local numButtons = math.min(self:NumButtons(), #self.buttons)
     if numButtons < 1 then
         ButtonBar.proto.Layout(self)
         return
@@ -205,6 +214,7 @@ function ButtonBar:Layout()
     local bW, bH = self:GetButtonSize()
     local pW, pH = self:GetPadding()
     local spacing = self:GetSpacing()
+    local rowOffset = self:GetRowOffset()
 
     local buttonWidth = bW + spacing
     local buttonHeight = bH + spacing
@@ -214,9 +224,6 @@ function ButtonBar:Layout()
 
     for i = 1, numButtons do
         local button = self.buttons[i]
-        if not button then
-            break
-        end
 
         local row = floor((i - 1) / cols)
         if not isTopToBottom then
@@ -229,6 +236,12 @@ function ButtonBar:Layout()
         end
 
         local x = xOff + buttonWidth * col
+        if rowOffset >= 0 then
+            x = x + (row * rowOffset)
+        else
+            x = x + ((1 + row) - rows) * rowOffset
+        end
+
         local y = yOff + buttonHeight * row
 
         button:ClearAllPoints()
@@ -236,7 +249,7 @@ function ButtonBar:Layout()
         button:SetPoint('TOPLEFT', x, -y)
     end
 
-    local barWidth = (buttonWidth * cols) + (pW * 2) - spacing
+    local barWidth = (buttonWidth * cols) + (pW * 2) - spacing + math.abs(rowOffset) * (rows - 1)
     local barHeight = (buttonHeight * rows) + (pH * 2) - spacing
 
     self:TrySetSize(barWidth, barHeight)

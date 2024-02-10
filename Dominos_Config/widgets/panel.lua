@@ -320,6 +320,23 @@ function Panel:NewColumnsSlider()
 	}
 end
 
+function Panel:NewRowOffsetSlider()
+	return self:NewSlider{
+		name = L.RowOffset,
+
+		min = -Round(ActionButton1:GetWidth()),
+		max = Round(ActionButton1:GetWidth()),
+
+		get = function()
+			return self.owner:GetRowOffset()
+		end,
+
+		set = function(_, value)
+			self.owner:SetRowOffset(value)
+		end
+	}
+end
+
 local DISPLAY_LAYER_OPTIONS = {"BACKGROUND", "LOW", "MEDIUM", "HIGH"}
 
 function Panel:NewDisplayLayerSlider(options)
@@ -457,6 +474,7 @@ end
 function Panel:AddLayoutOptions()
 	self.colsSlider = self:NewColumnsSlider()
 	self.spacingSlider = self:NewSpacingSlider()
+	self.rowOffsetSlider = self:NewRowOffsetSlider()
 	self:AddBasicLayoutOptions()
 end
 
