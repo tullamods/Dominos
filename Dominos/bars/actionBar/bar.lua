@@ -138,7 +138,7 @@ function ActionBar:OnAttachButton(button)
     button:SetShowMacroText(Addon:ShowMacroText())
     button:SetShowEquippedItemBorders(Addon:ShowEquippedItemBorders())
     button:SetShowCooldowns(self:GetAlpha() > 0)
-    button:SetAttributeNoHandler("statehidden", (button:GetAttribute("index") > self:NumButtons() and true) or nil)
+    button:SetAttributeNoHandler("statehidden", (button:GetAttribute("index") > self:NumButtons()) or nil)
     button:UpdateShown()
 
     Addon:GetModule('ButtonThemer'):Register(button, self:GetDisplayName())
