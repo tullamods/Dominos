@@ -1,5 +1,14 @@
 # Dominos Changelog
 
+## 10.2.18
+
+* Action Buttons that have been hidden by shrinking the size of the bar are now
+  simply hidden, instead of being completely detached from the bar. This should
+  allow them to still remain usable in macros or by pressing any associated
+  hotkeys.
+* Added a new Row Offset layout setting. This will indent each row of buttons
+  by the specified value.
+
 ## 10.2.17
 
 * Update TOC file versions for 1.15.1
