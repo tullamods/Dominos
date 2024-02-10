@@ -119,18 +119,7 @@ function ActionBar:AcquireButton(index)
     local button = Addon.ActionButtons:GetOrCreateActionButton(id, self)
 
     button:SetAttributeNoHandler('index', index)
-    button:SetAttributeNoHandler('statehidden', nil)
     button:SetAttributeNoHandler("displayName", L.ActionBarButtonDisplayName:format(self.id, index))
-
-    -- set a handler for updating the action from a parent frame
-    button:SetAttributeNoHandler('_childupdate-offset', [[
-        local offset = message or 0
-        local id = self:GetAttribute('index') + offset
-
-        if self:GetAttribute('action') ~= id then
-            self:SetAttribute('action', id)
-        end
-    ]])
 
     return button
 end
@@ -149,6 +138,7 @@ function ActionBar:OnAttachButton(button)
     button:SetShowMacroText(Addon:ShowMacroText())
     button:SetShowEquippedItemBorders(Addon:ShowEquippedItemBorders())
     button:SetShowCooldowns(self:GetAlpha() > 0)
+    button:SetAttributeNoHandler("statehidden", (button:GetAttribute("index") > self:NumButtons() and true) or nil)
     button:UpdateShown()
 
     Addon:GetModule('ButtonThemer'):Register(button, self:GetDisplayName())
@@ -158,6 +148,39 @@ end
 function ActionBar:OnDetachButton(button)
     Addon:GetModule('ButtonThemer'):Unregister(button, self:GetDisplayName())
     Addon:GetModule('Tooltips'):Unregister(button)
+end
+
+-- sizing
+function ActionBar:ReloadButtons()
+    local oldNumButtons = #self.buttons
+    for i = 1, oldNumButtons do
+        self:DetachButton(i)
+    end
+
+    local newNumButtons = self:MaxLength()
+    for i = 1, newNumButtons do
+        self:AttachButton(i)
+    end
+
+    self:Layout()
+end
+
+function ActionBar:UpdateNumButtons()
+    local numVisible = self:NumButtons()
+
+    for i, button in pairs(self.buttons) do
+        if i > numVisible then
+            if not button:GetAttribute("statehidden") then
+                button:SetAttribute("statehidden", true)
+                button:Hide()
+            end
+        elseif button:GetAttribute("statehidden") then
+            button:SetAttribute("statehidden", nil)
+            button:UpdateShown()
+        end
+    end
+
+    self:Layout()
 end
 
 -- paging
