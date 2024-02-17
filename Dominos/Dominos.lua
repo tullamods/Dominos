@@ -250,55 +250,9 @@ function Addon:GetDatabaseDefaults()
                 rightClickUnit = "player"
             },
 
-            actionColors = {
-                ['**'] = {
-                    r = 1,
-                    g = 1,
-                    b = 1,
-                    a = 1,
-                    desaturate = false,
-                    enabled = true
-                },
-
-                oor = {
-                    r = 1,
-                    g = 0.5,
-                    b = 0.5,
-                    enabled = false
-                },
-
-                oom = {
-                    r = 0.5,
-                    g = 0.5,
-                    b = 1
-                },
-
-                unusable = {
-                    r = 0.4,
-                    g = 0.4,
-                    b = 0.4
-                },
-            },
-
             alignmentGrid = {
                 enabled = not self:IsBuild("retail"),
                 size = 32
-            },
-
-            hotkeyColors = {
-                ['**'] = {
-                    r = 1,
-                    g = 1,
-                    b = 1,
-                    a = 1,
-                    enabled = true
-                },
-
-                oor = {
-                    r = 1,
-                    g = 0.12549,
-                    b = 0.12549
-                }
             },
 
             frames = {
