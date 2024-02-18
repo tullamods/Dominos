@@ -87,7 +87,7 @@ else
     end
 
     theme = function(button)
-        if not Addon:ThemeButtons() then
+        if not Addon:ThemingButtons() then
             return
         end
 

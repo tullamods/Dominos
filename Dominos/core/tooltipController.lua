@@ -52,8 +52,8 @@ function TooltipsModule:OnInitialize()
 end
 
 function TooltipsModule:OnEnable()
-    self:SetShowTooltips(Addon:ShowTooltips())
-    self:SetShowTooltipsInCombat(Addon:ShowCombatTooltips())
+    self:SetShowTooltips(Addon:ShowingTooltips())
+    self:SetShowTooltipsInCombat(Addon:ShowingTooltipsInCombat())
 end
 
 function TooltipsModule:Register(frame)

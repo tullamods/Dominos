@@ -93,8 +93,9 @@ function StanceBar:AcquireButton(index)
 end
 
 function StanceBar:OnAttachButton(button)
-    button:Show()
+    button.HotKey:SetShown(self:ShowingBindingText())
     button:UpdateHotkeys()
+    button:Show()
 
     Addon:GetModule('ButtonThemer'):Register(button, 'Class Bar')
     Addon:GetModule('Tooltips'):Register(button)
@@ -130,6 +131,52 @@ function StanceBar:UpdateActions()
 
         button:SetChecked(isActive and true)
     end
+end
+
+-- binding text
+function StanceBar:SetShowBindingText(show)
+    show = show and true
+
+    if self.sets.showBindingText == Addon.db.profile.showBindingText then
+        self.sets.showBindingText = nil
+    else
+        self.sets.showBindingText = show
+    end
+
+    for _, button in pairs(self.buttons) do
+        button.HotKey:SetShown(show)
+    end
+end
+
+function StanceBar:ShowingBindingText()
+    local result = self.sets.showBindingText
+
+    if result == nil then
+        result = Addon.db.profile.showBindingText
+    end
+
+    return result
+end
+
+function StanceBar:OnCreateMenu(menu)
+    local L = LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')
+
+    local layoutPanel = menu:NewPanel(L.Layout)
+
+    layoutPanel:NewCheckButton {
+        name = L.ShowBindingText,
+        get = function()
+            return layoutPanel.owner:ShowingBindingText()
+        end,
+        set = function(_, enable)
+            layoutPanel.owner:SetShowBindingText(enable)
+        end
+    }
+
+    layoutPanel:AddLayoutOptions()
+
+    menu:AddFadingPanel()
+    menu:AddAdvancedPanel()
 end
 
 -- export

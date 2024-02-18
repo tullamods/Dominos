@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 10.2.20
+
+* Added the ability to toggle bindings, macros, counts, and equipped item border visibility on a per bar basis
+
 ## 10.2.19
 
 * (Classic) Update Shadowform and Metamorphosis conditionals to not check for a result from

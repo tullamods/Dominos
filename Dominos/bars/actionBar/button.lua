@@ -137,6 +137,17 @@ end
 -- configuration
 --------------------------------------------------------------------------------
 
+function ActionButton:SetFlyoutDirectionInsecure(direction)
+    if InCombatLockdown() then return end
+
+    self:SetAttribute("flyoutDirection", direction)
+    self:UpdateFlyout()
+end
+
+function ActionButton:SetShowBindingText(show)
+    self.HotKey:SetShown(show)
+end
+
 -- we hide cooldowns when action buttons are transparent
 -- so that the sparks don't appear
 function ActionButton:SetShowCooldowns(show)
@@ -150,15 +161,8 @@ function ActionButton:SetShowCooldowns(show)
     end
 end
 
-function ActionButton:SetShowCountText(show)
+function ActionButton:SetShowCounts(show)
     self.Count:SetShown(show)
-end
-
-function ActionButton:SetFlyoutDirectionInsecure(direction)
-    if InCombatLockdown() then return end
-
-    self:SetAttribute("flyoutDirection", direction)
-    self:UpdateFlyout()
 end
 
 function ActionButton:SetShowEquippedItemBorders(show)
@@ -167,6 +171,10 @@ function ActionButton:SetShowEquippedItemBorders(show)
     if self.Border:GetParent() ~= parent then
         self.Border:SetParent(parent)
     end
+end
+
+function ActionButton:SetShowEmptyButtons(show, force)
+    self:SetShowGridInsecure(show, Addon.ActionButtons.ShowGridReasons.SHOW_EMPTY_BUTTONS_PER_BAR, force)
 end
 
 function ActionButton:SetShowGridInsecure(show, reason, force)

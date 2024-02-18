@@ -10,6 +10,14 @@ local ACTION_BUTTON_COUNT = Addon.ACTION_BUTTON_COUNT
 
 local ActionBar = Addon:CreateClass('Frame', Addon.ButtonBar)
 
+ActionBar.ButtonProps = {
+    'BindingText',
+    'Counts',
+    'EmptyButtons',
+    'EquippedItemBorders',
+    'MacroText',
+}
+
 ActionBar.class = UnitClassBase('player')
 
 -- Metatable magic. Basically this says, "create a new table for this index"
@@ -73,9 +81,9 @@ ActionBar:Extend('OnLoadSettings', function(self)
 end)
 
 ActionBar:Extend('OnAcquire', function(self)
-	self:SetAttribute("checkselfcast", true)
-	self:SetAttribute("checkfocuscast", true)
-	self:SetAttribute("checkmouseovercast", true)
+    self:SetAttribute("checkselfcast", true)
+    self:SetAttribute("checkfocuscast", true)
+    self:SetAttribute("checkmouseovercast", true)
 
     self:LoadStateController()
     self:UpdateStateDriver()
@@ -133,10 +141,11 @@ function ActionBar:OnAttachButton(button)
     button:SetAttribute("action", button:GetAttribute("index") + (self:GetAttribute("actionOffset") or 0))
     button:SetFlyoutDirectionInsecure(self:GetFlyoutDirection())
     button:SetShowGridInsecure(Addon:ShowGrid(), Addon.ActionButtons.ShowGridReasons.SHOW_EMPTY_BUTTONS)
-    button:SetShowGridInsecure(self:ShowingEmptyButtons(), Addon.ActionButtons.ShowGridReasons.SHOW_EMPTY_BUTTONS_PER_BAR)
-    button:SetShowCountText(Addon:ShowCounts())
-    button:SetShowMacroText(Addon:ShowMacroText())
-    button:SetShowEquippedItemBorders(Addon:ShowEquippedItemBorders())
+
+    for _, prop in pairs(self.ButtonProps) do
+        button['SetShow' .. prop](button, self['Showing' .. prop](self))
+    end
+
     button:SetShowCooldowns(self:GetAlpha() > 0)
     button:SetAttributeNoHandler("statehidden", (button:GetAttribute("index") > self:NumButtons()) or nil)
     button:UpdateShown()
@@ -270,21 +279,7 @@ function ActionBar:IsOverrideBar()
     return Addon.db.profile.possessBar == self.id
 end
 
--- empty buttons
-function ActionBar:SetShowEmptyButtons(show)
-    self.sets.showEmptyButtons = show and true
-    self:ForButtons('SetShowGridInsecure', self:ShowingEmptyButtons(), Addon.ActionButtons.ShowGridReasons.SHOW_EMPTY_BUTTONS_PER_BAR)
-end
-
-function ActionBar:ShowingEmptyButtons()
-    return self.sets.showEmptyButtons and true
-end
-
-function ActionBar:GetUnit()
-    return self.sets.unit or 'none'
-end
-
--- right click targeting support
+-- unit
 function ActionBar:SetUnit(unit)
     unit = unit or 'none'
 
@@ -301,6 +296,7 @@ function ActionBar:GetUnit()
     return self.sets.unit or 'none'
 end
 
+-- right click unit
 function ActionBar:SetRightClickUnit(unit)
     unit = unit or 'none'
 
@@ -323,6 +319,7 @@ function ActionBar:GetRightClickUnit()
     return Addon:GetRightClickUnit() or "none"
 end
 
+-- opacity
 function ActionBar:OnSetAlpha(_alpha)
     self:UpdateTransparent()
 end
@@ -330,13 +327,23 @@ end
 function ActionBar:UpdateTransparent(force)
     local isTransparent = self:GetAlpha() == 0
 
-    if (self.__transparent ~= isTransparent) or force then
-        self.__transparent = isTransparent
+    if (self.transparent ~= isTransparent) or force then
+        self.transparent = isTransparent
         self:ForButtons('SetShowCooldowns', not isTransparent)
     end
 end
 
 -- flyout direction calculations
+function ActionBar:SetFlyoutDirection(direction)
+    local oldDirection = self.sets.flyoutDirection or 'auto'
+    local newDirection = direction or 'auto'
+
+    if oldDirection ~= newDirection then
+        self.sets.flyoutDirection = newDirection
+        self:UpdateFlyoutDirection()
+    end
+end
+
 function ActionBar:GetFlyoutDirection()
     local direction = self.sets.flyoutDirection or 'auto'
 
@@ -365,22 +372,39 @@ function ActionBar:GetCalculatedFlyoutDirection()
     return 'UP'
 end
 
-function ActionBar:SetFlyoutDirection(direction)
-    local oldDirection = self.sets.flyoutDirection or 'auto'
-    local newDirection = direction or 'auto'
-
-    if oldDirection ~= newDirection then
-        self.sets.flyoutDirection = newDirection
-        self:UpdateFlyoutDirection()
-    end
-end
-
 function ActionBar:UpdateFlyoutDirection()
     self:ForButtons('SetFlyoutDirectionInsecure', self:GetFlyoutDirection())
 end
 
 ActionBar:Extend("Layout", ActionBar.UpdateFlyoutDirection)
 ActionBar:Extend("Stick", ActionBar.UpdateFlyoutDirection)
+
+-- button property visibility toggles
+for _, prop in pairs(ActionBar.ButtonProps) do
+    local setterName = 'SetShow' .. prop
+    local getterName = 'Showing' .. prop
+    local settingKey = 'show' .. prop
+
+    ActionBar[setterName] = function(self, show, ...)
+        show = show and true
+
+        if self.sets[settingKey] == Addon.db.profile[settingKey] then
+            self.sets[settingKey] = nil
+        else
+            self.sets[settingKey] = show
+        end
+
+        self:ForButtons(setterName, show, ...)
+    end
+
+    ActionBar[getterName] = function(self)
+        local result = self.sets[settingKey]
+        if result == nil then
+            result = Addon.db.profile[settingKey]
+        end
+        return result
+    end
+end
 
 -- exports
 Addon.ActionBar = ActionBar

@@ -173,7 +173,7 @@ Addon:AddOptionsPanelOptions("general", {
             type = "toggle",
             name = L.ShowBindingText,
             get = function()
-                return ParentAddon:ShowBindingText()
+                return ParentAddon:ShowingBindingText()
             end,
             set = function(_, enable)
                 ParentAddon:SetShowBindingText(enable)
@@ -185,7 +185,7 @@ Addon:AddOptionsPanelOptions("general", {
             type = "toggle",
             name = L.ShowMacroText,
             get = function()
-                return ParentAddon:ShowMacroText()
+                return ParentAddon:ShowingMacroText()
             end,
             set = function(_, enable)
                 ParentAddon:SetShowMacroText(enable)
@@ -197,7 +197,7 @@ Addon:AddOptionsPanelOptions("general", {
             type = "toggle",
             name = L.ShowCountText,
             get = function()
-                return ParentAddon:ShowCounts()
+                return ParentAddon:ShowingCounts()
             end,
             set = function(_, enable) ParentAddon:SetShowCounts(enable) end,
             width = 1.5,
@@ -207,7 +207,7 @@ Addon:AddOptionsPanelOptions("general", {
             type = "toggle",
             name = L.ShowEquippedItemBorders,
             get = function()
-                return ParentAddon:ShowEquippedItemBorders()
+                return ParentAddon:ShowingEquippedItemBorders()
             end,
             set = function(_, enable) ParentAddon:SetShowEquippedItemBorders(enable) end,
             width = 1.5,
@@ -243,7 +243,7 @@ Addon:AddOptionsPanelOptions("general", {
             type = "toggle",
             name = L.ThemeActionButtons,
             get = function()
-                return ParentAddon:ThemeButtons()
+                return ParentAddon:ThemingButtons()
             end,
             set = function(_, enable)
                 ParentAddon:SetThemeButtons(enable)
@@ -262,8 +262,8 @@ Addon:AddOptionsPanelOptions("general", {
                 ooc = L.OutOfCombat
             },
             get = function()
-                if ParentAddon:ShowTooltips() then
-                    if ParentAddon:ShowCombatTooltips() then
+                if ParentAddon:ShowingTooltips() then
+                    if ParentAddon:ShowingTooltipsInCombat() then
                         return "always"
                     end
 
