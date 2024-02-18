@@ -121,9 +121,8 @@ function BindableButton:AddQuickBindingSupport(button, bindingAction)
 end
 
 function BindableButton:UpdateHotkeys()
-    local hotkey = self.HotKey
-    hotkey:SetText(getButtonHotkey(self))
-    hotkey:SetShown(Addon:ShowBindingText())
+    local text = (self.GetHotkey or getButtonHotkey)(self)
+    self.HotKey:SetText(text)
 end
 
 BindableButton.GetHotkey = getButtonHotkey
