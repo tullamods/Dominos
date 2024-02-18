@@ -2,7 +2,8 @@
 
 ## 10.2.20
 
-* Added the ability to toggle bindings, macros, counts, and equipped item border visibility on a per bar basis
+* Added per bar toggles for bindings, macros, counts, and equipped item border visibility
+* Added the ability to configure the number of segments on progress bars
 
 ## 10.2.19
 

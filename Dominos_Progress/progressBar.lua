@@ -710,17 +710,20 @@ do
 
 		local l = LibStub('AceLocale-3.0'):GetLocale('Dominos-Progress')
 
-		panel.segmentedCheckbox = panel:NewCheckButton{
-			name = l.Segmented,
+		panel.segmentCount = panel:NewSlider{
+			name = l.SegmentCount,
+
+			min = 1,
+
+			max = 100,
 
 			get = function()
-				return panel.owner:GetSegmentCount() > 1
+				return panel.owner:GetSegmentCount()
 			end,
 
-			set = function(_, enable)
-				local segmentCount = enable and 20 or 1
-				panel.owner:SetSegmentCount(segmentCount)
-			end
+			set = function(_, value)
+				panel.owner:SetSegmentCount(value)
+			end,
 		}
 
 		panel.widthSlider = panel:NewSlider{
