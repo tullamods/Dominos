@@ -15,8 +15,7 @@ ActionButtons.ShowGridReasons = {
     -- GAME_EVENT = 1,
     -- SPELLBOOK_SHOWN = 2,
     KEYBOUND_EVENT = 16,
-    SHOW_EMPTY_BUTTONS = 32,
-    SHOW_EMPTY_BUTTONS_PER_BAR = 64
+    SHOW_EMPTY_BUTTONS_PER_BAR = 32
 }
 
 -- states
@@ -38,12 +37,7 @@ function ActionButtons:Initialize()
 
     -- watch game events
     self:RegisterEvent("CVAR_UPDATE")
-    self:RegisterEvent("PLAYER_LOGIN")
     self:RegisterEvent("PLAYER_REGEN_ENABLED")
-
-    -- watch the global showgrid setting
-    Addon.RegisterCallback(self, "SHOW_EMPTY_BUTTONS_CHANGED")
-    Addon.RegisterCallback(self, "LAYOUT_LOADED")
 
     -- watch for keybound show/hide
     local keybound = LibStub("LibKeyBound-1.0", true)
@@ -63,10 +57,6 @@ function ActionButtons:CVAR_UPDATE(name)
     end
 end
 
-function ActionButtons:PLAYER_LOGIN()
-    self:SetShowGrid(Addon:ShowGrid(), self.ShowGridReasons.SHOW_EMPTY_BUTTONS)
-end
-
 function ActionButtons:PLAYER_REGEN_ENABLED()
     for k, v in pairs(self.dirtyAttributes) do
         self:SetAttribute(k, v)
@@ -80,14 +70,6 @@ end
 
 function ActionButtons:LIBKEYBOUND_DISABLED()
     self:SetShowGrid(false, self.ShowGridReasons.KEYBOUND_EVENT)
-end
-
-function ActionButtons:SHOW_EMPTY_BUTTONS_CHANGED(_, show)
-    self:SetShowGrid(show, self.ShowGridReasons.SHOW_EMPTY_BUTTONS)
-end
-
-function ActionButtons:LAYOUT_LOADED()
-    self:SetShowGrid(Addon:ShowGrid(), self.ShowGridReasons.SHOW_EMPTY_BUTTONS)
 end
 
 function ActionButtons:TrySetAttribute(key, value)
@@ -148,41 +130,34 @@ end
 function ActionButtons:GetOrCreateActionButton(id, parent)
     local name, noGrid = GetActionButtonName(id)
     local button = _G[name]
+    local new = false
 
     -- a button we're creating
     if button == nil then
         button = CreateFrame("CheckButton", name, parent, "ActionBarButtonTemplate")
-
         Mixin(button, Addon.ActionButton)
 
-        button:OnCreate(id)
-        self:WrapScript(button, "OnClick", ActionButton_ClickBefore)
-
-        self.buttons[button] = id
+        new = true
     -- a standard UI button we're reusing
     elseif self.buttons[button] == nil then
         Mixin(button, Addon.ActionButton)
 
         button:SetID(0)
+
         if noGrid then
             button.noGrid = true
         end
 
+        new = true
+    end
+
+    if new then
         button:OnCreate(id)
         self:WrapScript(button, "OnClick", ActionButton_ClickBefore)
-
         self.buttons[button] = id
     end
 
     return button
-end
-
---------------------------------------------------------------------------------
--- Configuration
---------------------------------------------------------------------------------
-
-function ActionButtons:SetShowGrid(show, reason)
-    self:ForAll("SetShowGridInsecure", show, reason)
 end
 
 --------------------------------------------------------------------------------

@@ -140,7 +140,6 @@ end
 function ActionBar:OnAttachButton(button)
     button:SetAttribute("action", button:GetAttribute("index") + (self:GetAttribute("actionOffset") or 0))
     button:SetFlyoutDirectionInsecure(self:GetFlyoutDirection())
-    button:SetShowGridInsecure(Addon:ShowGrid(), Addon.ActionButtons.ShowGridReasons.SHOW_EMPTY_BUTTONS)
 
     for _, prop in pairs(self.ButtonProps) do
         button['SetShow' .. prop](button, self['Showing' .. prop](self))

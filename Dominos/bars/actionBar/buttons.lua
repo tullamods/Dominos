@@ -17,8 +17,7 @@ ActionButtons.ShowGridReasons = {
     SPELLBOOK_SHOWN = 4,
 
     KEYBOUND_EVENT = 16,
-    SHOW_EMPTY_BUTTONS = 32,
-    SHOW_EMPTY_BUTTONS_PER_BAR = 64
+    SHOW_EMPTY_BUTTONS_PER_BAR = 32
 }
 
 -- states
@@ -46,7 +45,6 @@ function ActionButtons:Initialize()
 
     -- addon callbacks
     Addon.RegisterCallback(self, "LAYOUT_LOADED")
-    Addon.RegisterCallback(self, "SHOW_EMPTY_BUTTONS_CHANGED")
     Addon.RegisterCallback(self, "SHOW_SPELL_ANIMATIONS_CHANGED")
     Addon.RegisterCallback(self, "SHOW_SPELL_GLOWS_CHANGED")
 
@@ -169,10 +167,6 @@ function ActionButtons:LIBKEYBOUND_DISABLED()
     self:SetShowGrid(false, self.ShowGridReasons.KEYBOUND_EVENT)
 end
 
-function ActionButtons:SHOW_EMPTY_BUTTONS_CHANGED(_, show)
-    self:SetShowGrid(show, self.ShowGridReasons.SHOW_EMPTY_BUTTONS)
-end
-
 function ActionButtons:SHOW_SPELL_ANIMATIONS_CHANGED(_, show)
     self:SetShowSpellAnimations(show)
 end
@@ -184,7 +178,6 @@ end
 function ActionButtons:LAYOUT_LOADED()
     self:SetShowSpellGlows(Addon:ShowingSpellGlows())
     self:SetShowSpellAnimations(Addon:ShowingSpellAnimations())
-    self:SetShowGrid(Addon:ShowGrid(), self.ShowGridReasons.SHOW_EMPTY_BUTTONS)
 end
 
 function ActionButtons:OnActionChanged(buttonName, action)

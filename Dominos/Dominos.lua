@@ -132,6 +132,12 @@ local initializedModules = {}
 -- Load is called when the addon is first enabled, and also whenever a profile
 -- is loaded
 function Addon:Load()
+    -- migrate from showgrid to showEmptyButtons
+    if self.db.profile.showgrid ~= nil then
+        self.db.profile.showEmptyButtons = self.db.profile.showgrid
+        self.db.profile.showgrid = nil
+    end
+
     self.callbacks:Fire('LAYOUT_LOADING')
 
     local function module_load(module, id)
@@ -235,6 +241,7 @@ function Addon:GetDatabaseDefaults()
             applyButtonTheme = true,
             sticky = true,
             linkedOpacity = false,
+            showEmptyButtons = false,
             showMacroText = true,
             showBindingText = true,
             showCounts = true,
@@ -635,13 +642,15 @@ function Addon:ShowingEquippedItemBorders()
 end
 
 -- empty button display
-function Addon:SetShowGrid(enable)
-    self.db.profile.showgrid = enable and true
-    self.callbacks:Fire("SHOW_EMPTY_BUTTONS_CHANGED", self:ShowGrid())
+function Addon:SetShowEmptyButtons(enable)
+    enable = enable and true
+
+    self.db.profile.showEmptyButtons = enable and true
+    self.Frame:ForEach('SetShowEmptyButtons', enable)
 end
 
-function Addon:ShowGrid()
-    return self.db.profile.showgrid and true
+function Addon:ShowingEmptyButtons()
+    return self.db.profile.showEmptyButtons and true
 end
 
 -- macro text

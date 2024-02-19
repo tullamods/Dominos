@@ -161,10 +161,10 @@ Addon:AddOptionsPanelOptions("general", {
             type = "toggle",
             name = L.ShowEmptyButtons,
             get = function()
-                return ParentAddon:ShowGrid()
+                return ParentAddon:ShowingEmptyButtons()
             end,
             set = function(_, enable)
-                ParentAddon:SetShowGrid(enable)
+                ParentAddon:SetShowEmptyButtons(enable)
             end,
             width = 1.5,
         },
