@@ -124,7 +124,6 @@ end
 
 function PossessBar:OnAttachButton(button)
     button:Show()
-    button:UpdateHotkeys()
 
     Addon:GetModule('ButtonThemer'):Register(button, L.PossessBarDisplayName)
     Addon:GetModule('Tooltips'):Register(button)

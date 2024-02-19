@@ -34,7 +34,7 @@ end
 
 local function stanceButton_OnCreate(button)
     -- tag with the default stance button
-    button.commandName = ('SHAPESHIFTBUTTON%d'):format(button:GetID())
+    button:SetAttribute("commandName", "SHAPESHIFTBUTTON" .. button:GetID())
 
     -- turn off cooldown edges
     button.cooldown:SetDrawEdge(false)
@@ -93,8 +93,7 @@ function StanceBar:AcquireButton(index)
 end
 
 function StanceBar:OnAttachButton(button)
-    button.HotKey:SetShown(self:ShowingBindingText())
-    button:UpdateHotkeys()
+    button.HotKey:SetAlpha(self:ShowingBindingText() and 1 or 0)
     button:Show()
 
     Addon:GetModule('ButtonThemer'):Register(button, 'Class Bar')
@@ -137,14 +136,14 @@ end
 function StanceBar:SetShowBindingText(show)
     show = show and true
 
-    if self.sets.showBindingText == Addon.db.profile.showBindingText then
+    if show == Addon.db.profile.showBindingText then
         self.sets.showBindingText = nil
     else
         self.sets.showBindingText = show
     end
 
     for _, button in pairs(self.buttons) do
-        button.HotKey:SetShown(show)
+        button.HotKey:SetAlpha(show and 1 or 0)
     end
 end
 

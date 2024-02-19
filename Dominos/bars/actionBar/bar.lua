@@ -388,7 +388,7 @@ for _, prop in pairs(ActionBar.ButtonProps) do
     ActionBar[setterName] = function(self, show, ...)
         show = show and true
 
-        if self.sets[settingKey] == Addon.db.profile[settingKey] then
+        if show == Addon.db.profile[settingKey] then
             self.sets[settingKey] = nil
         else
             self.sets[settingKey] = show

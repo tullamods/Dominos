@@ -87,8 +87,10 @@ function ActionButton:SetFlyoutDirectionInsecure(direction)
     self:UpdateFlyout()
 end
 
+-- the stock UI shows and hides hotkeys based on if there's a binding or not
+-- so we simply make our hotkeys transparent when we don't want them shown
 function ActionButton:SetShowBindingText(show)
-    self.HotKey:SetShown(show)
+    self.HotKey:SetAlpha(show and 1 or 0)
 end
 
 -- we hide cooldowns when action buttons are transparent
@@ -146,8 +148,15 @@ function ActionButton:SetShowMacroText(show)
     self.Name:SetShown(show and true)
 end
 
-hooksecurefunc("ActionButton_UpdateHotkeys", Addon.BindableButton.UpdateHotkeys)
-ActionButton.UpdateFlyout = ActionButton_UpdateFlyout
+if ActionButton_UpdateHotkeys then
+    hooksecurefunc("ActionButton_UpdateHotkeys", Addon.BindableButton.UpdateHotkeys)
+end
+
+if ActionButton_UpdateFlyout then
+    ActionButton.UpdateFlyout = ActionButton_UpdateFlyout
+else
+    ActionButton.UpdateFlyout = function() end
+end
 
 -- exports
 Addon.ActionButton = ActionButton

@@ -9,23 +9,14 @@ local COMMAND_TEMPLATE = 'CLICK %s:HOTKEY'
 -- we use a virtual button (arbitrarily named HOTKEY)
 -- to enable cast on key press support
 local function getButtonBindingAction(button)
-    return button.commandName
-        or button:GetAttribute("commandName")
+    return button:GetAttribute("commandName")
         or COMMAND_TEMPLATE:format(button:GetName())
 end
 
 local function getButtonBindingActionName(button)
-    local displayName = button.displayName or button:GetAttribute("displayName")
-    if displayName then
-        return displayName
-    end
-
-    local bindingName = _G["BINDING_NAME_" .. getButtonBindingAction(button)]
-    if bindingName then
-        return bindingName
-    end
-
-    return button:GetName()
+    return button:GetAttribute("displayName")
+        or _G["BINDING_NAME_" .. getButtonBindingAction(button)]
+        or button:GetName()
 end
 
 local function getButtonBindings(button)
@@ -104,12 +95,8 @@ end)
 local BindableButton = {}
 
 -- adds quickbinding support to buttons
-function BindableButton:AddQuickBindingSupport(button, bindingAction)
+function BindableButton:AddQuickBindingSupport(button)
     button:HookScript('OnEnter', BindableButton.OnEnter)
-
-    if bindingAction then
-        button:SetAttribute('bindingAction', bindingAction)
-    end
 
     if button.UpdateHotkeys then
         hooksecurefunc(button, 'UpdateHotkeys', BindableButton.UpdateHotkeys)
@@ -121,11 +108,12 @@ function BindableButton:AddQuickBindingSupport(button, bindingAction)
 end
 
 function BindableButton:UpdateHotkeys()
-    local text = (self.GetHotkey or getButtonHotkey)(self)
-    self.HotKey:SetText(text)
-end
+    local key = (self.GetHotkey or getButtonHotkey)(self) or ''
+    local hotkey = self.HotKey
 
-BindableButton.GetHotkey = getButtonHotkey
+    hotkey:SetText(key)
+    hotkey:SetShown(key ~= '')
+end
 
 function BindableButton:OnEnter()
     if not KeyBound:IsShown() then

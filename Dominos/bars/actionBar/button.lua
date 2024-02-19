@@ -104,8 +104,6 @@ function ActionButton:OnCreate(id)
     -- ...and the rest
     Addon.BindableButton:AddQuickBindingSupport(self)
     Addon.SpellFlyout:Register(self)
-
-    self:UpdateHotkeys()
 end
 
 function ActionButton:UpdateIcon()
@@ -144,8 +142,10 @@ function ActionButton:SetFlyoutDirectionInsecure(direction)
     self:UpdateFlyout()
 end
 
+-- the stock UI shows and hides hotkeys based on if there's a binding or not
+-- so we simply make our hotkeys transparent when we don't want them shown
 function ActionButton:SetShowBindingText(show)
-    self.HotKey:SetShown(show)
+    self.HotKey:SetAlpha(show and 1 or 0)
 end
 
 -- we hide cooldowns when action buttons are transparent

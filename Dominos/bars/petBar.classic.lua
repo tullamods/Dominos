@@ -17,7 +17,7 @@ local PetButtons = setmetatable({}, {
         local button =  _G['PetActionButton' .. id]
 
         if button then
-            button.commandName = ("BONUSACTIONBUTTON%d"):format(id)
+            button:SetAttribute("commandName", "BONUSACTIONBUTTON" .. id)
             Addon.BindableButton:AddQuickBindingSupport(button)
 
             self[id] = button
@@ -82,8 +82,7 @@ function PetBar:AcquireButton(index)
 end
 
 function PetBar:OnAttachButton(button)
-    button.HotKey:SetShown(self:ShowingBindingText())
-    button:UpdateHotkeys()
+    button.HotKey:SetAlpha(self:ShowingBindingText() and 1 or 0)
     button:Show()
 
     Addon:GetModule('ButtonThemer'):Register(button, 'Pet Bar')
@@ -143,14 +142,14 @@ end
 function PetBar:SetShowBindingText(show)
     show = show and true
 
-    if self.sets.showBindingText == Addon.db.profile.showBindingText then
+    if show == Addon.db.profile.showBindingText then
         self.sets.showBindingText = nil
     else
         self.sets.showBindingText = show
     end
 
     for _, button in pairs(self.buttons) do
-        button.HotKey:SetShown(show)
+        button.HotKey:SetAlpha(show and 1 or 0)
     end
 end
 
