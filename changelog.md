@@ -4,6 +4,7 @@
 
 * Fix hotkey display issues
 * Fixed some inconsistencies when toggling the new per bar options
+* Renamed the `showgrid` profile value to `showEmptyButtons` to maintain consistency with per bar settings
 
 ## 10.2.20
 
