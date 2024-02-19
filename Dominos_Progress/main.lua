@@ -153,13 +153,38 @@ function ProgressBarModule:UpdateAllBars()
 end
 
 function ProgressBarModule:AddOptionsPanel()
-	Dominos.Options:AddOptionsPanel(function()
-		local options = {
-			key = "progress",
+	local colors = { }
+	for i, key in pairs{ "xp", "xp_bonus", "honor", "artifact", "azerite", "gold", "gold_realm" } do
+		colors[key] = {
+			type = "color",
+			name = L["Color_" .. key],
+			order = i,
+			hasAlpha = true,
 
-			name = L.Progress,
+			get = function()
+				return Addon.Config:GetColor(key)
+			end,
 
-			check(L.OneBarMode) {
+			set = function(_, ...)
+				Addon.Config:SetColor(key, ...)
+
+				for _, bar in pairs(self.bars) do
+					bar:Init()
+				end
+			end
+		}
+	end
+
+	Dominos.Options:AddOptionsPanelOptions("progress", {
+		type = "group",
+		name = L.Progress,
+		args = {
+			oneBarMode = {
+				type = "toggle",
+				name = L.OneBarMode,
+				order = 1,
+				width = "double",
+
 				get = function()
 					return Addon.Config:OneBarMode()
 				end,
@@ -171,7 +196,12 @@ function ProgressBarModule:AddOptionsPanel()
 				end
 			},
 
-			check(L.SkipInactiveModes) {
+			skipInactiveModes = {
+				type = "toggle",
+				name = L.SkipInactiveModes,
+				order = 2,
+				width = "double",
+
 				get = function()
 					return Addon.Config:SkipInactiveModes()
 				end,
@@ -181,43 +211,38 @@ function ProgressBarModule:AddOptionsPanel()
 				end
 			},
 
-			range(L.GoldGoal) {
+			colors = {
+				type = "group",
+				name = Dominos.Options:GetLocale().Colors,
+				order = 3,
+				width = "full",
+
+				inline = true,
+				args = colors
+			},
+
+			goldGoal = {
+				type = "range",
+				name = L.GoldGoal,
+				order = 4,
+				width = "full",
+
 				min = 0,
 				max = 10000000,
 				softMin = 0,
 				softMax = 100000,
 				step = 100,
 				bigStep = 1000,
+
 				get = function()
 					return Addon.Config:GoldGoal()
 				end,
+
 				set = function(_, value)
 					Addon.Config:SetGoldGoal(value)
 					self:UpdateAllBars()
 				end,
 			},
-
-			h(COLORS)
 		}
-
-		for _, key in ipairs{ "xp", "xp_bonus", "honor", "artifact", "azerite", "gold", "gold_realm" } do
-			tinsert(options, color(L["Color_" .. key]) {
-				hasAlpha = true,
-
-				get = function()
-					return Addon.Config:GetColor(key)
-				end,
-
-				set = function(_, ...)
-					Addon.Config:SetColor(key, ...)
-
-					for _, bar in pairs(self.bars) do
-						bar:Init()
-					end
-				end
-			})
-		end
-
-		return options
-	end)
+	})
 end
