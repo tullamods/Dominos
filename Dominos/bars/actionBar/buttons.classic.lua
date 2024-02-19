@@ -83,6 +83,14 @@ function ActionButtons:TrySetAttribute(key, value)
 end
 
 --------------------------------------------------------------------------------
+-- Configuration
+--------------------------------------------------------------------------------
+
+function ActionButtons:SetShowGrid(show, reason, force)
+    self:ForAll("SetShowGridInsecure", show, reason, force)
+end
+
+--------------------------------------------------------------------------------
 -- Action Button Constrution
 --------------------------------------------------------------------------------
 
