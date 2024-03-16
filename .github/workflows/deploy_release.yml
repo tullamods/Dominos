@@ -30,7 +30,9 @@ jobs:
 
       # we first have to clone the AddOn project, which is simple enough, and is a required step
       - name: Clone project
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       # retail
       - name: Package and release
