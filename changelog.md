@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 10.2.22
+
+* (Classic) Fix latency tooltip
+
 ## 10.2.21
 
 * Fix hotkey display issues

@@ -50,11 +50,17 @@ function Launcher:CreateDataBrokerObject()
                     GameTooltip_AddInstructionLine(tooltip, L.ShowOptionsTip)
                 end
 
-                if not Addon:IsBuild('retail') then
-                    GameTooltip_AddBlankLinesToTooltip(tooltip, 1)
-
+                if Addon:IsBuild('wrath') then
                     local _, _, latencyHome, latencyWorld = GetNetStats()
+
+                    GameTooltip_AddBlankLinesToTooltip(tooltip, 1)
                     GameTooltip_AddNormalLine(tooltip, MAINMENUBAR_LATENCY_LABEL:format(latencyHome, latencyWorld))
+                elseif Addon:IsBuild('classic') then
+                    local _,_, latencyHome, latencyWorld = GetNetStats()
+                    local latency = math.max(latencyHome, latencyWorld)
+
+                    GameTooltip_AddBlankLinesToTooltip(tooltip, 1)
+                    GameTooltip_AddNormalLine(tooltip, ("%s %d%s"):format(MAINMENUBAR_LATENCY_LABEL, latency, MILLISECONDS_ABBR))
                 end
             end
         }
