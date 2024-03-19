@@ -1,5 +1,12 @@
 # Dominos Changelog
 
+## 10.2.23
+
+* Updated TOC file versions for 10.2.6
+* (Retail) Temporarily disabled Dominos from handling the menu, bags and queue
+  status bars to work around issues introduced by the new patch. These can still
+  be modified using standard Edit Mode.
+
 ## 10.2.22
 
 * (Classic) Fix latency tooltip

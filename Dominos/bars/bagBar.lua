@@ -3,6 +3,8 @@
 --------------------------------------------------------------------------------
 
 local AddonName, Addon = ...
+if Addon:IsBuild("retail") then return end
+
 local L = LibStub("AceLocale-3.0"):GetLocale(AddonName)
 
 -- register buttons for use later

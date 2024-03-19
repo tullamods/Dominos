@@ -1,8 +1,5 @@
 local _, Addon = ...
-
-if not Addon:IsBuild('retail') then
-    return
-end
+if not Addon:IsBuild('retail') then return end
 
 -- move a frame to the hidden shadow UI parent
 local function apply(func, ...)
@@ -47,7 +44,7 @@ end
 apply(banish,
     "MainMenuBar",
     "MainMenuBarVehicleLeaveButton",
-    "MicroButtonAndBagsBar",
+    -- "MicroButtonAndBagsBar",
     "MultiBar5",
     "MultiBar6",
     "MultiBar7",

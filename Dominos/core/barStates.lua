@@ -183,7 +183,7 @@ elseif class == 'ROGUE' then
 
     addState('class', 'stealth', '[bonusbar:1]', GetSpellInfo(1784))
 elseif class == 'WARLOCK' then
-    if Addon:IsBuild('wrath') then
+    if Addon:IsBuild('classic', 'wrath') then
         addState('class', 'metamorphosis', '[form:1]', GetSpellInfo(47241))
     end
 elseif class == 'WARRIOR' then
