@@ -42,7 +42,7 @@ bars\menuBar.lua
 bars\petBar.lua
 bars\petBar.classic.lua
 bars\possessBar.lua
-# bars\queueStatusBar.lua
+bars\queueStatusBar.lua
 bars\stanceBar.lua
 bars\stanceBar.classic.lua
 bars\talkingHeadBar.lua

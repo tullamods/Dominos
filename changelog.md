@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 10.2.24
+
+* (Retail) Restored the menu, bags and queue status bars
+
 ## 10.2.23
 
 * Updated TOC file versions for 10.2.6

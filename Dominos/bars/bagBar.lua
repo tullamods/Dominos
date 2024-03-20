@@ -3,8 +3,6 @@
 --------------------------------------------------------------------------------
 
 local AddonName, Addon = ...
-if Addon:IsBuild("retail") then return end
-
 local L = LibStub("AceLocale-3.0"):GetLocale(AddonName)
 
 -- register buttons for use later
@@ -184,6 +182,10 @@ function BagBarModule:Unload()
 end
 
 function BagBarModule:OnFirstLoad()
+    if BagsBar then
+        BagsBar:SetParent(Addon.ShadowUIParent)
+    end
+
     -- use our own handlign for the blizzard bag bar
     if MainMenuBarManager then
         EventRegistry:UnregisterCallback("MainMenuBarManager.OnExpandChanged", MainMenuBarManager)

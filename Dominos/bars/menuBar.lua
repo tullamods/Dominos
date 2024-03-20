@@ -6,25 +6,27 @@
 --------------------------------------------------------------------------------
 
 local AddonName, Addon = ...
-if Addon:IsBuild("retail") then return end
-
 local L = LibStub('AceLocale-3.0'):GetLocale(AddonName)
 
 local MicroButtons = {}
 local PetMicroButtonFrame = PetBattleFrame and PetBattleFrame.BottomFrame.MicroButtonFrame
 
 if MicroMenu then
-    local function registerButtons(...)
+    local function registerButtons(t, ...)
         for i = 1, select('#', ...) do
             local button = select(i, ...)
 
+            -- always reparent the button
+            button:SetParent(Addon.ShadowUIParent)
+
+            -- ...but only display it on our bar if it was already enabled
             if button:IsShown() then
-                MicroButtons[#MicroButtons + 1] = button
+                t[#t + 1] = button
             end
         end
     end
 
-    registerButtons(MicroMenu:GetChildren())
+    registerButtons(MicroButtons, MicroMenu:GetChildren())
 else
     local MICRO_BUTTONS = _G.MICRO_BUTTONS or {
         "CharacterMicroButton",
@@ -335,14 +337,31 @@ function MenuBarModule:OnFirstLoad()
 
     hooksecurefunc("UpdateMicroButtons", layout)
 
+    -- ensure that the micro menu remains banished
+    -- otherwise, it'll try laying itself out again and trigger an error
+    if MicroMenu then
+        MicroMenu:SetParent(Addon.ShadowUIParent)
+
+        hooksecurefunc(MicroMenu, "SetParent", function(menu, parent)
+            if parent == MicroMenuContainer then
+                menu:SetParent(Addon.ShadowUIParent)
+            end
+        end)
+    end
+
+    -- banish the micro menu container
+    if MicroMenuContainer then
+        MicroMenuContainer:SetParent(Addon.ShadowUIParent)
+    end
+
     if OverrideActionBar then
-        local f = CreateFrame('Frame', nil, OverrideActionBar)
+        local f = CreateFrame("Frame", nil, OverrideActionBar)
         f:SetScript("OnShow", layout)
         f:SetScript("OnHide", layout)
     end
 
     if PetMicroButtonFrame then
-        local f = CreateFrame('Frame', nil, PetMicroButtonFrame)
+        local f = CreateFrame("Frame", nil, PetMicroButtonFrame)
         f:SetScript("OnShow", layout)
         f:SetScript("OnHide", layout)
     end
