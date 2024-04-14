@@ -90,7 +90,11 @@ end
 -- the stock UI shows and hides hotkeys based on if there's a binding or not
 -- so we simply make our hotkeys transparent when we don't want them shown
 function ActionButton:SetShowBindingText(show)
-    self.HotKey:SetAlpha(show and 1 or 0)
+    local parent = (show and self) or Addon.ShadowUIParent
+
+    if self.HotKey:GetParent() ~= parent then
+        self.HotKey:SetParent(parent)
+    end
 end
 
 -- we hide cooldowns when action buttons are transparent
