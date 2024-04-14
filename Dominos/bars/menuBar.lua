@@ -347,6 +347,13 @@ function MenuBarModule:OnFirstLoad()
                 menu:SetParent(Addon.ShadowUIParent)
             end
         end)
+
+        hooksecurefunc(MicroMenu, "UpdateHelpTicketButtonAnchor", function()
+            if HelpOpenWebTicketButton and HelpOpenWebTicketButton:IsShown() then
+                HelpOpenWebTicketButton:ClearAllPoints()
+                HelpOpenWebTicketButton:SetPoint("CENTER", CharacterMicroButton, "CENTER", 0, 20)
+            end
+        end)
     end
 
     -- banish the micro menu container
