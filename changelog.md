@@ -1,5 +1,12 @@
 # Dominos Changelog
 
+## 10.2.25
+
+* Updated TOCs for 1.14.2
+* Action Button hotkeys are now reparented when hidden, instead of via an
+  opacity change. This should be more compatible with other addons.
+* The GM Ticket Status button should now be anchored to the menu bar
+
 ## 10.2.24
 
 * (Retail) Restored the menu, bags and queue status bars
