@@ -349,7 +349,7 @@ function MenuBarModule:OnFirstLoad()
         end)
 
         hooksecurefunc(MicroMenu, "UpdateHelpTicketButtonAnchor", function()
-            if HelpOpenWebTicketButton and HelpOpenWebTicketButton:IsShown() then
+            if HelpOpenWebTicketButton then
                 HelpOpenWebTicketButton:ClearAllPoints()
                 HelpOpenWebTicketButton:SetPoint("CENTER", CharacterMicroButton, "CENTER", 0, 20)
             end
