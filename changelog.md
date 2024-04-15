@@ -1,5 +1,10 @@
 # Dominos Changelog
 
+## 10.2.26
+
+* Fix issues causing action bars 11-14 to not be bindable in classic versions
+* Ensure that GM Ticket Status button is anchored upon loading the UI
+
 ## 10.2.25
 
 * Updated TOCs for 1.14.2
