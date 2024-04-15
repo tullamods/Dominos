@@ -348,12 +348,15 @@ function MenuBarModule:OnFirstLoad()
             end
         end)
 
-        hooksecurefunc(MicroMenu, "UpdateHelpTicketButtonAnchor", function()
+        local function repositionHelpdeskTicketButton()
             if HelpOpenWebTicketButton then
                 HelpOpenWebTicketButton:ClearAllPoints()
                 HelpOpenWebTicketButton:SetPoint("CENTER", CharacterMicroButton, "CENTER", 0, 20)
             end
-        end)
+        end
+
+        hooksecurefunc(MicroMenu, "UpdateHelpTicketButtonAnchor", repositionHelpdeskTicketButton)
+        repositionHelpdeskTicketButton()
     end
 
     -- banish the micro menu container
