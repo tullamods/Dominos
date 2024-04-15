@@ -4,7 +4,7 @@
 
 	<!-- action button bindings -->
 	<!-- 1 -->
-    <!-- <Binding name="CLICK DominosActionButton1:HOTKEY" category="BINDING_HEADER_Dominos" header="DominosActionBar1" />
+    <!-- <Binding name="CLICK DominosActionButton1:HOTKEY" category="BINDING_HEADER_Dominos" header="Dominos Action Bar 1" />
 	<Binding name="CLICK DominosActionButton2:HOTKEY" category="BINDING_HEADER_Dominos" />
 	<Binding name="CLICK DominosActionButton3:HOTKEY" category="BINDING_HEADER_Dominos" />
 	<Binding name="CLICK DominosActionButton4:HOTKEY" category="BINDING_HEADER_Dominos" />
@@ -18,7 +18,7 @@
 	<Binding name="CLICK DominosActionButton12:HOTKEY" category="BINDING_HEADER_Dominos" /> -->
 
 	<!-- 2 -->
-	<Binding name="CLICK DominosActionButton13:HOTKEY" category="BINDING_HEADER_Dominos" header="DominosActionBar2" />
+	<Binding name="CLICK DominosActionButton13:HOTKEY" category="BINDING_HEADER_Dominos" header="Dominos Action Bar 2" />
 	<Binding name="CLICK DominosActionButton14:HOTKEY" category="BINDING_HEADER_Dominos" />
 	<Binding name="CLICK DominosActionButton15:HOTKEY" category="BINDING_HEADER_Dominos" />
 	<Binding name="CLICK DominosActionButton16:HOTKEY" category="BINDING_HEADER_Dominos" />
@@ -32,7 +32,7 @@
 	<Binding name="CLICK DominosActionButton24:HOTKEY" category="BINDING_HEADER_Dominos" />
 
 	<!-- 3 -->
-	<!-- <Binding name="CLICK DominosActionButton25:HOTKEY" category="BINDING_HEADER_Dominos" header="DominosActionBar3" />
+	<!-- <Binding name="CLICK DominosActionButton25:HOTKEY" category="BINDING_HEADER_Dominos" header="Dominos Action Bar 3" />
 	<Binding name="CLICK DominosActionButton26:HOTKEY" category="BINDING_HEADER_Dominos" />
 	<Binding name="CLICK DominosActionButton27:HOTKEY" category="BINDING_HEADER_Dominos" />
 	<Binding name="CLICK DominosActionButton28:HOTKEY" category="BINDING_HEADER_Dominos" />
@@ -46,7 +46,7 @@
 	<Binding name="CLICK DominosActionButton36:HOTKEY" category="BINDING_HEADER_Dominos" /> -->
 
 	<!-- 4 -->
-	<!-- <Binding name="CLICK DominosActionButton37:HOTKEY" category="BINDING_HEADER_Dominos" header="DominosActionBar4" />
+	<!-- <Binding name="CLICK DominosActionButton37:HOTKEY" category="BINDING_HEADER_Dominos" header="Dominos Action Bar 4" />
 	<Binding name="CLICK DominosActionButton38:HOTKEY" category="BINDING_HEADER_Dominos" />
 	<Binding name="CLICK DominosActionButton39:HOTKEY" category="BINDING_HEADER_Dominos" />
 	<Binding name="CLICK DominosActionButton40:HOTKEY" category="BINDING_HEADER_Dominos" />
@@ -60,7 +60,7 @@
 	<Binding name="CLICK DominosActionButton48:HOTKEY" category="BINDING_HEADER_Dominos" /> -->
 
 	<!-- 5 -->
-	<!-- <Binding name="CLICK DominosActionButton49:HOTKEY" category="BINDING_HEADER_Dominos" header="DominosActionBar5" />
+	<!-- <Binding name="CLICK DominosActionButton49:HOTKEY" category="BINDING_HEADER_Dominos" header="Dominos Action Bar 5" />
 	<Binding name="CLICK DominosActionButton50:HOTKEY" category="BINDING_HEADER_Dominos" />
 	<Binding name="CLICK DominosActionButton51:HOTKEY" category="BINDING_HEADER_Dominos" />
 	<Binding name="CLICK DominosActionButton52:HOTKEY" category="BINDING_HEADER_Dominos" />
@@ -74,7 +74,7 @@
 	<Binding name="CLICK DominosActionButton60:HOTKEY" category="BINDING_HEADER_Dominos" /> -->
 
 	<!-- 6 -->
-	<!-- <Binding name="CLICK DominosActionButton61:HOTKEY" category="BINDING_HEADER_Dominos" header="DominosActionBar6" />
+	<!-- <Binding name="CLICK DominosActionButton61:HOTKEY" category="BINDING_HEADER_Dominos" header="Dominos Action Bar 6" />
 	<Binding name="CLICK DominosActionButton62:HOTKEY" category="BINDING_HEADER_Dominos" />
 	<Binding name="CLICK DominosActionButton63:HOTKEY" category="BINDING_HEADER_Dominos" />
 	<Binding name="CLICK DominosActionButton64:HOTKEY" category="BINDING_HEADER_Dominos" />
@@ -88,7 +88,7 @@
 	<Binding name="CLICK DominosActionButton72:HOTKEY" category="BINDING_HEADER_Dominos" /> -->
 
 	<!-- 7 -->
-	<Binding name="CLICK DominosActionButton73:HOTKEY" category="BINDING_HEADER_Dominos" header="DominosActionBar7" />
+	<Binding name="CLICK DominosActionButton73:HOTKEY" category="BINDING_HEADER_Dominos" header="Dominos Action Bar 7" />
 	<Binding name="CLICK DominosActionButton74:HOTKEY" category="BINDING_HEADER_Dominos" />
 	<Binding name="CLICK DominosActionButton75:HOTKEY" category="BINDING_HEADER_Dominos" />
 	<Binding name="CLICK DominosActionButton76:HOTKEY" category="BINDING_HEADER_Dominos" />
@@ -102,7 +102,7 @@
 	<Binding name="CLICK DominosActionButton84:HOTKEY" category="BINDING_HEADER_Dominos" />
 
 	<!-- 8 -->
-	<Binding name="CLICK DominosActionButton85:HOTKEY" category="BINDING_HEADER_Dominos" header="DominosActionBar8" />
+	<Binding name="CLICK DominosActionButton85:HOTKEY" category="BINDING_HEADER_Dominos" header="Dominos Action Bar 8" />
 	<Binding name="CLICK DominosActionButton86:HOTKEY" category="BINDING_HEADER_Dominos" />
 	<Binding name="CLICK DominosActionButton87:HOTKEY" category="BINDING_HEADER_Dominos" />
 	<Binding name="CLICK DominosActionButton88:HOTKEY" category="BINDING_HEADER_Dominos" />
@@ -116,7 +116,7 @@
 	<Binding name="CLICK DominosActionButton96:HOTKEY" category="BINDING_HEADER_Dominos" />
 
 	<!-- 9 -->
-	<Binding name="CLICK DominosActionButton97:HOTKEY" category="BINDING_HEADER_Dominos" header="DominosActionBar9" />
+	<Binding name="CLICK DominosActionButton97:HOTKEY" category="BINDING_HEADER_Dominos" header="Dominos Action Bar 9" />
 	<Binding name="CLICK DominosActionButton98:HOTKEY" category="BINDING_HEADER_Dominos" />
 	<Binding name="CLICK DominosActionButton99:HOTKEY" category="BINDING_HEADER_Dominos" />
 	<Binding name="CLICK DominosActionButton100:HOTKEY" category="BINDING_HEADER_Dominos" />
@@ -130,7 +130,7 @@
 	<Binding name="CLICK DominosActionButton108:HOTKEY" category="BINDING_HEADER_Dominos" />
 
 	<!-- 10 -->
-	<Binding name="CLICK DominosActionButton109:HOTKEY" category="BINDING_HEADER_Dominos" header="DominosActionBar10" />
+	<Binding name="CLICK DominosActionButton109:HOTKEY" category="BINDING_HEADER_Dominos" header="Dominos Action Bar 10" />
 	<Binding name="CLICK DominosActionButton110:HOTKEY" category="BINDING_HEADER_Dominos" />
 	<Binding name="CLICK DominosActionButton111:HOTKEY" category="BINDING_HEADER_Dominos" />
 	<Binding name="CLICK DominosActionButton112:HOTKEY" category="BINDING_HEADER_Dominos" />
@@ -144,7 +144,7 @@
 	<Binding name="CLICK DominosActionButton120:HOTKEY" category="BINDING_HEADER_Dominos" />
 
 	<!-- 11 -->
-	<!-- <Binding name="CLICK DominosActionButton121:HOTKEY" category="BINDING_HEADER_Dominos" header="DominosActionBar11" />
+	<Binding name="CLICK DominosActionButton121:HOTKEY" category="BINDING_HEADER_Dominos" header="Dominos Action Bar 11" />
 	<Binding name="CLICK DominosActionButton122:HOTKEY" category="BINDING_HEADER_Dominos" />
 	<Binding name="CLICK DominosActionButton123:HOTKEY" category="BINDING_HEADER_Dominos" />
 	<Binding name="CLICK DominosActionButton124:HOTKEY" category="BINDING_HEADER_Dominos" />
@@ -155,10 +155,10 @@
 	<Binding name="CLICK DominosActionButton129:HOTKEY" category="BINDING_HEADER_Dominos" />
 	<Binding name="CLICK DominosActionButton130:HOTKEY" category="BINDING_HEADER_Dominos" />
 	<Binding name="CLICK DominosActionButton131:HOTKEY" category="BINDING_HEADER_Dominos" />
-	<Binding name="CLICK DominosActionButton132:HOTKEY" category="BINDING_HEADER_Dominos" /> -->
+	<Binding name="CLICK DominosActionButton132:HOTKEY" category="BINDING_HEADER_Dominos" />
 
 	<!-- 12 -->
-	<!-- <Binding name="CLICK DominosActionButton133:HOTKEY" category="BINDING_HEADER_Dominos" header="DominosActionBar12" />
+	<Binding name="CLICK DominosActionButton133:HOTKEY" category="BINDING_HEADER_Dominos" header="Dominos Action Bar 12" />
 	<Binding name="CLICK DominosActionButton134:HOTKEY" category="BINDING_HEADER_Dominos" />
 	<Binding name="CLICK DominosActionButton135:HOTKEY" category="BINDING_HEADER_Dominos" />
 	<Binding name="CLICK DominosActionButton136:HOTKEY" category="BINDING_HEADER_Dominos" />
@@ -169,10 +169,10 @@
 	<Binding name="CLICK DominosActionButton141:HOTKEY" category="BINDING_HEADER_Dominos" />
 	<Binding name="CLICK DominosActionButton142:HOTKEY" category="BINDING_HEADER_Dominos" />
 	<Binding name="CLICK DominosActionButton143:HOTKEY" category="BINDING_HEADER_Dominos" />
-	<Binding name="CLICK DominosActionButton144:HOTKEY" category="BINDING_HEADER_Dominos" /> -->
+	<Binding name="CLICK DominosActionButton144:HOTKEY" category="BINDING_HEADER_Dominos" />
 
 	<!-- 13 -->
-	<!-- <Binding name="CLICK DominosActionButton145:HOTKEY" category="BINDING_HEADER_Dominos" header="DominosActionBar13" />
+	<Binding name="CLICK DominosActionButton145:HOTKEY" category="BINDING_HEADER_Dominos" header="Dominos Action Bar 13" />
 	<Binding name="CLICK DominosActionButton146:HOTKEY" category="BINDING_HEADER_Dominos" />
 	<Binding name="CLICK DominosActionButton147:HOTKEY" category="BINDING_HEADER_Dominos" />
 	<Binding name="CLICK DominosActionButton148:HOTKEY" category="BINDING_HEADER_Dominos" />
@@ -183,10 +183,10 @@
 	<Binding name="CLICK DominosActionButton153:HOTKEY" category="BINDING_HEADER_Dominos" />
 	<Binding name="CLICK DominosActionButton154:HOTKEY" category="BINDING_HEADER_Dominos" />
 	<Binding name="CLICK DominosActionButton155:HOTKEY" category="BINDING_HEADER_Dominos" />
-	<Binding name="CLICK DominosActionButton156:HOTKEY" category="BINDING_HEADER_Dominos" /> -->
+	<Binding name="CLICK DominosActionButton156:HOTKEY" category="BINDING_HEADER_Dominos" />
 
 	<!-- 14 -->
-	<!-- <Binding name="CLICK DominosActionButton157:HOTKEY" category="BINDING_HEADER_Dominos" header="DominosActionBar14" />
+	<Binding name="CLICK DominosActionButton157:HOTKEY" category="BINDING_HEADER_Dominos" header="Dominos Action Bar 14" />
 	<Binding name="CLICK DominosActionButton158:HOTKEY" category="BINDING_HEADER_Dominos" />
 	<Binding name="CLICK DominosActionButton159:HOTKEY" category="BINDING_HEADER_Dominos" />
 	<Binding name="CLICK DominosActionButton160:HOTKEY" category="BINDING_HEADER_Dominos" />
@@ -197,5 +197,5 @@
 	<Binding name="CLICK DominosActionButton165:HOTKEY" category="BINDING_HEADER_Dominos" />
 	<Binding name="CLICK DominosActionButton166:HOTKEY" category="BINDING_HEADER_Dominos" />
 	<Binding name="CLICK DominosActionButton167:HOTKEY" category="BINDING_HEADER_Dominos" />
-	<Binding name="CLICK DominosActionButton168:HOTKEY" category="BINDING_HEADER_Dominos" /> -->
+	<Binding name="CLICK DominosActionButton168:HOTKEY" category="BINDING_HEADER_Dominos" />
 </Bindings>
