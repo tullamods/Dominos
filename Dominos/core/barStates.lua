@@ -180,13 +180,8 @@ elseif class == 'PRIEST' then
         addState('class', 'shadowform', '[form:1]', GetSpellInfo(15473))
     end
 elseif class == 'ROGUE' then
-    -- cata vanish
-    if Addon:IsBuild("cata") then
-        addState('class', 'vanish', '[bonusbar:1,form:3]', GetSpellInfo(1856))
-    end
-
     -- classic shadowdance
-    if Addon:IsBuild('cata, wrath') then
+    if Addon:IsBuild('cata', 'wrath') then
         addState('class', 'shadowdance', '[bonusbar:2]', GetSpellInfo(51713))
     -- retail shadowdance
     elseif GetSpellInfo(185313) then
