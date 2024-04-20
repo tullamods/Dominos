@@ -141,6 +141,13 @@ elseif class == 'DEATHKNIGHT' then
     end
 elseif class == 'EVOKER' then
     addState('class', 'soar', '[bonusbar:1]', GetSpellInfo(369536))
+elseif class == 'HUNTER' then
+    if Addon:IsBuild('cata') then
+        addFormState('class', 'hawk', 13165)
+        addFormState('class', 'cheetah', 5118)
+        addFormState('class', 'pack', 13159)
+        addFormState('class', 'wild', 20043)
+    end
 elseif class == 'PALADIN' then
     if Addon:IsBuild('retail') then
         addFormState('class', 'concentration', 317920)

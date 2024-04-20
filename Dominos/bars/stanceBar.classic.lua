@@ -13,7 +13,7 @@ local L = LibStub('AceLocale-3.0'):GetLocale(AddonName)
 if not ({
     DEATHKNIGHT = Addon:IsBuild('cata', 'wrath'),
     DRUID = true,
-    HUNTER = false,
+    HUNTER = Addon:IsBuild('cata'),
     MAGE = false,
     PALADIN = true,
     PRIEST = Addon:IsBuild('cata', 'wrath'),
