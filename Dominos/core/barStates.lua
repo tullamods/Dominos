@@ -118,14 +118,14 @@ if class == 'DRUID' then
     else
         addFormState('class', 'moonkin', 24858)
 
-        if Addon:IsBuild('wrath', 'bcc') then
+        if Addon:IsBuild('cata', 'wrath', 'bcc') then
             addFormState('class', 'tree', 33891)
         end
 
         addFormState('class', 'travel', 783)
         addFormState('class', 'aquatic', 1066)
 
-        if Addon:IsBuild('wrath', 'bcc') then
+        if Addon:IsBuild('cata', 'wrath', 'bcc') then
             -- flight form
             addFormState('class', 'flight', 33943)
 
@@ -134,7 +134,7 @@ if class == 'DRUID' then
         end
     end
 elseif class == 'DEATHKNIGHT' then
-    if Addon:IsBuild('wrath') then
+    if Addon:IsBuild('cata', 'wrath') then
         addFormState('class', 'blood', 48266)
         addFormState('class', 'frost', 48263)
         addFormState('class', 'unholy', 48265)
@@ -173,17 +173,22 @@ elseif class == 'PRIEST' then
         addState('class', 'shadowform', '[form:1]', GetSpellInfo(15473))
     end
 elseif class == 'ROGUE' then
-    -- wrath shadowdance
-    if Addon:IsBuild('wrath') then
+    -- cata vanish
+    if Addon:IsBuild("cata") then
+        addState('class', 'vanish', '[bonusbar:1,form:3]', GetSpellInfo(1856))
+    end
+
+    -- classic shadowdance
+    if Addon:IsBuild('cata, wrath') then
         addState('class', 'shadowdance', '[bonusbar:2]', GetSpellInfo(51713))
-    -- retail
+    -- retail shadowdance
     elseif GetSpellInfo(185313) then
         addState('class', 'shadowdance', '[bonusbar:1,form:2]', GetSpellInfo(185313))
     end
 
     addState('class', 'stealth', '[bonusbar:1]', GetSpellInfo(1784))
 elseif class == 'WARLOCK' then
-    if Addon:IsBuild('classic', 'wrath') then
+    if not Addon:IsBuild('retail') then
         addState('class', 'metamorphosis', '[form:1]', GetSpellInfo(47241))
     end
 elseif class == 'WARRIOR' then
@@ -191,12 +196,14 @@ elseif class == 'WARRIOR' then
         addFormState('class', 'battle', 386164)
         addFormState('class', 'defensive', 386208)
         addFormState('class', 'berserker', 386196)
-
-        addState('class', 'shield', getEquippedConditional(Enum.ItemClass.Armor, Enum.ItemArmorSubclass.Shield))
     else
         addState('class', 'battle', '[bonusbar:1]', GetSpellInfo(2457))
         addState('class', 'defensive', '[bonusbar:2]', GetSpellInfo(71))
         addState('class', 'berserker', '[bonusbar:3]', GetSpellInfo(2458))
+    end
+
+    if Addon:IsBuild("retail", "cata") then
+        addState('class', 'shield', getEquippedConditional(Enum.ItemClass.Armor, Enum.ItemArmorSubclass.Shield))
     end
 end
 
