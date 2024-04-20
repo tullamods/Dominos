@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 10.2.27-beta1
+
+* (Cata) Add preliminary support for Cataclysm Classic
+
 ## 10.2.26
 
 * Fix issues causing action bars 11-14 to not be bindable in classic versions
