@@ -6,7 +6,7 @@ if not MultiCastActionBarFrame then return end
 --------------------------------------------------------------------------------
 
 local AddonName, Addon = ...
-if not (UnitClassBase('player') == 'SHAMAN' and Addon:IsBuild('wrath')) then
+if not (UnitClassBase('player') == 'SHAMAN' and Addon:IsBuild('cata', 'wrath')) then
     return
 end
 
