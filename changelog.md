@@ -1,8 +1,8 @@
 # Dominos Changelog
 
-## 10.2.27-beta1
+## 10.2.27
 
-* (Cata) Add preliminary support for Cataclysm Classic
+* Add support for Cataclysm Classic
 
 ## 10.2.26
 
