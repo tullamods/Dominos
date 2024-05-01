@@ -249,7 +249,7 @@ end
 function Addon:GetDatabaseDefaults()
     return {
         profile = {
-            possessBar = self:IsBuild('retail', 'wrath') and 1 or "pet",
+            possessBar = self:IsBuild("classic") and "pet" or 1,
             -- if true, applies a default dominos skin to buttons
             -- when masque is not enabled
             applyButtonTheme = true,
@@ -264,7 +264,7 @@ function Addon:GetDatabaseDefaults()
             showTooltipsCombat = true,
             showSpellGlows = true,
             showSpellAnimations = true,
-            useOverrideUI = self:IsBuild('retail', 'wrath'),
+            useOverrideUI = not self:IsBuild('classic'),
 
             ab = {
                 count = self.ACTION_BUTTON_COUNT / NUM_ACTIONBAR_BUTTONS,
@@ -769,7 +769,7 @@ function Addon:SetUseOverrideUI(enable)
 end
 
 function Addon:UsingOverrideUI()
-    return self.db.profile.useOverrideUI and self:IsBuild('retail', 'wrath')
+    return self.db.profile.useOverrideUI and not self:IsBuild('classic')
 end
 
 --------------------------------------------------------------------------------

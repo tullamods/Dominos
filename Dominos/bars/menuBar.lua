@@ -52,20 +52,21 @@ else
 end
 
 local MICRO_BUTTON_NAMES = {
-    ['CharacterMicroButton'] = CHARACTER_BUTTON,
-    ['SpellbookMicroButton'] = SPELLBOOK_ABILITIES_BUTTON,
-    ['TalentMicroButton'] = TALENTS_BUTTON,
     ['AchievementMicroButton'] = ACHIEVEMENT_BUTTON,
-    ['QuestLogMicroButton'] = QUESTLOG_BUTTON,
+    ['CharacterMicroButton'] = CHARACTER_BUTTON,
+    ['CollectionsMicroButton'] = COLLECTIONS,
+    ['EJMicroButton'] = ENCOUNTER_JOURNAL,
     ['GuildMicroButton'] = LOOKINGFORGUILD,
+    ['HelpMicroButton'] = HELP_BUTTON,
     ['LFDMicroButton'] = DUNGEONS_BUTTON,
     ['LFGMicroButton'] = LFG_BUTTON,
-    ['EJMicroButton'] = ENCOUNTER_JOURNAL,
     ['MainMenuMicroButton'] = MAINMENU_BUTTON,
-    ['StoreMicroButton'] = BLIZZARD_STORE,
-    ['CollectionsMicroButton'] = COLLECTIONS,
-    ['HelpMicroButton'] = HELP_BUTTON,
+    ['PVPMicroButton'] = PLAYER_V_PLAYER,
+    ['QuestLogMicroButton'] = QUESTLOG_BUTTON,
     ['SocialsMicroButton'] = SOCIAL_BUTTON,
+    ['SpellbookMicroButton'] = SPELLBOOK_ABILITIES_BUTTON,
+    ['StoreMicroButton'] = BLIZZARD_STORE,
+    ['TalentMicroButton'] = TALENTS_BUTTON,
     ['WorldMapMicroButton'] = WORLDMAP_BUTTON
 }
 

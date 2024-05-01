@@ -1,6 +1,7 @@
 ## Interface: 100206
-## Interface-Wrath: 30403
+## Interface-Cata: 40400
 ## Interface-Classic: 11502
+## Interface-Wrath: 30403
 ## Title: Dominos Roll
 ## Title-zhCN: Dominos Roll 窗口模块
 ## Notes: Makes the set of frames for rolling on items when in a group movable
