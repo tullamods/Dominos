@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 10.2.28
+
+* (Cata) Update Paladin aura paging options
+
 ## 10.2.27
 
 * Add support for Cataclysm Classic

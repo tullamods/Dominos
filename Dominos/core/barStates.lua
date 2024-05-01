@@ -156,6 +156,12 @@ elseif class == 'PALADIN' then
         addFormState('class', 'retribution', 183435)
 
         addState('class', 'shield', getEquippedConditional(Enum.ItemClass.Armor, Enum.ItemArmorSubclass.Shield))
+    elseif Addon:IsBuild('cata') then
+        addFormState('class', 'concentration', 19746)
+        addFormState('class', 'crusader', 32223)
+        addFormState('class', 'devotion', 465)
+        addFormState('class', 'resistance', 19891)
+        addFormState('class', 'retribution', 7294)
     elseif Addon:IsBuild('wrath') then
         addFormState('class', 'concentration', 19746)
         addFormState('class', 'crusader', 32223)
