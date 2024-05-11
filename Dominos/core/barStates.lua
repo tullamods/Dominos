@@ -3,6 +3,13 @@
 local _, Addon = ...
 local states = {}
 
+local getSpellName
+if type(GetSpellInfo) == "function" then
+    getSpellName = function(spell) return (GetSpellInfo(spell)) end
+else
+    getSpellName = C_Spell.GetSpellName
+end
+
 local function getStateIterator(type, i)
     for j = i + 1, #states do
         local state = states[j]
@@ -68,13 +75,13 @@ local function addFormState(stateType, stateId, spellID)
         end
     end
 
-    local name = (GetSpellInfo(spellID))
+    local name = getSpellName(spellID)
 
     addState(stateType, stateId, lookupFormConditional, name)
 end
 
 local function getEquippedConditional(classId, subclassId)
-    local name = GetItemSubClassInfo(classId, subclassId)
+    local name = C_Item.GetItemSubClassInfo(classId, subclassId)
 
     return ('[equipped:%s]'):format(name)
 end
@@ -105,12 +112,12 @@ local class = UnitClassBase('player')
 local race = select(2, UnitRace('player'))
 
 if class == 'DRUID' then
-    addState('class', 'bear', '[bonusbar:3]', GetSpellInfo(5487))
-    addState('class', 'prowl', '[bonusbar:1,stealth]', GetSpellInfo(5215))
-    addState('class', 'cat', '[bonusbar:1]', GetSpellInfo(768))
+    addState('class', 'bear', '[bonusbar:3]', getSpellName(5487))
+    addState('class', 'prowl', '[bonusbar:1,stealth]', getSpellName(5215))
+    addState('class', 'cat', '[bonusbar:1]', getSpellName(768))
 
     if Addon:IsBuild('retail') then
-        addState('class', 'moonkin', '[bonusbar:4]', GetSpellInfo(24858))
+        addState('class', 'moonkin', '[bonusbar:4]', getSpellName(24858))
 
         addFormState('class', 'tree', 114282)
         addFormState('class', 'travel', 783)
@@ -140,7 +147,7 @@ elseif class == 'DEATHKNIGHT' then
         addFormState('class', 'unholy', 48265)
     end
 elseif class == 'EVOKER' then
-    addState('class', 'soar', '[bonusbar:1]', GetSpellInfo(369536))
+    addState('class', 'soar', '[bonusbar:1]', getSpellName(369536))
 elseif class == 'HUNTER' then
     if Addon:IsBuild('cata') then
         addFormState('class', 'hawk', 13165)
@@ -183,21 +190,21 @@ elseif class == 'PRIEST' then
     if Addon:IsBuild('retail') then
         addFormState('class', 'shadowform', 232698)
     else
-        addState('class', 'shadowform', '[form:1]', GetSpellInfo(15473))
+        addState('class', 'shadowform', '[form:1]', getSpellName(15473))
     end
 elseif class == 'ROGUE' then
     -- classic shadowdance
     if Addon:IsBuild('cata', 'wrath') then
-        addState('class', 'shadowdance', '[bonusbar:2]', GetSpellInfo(51713))
+        addState('class', 'shadowdance', '[bonusbar:2]', getSpellName(51713))
     -- retail shadowdance
-    elseif GetSpellInfo(185313) then
-        addState('class', 'shadowdance', '[bonusbar:1,form:2]', GetSpellInfo(185313))
+    elseif getSpellName(185313) then
+        addState('class', 'shadowdance', '[bonusbar:1,form:2]', getSpellName(185313))
     end
 
-    addState('class', 'stealth', '[bonusbar:1]', GetSpellInfo(1784))
+    addState('class', 'stealth', '[bonusbar:1]', getSpellName(1784))
 elseif class == 'WARLOCK' then
     if not Addon:IsBuild('retail') then
-        addState('class', 'metamorphosis', '[form:1]', GetSpellInfo(47241))
+        addState('class', 'metamorphosis', '[form:1]', getSpellName(47241))
     end
 elseif class == 'WARRIOR' then
     if Addon:IsBuild('retail') then
@@ -205,9 +212,9 @@ elseif class == 'WARRIOR' then
         addFormState('class', 'defensive', 386208)
         addFormState('class', 'berserker', 386196)
     else
-        addState('class', 'battle', '[bonusbar:1]', GetSpellInfo(2457))
-        addState('class', 'defensive', '[bonusbar:2]', GetSpellInfo(71))
-        addState('class', 'berserker', '[bonusbar:3]', GetSpellInfo(2458))
+        addState('class', 'battle', '[bonusbar:1]', getSpellName(2457))
+        addState('class', 'defensive', '[bonusbar:2]', getSpellName(71))
+        addState('class', 'berserker', '[bonusbar:3]', getSpellName(2458))
     end
 
     if Addon:IsBuild("retail", "cata") then
@@ -217,7 +224,7 @@ end
 
 -- race
 if race == 'NightElf' then
-    local name = (GetSpellInfo(58984) or GetSpellInfo(20580))
+    local name = (getSpellName(58984) or getSpellName(20580))
 
     if name then
         addState('class', 'shadowmeld', '[stealth]', name)

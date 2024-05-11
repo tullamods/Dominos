@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 10.2.30
+
+* Add preliminary support for War Within
+
 ## 10.2.29
 
 * Updated TOCs for 10.2.7

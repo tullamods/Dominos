@@ -4,7 +4,6 @@ local LSM = LibStub("LibSharedMedia-3.0")
 local L = LibStub("AceLocale-3.0"):GetLocale("Dominos-CastBar")
 
 -- local aliases for some globals
-local GetSpellInfo = _G.GetSpellInfo
 local GetTime = _G.GetTime
 
 local UnitCastingInfo = _G.UnitCastingInfo or _G.CastingInfo
@@ -29,8 +28,46 @@ local CAST_BAR_COLORS = {
 
 local LATENCY_BAR_ALPHA = 0.5
 
-local function GetSpellReaction(spellID)
-    local name = GetSpellInfo(spellID)
+local function getSpellInfo(spellID)
+    if type(GetSpellInfo) == "function" then
+        local name, _, iconID, castTime = GetSpellInfo(spellID)
+
+        return name, iconID, castTime
+    end
+
+    local info = C_Spell.GetSpellInfo(spellID)
+    if info then
+        return info.name, info.iconID, info.castTime
+    end
+end
+
+local function getRandomSpellID()
+    if type(GetSpellTabInfo) == "function" then
+        local _, _, offset, numSlots = GetSpellTabInfo(GetNumSpellTabs())
+        local _, spellID
+
+        repeat
+            _, spellID = GetSpellBookItemInfo(math.random(1, offset + numSlots), "player")
+        until spellID ~= nil
+
+        return spellID
+    end
+
+    local lineInfo = C_SpellBook.GetSpellBookSkillLineInfo(C_SpellBook.GetNumSpellBookSkillLines())
+    local offset = lineInfo.itemIndexOffset
+    local numSlots = lineInfo.numSpellBookItems
+    local _, spellID
+
+    repeat
+        _, _, spellID = C_SpellBook.GetSpellBookItemType(math.random(1, offset + numSlots), Enum.SpellBookSpellBank.Player)
+    until spellID ~= nil
+
+    return spellID
+end
+
+local function getSpellReaction(spellID)
+    local name = (GetSpellInfo or C_Spell.GetSpellName)(spellID)
+
     if name then
         if IsHelpfulSpell(name) then
             return "help"
@@ -289,7 +326,7 @@ function CastBar:reaction_update(reaction)
 end
 
 function CastBar:spell_update(spellID)
-    local reaction = GetSpellReaction(spellID)
+    local reaction = getSpellReaction(spellID)
 
     self:SetProperty("reaction", reaction)
 end
@@ -488,8 +525,8 @@ function CastBar:Stop()
 end
 
 function CastBar:SetupDemo()
-    local spellID = self:GetRandomSpellID()
-    local name, rank, icon, castTime = GetSpellInfo(spellID)
+    local spellID = getRandomSpellID()
+    local name, iconID, castTime = getSpellInfo(spellID)
 
     -- use the spell cast time if we have it, otherwise set a default one
     -- of a few seconds
@@ -501,9 +538,9 @@ function CastBar:SetupDemo()
 
     self:SetProperty("state", "demo")
     self:SetProperty("label", name)
-    self:SetProperty("icon", icon)
+    self:SetProperty("icon", iconID)
     self:SetProperty("spell", spellID)
-    self:SetProperty("reaction", GetSpellReaction(spellID))
+    self:SetProperty("reaction", getSpellReaction(spellID))
     self:SetProperty("uninterruptible", nil)
 
     self.timer:SetCountdown(false)

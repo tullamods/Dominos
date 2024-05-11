@@ -434,30 +434,63 @@ local function isFlyoutFocus(flyout, owner)
     return false
 end
 
-local function isFocus(frame)
-    if frame:IsForbidden() then
+local isFocus
+if type (GetMouseFocus) == "function" then
+    isFocus = function(frame)
+        if frame:IsForbidden() then
+            return false
+        end
+
+        local focus = GetMouseFocus()
+
+        -- not focused on a particular frame, check to see if the mouse is over
+        -- either the frame itself, or a flyout owned by the frame
+        if focus == WorldFrame then
+            if frame:IsMouseOver(1, -1, -1, 1) then
+                return true
+            end
+
+            if isFlyoutFocus(_G.SpellFlyout, frame) then
+                return true
+            end
+
+            if isFlyoutFocus(Addon.SpellFlyout, frame) then
+                return true
+            end
+        end
+
+        return focus and isDescendant(focus, frame)
+    end
+else
+    isFocus = function(frame)
+        if frame:IsForbidden() then
+            return false
+        end
+
+        for _, focus in ipairs(GetMouseFoci()) do
+            -- not focused on a particular frame, check to see if the mouse is over
+            -- either the frame itself, or a flyout owned by the frame
+            if focus == WorldFrame then
+                if frame:IsMouseOver(1, -1, -1, 1) then
+                    return true
+                end
+
+                if isFlyoutFocus(_G.SpellFlyout, frame) then
+                    return true
+                end
+
+                if isFlyoutFocus(Addon.SpellFlyout, frame) then
+                    return true
+                end
+            end
+
+            if isDescendant(focus, frame) then
+                return true
+            end
+        end
+
         return false
     end
-
-    local focus = GetMouseFocus()
-
-    -- not focused on a particular frame, check to see if the mouse is over
-    -- either the frame itself, or a flyout owned by the frame
-    if focus == WorldFrame then
-        if frame:IsMouseOver(1, -1, -1, 1) then
-            return true
-        end
-
-        if isFlyoutFocus(_G.SpellFlyout, frame) then
-            return true
-        end
-
-        if isFlyoutFocus(Addon.SpellFlyout, frame) then
-            return true
-        end
-    end
-
-    return focus and isDescendant(focus, frame)
 end
 
 -- returns all frames docked to the given frame
