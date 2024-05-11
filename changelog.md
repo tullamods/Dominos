@@ -1,5 +1,10 @@
 # Dominos Changelog
 
+## 10.2.29
+
+* Updated TOCs for 10.2.7
+* The TOC files now use the new comma separated values format.
+
 ## 10.2.28
 
 * (Cata) Update Paladin aura paging options
