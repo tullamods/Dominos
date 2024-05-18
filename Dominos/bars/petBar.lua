@@ -69,12 +69,19 @@ function PetActionButtonMixin:Update()
 
     self:SetChecked(isActive and true)
 
-    self.AutoCastable:SetShown(autoCastAllowed and true)
 
-    if autoCastEnabled then
-        AutoCastShine_AutoCastStart(self.AutoCastShine)
+    local autoCastOverlay = self.AutoCastOverlay
+    if autoCastOverlay then
+        autoCastOverlay:SetShown(autoCastAllowed)
+		autoCastOverlay:ShowAutoCastEnabled(autoCastEnabled)
     else
-        AutoCastShine_AutoCastStop(self.AutoCastShine)
+        self.AutoCastable:SetShown(autoCastAllowed and true)
+
+        if autoCastEnabled then
+            AutoCastShine_AutoCastStart(self.AutoCastShine)
+        else
+            AutoCastShine_AutoCastStop(self.AutoCastShine)
+        end
     end
 
     if texture then
