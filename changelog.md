@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 10.2.31
+
+* (Cata) Fix encounter bar positioning
+
 ## 10.2.30
 
 * Add preliminary support for War Within
