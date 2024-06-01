@@ -75,7 +75,9 @@ end
 
 function EncounterBarModule:OnFirstLoad()
 	-- tell blizzard that we don't it to manage this frame's position
-	-- PlayerPowerBarAlt.ignoreFramePositionManager = true
+	if not Addon:IsBuild("retail") then
+		PlayerPowerBarAlt.ignoreFramePositionManager = true
+	end
 
 	-- the standard UI will check to see if the power bar is user placed before
 	-- doing anything to its position, so mark as user placed to prevent that
