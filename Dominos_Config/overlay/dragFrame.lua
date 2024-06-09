@@ -502,18 +502,37 @@ end
 
 -- position
 function DragFrame:NudgeFrame(dx, dy)
-    local ox, oy, ow, oh = self.owner:GetRect()
-    local _, _, pw, ph = self.owner:GetParent():GetRect()
-    local x = Clamp(Round(ox + dx), 0, pw - ow)
-    local y = Clamp(Round(oy + dy), 0, ph - oh)
+    local f = self.owner
 
-    self.owner:ClearSavedAnchor()
-    self.owner:ClearAllPoints()
-    self.owner:SetPoint("BOTTOMLEFT", x, y)
-    self.owner:SaveRelativePostiion()
-    self.owner:RestorePosition()
+    -- grab all the coordinates we need
+    -- frame
+    local fl, fb, fw, fh = f:GetScaledRect()
+    local fs = f:GetEffectiveScale()
 
-    self:ShowTemporaryText(0.5, "(%d, %d)", self.owner:GetRect())
+    -- parent (effectively UIParent)
+    local _, _, pw, ph = f:GetParent():GetScaledRect()
+
+    -- screen position (for pixel precision)
+    local _, sh = GetPhysicalScreenSize()
+
+    -- adjust increments so that they're always in terms of screen pixels
+    dx = dx * (ph / sh)
+    dy = dy * (ph / sh)
+
+    -- calculate the new coordinates. Ensure that they're within the screen
+    local x = Clamp(fl + dx, 0, pw - fw)
+    local y = Clamp(fb + dy, 0, ph - fh)
+
+    -- reposition the frame, and save our position again (so that it is)
+    -- stored relative to the nearest screen corner
+    f:ClearSavedAnchor()
+    f:ClearAllPoints()
+    f:SetPoint("BOTTOMLEFT", x / fs, y / fs)
+    f:SaveRelativePostiion()
+    f:RestorePosition()
+
+    -- report in terms of screen pixels
+    self:ShowTemporaryText(0.5, "(%d, %d)", x * (sh / ph), y * (sh / ph))
 end
 
 -- preview

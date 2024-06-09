@@ -1,5 +1,10 @@
 # Dominos Changelog
 
+## 10.2.32
+
+* Keyboard nudge increments are now in terms of your screen's resolution
+* Fixed issues with using keyboard positioning on scaled frames
+
 ## 10.2.31
 
 * (Cata) Fix encounter bar positioning
