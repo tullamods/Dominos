@@ -326,6 +326,7 @@ function Panel:NewRowOffsetSlider()
 
 		min = -Round(ActionButton1:GetWidth()),
 		max = Round(ActionButton1:GetWidth()),
+		softLimits = true,
 
 		get = function()
 			return self.owner:GetRowOffset()
