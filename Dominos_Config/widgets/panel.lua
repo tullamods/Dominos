@@ -324,8 +324,14 @@ function Panel:NewRowOffsetSlider()
 	return self:NewSlider{
 		name = L.RowOffset,
 
-		min = -Round(ActionButton1:GetWidth()),
-		max = Round(ActionButton1:GetWidth()),
+		min = function()
+			return -(Round(ActionButton1:GetWidth()) + self.owner:GetSpacing())
+		end,
+
+		max = function()
+			return Round(ActionButton1:GetWidth()) + self.owner:GetSpacing()
+		end,
+
 		softLimits = true,
 
 		get = function()
