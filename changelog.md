@@ -1,5 +1,11 @@
 # Dominos Changelog
 
+## 10.2.33
+
+* Row offset min and max values now include spacing
+* Row offset min and max values are now soft limits
+* Updated TOC to generate a separate file for Vanilla, and not all of Classic
+
 ## 10.2.32
 
 * Keyboard nudge increments are now in terms of your screen's resolution
