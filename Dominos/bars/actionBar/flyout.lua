@@ -33,7 +33,6 @@ function SpellFlyoutButtonMixin:Initialize()
 
 	self:SetScript("OnEnter", self.OnEnter)
 	self:SetScript("OnLeave", self.OnLeave)
-	self:SetScript("PreClick", self.OnPreClick)
 	self:SetScript("PostClick", self.OnPostClick)
 end
 
@@ -66,8 +65,9 @@ function SpellFlyoutButtonMixin:OnFlyoutUpdated()
 	local id = self:GetAttribute("flyoutID")
 	local index = self:GetAttribute("flyoutIndex")
 	local spellID, overrideSpellID, isKnown, spellName = GetFlyoutSlotInfo(id, index)
+	local texture = (C_Spell.GetSpellTexture or GetSpellTexture)(overrideSpellID)
 
-	self.icon:SetTexture(GetSpellTexture(overrideSpellID))
+	self.icon:SetTexture(texture)
 	self.icon:SetDesaturated(not isKnown)
 
 	self.spellID = spellID
@@ -76,19 +76,7 @@ function SpellFlyoutButtonMixin:OnFlyoutUpdated()
 	self:Update()
 end
 
-function SpellFlyoutButtonMixin:OnPreClick(_, down)
-	if down then
-		self._ActionButtonUseKeyDown = GetCVarBool("ActionButtonUseKeyDown")
-		SetCVar("ActionButtonUseKeyDown", false)
-	end
-end
-
 function SpellFlyoutButtonMixin:OnPostClick(_, down)
-	if not down then
-		SetCVar("ActionButtonUseKeyDown", self._ActionButtonUseKeyDown)
-		self._ActionButtonUseKeyDown = nil
-	end
-
 	self:UpdateState()
 end
 
@@ -110,11 +98,11 @@ function SpellFlyoutButtonMixin:UpdateCooldown()
 end
 
 function SpellFlyoutButtonMixin:UpdateState()
-	self:SetChecked(IsCurrentSpell(self.spellID) and true)
+	self:SetChecked((C_Spell.IsCurrentSpell or IsCurrentSpell)(self.spellID) and true)
 end
 
 function SpellFlyoutButtonMixin:UpdateUsable()
-	local usable, oom = IsUsableSpell(self.spellID)
+	local usable, oom = (C_Spell.IsSpellUsable or IsUsableSpell)(self.spellID)
     local icon = self.icon
 
     if oom then
@@ -131,7 +119,7 @@ end
 
 function SpellFlyoutButtonMixin:UpdateCount()
 	if IsConsumableSpell(self.spellID) then
-		local count = GetSpellCount(self.spellID)
+		local count = (C_Spell.GetSpellCastCount or GetSpellCount)(self.spellID)
 		if count > (self.maxDisplayCount or 9999) then
 			self.Count:SetText("*")
 		else
