@@ -6,11 +6,11 @@ local L = LibStub("AceLocale-3.0"):GetLocale("Dominos-CastBar")
 -- local aliases for some globals
 local GetTime = _G.GetTime
 
-local UnitCastingInfo = _G.UnitCastingInfo or _G.CastingInfo
-local UnitChannelInfo = _G.UnitChannelInfo or _G.ChannelInfo
+local UnitCastingInfo = _G.UnitCastingInfo or CastingInfo
+local UnitChannelInfo = _G.UnitChannelInfo or ChannelInfo
 
-local IsHarmfulSpell = _G.IsHarmfulSpell
-local IsHelpfulSpell = _G.IsHelpfulSpell
+local IsHarmfulSpell = C_Spell.IsSpellHarmful or IsHarmfulSpell
+local IsHelpfulSpell = C_Spell.IsSpellHelpful or IsHelpfulSpell
 
 local ICON_OVERRIDES = {
     -- replace samwise with cog
