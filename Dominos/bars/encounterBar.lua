@@ -66,7 +66,7 @@ function EncounterBar:InitPlayerPowerBarAlt()
 			end)
 		end
 
-		if type("UnitPowerBarAlt_SetUp") == "function" then
+		if type(UnitPowerBarAlt_SetUp) == "function" then
 			hooksecurefunc("UnitPowerBarAlt_SetUp", function(bar)
 				if bar.isPlayerBar and bar:GetParent() ~= self then
 					bar:SetParent(self)
