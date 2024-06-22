@@ -47,15 +47,36 @@ end
 -- and hook the scripts we need to hook
 function EncounterBar:InitPlayerPowerBarAlt()
 	if not self.__PlayerPowerBarAlt then
-		local bar = PlayerPowerBarAlt
+		local ppb = PlayerPowerBarAlt
+		local layout = function() self:Layout() end
 
-		if bar:GetScript('OnSizeChanged') then
-			bar:HookScript('OnSizeChanged', function() self:Layout() end)
+		if ppb:GetScript('OnSizeChanged') then
+			ppb:HookScript('OnSizeChanged', layout)
 		else
-			bar:SetScript('OnSizeChanged', function() self:Layout() end)
+			ppb:SetScript('OnSizeChanged', layout)
 		end
 
-		self.__PlayerPowerBarAlt = bar
+		if type(ppb.SetupPlayerPowerBarPosition) == "function" then
+			hooksecurefunc(ppb, "SetupPlayerPowerBarPosition", function(bar)
+				if bar:GetParent() ~= self then
+					bar:SetParent(self)
+					bar:ClearAllPoints()
+					bar:SetPoint('CENTER', self)
+				end
+			end)
+		end
+
+		if type("UnitPowerBarAlt_SetUp") == "function" then
+			hooksecurefunc("UnitPowerBarAlt_SetUp", function(bar)
+				if bar.isPlayerBar and bar:GetParent() ~= self then
+					bar:SetParent(self)
+					bar:ClearAllPoints()
+					bar:SetPoint('CENTER', self)
+				end
+			end)
+		end
+
+		self.__PlayerPowerBarAlt = ppb
 	end
 end
 
@@ -84,11 +105,6 @@ function EncounterBarModule:OnFirstLoad()
 	-- from happening
 	PlayerPowerBarAlt:SetMovable(true)
 	PlayerPowerBarAlt:SetUserPlaced(true)
-
-	-- onshow/hide call UpdateManagedFramePositions on the blizzard end so turn
-	-- that bit off
-	PlayerPowerBarAlt:SetScript("OnShow", nil)
-	PlayerPowerBarAlt:SetScript("OnHide", nil)
 
 	self:RegisterEvent("PLAYER_LOGOUT")
 end

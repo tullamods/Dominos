@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 10.2.34
+
+* (Cata) Improve encounter bar positioning (thanks [Road Block](https://github.com/Road-block))
+
 ## 10.2.33
 
 * Row offset min and max values now include spacing
