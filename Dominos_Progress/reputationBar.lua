@@ -24,6 +24,23 @@ if not IsMajorFaction then
     end
 end
 
+local GetWatchedFactionInfo = GetWatchedFactionInfo
+if not GetWatchedFactionInfo then
+    GetWatchedFactionInfo = function()
+        local data = C_Reputation.GetWatchedFactionData()
+        if not data or data.factionID == 0 then
+            return
+        end
+
+        return data.name,
+            data.reaction,
+            data.currentReactionThreshold,
+            data.nextReactionThreshold,
+            data.currentStanding,
+            data.factionID
+    end
+end
+
 local function IsFriendshipFaction(factionID)
     if factionID then
         local getRep = C_GossipInfo and C_GossipInfo.GetFriendshipReputation
