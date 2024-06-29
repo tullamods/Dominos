@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 10.2.36
+
+* Fix flyout errors with War Within
+
 ## 10.2.35
 
 * Fix a typo
