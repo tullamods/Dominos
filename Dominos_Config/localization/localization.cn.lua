@@ -88,6 +88,7 @@ L.ShowMacroText = '显示宏名称'
 L.ShowMinimapButton = '显示小地图按钮'
 L.ShowOverrideUI = '使用默认载具界面'
 L.ShowOverrideUIDesc = "当驾驶载具等情况下显示暴雪覆盖UI"
+L.ShowSpellAnimations = "显示技能动画"
 L.ShowSpellGlows = "显示技能高亮"
 L.ShowStates = '显示隐藏条件'
 L.ShowTooltips = '显示鼠标提示'
