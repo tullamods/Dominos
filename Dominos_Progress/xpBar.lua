@@ -18,11 +18,7 @@ function ExperienceBar:Update()
 end
 
 function ExperienceBar:IsModeActive()
-	if type(IsPlayerAtEffectiveMaxLevel) == "function" and IsPlayerAtEffectiveMaxLevel() then
-		return false
-	end
-	
-	if UnitLevel("player") == GetMaxLevelForPlayerExpansion() then
+	if UnitLevel("player") == (GetMaxLevelForPlayerExpansion or GetMaxPlayerLevel)() then
 		return false
 	end
 
