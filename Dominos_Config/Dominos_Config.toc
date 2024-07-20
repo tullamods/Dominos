@@ -1,5 +1,5 @@
 ## Interface: 110002, 110000, 100207, 40400
-## Interface-Vanilla: 11502
+## Interface-Vanilla: 11503
 ## Title: Dominos Config
 ## Title-zhCN: Dominos 设置
 ## Title-zhTW: Dominos 設置

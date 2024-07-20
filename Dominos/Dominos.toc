@@ -1,5 +1,5 @@
 ## Interface: 110002, 110000, 100207, 40400
-## Interface-Vanilla: 11502
+## Interface-Vanilla: 11503
 ## Title: Dominos
 ## Notes: A main actionbar replacement
 ## Notes-zhCN: 一种动作条替换方案
