@@ -2,8 +2,6 @@ local _, Addon = ...
 local Dominos = _G.Dominos
 local ExperienceBar = Dominos:CreateClass("Frame", Addon.ProgressBar)
 
-local IsXPUserDisabled = IsXPUserDisabled or function() return false end
-
 function ExperienceBar:Init()
 	self:Update()
 	self:SetColor(Addon.Config:GetColor("xp"))
@@ -20,7 +18,15 @@ function ExperienceBar:Update()
 end
 
 function ExperienceBar:IsModeActive()
-	return not (IsPlayerAtEffectiveMaxLevel() or IsXPUserDisabled())
+	if type(IsPlayerAtEffectiveMaxLevel) == "function" and IsPlayerAtEffectiveMaxLevel() then
+		return false
+	end
+	
+	if UnitLevel("player") == GetMaxLevelForPlayerExpansion() then
+		return false
+	end
+
+	return not IsXPUserDisabled()
 end
 
 -- register this as a possible progress bar mode
