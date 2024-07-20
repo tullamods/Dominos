@@ -1,5 +1,10 @@
 # Dominos Changelog
 
+## 10.2.37
+
+* Attached the UIWidgetPowerBarContainerFrame to the Encounter Bar
+* Update TOCs for 11.0.2 and 1.15.3
+
 ## 10.2.36
 
 * Fix flyout errors with War Within
