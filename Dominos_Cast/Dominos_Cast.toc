@@ -1,4 +1,4 @@
-## Interface: 110000, 100207, 40400
+## Interface: 110002, 110000, 100207, 40400
 ## Interface-Vanilla: 11502
 ## Title: Dominos Cast
 ## Title-zhCN: Dominos 施法条模块
