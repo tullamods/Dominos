@@ -22,7 +22,7 @@ PowerBar:Extend('OnCreate', function(self)
 	if ppb then
 		ppb:ClearAllPoints()
 		ppb:SetParent(self)
-		ppb:SetPoint('CENTER', self)	
+		ppb:SetPoint('CENTER', self)
 
 		if type(ppb.SetupPlayerPowerBarPosition) == "function" then
 			hooksecurefunc(ppb, "SetupPlayerPowerBarPosition", function(bar)
@@ -80,8 +80,12 @@ function PowerBar:Layout()
 		height = math.max(h, height)
 	end
 
-	local pW, pH = self:GetPadding()
-	self:TrySetSize(width + pW, height + pH)
+	if width > 0 and height > 0 then
+		local pW, pH = self:GetPadding()
+		self:TrySetSize(width + pW, height + pH)
+	else
+		self:TrySetSize(36 * 6, 36)
+	end
 end
 
 -- module
