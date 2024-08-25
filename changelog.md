@@ -2,7 +2,7 @@
 
 ## 11.0.1
 
-* Fix an issue taht would let spell overlay glows still display, even if disabled
+* Fix an issue that would let spell overlay glows still display, even if disabled
 
 ## 11.0.0
 
