@@ -122,6 +122,23 @@ function ActionButtons:Initialize()
         end
     ]])
 
+    -- overlay glow hiding
+    if type(ActionButton_ShowOverlayGlow) == "function" then
+        hooksecurefunc("ActionButton_ShowOverlayGlow", function(button)
+            if not self.buttons[button] or Addon:ShowingSpellGlows() then return end
+
+            local alert = button.SpellActivationAlert
+
+            if alert:IsShown() then
+                if alert.ProcStartAnim:IsPlaying() then
+                    alert.ProcStartAnim:Stop()
+                end
+
+                alert:Hide()
+            end
+        end)
+    end
+
     self.Initialize = nil
 end
 
