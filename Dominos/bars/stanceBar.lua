@@ -192,6 +192,7 @@ function StanceBarModule:Load()
 
     self:RegisterEvent("PLAYER_ENTERING_WORLD", 'UpdateNumForms')
     self:RegisterEvent("PLAYER_REGEN_ENABLED", 'UpdateNumForms')
+    self:RegisterEvent("UPDATE_SHAPESHIFT_FORMS", 'UpdateNumForms')
     self:RegisterEvent("UPDATE_SHAPESHIFT_FORM", 'UpdateStanceButtons')
     self:RegisterEvent("UPDATE_SHAPESHIFT_USABLE", 'UpdateStanceButtons')
     self:RegisterEvent("UPDATE_SHAPESHIFT_COOLDOWN", 'UpdateStanceButtons')
