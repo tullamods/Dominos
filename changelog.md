@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 11.0.2
+
+* Update Override UI detection
+
 ## 11.0.1
 
 * Fix an issue that would let spell overlay glows still display, even if disabled

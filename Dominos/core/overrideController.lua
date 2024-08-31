@@ -3,7 +3,7 @@ if not Addon:IsBuild('retail', 'cata', 'wrath') then
 	return
 end
 
-local OverrideController = CreateFrame('Frame', nil, nil, 'SecureHandlerAttributeTemplate')
+local OverrideController = CreateFrame('Frame', nil, OverrideActionBar, 'SecureHandlerAttributeTemplate, SecureHandlerShowHideTemplate')
 
 function OverrideController:OnLoad()
 	self:SetAttributeNoHandler("_onattributechanged", [[
@@ -37,13 +37,9 @@ function OverrideController:OnLoad()
 		end
 	]])
 
-	self:WrapScript(OverrideActionBarButton1, "OnShow", [[
-		control:SetAttribute("overrideui", 1)
-	]])
-
-	self:WrapScript(OverrideActionBarButton1, "OnHide", [[
-		control:SetAttribute("overrideui", 0)
-	]])
+	self:SetAttributeNoHandler("_onshow", [[ self:SetAttribute("overrideui", 1) ]])
+	self:SetAttributeNoHandler("_onhide", [[ self:SetAttribute("overrideui", 0) ]])
+	self:SetAttributeNoHandler('overrideui', OverrideActionBar:IsVisible())
 
 	-- init
 	self:Execute([[ myFrames = table.new() ]])
@@ -60,7 +56,6 @@ function OverrideController:OnLoad()
 		RegisterAttributeDriver(self, attribute, driver)
 	end
 
-	self:SetAttributeNoHandler('overrideui', OverrideActionBarButton1:IsVisible())
 	Addon.RegisterCallback(self, 'LAYOUT_LOADED')
 	Addon.RegisterCallback(self, 'USE_OVERRRIDE_UI_CHANGED')
 	self.OnLoad = nil
