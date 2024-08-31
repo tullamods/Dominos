@@ -78,6 +78,10 @@ function Addon:CreateClass(...)
     return ParentAddon:CreateClass(...)
 end
 
+function Addon:IsBuild(...)
+    return ParentAddon:IsBuild(...)
+end
+
 -- returns a function that generates unique names for frames
 -- in the format <AddonName>_<Prefix>[1, 2, ...]
 function Addon:CreateNameGenerator(prefix)
