@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 11.0.3
+
+* Add support for classic versions 4.4.1 and 1.15.4
+
 ## 11.0.2
 
 * Update Override UI detection
