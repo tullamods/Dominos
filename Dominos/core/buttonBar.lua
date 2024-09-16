@@ -141,6 +141,15 @@ function ButtonBar:GetRowOffset()
     return self.sets.rowOffset or 0
 end
 
+function ButtonBar:SetLineSpace(lineSpace)
+    self.sets.lineSpace = lineSpace
+    self:Layout()
+end
+
+function ButtonBar:GetLineSpace()
+    return self.sets.lineSpace or 0
+end
+
 -- the wackiness here is for backward compaitbility reasons, since I did not
 -- implement true defaults
 function ButtonBar:SetLeftToRight(isLeftToRight)
@@ -215,6 +224,7 @@ function ButtonBar:Layout()
     local pW, pH = self:GetPadding()
     local spacing = self:GetSpacing()
     local rowOffset = self:GetRowOffset()
+    local lineSpace = self:GetLineSpace()
 
     local buttonWidth = bW + spacing
     local buttonHeight = bH + spacing
@@ -242,7 +252,7 @@ function ButtonBar:Layout()
             x = x + ((1 + row) - rows) * rowOffset
         end
 
-        local y = yOff + buttonHeight * row
+        local y = yOff + (buttonHeight + lineSpace) * row
 
         button:ClearAllPoints()
         button:SetParent(self)
@@ -250,7 +260,7 @@ function ButtonBar:Layout()
     end
 
     local barWidth = (buttonWidth * cols) + (pW * 2) - spacing + math.abs(rowOffset) * (rows - 1)
-    local barHeight = (buttonHeight * rows) + (pH * 2) - spacing
+    local barHeight = (buttonHeight * rows) + (pH * 2) - spacing + lineSpace * (rows - 1)
 
     self:TrySetSize(barWidth, barHeight)
 end
