@@ -49,6 +49,7 @@ function ProgressBarModule:OnFirstLoad()
 
 	-- xp bar events
 	self:RegisterEvent("PLAYER_XP_UPDATE")
+	self:RegisterEvent("PLAYER_LEVEL_UP")
 
 	-- reputation events
 	self:RegisterEvent("UPDATE_FACTION")
@@ -92,6 +93,7 @@ end
 
 function ProgressBarModule:PLAYER_ENTERING_WORLD()
 	self:UpdateAllBars()
+	self:ForAllBars("UpdateDisplayConditions")
 end
 
 function ProgressBarModule:PLAYER_UPDATE_RESTING()
@@ -100,6 +102,10 @@ end
 
 function ProgressBarModule:UPDATE_EXHAUSTION()
 	self:UpdateAllBars()
+end
+
+function ProgressBarModule:PLAYER_LEVEL_UP()
+	self:ForAllBars("UpdateDisplayConditions")
 end
 
 function ProgressBarModule:PLAYER_XP_UPDATE()
@@ -149,6 +155,15 @@ function ProgressBarModule:UpdateAllBars()
 	for _, bar in pairs(self.bars) do
 		bar:UpdateMode()
 		bar:Update()
+	end
+end
+
+function ProgressBarModule:ForAllBars(method, ...)
+	local bars = self.bars
+	if bars then
+		for _, bar in pairs(bars) do
+			bar[method](bar, ...)
+		end
 	end
 end
 

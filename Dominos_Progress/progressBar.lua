@@ -294,6 +294,24 @@ function ProgressBar:UpdateLockMode()
 	self:UpdateMode()
 end
 
+function ProgressBar:SetHideAtMaxLevel(hide)
+	if self:HideAtMaxLevel() ~= hide then
+		self.sets.hideAtMaxLevel = hide
+		self:UpdateDisplayConditions()
+	end
+end
+
+function ProgressBar:HideAtMaxLevel()
+	return self.sets.hideAtMaxLevel or false
+end
+
+function ProgressBar:GetDisplayConditions()
+	if self.sets.hideAtMaxLevel then
+		if UnitLevel("player") == (GetMaxLevelForPlayerExpansion or GetMaxPlayerLevel)() then
+			return "hide"
+		end
+	end
+end
 
 --[[ value display ]]--
 
@@ -770,6 +788,18 @@ do
 	function ProgressBar:AddTextPanel(menu)
 		local l = LibStub('AceLocale-3.0'):GetLocale('Dominos-Progress')
 		local panel = menu:NewPanel(_G.DISPLAY)
+
+		panel:NewCheckButton{
+			name = l.HideAtMaxLevel,
+
+			get = function()
+				return panel.owner:HideAtMaxLevel()
+			end,
+
+			set = function(_, enable)
+				panel.owner:SetHideAtMaxLevel(enable)
+			end
+		}	
 
 		if #self.modes > 1 then
 			panel:NewCheckButton{
