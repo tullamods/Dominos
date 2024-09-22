@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 11.0.4
+
+* Add a new slider for row spacing (contributed by [Xiaoyang-Huang](https://github.com/Xiaoyang-Huang))
+
 ## 11.0.3
 
 * Add support for classic versions 4.4.1 and 1.15.4

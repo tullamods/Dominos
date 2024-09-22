@@ -344,9 +344,9 @@ function Panel:NewRowOffsetSlider()
 	}
 end
 
-function Panel:NewLineSpaceSlider()
+function Panel:NewRowSpacingSlider()
 	return self:NewSlider{
-		name = L.LineSpace,
+		name = L.RowSpacing,
 
 		min = function()
 			return -(Round(ActionButton1:GetHeight()) + self.owner:GetSpacing())
@@ -359,11 +359,11 @@ function Panel:NewLineSpaceSlider()
 		softLimits = true,
 
 		get = function()
-			return self.owner:GetLineSpace()
+			return self.owner:GetRowSpacing()
 		end,
 
 		set = function(_, value)
-			self.owner:SetLineSpace(value)
+			self.owner:SetRowSpacing(value)
 		end
 	}
 end
@@ -506,7 +506,7 @@ function Panel:AddLayoutOptions()
 	self.colsSlider = self:NewColumnsSlider()
 	self.spacingSlider = self:NewSpacingSlider()
 	self.rowOffsetSlider = self:NewRowOffsetSlider()
-	self.lineHeightSlider = self:NewLineSpaceSlider()
+	self.rowSpacingSlider = self:NewRowSpacingSlider()
 	self:AddBasicLayoutOptions()
 end
 

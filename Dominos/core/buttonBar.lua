@@ -141,13 +141,13 @@ function ButtonBar:GetRowOffset()
     return self.sets.rowOffset or 0
 end
 
-function ButtonBar:SetLineSpace(lineSpace)
-    self.sets.lineSpace = lineSpace
+function ButtonBar:SetRowSpacing(rowSpacing)
+    self.sets.rowSpacing = rowSpacing
     self:Layout()
 end
 
-function ButtonBar:GetLineSpace()
-    return self.sets.lineSpace or 0
+function ButtonBar:GetRowSpacing()
+    return self.sets.rowSpacing or 0
 end
 
 -- the wackiness here is for backward compaitbility reasons, since I did not
@@ -224,7 +224,7 @@ function ButtonBar:Layout()
     local pW, pH = self:GetPadding()
     local spacing = self:GetSpacing()
     local rowOffset = self:GetRowOffset()
-    local lineSpace = self:GetLineSpace()
+    local lineSpace = self:GetRowSpacing()
 
     local buttonWidth = bW + spacing
     local buttonHeight = bH + spacing
