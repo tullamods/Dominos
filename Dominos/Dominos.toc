@@ -1,4 +1,4 @@
-## Interface: 110002, 40401, 40400, 11504, 11503
+## Interface: 110002, 40401, 40400, 11504
 ## Title: Dominos
 ## Notes: A main actionbar replacement
 ## Notes-zhCN: 一种动作条替换方案
