@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 11.0.5
+
+* (Vanilla) Fix tooltip issues when enabling all Blizzard action bars
+
 ## 11.0.4
 
 * Add a new slider for row spacing (contributed by [Xiaoyang-Huang](https://github.com/Xiaoyang-Huang))
