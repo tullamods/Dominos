@@ -1,4 +1,4 @@
-## Interface: 110002, 40401, 40400, 11504
+## Interface: 110007, 110005, 40401, 11504
 ## Title: Dominos Progress
 ## Title-zhCN: Dominos 进度条模块
 ## Notes: Progress bars of all sorts
