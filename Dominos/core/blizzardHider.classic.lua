@@ -169,7 +169,5 @@ end
 
 -- container offsets are a bit broken when using Dominos for action bars in 1.15.4
 -- this prevents the UIParent position manager from updating them, dynamically
-if Addon:IsBuild("classic") then
-    UIPARENT_MANAGED_FRAME_POSITIONS.CONTAINER_OFFSET_X = nil
-    UIPARENT_MANAGED_FRAME_POSITIONS.CONTAINER_OFFSET_Y = nil
-end
+UIPARENT_MANAGED_FRAME_POSITIONS.CONTAINER_OFFSET_X = nil
+UIPARENT_MANAGED_FRAME_POSITIONS.CONTAINER_OFFSET_Y = nil
