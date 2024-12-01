@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 11.0.8
+
+* Update TOCs for 1.15.5
+
 ## 11.0.7
 
 * (Classic) Fix tooltip issues when enabling all Blizzard action bars
