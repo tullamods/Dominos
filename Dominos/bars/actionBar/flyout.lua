@@ -153,10 +153,6 @@ end
 
 local SpellFlyoutFrameMixin = {}
 
--- methods we're importing from the stock UI
-SpellFlyoutFrameMixin.SetBorderColor = SpellFlyout_SetBorderColor
-SpellFlyoutFrameMixin.SetBorderSize = SpellFlyout_SetBorderSize
-
 -- secure methods
 local SpellFlyoutFrame_Toggle = [[
 	local flyoutID = ...
@@ -359,6 +355,27 @@ function SpellFlyoutFrameMixin:LayoutTextures(direction, distance)
 
 	self:SetBorderColor(0.7, 0.7, 0.7)
 	self:SetBorderSize(47)
+end
+
+function SpellFlyoutFrameMixin:SetBorderColor(r, g, b, a)
+	self.Background.Start:SetVertexColor(r, g, b, a)
+	self.Background.HorizontalMiddle:SetVertexColor(r, g, b, a)
+	self.Background.VerticalMiddle:SetVertexColor(r, g, b, a)
+	self.Background.End:SetVertexColor(r, g, b, a)
+end
+
+function SpellFlyoutFrameMixin:SetBorderSize(size)
+	if (not self.direction or self.direction == "UP" or self.direction == "DOWN") then
+		self.Background.Start:SetWidth(size);
+		self.Background.HorizontalMiddle:SetWidth(size);
+		self.Background.VerticalMiddle:SetWidth(size);
+		self.Background.End:SetWidth(size);
+	else
+		self.Background.Start:SetHeight(size);
+		self.Background.HorizontalMiddle:SetHeight(size);
+		self.Background.VerticalMiddle:SetHeight(size);
+		self.Background.End:SetHeight(size);
+	end
 end
 
 function SpellFlyoutFrameMixin:UpdateKnownFlyouts()
