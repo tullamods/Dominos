@@ -1,4 +1,4 @@
-## Interface: 110010, 110007, 40401, 11505
+## Interface: 110010, 110007, 40402, 40401, 11506
 ## Title: Dominos Cast
 ## Title-zhCN: Dominos 施法条模块
 ## Notes: A movable casting bar, with timer
