@@ -2,7 +2,8 @@
 
 ## 11.0.9
 
-* Update TOCs for 11.1.0
+* Update TOCs for 11.1.0, 4.4.2 and 1.15.6
+* (Classic) Add experimental support for the extra ability bar 
 
 ## 11.0.8
 

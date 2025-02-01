@@ -1,4 +1,4 @@
-if not ExtraAbilityContainer then return end
+if not (ExtraAbilityContainer or ExtraActionBarFrame) then return end
 
 local AddonName, Addon = ...
 local L = LibStub("AceLocale-3.0"):GetLocale(AddonName)
@@ -33,9 +33,8 @@ function ExtraAbilityBar:ThemeBar(enable)
         end
     end
 
-    local zoneAbilities = C_ZoneAbility and C_ZoneAbility.GetActiveAbilities() or 0
-
-    if #zoneAbilities > 0 then
+    local zoneAbilities = C_ZoneAbility and C_ZoneAbility.GetActiveAbilities()
+    if type(zoneAbilities) == "table" and #zoneAbilities > 0 then
         for button in ZoneAbilityFrame.SpellButtonContainer:EnumerateActive() do
             if button then
                 if enable then
@@ -73,11 +72,17 @@ end
 function ExtraAbilityBar:RepositionExtraAbilityContainer()
     if InCombatLockdown() then return end
 
-    local container = ExtraAbilityContainer
+    local container = ExtraAbilityContainer or ExtraActionBarFrame
 
     container:SetParent(self)
-    container:ClearAllPointsBase()
-    container:SetPointBase('CENTER', self)
+
+    if container.ClearAllPointsBase then
+        container:ClearAllPointsBase()
+        container:SetPointBase('CENTER', self)
+    else
+        container:ClearAllPoints()
+        container:SetPoint('CENTER', self)
+    end
 end
 
 function ExtraAbilityBar:OnCreateMenu(menu)
@@ -118,12 +123,18 @@ end
 function ExtraAbilityBar:UpdateShowBlizzardTexture()
     if self:ShowingBlizzardTexture() then
         ExtraActionBarFrame.button.style:Show()
-        ZoneAbilityFrame.Style:Show()
+
+        if ZoneAbilityFrame then
+            ZoneAbilityFrame.Style:Show()
+        end
 
         self:ThemeBar(false)
     else
         ExtraActionBarFrame.button.style:Hide()
-        ZoneAbilityFrame.Style:Hide()
+
+        if ZoneAbilityFrame then
+            ZoneAbilityFrame.Style:Hide()
+        end
 
         self:ThemeBar(true)
     end
@@ -153,23 +164,27 @@ function ExtraAbilityBarModule:OnFirstLoad()
 
     -- onshow/hide call UpdateManagedFramePositions on the blizzard end so
     -- turn that bit off
-    ExtraAbilityContainer:SetScript("OnShow", nil)
-    ExtraAbilityContainer:SetScript("OnHide", nil)
+    if ExtraAbilityContainer then
+        ExtraAbilityContainer:SetScript("OnShow", nil)
+        ExtraAbilityContainer:SetScript("OnHide", nil)
 
-    -- watch for new frames to be added to the container as we will want to
-    -- possibly theme them later (if they're new buttons)
-    hooksecurefunc(
-        ExtraAbilityContainer, 'AddFrame', function()
-            if self.frame then
-                self.frame:ThemeBar(not self.frame:ShowingBlizzardTexture())
+        -- watch for new frames to be added to the container as we will want to
+        -- possibly theme them later (if they're new buttons)
+        hooksecurefunc(
+            ExtraAbilityContainer, 'AddFrame', function()
+                if self.frame then
+                    self.frame:ThemeBar(not self.frame:ShowingBlizzardTexture())
+                end
             end
-        end
-    )
+        )
 
-    -- also reposition whenever edit mode tries to do so
-    hooksecurefunc(ExtraAbilityContainer, 'ApplySystemAnchor', function()
-        self:RepositionExtraAbilityContainer()
-    end)
+        -- also reposition whenever edit mode tries to do so
+        hooksecurefunc(ExtraAbilityContainer, 'ApplySystemAnchor', function()
+            self:RepositionExtraAbilityContainer()
+        end)
+    else
+        ExtraActionBarFrame.ignoreFramePositionManager = true
+    end
 end
 
 function ExtraAbilityBarModule:RepositionExtraAbilityContainer()
@@ -192,7 +207,10 @@ function ExtraAbilityBarModule:ApplyTitanPanelWorkarounds()
     local adjust = _G.TitanMovable_AddonAdjust
     if not adjust then return end
 
-    adjust('ExtraAbilityContainer', true)
+    if ExtraAbilityContainer then
+        adjust('ExtraAbilityContainer', true)
+    end
+
     adjust("ExtraActionBarFrame", true)
     return true
 end
