@@ -1,9 +1,13 @@
 # Dominos Changelog
 
+## 11.1.0
+
+* Adjust KeyRingButton test to hopefully avoid some errors
+
 ## 11.0.9
 
 * Update TOCs for 11.1.0, 4.4.2 and 1.15.6
-* (Classic) Add experimental support for the extra ability bar 
+* (Classic) Add experimental support for the extra ability bar
 
 ## 11.0.8
 
