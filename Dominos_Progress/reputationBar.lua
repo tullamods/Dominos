@@ -106,7 +106,7 @@ function ReputationBar:Update()
         value = capped and info.renownLevelThreshold or info.renownReputationEarned or 0;
 
         color = BLUE_FONT_COLOR
-        factionStandingText = RENOWN_LEVEL_LABEL .. info.renownLevel
+        factionStandingText = RENOWN_LEVEL_LABEL:format(info.renownLevel)
     else
         if reaction == MAX_REPUTATION_REACTION then
             min = 0

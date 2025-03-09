@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 11.1.1
+
+* Fix renown level text showing %d
+
 ## 11.1.0
 
 * Adjust KeyRingButton test to hopefully avoid some errors
