@@ -29,13 +29,7 @@ function Addon.ActionBar:OnCreateMenu(menu)
     end
 
     local function addStateGroup(panel, categoryName, stateType)
-        local states =
-            Addon.BarStates:map(
-            function(s)
-                return s.type == stateType
-            end
-        )
-
+        local states = Addon.BarStates:map(function(s) return s.type == stateType end)
         if #states == 0 then
             return
         end
@@ -55,11 +49,14 @@ function Addon.ActionBar:OnCreateMenu(menu)
                 name = name,
                 items = getDropdownItems,
                 get = function()
-                    local offset = panel.owner:GetOffset(state.id) or -1
-                    if offset > -1 then
-                        return (panel.owner.id + offset - 1) % Addon:NumBars() + 1
+                    local owner = panel.owner
+                    if owner then
+                        local offset = owner:GetOffset(state.id) or -1
+                        if offset > -1 then
+                            return (owner.id + offset - 1) % Addon:NumBars() + 1
+                        end
+                        return offset
                     end
-                    return offset
                 end,
                 set = function(_, value)
                     local offset
