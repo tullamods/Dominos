@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 11.1.2
+
+* Context menu dropdowns now use the standard dropdown menu templates
+
 ## 11.1.1
 
 * Fix renown level text showing %d
