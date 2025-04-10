@@ -48,6 +48,8 @@ do
 		end
 
 		dropdownMenu:SetupMenu(function(dropdown, rootDescription)
+			rootDescription:SetGridMode(MenuConstants.VerticalGridDirection);
+
 			for i, item in ipairs(menu:GetItems()) do
 				rootDescription:CreateRadio(getItemLabel(item), isSelected, handleSelect, i)
 			end

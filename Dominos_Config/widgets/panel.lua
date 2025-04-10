@@ -167,6 +167,29 @@ function Panel:NewDropdown(options)
 	return dropdown
 end
 
+function Panel:NewFontPicker(options)
+	options.parent = self
+
+	local dropdown = Addon.FontPicker:New(options)
+
+	local prev = self.lastWidget
+	if prev then
+		dropdown:SetPoint('TOPLEFT', self.lastWidget, 'BOTTOMLEFT', 0, -4)
+	else
+		dropdown:SetPoint('TOPLEFT', 4, -4)
+	end
+	dropdown:SetPoint('RIGHT')
+
+	local width, height = dropdown:GetEffectiveSize()
+	self.height = self.height + (height + 4)
+	self.width = math.max(self.width, width)
+	self.lastWidget = dropdown
+
+	self:Render()
+
+	return dropdown
+end
+
 function Panel:NewTextureSelector(options)
 	options.parent = self
 

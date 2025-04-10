@@ -9,6 +9,7 @@
 	<Script file="slider.lua"/>
 	<Script file="textInput.lua"/>
 	<Script file="dropdown.lua"/>
+	<Script file="fontPicker.lua"/>
 	<Script file="textureSelector.lua"/>
 	<Script file="fontSelector.lua"/>
 
