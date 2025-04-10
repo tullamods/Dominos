@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 11.1.3
+
+* Update TOCs for 1.15.7
+
 ## 11.1.2
 
 * Context menu dropdowns now use the standard dropdown menu templates
