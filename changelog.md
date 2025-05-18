@@ -1,5 +1,10 @@
 # Dominos Changelog
 
+## 11.1.5
+
+* Update TOCs for 11.1.7 and 5.5.0 (Mists of Pandaria Classic)
+* Refresh libraries to fix a lua error in MoP Classic
+
 ## 11.1.4
 
 * Update TOCs for 11.1.5
