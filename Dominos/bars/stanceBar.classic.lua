@@ -11,15 +11,15 @@ local L = LibStub('AceLocale-3.0'):GetLocale(AddonName)
 -- test to see if the player has a stance bar
 -- not the best looking, but I also don't need to keep it after I do the check
 if not ({
-    DEATHKNIGHT = Addon:IsBuild('cata', 'wrath'),
+    DEATHKNIGHT = Addon:IsBuild('mop', 'cata', 'wrath'),
     DRUID = true,
-    HUNTER = Addon:IsBuild('cata'),
+    HUNTER = Addon:IsBuild('mop', 'cata'),
     MAGE = false,
     PALADIN = true,
-    PRIEST = Addon:IsBuild('cata', 'wrath'),
+    PRIEST = Addon:IsBuild('mop', 'cata', 'wrath'),
     ROGUE = true,
     SHAMAN = false,
-    WARLOCK = Addon:IsBuild('cata', 'wrath'),
+    WARLOCK = Addon:IsBuild('mop', 'cata', 'wrath'),
     WARRIOR = true
 })[UnitClassBase('player')] then
     return

@@ -52,10 +52,10 @@ local BarStates = {
 
 Addon.BarStates = BarStates
 
-local function addState(stateType, stateId, stateValue, stateText)
+local function addState(stateType, stateID, stateValue, stateText)
     return BarStates:add {
         type = stateType,
-        id = stateId,
+        id = stateID,
         value = stateValue,
         text = stateText
     }
@@ -64,20 +64,50 @@ end
 -- some class states are a bit dynamic
 -- druid forms, for instance, can vary based on how many different abilities
 -- are known
-local function addFormState(stateType, stateId, spellID)
-    local lookupFormConditional = function()
-        for i = 1, GetNumShapeshiftForms() do
-            local _, _, _, formSpellID = GetShapeshiftFormInfo(i)
+local function addFormState(stateType, stateID, ...)
+    local argCount = select("#", ...)
+    local lookupFormConditional, name
 
-            if spellID == formSpellID then
-                return ('[form:%d]'):format(i)
+    if argCount > 1 then
+        local spells = { ... }
+
+        lookupFormConditional = function()
+            for i = 1, GetNumShapeshiftForms() do
+                local _, _, _, formSpellID = GetShapeshiftFormInfo(i)
+
+                for _, spellID in ipairs(spells) do
+                    if spellID == formSpellID then
+                        return ('[form:%d]'):format(i)
+                    end
+                end
             end
         end
+
+        for _, spellID in ipairs(spells) do
+            name = getSpellName(spellID)
+            if name then
+                break
+            end
+        end
+    elseif argCount > 0 then
+        local spellID = ...
+
+        lookupFormConditional = function()
+            for i = 1, GetNumShapeshiftForms() do
+                local _, _, _, formSpellID = GetShapeshiftFormInfo(i)
+
+                if spellID == formSpellID then
+                    return ('[form:%d]'):format(i)
+                end
+            end
+        end
+
+        name = getSpellName(spellID)
+    else
+        error("Usage: addFormState(stateType, stateID, spellID1, spellID2, ...)")
     end
 
-    local name = getSpellName(spellID)
-
-    addState(stateType, stateId, lookupFormConditional, name)
+    addState(stateType, stateID, lookupFormConditional, name)
 end
 
 local function getEquippedConditional(classId, subclassId)
@@ -132,16 +162,13 @@ if class == 'DRUID' then
         addFormState('class', 'travel', 783)
         addFormState('class', 'aquatic', 1066)
 
-        if Addon:IsBuild('cata', 'wrath', 'bcc') then
-            -- flight form
-            addFormState('class', 'flight', 33943)
-
-            -- swift flight form
-            addFormState('class', 'flight', 40120)
+        -- flight form & swift flight form
+        if Addon:IsBuild('mop', 'cata', 'wrath', 'bcc') then
+            addFormState('class', 'flight', 33943, 40120)
         end
     end
 elseif class == 'DEATHKNIGHT' then
-    if Addon:IsBuild('cata', 'wrath') then
+    if Addon:IsBuild('mop', 'cata', 'wrath') then
         addFormState('class', 'blood', 48266)
         addFormState('class', 'frost', 48263)
         addFormState('class', 'unholy', 48265)
@@ -149,11 +176,14 @@ elseif class == 'DEATHKNIGHT' then
 elseif class == 'EVOKER' then
     addState('class', 'soar', '[bonusbar:1]', getSpellName(369536))
 elseif class == 'HUNTER' then
-    if Addon:IsBuild('cata') then
+    if Addon:IsBuild('mop', 'cata') then
         addFormState('class', 'hawk', 13165)
         addFormState('class', 'cheetah', 5118)
         addFormState('class', 'pack', 13159)
-        addFormState('class', 'wild', 20043)
+
+        if not Addon:IsBuild('mop') then
+            addFormState('class', 'wild', 20043)
+        end
     end
 elseif class == 'PALADIN' then
     if Addon:IsBuild('retail') then
@@ -161,8 +191,11 @@ elseif class == 'PALADIN' then
         addFormState('class', 'crusader', 32223)
         addFormState('class', 'devotion', 465)
         addFormState('class', 'retribution', 183435)
-
         addState('class', 'shield', getEquippedConditional(Enum.ItemClass.Armor, Enum.ItemArmorSubclass.Shield))
+    elseif Addon:IsBuild('mop') then
+        addFormState('class', 'truth', 31801)
+        addFormState('class', 'righteousness', 20154)
+        addFormState('class', 'insight', 20165)
     elseif Addon:IsBuild('cata') then
         addFormState('class', 'concentration', 19746)
         addFormState('class', 'crusader', 32223)
@@ -194,30 +227,31 @@ elseif class == 'PRIEST' then
     end
 elseif class == 'ROGUE' then
     -- classic shadowdance
-    if Addon:IsBuild('cata', 'wrath') then
+    if Addon:IsBuild('mop', 'cata', 'wrath') then
         addState('class', 'shadowdance', '[bonusbar:2]', getSpellName(51713))
-    -- retail shadowdance
+        -- retail shadowdance
     elseif getSpellName(185313) then
         addState('class', 'shadowdance', '[bonusbar:1,form:2]', getSpellName(185313))
     end
 
     addState('class', 'stealth', '[bonusbar:1]', getSpellName(1784))
 elseif class == 'WARLOCK' then
-    if not Addon:IsBuild('retail') then
+    if Addon:IsBuild('mop') then
+        addFormState('class', 'metamorphosis', 103958)
+    elseif not Addon:IsBuild('retail') then
         addState('class', 'metamorphosis', '[form:1]', getSpellName(47241))
     end
 elseif class == 'WARRIOR' then
     if Addon:IsBuild('retail') then
         addFormState('class', 'battle', 386164)
         addFormState('class', 'defensive', 386208)
-        addFormState('class', 'berserker', 386196)
     else
-        addState('class', 'battle', '[bonusbar:1]', getSpellName(2457))
-        addState('class', 'defensive', '[bonusbar:2]', getSpellName(71))
-        addState('class', 'berserker', '[bonusbar:3]', getSpellName(2458))
+        addFormState('class', 'battle', 2457)
+        addFormState('class', 'defensive', 71)
+        addFormState('class', 'berserker', 2458)
     end
 
-    if Addon:IsBuild("retail", "cata") then
+    if Addon:IsBuild("retail", "mop", "cata") then
         addState('class', 'shield', getEquippedConditional(Enum.ItemClass.Armor, Enum.ItemArmorSubclass.Shield))
     end
 end
