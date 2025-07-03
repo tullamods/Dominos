@@ -185,6 +185,12 @@ elseif class == 'HUNTER' then
             addFormState('class', 'wild', 20043)
         end
     end
+elseif class == 'MONK' then
+    if Addon:IsBuild('mists') then
+        addFormState('class', 'ox', 115069)
+        addFormState('class', 'tiger', 103985)
+        addFormState('class', 'serpent', 115070)
+    end
 elseif class == 'PALADIN' then
     if Addon:IsBuild('retail') then
         addFormState('class', 'concentration', 317920)
