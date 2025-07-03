@@ -50,7 +50,7 @@ function Launcher:CreateDataBrokerObject()
                     GameTooltip_AddInstructionLine(tooltip, L.ShowOptionsTip)
                 end
 
-                if Addon:IsBuild('cata', 'wrath') then
+                if Addon:IsBuild('mop', 'cata', 'wrath') then
                     local _, _, latencyHome, latencyWorld = GetNetStats()
 
                     GameTooltip_AddBlankLinesToTooltip(tooltip, 1)
