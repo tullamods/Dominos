@@ -27,7 +27,7 @@ do
     elseif l == LE_EXPANSION_CATACLYSM then
         WOW_BUILD = 'cata'
     elseif l == LE_EXPANSION_MISTS_OF_PANDARIA then
-        WOW_BUILD = 'mop'
+        WOW_BUILD = 'mists'
     else
         WOW_BUILD = 'retail'
     end

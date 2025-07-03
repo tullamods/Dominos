@@ -163,12 +163,12 @@ if class == 'DRUID' then
         addFormState('class', 'aquatic', 1066)
 
         -- flight form & swift flight form
-        if Addon:IsBuild('mop', 'cata', 'wrath', 'bcc') then
+        if Addon:IsBuild('mists', 'cata', 'wrath', 'bcc') then
             addFormState('class', 'flight', 33943, 40120)
         end
     end
 elseif class == 'DEATHKNIGHT' then
-    if Addon:IsBuild('mop', 'cata', 'wrath') then
+    if Addon:IsBuild('mists', 'cata', 'wrath') then
         addFormState('class', 'blood', 48266)
         addFormState('class', 'frost', 48263)
         addFormState('class', 'unholy', 48265)
@@ -176,12 +176,12 @@ elseif class == 'DEATHKNIGHT' then
 elseif class == 'EVOKER' then
     addState('class', 'soar', '[bonusbar:1]', getSpellName(369536))
 elseif class == 'HUNTER' then
-    if Addon:IsBuild('mop', 'cata') then
+    if Addon:IsBuild('mists', 'cata') then
         addFormState('class', 'hawk', 13165)
         addFormState('class', 'cheetah', 5118)
         addFormState('class', 'pack', 13159)
 
-        if not Addon:IsBuild('mop') then
+        if not Addon:IsBuild('mists') then
             addFormState('class', 'wild', 20043)
         end
     end
@@ -192,7 +192,7 @@ elseif class == 'PALADIN' then
         addFormState('class', 'devotion', 465)
         addFormState('class', 'retribution', 183435)
         addState('class', 'shield', getEquippedConditional(Enum.ItemClass.Armor, Enum.ItemArmorSubclass.Shield))
-    elseif Addon:IsBuild('mop') then
+    elseif Addon:IsBuild('mists') then
         addFormState('class', 'truth', 31801)
         addFormState('class', 'righteousness', 20154)
         addFormState('class', 'insight', 20165)
@@ -227,7 +227,7 @@ elseif class == 'PRIEST' then
     end
 elseif class == 'ROGUE' then
     -- classic shadowdance
-    if Addon:IsBuild('mop', 'cata', 'wrath') then
+    if Addon:IsBuild('mists', 'cata', 'wrath') then
         addState('class', 'shadowdance', '[bonusbar:2]', getSpellName(51713))
         -- retail shadowdance
     elseif getSpellName(185313) then
@@ -236,7 +236,7 @@ elseif class == 'ROGUE' then
 
     addState('class', 'stealth', '[bonusbar:1]', getSpellName(1784))
 elseif class == 'WARLOCK' then
-    if Addon:IsBuild('mop') then
+    if Addon:IsBuild('mists') then
         addFormState('class', 'metamorphosis', 103958)
     elseif not Addon:IsBuild('retail') then
         addState('class', 'metamorphosis', '[form:1]', getSpellName(47241))
@@ -251,7 +251,7 @@ elseif class == 'WARRIOR' then
         addFormState('class', 'berserker', 2458)
     end
 
-    if Addon:IsBuild("retail", "mop", "cata") then
+    if Addon:IsBuild("retail", "mists", "cata") then
         addState('class', 'shield', getEquippedConditional(Enum.ItemClass.Armor, Enum.ItemArmorSubclass.Shield))
     end
 end
