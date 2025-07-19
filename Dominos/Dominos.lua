@@ -447,16 +447,12 @@ end
 function Addon:IsConfigAddonEnabled()
     local player = UnitName('player')
 
-    if type(GetAddOnEnableState) == "function" then
-        return GetAddOnEnableState(player, CONFIG_ADDON_NAME) > 0
-    end
-
     return C_AddOns.GetAddOnEnableState(CONFIG_ADDON_NAME, player) > 0
 end
 
 function Addon:LoadConfigAddon()
-    if not (C_AddOns.IsAddOnLoaded or IsAddOnLoaded)(CONFIG_ADDON_NAME) then
-        return (C_AddOns.LoadAddOn or LoadAddOn)(CONFIG_ADDON_NAME)
+    if not C_AddOns.IsAddOnLoaded(CONFIG_ADDON_NAME) then
+        return C_AddOns.LoadAddOn(CONFIG_ADDON_NAME)
     end
 
     return true
