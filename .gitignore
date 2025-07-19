@@ -1,15 +1,25 @@
-# Windows image file caches
-Thumbs.db
+# Ignore everything by default
+*
 
-# Folder config file
-Desktop.ini
+# Allow standard files
+!.gitignore
+!.gitattributes
+!.gitmodules
+!LICENSE*
+!README*
+!CHANGELOG*
 
-# Mac crap
-.DS_Store
+# Allow WoW addon files
+!*.lua
+!*.xml
+!*.toc
+!*.md
+!*.tga
+!*.blp
+# rarely I use separate .pkgmeta files for classic vs retail
+!.pkgmeta*
 
-# packager release folder
-.release
-
-# vscode settings
-.vscode
-
+# Allow non-dot directories and .github
+!*/
+.*/**
+!.github/**
