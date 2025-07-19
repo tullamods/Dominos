@@ -1,4 +1,4 @@
-## Interface: 110200, 110107, 50500, 11507
+## Interface: 11507
 ## Title: Dominos
 ## Notes: A main actionbar replacement
 ## Notes-zhCN: 一种动作条替换方案
@@ -15,7 +15,7 @@ Dominos.lua
 core\helpers.lua
 core\barStates\module.lua
 core\barStates\Common.lua
-core\barStates\[Game].lua
+core\barStates\Vanilla.lua
 core\shadowUIParent.lua
 core\frame.lua
 core\buttonBar.lua
