@@ -14,7 +14,7 @@ Addon.BarStates:LoadClass{
         { 'shadowform', macro = '[form:1]', label = 15473 },
     },
     ROGUE = {
-        { 'stealth', form = 1784 },
+        { 'stealth', macro = '[bonusbar:1]', label = 1784 },
     },
     WARRIOR = {
         { 'battle', form = 2457 },
