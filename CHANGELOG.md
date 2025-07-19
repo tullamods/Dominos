@@ -1,5 +1,11 @@
 # Dominos Changelog
 
+## 11.1.8-beta
+
+* Rewrote the bar states configuration formats to handle multiple game versions a bit better
+* Updated TOCs to use conditional file loading directives
+* Add support for 11.2.0
+
 ## 11.1.7
 
 * Add support for Monk stances in MoP Classic
