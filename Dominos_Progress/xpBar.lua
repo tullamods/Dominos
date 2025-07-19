@@ -1,5 +1,5 @@
 local _, Addon = ...
-local Dominos = _G.Dominos
+local Dominos = LibStub('AceAddon-3.0'):GetAddon('Dominos')
 local ExperienceBar = Dominos:CreateClass("Frame", Addon.ProgressBar)
 
 function ExperienceBar:Init()
@@ -14,7 +14,7 @@ function ExperienceBar:Update()
 	local rest = GetXPExhaustion() or 0
 
 	self:SetValues(value, max, rest)
-	self:UpdateText(_G.XP, value, max, rest)
+	self:UpdateText(XP, value, max, rest)
 end
 
 function ExperienceBar:IsModeActive()

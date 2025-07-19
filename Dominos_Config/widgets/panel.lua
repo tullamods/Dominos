@@ -3,8 +3,7 @@
 local AddonName, Addon = ...
 local Panel = Addon:CreateClass('Frame')
 local L = LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')
-local ParentAddonName = (C_AddOns.GetAddOnDependencies or GetAddOnDependencies)(AddonName)
-local ParentAddon = _G[ParentAddonName]
+local ParentAddon = LibStub('AceAddon-3.0'):GetAddon('Dominos')
 
 local max = math.max
 local round = function(v) return math.floor(v + 0.5) end

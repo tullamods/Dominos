@@ -1,7 +1,7 @@
 if not (C_ArtifactUI and select(4, GetBuildInfo()) < 80000) then return end
 
 local Addon = select(2, ...)
-local Dominos = _G.Dominos
+local Dominos = LibStub('AceAddon-3.0'):GetAddon('Dominos')
 local ArtifactBar = Dominos:CreateClass('Frame', Addon.ProgressBar)
 
 local IsEquippedArtifactDisabled

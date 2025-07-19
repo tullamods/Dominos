@@ -902,11 +902,3 @@ function Addon.OnLaunch(_, button)
     end
 end
 
-if type(C_AddOns) == "table" then
-    _G[AddonName .. '_Launch'] = Addon.OnLaunch
-end
-
--- exports
--- luacheck: push ignore 122
-_G[AddonName] = Addon
--- luacheck: pop
