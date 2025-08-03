@@ -293,9 +293,9 @@ function Addon:GetDatabaseDefaults()
 end
 
 function Addon:UpgradeDatabase()
-    local configVerison = self.db.global.configVersion
-    if configVerison ~= DB_SCHEMA_VERSION then
-        self:OnUpgradeDatabase(configVerison, DB_SCHEMA_VERSION)
+    local configVersion = self.db.global.configVersion
+    if configVersion ~= DB_SCHEMA_VERSION then
+        self:OnUpgradeDatabase(configVersion, DB_SCHEMA_VERSION)
         self.db.global.configVersion = DB_SCHEMA_VERSION
     end
 

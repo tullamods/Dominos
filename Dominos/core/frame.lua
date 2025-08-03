@@ -270,7 +270,7 @@ function Frame:SetFrameScale(newScale, scaleAnchored)
     self.sets.scale = newScale
 
     FlyPaper.SetScale(self, newScale)
-    self:SaveRelativePostiion()
+    self:SaveRelativePosition()
 
     if scaleAnchored then
         self:ForAnchored('SetFrameScale', newScale, scaleAnchored)
@@ -703,7 +703,7 @@ function Frame:GetSavedPosition()
     return point, relPoint,x, y
 end
 
-function Frame:SaveRelativePostiion()
+function Frame:SaveRelativePosition()
     local point, relPoint, x, y = self:GetRelativePosition()
 
     self:SavePosition(point, relPoint, x, y)
@@ -884,7 +884,7 @@ function Frame:Stick()
     end
 
     self:ClearSavedAnchor()
-    self:SaveRelativePostiion()
+    self:SaveRelativePosition()
     return false
 end
 
@@ -896,7 +896,7 @@ function Frame:StickToFrame()
         self:ClearAllPoints()
         self:SetPoint(point, relFrame, relPoint)
         self:SaveAnchor(relFrame, point, relPoint)
-        self:SaveRelativePostiion()
+        self:SaveRelativePosition()
 
         return true
     end
@@ -924,7 +924,7 @@ function Frame:StickToGrid()
         self:ClearAllPoints()
         self:SetPoint(point, self:GetParent(), relPoint, x, y)
 
-        self:SaveRelativePostiion()
+        self:SaveRelativePosition()
         return true
     end
 
@@ -953,7 +953,7 @@ function Frame:StickToEdge()
             self:ClearAllPoints()
             self:SetPoint(point, self:GetParent(), relPoint, x, y)
 
-            self:SaveRelativePostiion()
+            self:SaveRelativePosition()
             return true
         end
     end

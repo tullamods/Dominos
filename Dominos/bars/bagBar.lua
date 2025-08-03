@@ -186,7 +186,7 @@ function BagBarModule:OnFirstLoad()
         BagsBar:SetParent(Addon.ShadowUIParent)
     end
 
-    -- use our own handlign for the blizzard bag bar
+    -- use our own handling for the blizzard bag bar
     if MainMenuBarManager then
         EventRegistry:UnregisterCallback("MainMenuBarManager.OnExpandChanged", MainMenuBarManager)
         EventRegistry:UnegisterFrameEventAndCallback("VARIABLES_LOADED", MainMenuBarManager)
