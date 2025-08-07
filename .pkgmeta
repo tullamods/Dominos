@@ -1,7 +1,7 @@
 package-as: Dominos
 
 manual-changelog:
-  filename: changelog.md
+  filename: CHANGELOG.md
   markup-type: markdown
 
 move-folders:
