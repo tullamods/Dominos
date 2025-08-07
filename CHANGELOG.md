@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 11.1.9
+
+* Correct pkgmeta file so that you don't see my garbage git commits
+
 ## 11.1.8
 
 * Add support for 11.2.0
