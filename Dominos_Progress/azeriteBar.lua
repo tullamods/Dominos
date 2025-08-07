@@ -1,7 +1,7 @@
 if not _G.C_AzeriteItem then return end
 
 local Addon = select(2, ...)
-local Dominos = _G.Dominos
+local Dominos = LibStub('AceAddon-3.0'):GetAddon('Dominos')
 local AzeriteBar = Dominos:CreateClass("Frame", Addon.ProgressBar)
 local L = LibStub("AceLocale-3.0"):GetLocale("Dominos-Progress")
 

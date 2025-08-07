@@ -4,14 +4,6 @@ local LSM = LibStub("LibSharedMedia-3.0")
 local L = LibStub("AceLocale-3.0"):GetLocale("Dominos-CastBar")
 
 -- local aliases for some globals
-local GetTime = _G.GetTime
-
-local UnitCastingInfo = _G.UnitCastingInfo or CastingInfo
-local UnitChannelInfo = _G.UnitChannelInfo or ChannelInfo
-
-local IsHarmfulSpell = C_Spell.IsSpellHarmful or IsHarmfulSpell
-local IsHelpfulSpell = C_Spell.IsSpellHelpful or IsHelpfulSpell
-
 local ICON_OVERRIDES = {
     -- replace samwise with cog
     [136235] = 136243
@@ -29,12 +21,6 @@ local CAST_BAR_COLORS = {
 local LATENCY_BAR_ALPHA = 0.5
 
 local function getSpellInfo(spellID)
-    if type(GetSpellInfo) == "function" then
-        local name, _, iconID, castTime = GetSpellInfo(spellID)
-
-        return name, iconID, castTime
-    end
-
     local info = C_Spell.GetSpellInfo(spellID)
     if info then
         return info.name, info.iconID, info.castTime
@@ -42,17 +28,6 @@ local function getSpellInfo(spellID)
 end
 
 local function getRandomSpellID()
-    if type(GetSpellTabInfo) == "function" then
-        local _, _, offset, numSlots = GetSpellTabInfo(GetNumSpellTabs())
-        local _, spellID
-
-        repeat
-            _, spellID = GetSpellBookItemInfo(math.random(1, offset + numSlots), "player")
-        until spellID ~= nil
-
-        return spellID
-    end
-
     local lineInfo = C_SpellBook.GetSpellBookSkillLineInfo(C_SpellBook.GetNumSpellBookSkillLines())
     local offset = lineInfo.itemIndexOffset
     local numSlots = lineInfo.numSpellBookItems
@@ -66,14 +41,14 @@ local function getRandomSpellID()
 end
 
 local function getSpellReaction(spellID)
-    local name = (GetSpellInfo or C_Spell.GetSpellName)(spellID)
+    local name = C_Spell.GetSpellName(spellID)
 
     if name then
-        if IsHelpfulSpell(name) then
+        if C_Spell.IsSpellHelpful(name) then
             return "help"
         end
 
-        if IsHarmfulSpell(name) then
+        if C_Spell.IsSpellHarmful(name) then
             return "harm"
         end
     end

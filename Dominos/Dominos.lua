@@ -293,9 +293,9 @@ function Addon:GetDatabaseDefaults()
 end
 
 function Addon:UpgradeDatabase()
-    local configVerison = self.db.global.configVersion
-    if configVerison ~= DB_SCHEMA_VERSION then
-        self:OnUpgradeDatabase(configVerison, DB_SCHEMA_VERSION)
+    local configVersion = self.db.global.configVersion
+    if configVersion ~= DB_SCHEMA_VERSION then
+        self:OnUpgradeDatabase(configVersion, DB_SCHEMA_VERSION)
         self.db.global.configVersion = DB_SCHEMA_VERSION
     end
 
@@ -447,16 +447,12 @@ end
 function Addon:IsConfigAddonEnabled()
     local player = UnitName('player')
 
-    if type(GetAddOnEnableState) == "function" then
-        return GetAddOnEnableState(player, CONFIG_ADDON_NAME) > 0
-    end
-
     return C_AddOns.GetAddOnEnableState(CONFIG_ADDON_NAME, player) > 0
 end
 
 function Addon:LoadConfigAddon()
-    if not (C_AddOns.IsAddOnLoaded or IsAddOnLoaded)(CONFIG_ADDON_NAME) then
-        return (C_AddOns.LoadAddOn or LoadAddOn)(CONFIG_ADDON_NAME)
+    if not C_AddOns.IsAddOnLoaded(CONFIG_ADDON_NAME) then
+        return C_AddOns.LoadAddOn(CONFIG_ADDON_NAME)
     end
 
     return true
@@ -902,11 +898,3 @@ function Addon.OnLaunch(_, button)
     end
 end
 
-if type(C_AddOns) == "table" then
-    _G[AddonName .. '_Launch'] = Addon.OnLaunch
-end
-
--- exports
--- luacheck: push ignore 122
-_G[AddonName] = Addon
--- luacheck: pop

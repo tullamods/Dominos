@@ -1,5 +1,5 @@
 local _, Addon = ...
-local Dominos = _G.Dominos
+local Dominos = LibStub('AceAddon-3.0'):GetAddon('Dominos')
 local GoldBar = Dominos:CreateClass("Frame", Addon.ProgressBar)
 
 

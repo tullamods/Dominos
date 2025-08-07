@@ -20,6 +20,15 @@ ActionBar.ButtonProps = {
 
 ActionBar.class = UnitClassBase('player')
 
+-- the order in which bar state groups are evaluated
+ActionBar.statePrecedence = {
+    'modifier',
+    'page',
+    'class',
+    'race',
+    'target'
+}
+
 -- Metatable magic. Basically this says, "create a new table for this index"
 -- I do this so that I only create page tables for classes the user is actually
 -- playing
@@ -201,35 +210,34 @@ function ActionBar:GetOffset(stateId)
     return self.pages[stateId]
 end
 
+
+local function getMacroCondition(state)
+    local condition = state.value
+    if type(condition) == "function" then
+        return condition(state)
+    end
+    return condition
+end
+
 function ActionBar:UpdateStateDriver()
-    local conditions
+    local conditions = {}
+    local numBars = Addon:NumBars()
 
-    for _, state in Addon.BarStates:getAll() do
-        local offset = self:GetOffset(state.id)
-
-        if offset then
-            local condition
-
-            if type(state.value) == 'function' then
-                condition = state.value()
-            else
-                condition = state.value
-            end
-
-            if condition then
-                local page = Wrap(self.id + offset, Addon:NumBars())
-
-                if conditions then
-                    conditions = strjoin(';', conditions, (condition .. page))
-                else
-                    conditions = (condition .. page)
+    for _, stateType in ipairs(self.statePrecedence) do
+        for _, state in Addon.BarStates:GetAll(stateType) do
+            local offset = self.pages[state.id]
+            if offset then
+                local condition = getMacroCondition(state)
+                if condition then
+                    conditions[#conditions + 1] = condition .. Wrap(self.id + offset, numBars)
                 end
             end
         end
     end
 
-    if conditions then
-        RegisterStateDriver(self, 'page', strjoin(';', conditions, self.id))
+    if #conditions > 0 then
+        conditions[#conditions + 1] = self.id
+        RegisterStateDriver(self, 'page', table.concat(conditions, ';'))
     else
         UnregisterStateDriver(self, 'page')
         self:SetAttribute('state-page', self.id)

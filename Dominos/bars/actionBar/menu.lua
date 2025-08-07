@@ -12,7 +12,7 @@ function Addon.ActionBar:OnCreateMenu(menu)
 
         if lastNumBars ~= numBars then
             dropdownItems = {
-                {value = -1, text = _G.DISABLE}
+                {value = -1, text = DISABLE}
             }
 
             for i = 1, numBars do
@@ -29,21 +29,15 @@ function Addon.ActionBar:OnCreateMenu(menu)
     end
 
     local function addStateGroup(panel, categoryName, stateType)
-        local states = Addon.BarStates:map(function(s) return s.type == stateType end)
-        if #states == 0 then
+        if not Addon.BarStates:Exists(stateType) then
             return
         end
 
         panel:NewHeader(categoryName)
 
-        for _, state in ipairs(states) do
+        for _, state in Addon.BarStates:GetAll(stateType) do
             local id = state.id
-            local name = state.text
-            if type(name) == 'function' then
-                name = name()
-            elseif not name then
-                name = L['State_' .. id:upper()]
-            end
+            local name = state.text or L['State_' .. id:upper()]
 
             panel:NewDropdown {
                 name = name,

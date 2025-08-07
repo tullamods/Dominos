@@ -28,22 +28,23 @@ if MicroMenu then
 
     registerButtons(MicroButtons, MicroMenu:GetChildren())
 else
-    local MICRO_BUTTONS = _G.MICRO_BUTTONS or {
+    for _, buttonName in ipairs{
         "CharacterMicroButton",
         "SpellbookMicroButton",
         "TalentMicroButton",
         "AchievementMicroButton",
         "QuestLogMicroButton",
+        "SocialsMicroButton",
         "GuildMicroButton",
-        "LFDMicroButton",
-        "EJMicroButton",
+        "PVPMicroButton",
+        "LFGMicroButton",
         "CollectionsMicroButton",
+        "EJMicroButton",
+        "StoreMicroButton",
         "MainMenuMicroButton",
-        "StoreMicroButton"
-    }
-
-    for i = 1, #MICRO_BUTTONS do
-        local button = _G[MICRO_BUTTONS[i]]
+        -- "HelpMicroButton"
+    } do
+        local button = _G[buttonName]
 
         if button then
             MicroButtons[#MicroButtons + 1] = button
@@ -162,9 +163,27 @@ function MenuBar:SetEnableMenuButton(button, enabled)
 end
 
 function MenuBar:IsMenuButtonEnabled(button)
-    local disabled = self.sets.disabled
+    local buttonName = button and button:GetName()
+    if not buttonName then
+        return false
+    end
 
-    return not (disabled and disabled[button:GetName()])
+    local disabledButtons = self.sets.disabled
+    if disabledButtons and disabledButtons[buttonName] then
+        return false
+    end
+
+    if buttonName == "TalentMicroButton" then
+        return C_SpecializationInfo.CanPlayerUseTalentSpecUI()
+    elseif buttonName == "StoreMicroButton" then
+        return C_StorePublic.IsEnabled()
+    elseif buttonName == "GuildMicroButton" then
+        return C_CVar.GetCVarBool("useClassicGuildUI")
+    elseif buttonName == "SocialsMicroButton" then
+        return not C_CVar.GetCVarBool("useClassicGuildUI")
+    else
+        return true
+    end
 end
 
 if Addon:IsBuild("retail") then
@@ -220,10 +239,25 @@ else
         for _, button in pairs(MicroButtons) do
             button:Hide()
         end
-
         self:UpdateActiveButtons()
 
         if OverrideActionBar and OverrideActionBar:IsVisible() then
+            local l, r, t, b = self:GetButtonInsets()
+
+            for i, button in pairs(self.activeButtons) do
+                if i > 1 then
+                    button:ClearAllPoints()
+
+                    if i == 7 then
+                        button:SetPoint('TOPLEFT', self.activeButtons[1], 'BOTTOMLEFT', 0, (t - b) + 3)
+                    else
+                        button:SetPoint('BOTTOMLEFT', self.activeButtons[i - 1], 'BOTTOMRIGHT', (l - r) - 1, 0)
+                    end
+                end
+
+                button:Show()
+            end
+        elseif PetMicroButtonFrame and PetMicroButtonFrame:IsVisible() then
             local l, r, t, b = self:GetButtonInsets()
 
             for i, button in pairs(self.activeButtons) do

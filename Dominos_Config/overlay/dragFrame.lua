@@ -528,7 +528,7 @@ function DragFrame:NudgeFrame(dx, dy)
     f:ClearSavedAnchor()
     f:ClearAllPoints()
     f:SetPoint("BOTTOMLEFT", x / fs, y / fs)
-    f:SaveRelativePostiion()
+    f:SaveRelativePosition()
     f:RestorePosition()
 
     -- report in terms of screen pixels

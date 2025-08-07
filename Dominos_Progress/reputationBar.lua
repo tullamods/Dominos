@@ -1,5 +1,5 @@
 local _, Addon = ...
-local Dominos = _G.Dominos
+local Dominos = LibStub('AceAddon-3.0'):GetAddon('Dominos')
 local ReputationBar = Dominos:CreateClass("Frame", Addon.ProgressBar)
 local PARAGON_FACTION_COLOR_INDEX = #FACTION_BAR_COLORS
 

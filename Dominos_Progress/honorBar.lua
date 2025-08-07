@@ -3,7 +3,7 @@ if not _G.IsWatchingHonorAsXP then
 end
 
 local _, Addon = ...
-local Dominos = _G.Dominos
+local Dominos = LibStub('AceAddon-3.0'):GetAddon('Dominos')
 local HonorBar = Dominos:CreateClass('Frame', Addon.ProgressBar)
 
 function HonorBar:Init()

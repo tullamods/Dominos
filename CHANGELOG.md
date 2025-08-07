@@ -1,5 +1,12 @@
 # Dominos Changelog
 
+## 11.1.8
+
+* Add support for 11.2.0
+* Updated TOCs to use conditional file loading directives
+* Rewrote the bar states configuration formats to handle multiple game versions a bit better
+* Updated the menu bar button ordering to hopefully prevent issues when switching to vehicle/pet battle UIs
+
 ## 11.1.7
 
 * Add support for Monk stances in MoP Classic

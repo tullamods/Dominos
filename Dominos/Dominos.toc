@@ -1,4 +1,4 @@
-## Interface: 110107, 110105, 50500, 40402, 11507
+## Interface: 110200, 110107, 50500, 11507
 ## Title: Dominos
 ## Notes: A main actionbar replacement
 ## Notes-zhCN: 一种动作条替换方案
@@ -8,46 +8,47 @@
 ## SavedVariables: DominosDB
 ## OptionalDeps: Ace3, LibKeyBound-1.0, LibSharedMedia-3.0, Masque, FlyPaper, LibDualSpec-1.0
 ## IconTexture: Interface/AddOns/Dominos/Dominos
-## AddonCompartmentFunc: Dominos_Launch
 # stuff required for the addon to work
 embeds.xml
 localization.xml
 Dominos.lua
 core\helpers.lua
-core\barStates.lua
+core\barStates\module.lua
+core\barStates\Common.lua
+core\barStates\[Game].lua
 core\shadowUIParent.lua
 core\frame.lua
 core\buttonBar.lua
 core\bindableButton.lua
 core\fadeManager.lua
-core\overrideController.lua
+core\overrideController.lua [AllowLoadGameType mainline, mists, cata, wrath, tbc]
 core\tooltipController.lua
-core\blizzardHider.lua
-core\blizzardHider.classic.lua
+core\blizzardHider.lua [AllowLoadGameType mainline]
+core\blizzardHider.classic.lua [AllowLoadGameType classic]
 # builtin bars
-bars\actionBar\bindings.lua
-bars\actionBar\flyout.lua
-bars\actionBar\button.lua
-bars\actionBar\button.classic.lua
-bars\actionBar\buttons.lua
-bars\actionBar\buttons.classic.lua
+bars\actionBar\bindings.lua [AllowLoadGameType mainline]
+bars\actionBar\flyout.lua [AllowLoadGameType mainline]
+bars\actionBar\button.lua [AllowLoadGameType mainline]
+bars\actionBar\button.classic.lua [AllowLoadGameType classic]
+bars\actionBar\buttons.lua [AllowLoadGameType mainline]
+bars\actionBar\buttons.classic.lua [AllowLoadGameType classic]
 bars\actionBar\bar.lua
 bars\actionBar\menu.lua
 bars\actionBar\bars.lua
 bars\bagBar.lua
-bars\extraAbilityBar.lua
-bars\encounterBar.lua
+bars\extraAbilityBar.lua [AllowLoadGameType mainline, mists, cata, wrath, tbc]
+bars\encounterBar.lua [AllowLoadGameType mainline, mists, cata, wrath]
 bars\menuBar.lua
-bars\petBar.lua
-bars\petBar.classic.lua
+bars\petBar.lua [AllowLoadGameType mainline]
+bars\petBar.classic.lua [AllowLoadGameType classic]
 bars\possessBar.lua
-bars\queueStatusBar.lua
-bars\stanceBar.lua
-bars\stanceBar.classic.lua
-bars\talkingHeadBar.lua
-bars\totemBar.lua
+bars\queueStatusBar.lua [AllowLoadGameType mainline]
+bars\stanceBar.lua [AllowLoadGameType mainline]
+bars\stanceBar.classic.lua [AllowLoadGameType classic]
+bars\talkingHeadBar.lua [AllowLoadGameType mainline]
+bars\totemBar.lua [AllowLoadGameType cata, wrath]
 # stuff you should be able to comment out and still have Dominos work
 plugins\slashCommands.lua
 plugins\launcher.lua
 plugins\buttonThemer.lua
-plugins\getActionReagentUses.lua
+plugins\getActionReagentUses.lua [AllowLoadGameType vanilla]

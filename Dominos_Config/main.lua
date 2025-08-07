@@ -1,7 +1,6 @@
 local AddonName, AddonTable = ...
 local Addon = LibStub('AceAddon-3.0'):NewAddon(AddonTable, AddonName, 'AceEvent-3.0', 'AceConsole-3.0')
-
-local ParentAddonName = (C_AddOns.GetAddOnDependencies or GetAddOnDependencies)(AddonName)
+local ParentAddonName = C_AddOns.GetAddOnDependencies(AddonName)
 local ParentAddon = LibStub('AceAddon-3.0'):GetAddon(ParentAddonName)
 
 --------------------------------------------------------------------------------
