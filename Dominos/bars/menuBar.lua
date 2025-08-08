@@ -40,9 +40,10 @@ else
         "LFGMicroButton",
         "CollectionsMicroButton",
         "EJMicroButton",
+        "WorldMapMicroButton",
         "StoreMicroButton",
         "MainMenuMicroButton",
-        -- "HelpMicroButton"
+        "HelpMicroButton"
     } do
         local button = _G[buttonName]
 
@@ -173,14 +174,14 @@ function MenuBar:IsMenuButtonEnabled(button)
         return false
     end
 
-    if buttonName == "TalentMicroButton" then
-        return C_SpecializationInfo.CanPlayerUseTalentSpecUI()
-    elseif buttonName == "StoreMicroButton" then
+    if buttonName == "StoreMicroButton" then
         return C_StorePublic.IsEnabled()
-    elseif buttonName == "GuildMicroButton" then
-        return C_CVar.GetCVarBool("useClassicGuildUI")
-    elseif buttonName == "SocialsMicroButton" then
+    elseif buttonName == "GuildMicroButton" and not Addon:IsBuild("retail") then
         return not C_CVar.GetCVarBool("useClassicGuildUI")
+    elseif buttonName == "SocialsMicroButton" and not Addon:IsBuild("retail") then
+        return C_CVar.GetCVarBool("useClassicGuildUI")
+    elseif buttonName == "HelpMicroButton" then
+        return not Addon:IsBuild("mists")
     else
         return true
     end

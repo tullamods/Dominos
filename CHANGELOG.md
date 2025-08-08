@@ -2,7 +2,8 @@
 
 ## 11.1.9
 
-* Correct pkgmeta file so that you don't see my garbage git commits
+* Fix menu bar errors
+* Corrected pkgmeta file so that you'll actually see the right changelog and not just my commit messages
 
 ## 11.1.8
 
