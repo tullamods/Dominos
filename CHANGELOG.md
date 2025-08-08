@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 11.2.0
+
+* Exclude the new combat assistant highlights from spell animation filtering
+
 ## 11.1.9
 
 * Fix menu bar errors
