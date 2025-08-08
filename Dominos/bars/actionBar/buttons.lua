@@ -123,7 +123,16 @@ function ActionButtons:Initialize()
     ]])
 
     -- overlay glow hiding
-    if type(ActionButton_ShowOverlayGlow) == "function" then
+    if ActionButtonSpellAlertManager then
+        hooksecurefunc(ActionButtonSpellAlertManager, "ShowAlert", function(manager, button)
+            if not self.buttons[button] or Addon:ShowingSpellGlows() then return end
+
+            local hasAlert, alertType = manager:HasAlert(button)
+            if hasAlert and alertType ~= manager.SpellAlertType.AssistedCombatRotation then
+                manager:HideAlert(button)
+            end
+        end)
+    elseif type(ActionButton_ShowOverlayGlow) == "function" then
         hooksecurefunc("ActionButton_ShowOverlayGlow", function(button)
             if not self.buttons[button] or Addon:ShowingSpellGlows() then return end
 
