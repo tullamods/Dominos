@@ -13,7 +13,9 @@ function Launcher:OnInitialize()
             icon = C_AddOns.GetAddOnMetadata(AddonName, 'IconTexture'),
             -- unfortunately, func doesn't pass in what button was clicked here
             -- so we default to showing the options menu
-            func = function() Addon:ShowOptionsFrame() end
+            func = function()
+                Addon:ShowOptionsFrame()
+            end
         }
     end
 end
