@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 11.2.1
+
+* Fix the addon compartment menu icon not showing the options menu when clicked
+
 ## 11.2.0
 
 * Exclude the new combat assistant highlights from spell animation filtering
