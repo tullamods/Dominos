@@ -11,7 +11,9 @@ function Launcher:OnInitialize()
         AddonCompartmentFrame:RegisterAddon{
             text = AddonName,
             icon = C_AddOns.GetAddOnMetadata(AddonName, 'IconTexture'),
-            func = function(button) Addon:OnLaunch(button); end
+            -- unfortunately, func doesn't pass in what button was clicked here
+            -- so we default to showing the options menu
+            func = function() Addon:ShowOptionsFrame() end
         }
     end
 end
