@@ -1,5 +1,12 @@
 # Dominos Changelog
 
+## 11.2.2
+
+* Changed the default paging settings for Warriors in Mists to use Action Bar 1 for battle stance, instead of Action Bar 7
+* Fixed an issue with the progress bars that could cause an Addon Action Blocked message to occur when leveling up in combat
+* Reintroduced a workaround for a Blizzard error that could occur when hiding the achievement button in classic version
+* Updated TOCs for 11.2.5 and 5.5.1
+
 ## 11.2.1
 
 * Fix the addon compartment menu icon not showing the options menu when clicked
