@@ -608,15 +608,25 @@ end
 function Frame:GetDisplayConditions() end
 
 function Frame:UpdateDisplayConditions()
-    local conditions = self:GetDisplayConditions()
-
-    if conditions and conditions ~= '' then
-        RegisterStateDriver(self, 'display', conditions)
+    if InCombatLockdown() then
+        if not self.needsDisplayConditionUpdate then
+            self.needsDisplayConditionUpdate = true
+            EventUtil.RegisterOnceFrameEventAndCallback("PLAYER_REGEN_ENABLED", function()
+                self:UpdateDisplayConditions()
+                self.needsDisplayConditionUpdate = nil
+            end)
+        end
     else
-        UnregisterStateDriver(self, 'display')
+        local conditions = self:GetDisplayConditions()
 
-        if self:GetAttribute('state-display') then
-            self:SetAttribute('state-display', nil)
+        if conditions and conditions ~= '' then
+            RegisterStateDriver(self, 'display', conditions)
+        else
+            UnregisterStateDriver(self, 'display')
+
+            if self:GetAttribute('state-display') then
+                self:SetAttribute('state-display', nil)
+            end
         end
     end
 end
