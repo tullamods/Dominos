@@ -411,4 +411,10 @@ function MenuBarModule:OnFirstLoad()
         f:SetScript("OnShow", layout)
         f:SetScript("OnHide", layout)
     end
+
+    -- a consistent bug in classic era, AchievementFrameAchievements_OnEvent
+    -- tries to call a function that does not exist
+    if not (Addon:IsBuild('retail') or type(AchievementMicroButton_Update) == 'function') then
+        AchievementMicroButton_Update = function() end
+    end
 end
