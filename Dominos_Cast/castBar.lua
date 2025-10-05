@@ -1,3 +1,7 @@
+if LE_EXPANSION_LEVEL_CURRENT == LE_EXPANSION_LEVEL_MIDNIGHT then
+    return
+end
+
 local _, Addon = ...
 local Dominos = LibStub("AceAddon-3.0"):GetAddon("Dominos")
 local LSM = LibStub("LibSharedMedia-3.0")
