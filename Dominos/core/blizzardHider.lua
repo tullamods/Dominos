@@ -42,7 +42,7 @@ local function wipeActionButtons(bar)
 end
 
 apply(banish,
-    "MainMenuBar",
+    MainActionBar and "MainActionBar" or "MainMenuBar",
     "MainMenuBarVehicleLeaveButton",
     -- "MicroButtonAndBagsBar",
     "MultiBar5",
@@ -70,7 +70,7 @@ apply(unregisterEvents,
 )
 
 apply(disableActionButtons,
-    "MainMenuBar",
+    MainActionBar and "MainActionBar" or "MainMenuBar",
     "MultiBar5",
     "MultiBar6",
     "MultiBar7",
