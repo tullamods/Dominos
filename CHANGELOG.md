@@ -3,7 +3,8 @@
 ## 11.2.3
 
 * Updated TOC files for 12.0.0 (Midnight) and 11.2.7
-* (Midnight) Disabled the cast bar and pet bar. The pe bar may come back, but the cast bar likely will not.
+* Fixed an error caused byt the progress bar trying to call a missing API when attempting to show azerite information.
+* (Midnight) Disabled the cast bar and pet bar
 * (Midnight) Disabled the ability to open flyouts via keypress
 
 ## 11.2.2
