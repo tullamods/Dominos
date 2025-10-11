@@ -1,4 +1,4 @@
-## Interface: 110205, 110200, 50501, 50500, 11507
+## Interface: 120000, 110205, 110200, 50501, 50500, 11507
 ## Title: Dominos Config
 ## Title-zhCN: Dominos 设置
 ## Title-zhTW: Dominos 設置
