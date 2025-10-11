@@ -1,9 +1,10 @@
 # Dominos Changelog
 
-## Unreleased
+## 11.2.3
 
-* Updated TOC files for 12.0.0 (Midnight)
-* Disabled cast bar in Midnight
+* Updated TOC files for 12.0.0 (Midnight) and 11.2.7
+* (Midnight) Disabled the cast bar and pet bar. The pe bar may come back, but the cast bar likely will not.
+* (Midnight) Disabled the ability to open flyouts via keypress
 
 ## 11.2.2
 
