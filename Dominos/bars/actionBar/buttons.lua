@@ -414,14 +414,28 @@ function ActionButtons:AddCastOnKeyPressSupport(button)
 
     bind.SetOverrideBindings = bindButton_SetOverrideBindings
 
-    Addon.SpellFlyout:Register(bind)
+    if Addon.SpellFlyout then
+        Addon.SpellFlyout:Register(bind)
+    end
 
     -- translate HOTKEY button "clicks" into LeftButton
-    self:WrapScript(bind, "OnClick", [[
-        if button == "HOTKEY" then
-            return "LeftButton"
-        end
-    ]])
+    if Addon:IsAfterMidnight() then
+        self:WrapScript(bind, "OnClick", [[
+            if button == "HOTKEY" then
+                if GetActionInfo(self:GetEffectiveAttribute("action")) == "flyout" then
+                    return false
+                end
+
+                return "LeftButton"
+            end
+        ]])
+    else
+        self:WrapScript(bind, "OnClick", [[
+            if button == "HOTKEY" then
+                return "LeftButton"
+            end
+        ]])
+    end
 
     button.bind = bind
     button:UpdateOverrideBindings()

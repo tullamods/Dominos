@@ -103,7 +103,10 @@ function ActionButton:OnCreate(id)
 
     -- ...and the rest
     Addon.BindableButton:AddQuickBindingSupport(self)
-    Addon.SpellFlyout:Register(self)
+
+    if Addon.SpellFlyout then
+        Addon.SpellFlyout:Register(self)
+    end
 end
 
 function ActionButton:UpdateIcon()
@@ -155,6 +158,8 @@ end
 -- we hide cooldowns when action buttons are transparent
 -- so that the sparks don't appear
 function ActionButton:SetShowCooldowns(show)
+    if Addon:IsAfterMidnight() then return end
+
     if show then
         if self.cooldown:GetParent() ~= self then
             self.cooldown:SetParent(self)

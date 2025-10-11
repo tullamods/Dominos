@@ -4,7 +4,7 @@
 --------------------------------------------------------------------------------
 
 local AddonName, Addon = ...
-if not Addon:IsBuild("retail") then return end
+if (not Addon:IsBuild("retail") or Addon:IsAfterMidnight()) then return end
 
 -- A precalculated list of all known valid flyout ids. Not robust, but also sparse.
 -- TODO: regeneate this list once every build
@@ -92,6 +92,8 @@ function SpellFlyoutButtonMixin:Update()
 end
 
 function SpellFlyoutButtonMixin:UpdateCooldown()
+	if Addon:IsAfterMidnight() then return end
+
 	if self.spellID then
 		ActionButton_UpdateCooldown(self)
 	end

@@ -1,11 +1,11 @@
-if not PetActionBar then return end
+local AddonName, Addon = ...
+if not PetActionBar or Addon:IsAfterMidnight() then return end
 
 --------------------------------------------------------------------------------
 -- Pet Bar
 -- A movable action bar for pets
 --------------------------------------------------------------------------------
 
-local AddonName, Addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(AddonName)
 
 --------------------------------------------------------------------------------

@@ -886,6 +886,11 @@ function Addon:IsBuild(...)
     return false
 end
 
+function Addon:IsAfterMidnight()
+    local _, _, _, interfaceNumber = GetBuildInfo()
+    return interfaceNumber >= 120000
+end
+
 function Addon.OnLaunch(_, button)
     if button == 'LeftButton' then
         if IsShiftKeyDown() then
@@ -898,3 +903,5 @@ function Addon.OnLaunch(_, button)
     end
 end
 
+-- expose Dominos as a global
+_G[AddonName] = Addon
