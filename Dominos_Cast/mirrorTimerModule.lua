@@ -3,37 +3,9 @@
 --]]
 local _, Addon = ...
 local Dominos = LibStub("AceAddon-3.0"):GetAddon("Dominos")
-local CastBarModule = Dominos:NewModule("CastBar")
 local MIRRORTIMER_NUMTIMERS = MIRRORTIMER_NUMTIMERS or #MirrorTimerContainer.mirrorTimers
 
-local function disableFrame(name)
-    local frame = _G[name]
-    if frame then
-        frame:UnregisterAllEvents()
-        frame.ignoreFramePositionManager = true
-        frame:SetParent(Dominos.ShadowUIParent)
-    end
-end
-
-function CastBarModule:Load()
-    self.frame = Addon.CastBar:New("cast", {"player", "vehicle"})
-end
-
-function CastBarModule:Unload()
-    if self.frame then
-        self.frame:Free()
-        self.frame = nil
-    end
-end
-
-function CastBarModule:OnFirstLoad()
-    disableFrame("CastingBarFrame")
-    disableFrame("PlayerCastingBarFrame")
-    disableFrame("PetCastingBarFrame")
-end
-
 local MirrorTimerModule = Dominos:NewModule("MirrorTimer", "AceEvent-3.0")
-
 
 function MirrorTimerModule:Load()
     self.bars = {}
