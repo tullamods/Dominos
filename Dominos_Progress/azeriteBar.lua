@@ -25,33 +25,27 @@ function AzeriteBar:Update()
         return
     end
 
-    local azeriteItemLocation = C_AzeriteItem.FindActiveAzeriteItem()
-
-	Item:CreateFromItemLocation(azeriteItemLocation)
-
-    local value, max, powerLevel
-	if _G.AzeriteUtil.IsAzeriteItemLocationBankBag(azeriteItemLocation) then
-        value = 0
-        max = 1
-        powerLevel = 0
-	else
-		value, max = C_AzeriteItem.GetAzeriteItemXPInfo(azeriteItemLocation)
-		powerLevel = C_AzeriteItem.GetPowerLevel(azeriteItemLocation)
+    local item = C_AzeriteItem.FindActiveAzeriteItem()
+    if not (item and item:IsEquipmentSlot()) then
+        self:SetValues()
+        self:UpdateText(L.Azerite, 0, 0, 0)
+        return
     end
+
+    local value, max = C_AzeriteItem.GetAzeriteItemXPInfo(item)
+    local powerLevel = C_AzeriteItem.GetPowerLevel(item)
 
     self:SetValues(value, max)
     self:UpdateText(L.Azerite, value, max, powerLevel)
 end
 
 function AzeriteBar:IsModeActive()
-    local location = C_AzeriteItem.FindActiveAzeriteItem()
+    local item = C_AzeriteItem.FindActiveAzeriteItem()
 
-    if location then
-        Item:CreateFromItemLocation(location)
-        return not AzeriteUtil.IsAzeriteItemLocationBankBag(location)
-    end
-
-    return false
+    return item
+        and not C_AzeriteItem.IsAzeriteItemAtMaxLevel()
+        and C_AzeriteItem.IsAzeriteItemEnabled(item)
+        and item:IsEquipmentSlot()
 end
 
 -- register this as a possible progress bar mode
