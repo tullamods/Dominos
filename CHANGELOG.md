@@ -1,5 +1,11 @@
 # Dominos Changelog
 
+## 11.2.4
+
+* Updated TOC files for game versions 5.5.3 and 1.15.8
+* Dropped the specific TOC file for Vanilla as 1.15.8 supports conditional directives
+* The artifactBar and azeriteBar lua files should now not load at all on Classic
+
 ## 11.2.3
 
 * Updated TOC files for 12.0.0 (Midnight) and 11.2.7
