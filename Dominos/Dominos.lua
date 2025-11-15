@@ -897,8 +897,7 @@ function Addon:IsBuild(...)
 end
 
 function Addon:IsAfterMidnight()
-    local _, _, _, interfaceNumber = GetBuildInfo()
-    return interfaceNumber >= 120000
+    return select(4, GetBuildInfo()) >= 120000
 end
 
 function Addon.OnLaunch(_, button)
