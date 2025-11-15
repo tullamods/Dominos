@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 11.2.5
+
+* Fixed an issue that would prevent bindings from working when in Edit House mode
+
 ## 11.2.4
 
 * Updated TOC files for game versions 5.5.3 and 1.15.8

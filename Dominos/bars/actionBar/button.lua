@@ -122,7 +122,11 @@ end
 function ActionButton:UpdateOverrideBindings()
     if InCombatLockdown() then return end
 
-    self.bind:SetOverrideBindings(GetBindingKey(self:GetAttribute("commandName")))
+    if C_HouseEditor and C_HouseEditor.IsHouseEditorActive() then
+        ClearOverrideBindings(self.bind)
+    else
+        self.bind:SetOverrideBindings(GetBindingKey(self:GetAttribute("commandName")))
+    end
 end
 
 function ActionButton:UpdateShown()

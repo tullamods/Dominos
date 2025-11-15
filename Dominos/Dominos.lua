@@ -69,6 +69,10 @@ function Addon:OnEnable()
     self:RegisterEvent('UPDATE_BINDINGS')
     self:RegisterEvent("GAME_PAD_ACTIVE_CHANGED", "UPDATE_BINDINGS")
 
+    if C_HouseEditor then
+        self:RegisterEvent('HOUSE_EDITOR_MODE_CHANGED')
+    end
+
     self:Load()
 end
 
@@ -98,6 +102,12 @@ end
 function Addon:UPDATE_BINDINGS()
     self.Frame:ForEach('ForButtons', 'UpdateHotkeys')
 
+    if not InCombatLockdown() then
+        self.Frame:ForEach('ForButtons', 'UpdateOverrideBindings')
+    end
+end
+
+function Addon:HOUSE_EDITOR_MODE_CHANGED()
     if not InCombatLockdown() then
         self.Frame:ForEach('ForButtons', 'UpdateOverrideBindings')
     end
