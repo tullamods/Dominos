@@ -1,17 +1,5 @@
-if select(4, GetBuildInfo()) >= 120000 then return end
-
 local _, Addon = ...
 local Dominos = LibStub("AceAddon-3.0"):GetAddon("Dominos")
-
-local function disableFrame(name)
-    local frame = _G[name]
-    if frame then
-        frame:UnregisterAllEvents()
-        frame.ignoreFramePositionManager = true
-        frame:SetParent(Dominos.ShadowUIParent)
-    end
-end
-
 local CastBarModule = Dominos:NewModule("CastBar")
 
 function CastBarModule:Load()
@@ -26,7 +14,11 @@ function CastBarModule:Unload()
 end
 
 function CastBarModule:OnFirstLoad()
-    disableFrame("CastingBarFrame")
-    disableFrame("PlayerCastingBarFrame")
-    disableFrame("PetCastingBarFrame")
+    for _, frame in pairs { CastingBarFrame, PlayerCastingBarFrame, PetCastingBarFrame } do
+        if frame then
+            frame:UnregisterAllEvents()
+            frame.ignoreFramePositionManager = true
+            frame:SetParent(Dominos.ShadowUIParent)
+        end
+    end
 end
