@@ -80,9 +80,9 @@ function PetBar:AcquireButton(index)
     return PetButtons[index]
 end
 
-function PetBar:OnAttachButton(button)
+function PetBar:OnAttachButton(button, index)
     button.HotKey:SetAlpha(self:ShowingBindingText() and 1 or 0)
-    button:Show()
+    button:SetShown(PetHasActionBar() and GetPetActionInfo(index))
 
     Addon:GetModule('ButtonThemer'):Register(button, 'Pet Bar')
     Addon:GetModule('Tooltips'):Register(button)

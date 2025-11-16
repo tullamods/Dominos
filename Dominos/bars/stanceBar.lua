@@ -30,36 +30,30 @@ end
 -- Button setup
 --------------------------------------------------------------------------------
 
-local function stanceButton_OnCreate(button)
-    -- tag with the default stance button
-    button:SetAttribute("commandName", "SHAPESHIFTBUTTON" .. button:GetID())
+local StanceButtons = setmetatable({}, {
+    __index = function(self, index)
+        local button = CreateFrame('CheckButton', ('%sStanceButton%d'):format(AddonName, index), nil, 'StanceButtonTemplate', index)
 
-    -- turn off cooldown edges
-    button.cooldown:SetDrawEdge(false)
+        -- tag with the default stance button binding id
+        button:SetAttribute("commandName", 'SHAPESHIFTBUTTON' .. index)
 
-    -- turn off constant usability updates
-    button:SetScript("OnUpdate", nil)
+        -- turn off cooldown edges
+        button.cooldown:SetDrawEdge(false)
 
-    -- register mouse clicks
-    button:EnableMouseWheel(true)
+        -- turn off constant usability updates
+        button:SetScript("OnUpdate", nil)
 
-    -- apply hooks for quick binding
-    Addon.BindableButton:AddQuickBindingSupport(button)
-end
+        -- register mouse clicks
+        button:EnableMouseWheel(true)
 
-local function getOrCreateStanceButton(id)
-    local name = ('%sStanceButton%d'):format(AddonName, id)
+        -- apply hooks for quick binding
+        Addon.BindableButton:AddQuickBindingSupport(button)
 
-    local button = _G[name]
+        self[index] = button
 
-    if not button then
-        button = CreateFrame('CheckButton', name, nil, 'StanceButtonTemplate', id)
-
-        stanceButton_OnCreate(button)
+        return button
     end
-
-    return button
-end
+})
 
 --------------------------------------------------------------------------------
 -- Bar setup
@@ -87,12 +81,12 @@ function StanceBar:NumButtons()
 end
 
 function StanceBar:AcquireButton(index)
-    return getOrCreateStanceButton(index)
+    return StanceButtons[index]
 end
 
-function StanceBar:OnAttachButton(button)
+function StanceBar:OnAttachButton(button, index)
     button.HotKey:SetAlpha(self:ShowingBindingText() and 1 or 0)
-    button:Show()
+    button:SetShown(index <= (GetNumShapeshiftForms() or 0))
 
     Addon:GetModule('ButtonThemer'):Register(button, 'Class Bar')
     Addon:GetModule('Tooltips'):Register(button)
