@@ -57,7 +57,7 @@ if Addon:IsBuild('classic', 'bcc') then
         end
         return '[@pet,exists,nobonusbar:5]show;hide'
     end
-elseif Addon:IsBuild('wrath', 'cata', 'mists') then
+else
     function PetBar:GetDisplayConditions()
         return '[@pet,exists,nopossessbar]show;hide'
     end

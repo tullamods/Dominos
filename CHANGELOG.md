@@ -1,5 +1,11 @@
 # Dominos Changelog
 
+## 11.2.7
+
+* (Retail, Midnight) Reuse the existing pet bar action buttons and logic. This should make the bar usable in Midnight
+* (Classic) Use a custom impelemntation for the class bar. This shold resolve issues with positioning of the bar when playing certain classes
+* (Midnight) Partially reimplemented the logic for hiding action button cooldowns on transparent bars.
+
 ## 11.2.6
 
 * (Midnight) Enabled the cast bar after resolving some secret value comparison errors
