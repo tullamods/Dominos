@@ -48,7 +48,6 @@ hide(
     MultiBarBottomRight,
     MultiBarLeft,
     MultiBarRight,
-    PetActionBarFrame,
     StanceBarFrame
 )
 

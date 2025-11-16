@@ -39,8 +39,7 @@ bars\bagBar.lua
 bars\extraAbilityBar.lua [AllowLoadGameType mainline, mists, cata, wrath, tbc]
 bars\encounterBar.lua [AllowLoadGameType mainline, mists, cata, wrath]
 bars\menuBar.lua
-bars\petBar.lua [AllowLoadGameType mainline]
-bars\petBar.classic.lua [AllowLoadGameType classic]
+bars\petBar.lua
 bars\possessBar.lua
 bars\queueStatusBar.lua [AllowLoadGameType mainline]
 bars\stanceBar.lua [AllowLoadGameType mainline]

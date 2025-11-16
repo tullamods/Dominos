@@ -1,174 +1,30 @@
-local AddonName, Addon = ...
-if not PetActionBar or Addon:IsAfterMidnight() then return end
-
 --------------------------------------------------------------------------------
 -- Pet Bar
 -- A movable action bar for pets
 --------------------------------------------------------------------------------
 
+local AddonName, Addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(AddonName)
 
 --------------------------------------------------------------------------------
--- Pet Buttons
---
--- In retail, we can't use the existing pet action slots, and there isn't really
--- a sufficient amount of secure environment actions to perfectly reimplement
--- the pet bar.
---
--- To work around this, we implement our own pet bar, but keep the other one
--- still active (but invisible). This lets us use the old bar to track when our
--- bar should be shown
+-- Pet Button Setup
 --------------------------------------------------------------------------------
 
-local PetActionButtonMixin = {}
+local PetButtons = setmetatable({}, {
+    __index = function(self, index)
+        local button =  (PetActionBar and PetActionBar.actionButtons[index])
+            or _G['PetActionButton' .. index]
 
-function PetActionButtonMixin:CancelSpellDataLoadedCallback()
-    local cancelFunc = self.spellDataLoadedCancelFunc
+        if button then
+            button:SetAttribute("commandName", "BONUSACTIONBUTTON" .. index)
+            Addon.BindableButton:AddQuickBindingSupport(button)
 
-    if cancelFunc then
-		cancelFunc()
-		self.spellDataLoadedCancelFunc = nil
-	end
-end
-
--- this is mostly a straight port of PetActionBarMixin:Update()
-function PetActionButtonMixin:Update()
-    local petActionID = self:GetID()
-    local petActionIcon = self.icon
-    local name, texture, isToken, isActive, autoCastAllowed, autoCastEnabled, spellID = GetPetActionInfo(petActionID)
-
-    if not isToken then
-        self.tooltipName = name
-    else
-        self.tooltipName = _G[name]
-    end
-
-    self.isToken = isToken
-
-    if spellID and spellID ~= self.spellID then
-        self.spellID = spellID
-
-        local spell = Spell:CreateFromSpellID(spellID)
-
-        self.spellDataLoadedCancelFunc = spell:ContinueWithCancelOnSpellLoad(function()
-            self.tooltipSubtext = spell:GetSpellSubtext()
-        end)
-    end
-
-    if isActive then
-        if IsPetAttackAction(petActionID) then
-            self:StartFlash()
-            self:GetCheckedTexture():SetAlpha(0.5)
-        else
-            self:StopFlash()
-            self:GetCheckedTexture():SetAlpha(1)
-        end
-    else
-        self:StopFlash()
-    end
-
-    self:SetChecked(isActive and true)
-
-
-    local autoCastOverlay = self.AutoCastOverlay
-    if autoCastOverlay then
-        autoCastOverlay:SetShown(autoCastAllowed)
-		autoCastOverlay:ShowAutoCastEnabled(autoCastEnabled)
-    else
-        self.AutoCastable:SetShown(autoCastAllowed and true)
-
-        if autoCastEnabled then
-            AutoCastShine_AutoCastStart(self.AutoCastShine)
-        else
-            AutoCastShine_AutoCastStop(self.AutoCastShine)
-        end
-    end
-
-    if texture then
-        if GetPetActionSlotUsable(petActionID) then
-            petActionIcon:SetVertexColor(1, 1, 1)
-        else
-            petActionIcon:SetVertexColor(0.4, 0.4, 0.4)
+            self[index] = button
         end
 
-        petActionIcon:SetTexture(isToken and _G[texture] or texture)
-        petActionIcon:Show()
-    else
-        petActionIcon:Hide()
+        return button
     end
-
-    SharedActionButton_RefreshSpellHighlight(self, PET_ACTION_HIGHLIGHT_MARKS[petActionID])
-end
-
-function PetActionButtonMixin:UpdateCooldown()
-    local cooldown = self.cooldown
-    local start, duration, enable = GetPetActionCooldown(self:GetID())
-
-    if enable and enable ~= 0 and start > 0 and duration > 0 then
-        cooldown:SetCooldown(start, duration)
-    else
-        cooldown:Clear()
-    end
-
-    if GameTooltip and GameTooltip:IsOwned(self) then
-        self:OnEnter()
-    end
-end
-
-function PetActionButtonMixin:UpdateShownInsecure()
-    if InCombatLockdown() then
-        return
-    end
-
-    self:SetShown(self.watcher:IsVisible() and not self:GetAttribute("statehidden"))
-end
-
-local function createPetActionButton(name, id)
-    local button = CreateFrame('CheckButton', name, nil, 'PetActionButtonTemplate')
-
-    Mixin(button, PetActionButtonMixin)
-
-    -- get the stock button
-    local target = _G['PetActionButton' .. id]
-
-    -- copy its ID
-    button:SetID(target:GetID())
-
-    -- copy its visibility state
-    local watcher = CreateFrame('Frame', nil, target, "SecureHandlerShowHideTemplate")
-    watcher:SetFrameRef("owner", button)
-    watcher:SetAttribute("_onshow", [[ self:GetFrameRef("owner"):Show(true) ]])
-    watcher:SetAttribute("_onhide", [[ self:GetFrameRef("owner"):Hide(true) ]])
-    button.watcher = watcher
-
-    -- copy its pushed state
-    hooksecurefunc(target, "SetButtonState", function(_, ...)
-        button:SetButtonState(...)
-    end)
-
-    -- setup bindings
-    button:SetAttribute("commandName", "BONUSACTIONBUTTON" .. id)
-    Addon.BindableButton:AddQuickBindingSupport(button)
-
-    -- add support for mousewheel bindings
-    button:EnableMouseWheel(true)
-
-    -- unregister spell data loaded callback
-    button:HookScript("OnHide", PetActionButtonMixin.CancelSpellDataLoadedCallback)
-
-    return button
-end
-
-local function getOrCreatePetActionButton(id)
-    local name = ('%sPetActionButton%d'):format(AddonName, id)
-    local button = _G[name]
-
-    if not button then
-        button = createPetActionButton(name, id)
-    end
-
-    return button
-end
+})
 
 --------------------------------------------------------------------------------
 -- The Pet Bar
@@ -185,10 +41,26 @@ function PetBar:GetDisplayName()
 end
 
 function PetBar:IsOverrideBar()
+    -- TODO: make overrideBar a property of the bar itself instead of a global
+    -- setting
     return Addon.db.profile.possessBar == self.id
 end
 
 function PetBar:UpdateOverrideBar()
+    self:UpdateDisplayConditions()
+end
+
+if Addon:IsBuild('classic', 'bcc') then
+    function PetBar:GetDisplayConditions()
+        if self:IsOverrideBar() then
+            return '[@pet,exists][bonusbar:5]show;hide'
+        end
+        return '[@pet,exists,nobonusbar:5]show;hide'
+    end
+elseif Addon:IsBuild('wrath', 'cata', 'mists') then
+    function PetBar:GetDisplayConditions()
+        return '[@pet,exists,nopossessbar]show;hide'
+    end
 end
 
 function PetBar:GetDefaults()
@@ -205,12 +77,12 @@ function PetBar:NumButtons()
 end
 
 function PetBar:AcquireButton(index)
-    return getOrCreatePetActionButton(index)
+    return PetButtons[index]
 end
 
 function PetBar:OnAttachButton(button)
     button.HotKey:SetAlpha(self:ShowingBindingText() and 1 or 0)
-    button:UpdateShownInsecure()
+    button:Show()
 
     Addon:GetModule('ButtonThemer'):Register(button, 'Pet Bar')
     Addon:GetModule('Tooltips'):Register(button)
@@ -223,11 +95,45 @@ end
 
 -- keybound events
 function PetBar:KEYBOUND_ENABLED()
-    self:ForButtons("UpdateShownInsecure")
+    self:ForButtons("Show")
 end
 
 function PetBar:KEYBOUND_DISABLED()
-    self:ForButtons("UpdateShownInsecure")
+    local hasPetBar = PetHasActionBar()
+
+    for _, button in pairs(self.buttons) do
+        local show = hasPetBar and GetPetActionInfo(button.index or button:GetID())
+        button:SetShown(show)
+    end
+end
+
+PetBar:Extend('OnAcquire', function(self)
+    self:UpdateTransparent(true)
+end)
+
+function PetBar:OnSetAlpha()
+    self:UpdateTransparent()
+end
+
+function PetBar:UpdateTransparent(force)
+    local transparent = self:GetAlpha() == 0
+    if (self.transparent ~= transparent) or force then
+        self.transparent = transparent
+
+        if transparent then
+            for _, button in pairs(self.buttons) do
+                if button.cooldown:GetParent() ~= Addon.ShadowUIParent then
+                    button.cooldown:SetParent(Addon.ShadowUIParent)
+                end
+            end
+        else
+            for _, button in pairs(self.buttons) do
+                if button.cooldown:GetParent() ~= button then
+                    button.cooldown:SetParent(button)
+                end
+            end
+        end
+    end
 end
 
 -- binding text
@@ -280,17 +186,13 @@ end
 -- the module
 --------------------------------------------------------------------------------
 
-local PetBarModule = Addon:NewModule('PetBar', 'AceEvent-3.0')
+local PetBarModule = Addon:NewModule('PetBar')
 
 function PetBarModule:Load()
     self.bar = PetBar:New()
-    self:UpdateActions()
-    self:RegisterEvent("PET_BAR_UPDATE_COOLDOWN")
 end
 
 function PetBarModule:Unload()
-    self:UnregisterAllEvents()
-
     if self.bar then
         self.bar:Free()
         self.bar = nil
@@ -298,38 +200,5 @@ function PetBarModule:Unload()
 end
 
 function PetBarModule:OnFirstLoad()
-    -- "hide" the pet bar (make invisible and non-interactive)
-    PetActionBar:SetAlpha(0)
-    PetActionBar:EnableMouse(false)
-    PetActionBar:SetScript("OnUpdate", nil)
-
-    -- and its buttons, too
-    for _, button in pairs(PetActionBar.actionButtons) do
-        button:EnableMouse(false)
-        button:SetScript("OnUpdate", nil)
-        button:UnregisterAllEvents()
-    end
-
-    -- unregister events that do not impact pet action bar visibility
-    PetActionBar:UnregisterEvent("PET_BAR_UPDATE_COOLDOWN")
-
-    -- an extremly lazy method of updating the Dominos pet bar when the
-    -- normal pet bar would be updated
-    hooksecurefunc(PetActionBar, "Update", Addon:Debounce(function() self:UpdateActions() end, 0.01))
-end
-
-function PetBarModule:PET_BAR_UPDATE_COOLDOWN()
-    self:UpdateCooldowns()
-end
-
-function PetBarModule:UpdateActions()
-    if not (self.bar and PetHasActionBar() and UnitIsVisible("pet")) then return end
-
-    self.bar:ForButtons("Update")
-end
-
-function PetBarModule:UpdateCooldowns()
-    if not (self.bar and PetHasActionBar() and UnitIsVisible("pet")) then return end
-
-    self.bar:ForButtons("UpdateCooldown")
+    (PetActionBar or PetActionBarFrame):SetParent(Addon.ShadowUIParent)
 end
