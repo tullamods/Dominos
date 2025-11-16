@@ -52,8 +52,8 @@ function ButtonBar:AttachButton(index)
     if button then
         button:SetParent(self)
         button:EnableMouse(not self:GetClickThrough())
-        self:OnAttachButton(button)
 
+        self:OnAttachButton(button, index)
         self.buttons[index] = button
     end
 end
