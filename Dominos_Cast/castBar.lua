@@ -1,13 +1,10 @@
-if select(4, GetBuildInfo()) >= 120000 then return end
-
 local _, Addon = ...
 local Dominos = LibStub("AceAddon-3.0"):GetAddon("Dominos")
 local LSM = LibStub("LibSharedMedia-3.0")
 local L = LibStub("AceLocale-3.0"):GetLocale("Dominos-CastBar")
 
--- local aliases for some globals
 local ICON_OVERRIDES = {
-    -- replace samwise with cog
+    -- replace samwise with cog (usually indicative of a trade skill)
     [136235] = 136243
 }
 
@@ -29,28 +26,40 @@ local function getSpellInfo(spellID)
     end
 end
 
-local function getRandomSpellID()
-    local lineInfo = C_SpellBook.GetSpellBookSkillLineInfo(C_SpellBook.GetNumSpellBookSkillLines())
-    local offset = lineInfo.itemIndexOffset
-    local numSlots = lineInfo.numSpellBookItems
-    local _, spellID
+local getRandomSpellID
+if C_SpellBook and C_SpellBook.GetSpellBookSkillLineInfo then
+    getRandomSpellID = function()
+        local line = C_SpellBook.GetSpellBookSkillLineInfo(C_SpellBook.GetNumSpellBookSkillLines())
+        local offset = line.itemIndexOffset
+        local numSlots = line.numSpellBookItems
+        local spellID
 
-    repeat
-        _, _, spellID = C_SpellBook.GetSpellBookItemType(math.random(1, offset + numSlots), Enum.SpellBookSpellBank.Player)
-    until spellID ~= nil
+        repeat
+            local spell = C_SpellBook.GetSpellBookItemInfo(math.random(1, offset + numSlots), Enum.SpellBookSpellBank.Player)
+            spellID = spell.spellID
+        until spellID
 
-    return spellID
+        return spellID
+    end
+else
+    getRandomSpellID = function()
+        local _, _, offset, numSlots = GetSpellTabInfo(GetNumSpellTabs())
+        for i = 1, 100 do
+            local _, spellID = GetSpellBookItemInfo(math.random(1, offset + numSlots), BOOKTYPE_SPELL)
+            if spellID then
+                return spellID
+            end
+        end
+    end
 end
 
 local function getSpellReaction(spellID)
-    local name = C_Spell.GetSpellName(spellID)
-
-    if name then
-        if C_Spell.IsSpellHelpful(name) then
+    if spellID then
+        if C_Spell.IsSpellHelpful(spellID) then
             return "help"
         end
 
-        if C_Spell.IsSpellHarmful(name) then
+        if C_Spell.IsSpellHarmful(spellID) then
             return "harm"
         end
     end
@@ -156,18 +165,27 @@ function CastBar:RegisterEvents()
 end
 
 -- channeling events
+-- Channel cast GUIDs can sometimes be nil, so we use "nil" as a default to
+-- identify those casts. I would prefer using spellID, but that value is secret
+-- post Midnight
 function CastBar:UNIT_SPELLCAST_CHANNEL_START(event, unit, castID, spellID)
-    castID = castID or spellID
 
-    self:SetProperty("castID", castID)
+    if castID == nil then
+        castID = "nil"
+    end
+
     self:SetProperty("unit", unit)
+    self:SetProperty("castID", castID)
 
     self:UpdateChanneling()
 end
 
 function CastBar:UNIT_SPELLCAST_CHANNEL_UPDATE(event, unit, castID, spellID)
-    castID = castID or spellID
+    if castID == nil then
+        castID = "nil"
+    end
 
+    -- castID shouldn't be secret, so this comparision should be safe
     if castID ~= self:GetProperty("castID") then
         return
     end
@@ -176,7 +194,9 @@ function CastBar:UNIT_SPELLCAST_CHANNEL_UPDATE(event, unit, castID, spellID)
 end
 
 function CastBar:UNIT_SPELLCAST_CHANNEL_STOP(event, unit, castID, spellID)
-    castID = castID or spellID
+    if castID == nil then
+        castID = "nil"
+    end
 
     if castID ~= self:GetProperty("castID") then
         return
@@ -187,7 +207,9 @@ end
 
 -- empower events
 function CastBar:UNIT_SPELLCAST_EMPOWER_START(event, unit, castID, spellID)
-    castID = castID or spellID
+    if castID == nil then
+        castID = "nil"
+    end
 
     self:SetProperty("castID", castID)
     self:SetProperty("unit", unit)
@@ -196,7 +218,9 @@ function CastBar:UNIT_SPELLCAST_EMPOWER_START(event, unit, castID, spellID)
 end
 
 function CastBar:UNIT_SPELLCAST_EMPOWER_UPDATE(event, unit, castID, spellID)
-    castID = castID or spellID
+    if castID == nil then
+        castID = "nil"
+    end
 
     if castID ~= self:GetProperty("castID") then
         return
@@ -206,7 +230,9 @@ function CastBar:UNIT_SPELLCAST_EMPOWER_UPDATE(event, unit, castID, spellID)
 end
 
 function CastBar:UNIT_SPELLCAST_EMPOWER_STOP(event, unit, castID, spellID)
-    castID = castID or spellID
+    if castID == nil then
+        castID = "nil"
+    end
 
     if castID ~= self:GetProperty("castID") then
         return
@@ -240,7 +266,7 @@ function CastBar:UNIT_SPELLCAST_FAILED(event, unit, castID, spellID)
         return
     end
 
-    self:SetProperty("label", _G.FAILED)
+    self:SetProperty("label", FAILED)
     self:SetProperty("state", "failed")
 end
 
@@ -251,7 +277,7 @@ function CastBar:UNIT_SPELLCAST_INTERRUPTED(event, unit, castID, spellID)
         return
     end
 
-    self:SetProperty("label", _G.INTERRUPTED)
+    self:SetProperty("label", INTERRUPTED)
     self:SetProperty("state", "interrupted")
 end
 
@@ -294,8 +320,8 @@ function CastBar:label_update(text)
     self.timer:SetLabel(text)
 end
 
-function CastBar:icon_update(texture)
-    self.timer:SetIcon(texture and ICON_OVERRIDES[texture] or texture)
+function CastBar:icon_update(textureID)
+    self.timer:SetIcon(textureID and ICON_OVERRIDES[textureID] or textureID)
 end
 
 function CastBar:reaction_update(reaction)
@@ -324,15 +350,36 @@ end
 -- Cast Bar Methods
 --------------------------------------------------------------------------------
 
-function CastBar:SetProperty(key, value)
-    local prev = self.props[key]
+if type(canaccessvalue) == "function" then
+    function CastBar:SetProperty(key, value)
+        local prev = self.props[key]
 
-    if prev ~= value then
-        self.props[key] = value
+        local shouldSet = not (
+            canaccessvalue(value)
+            and canaccessvalue(prev)
+            and prev == value
+        )
 
-        local func = self[key .. "_update"]
-        if func then
-            func(self, value, prev)
+        if shouldSet then
+            self.props[key] = value
+
+            local func = self[key .. "_update"]
+            if func then
+                func(self, value, prev)
+            end
+        end
+    end
+else
+    function CastBar:SetProperty(key, value)
+        local prev = self.props[key]
+
+        if prev ~= value then
+            self.props[key] = value
+
+            local func = self[key .. "_update"]
+            if func then
+                func(self, value, prev)
+            end
         end
     end
 end
@@ -359,13 +406,12 @@ function CastBar:Layout()
 end
 
 function CastBar:UpdateChanneling()
-    local name, text, texture, startTimeMS, endTimeMS, _, notInterruptible, spellID =
-        UnitChannelInfo(self:GetProperty("unit"))
-
+    local unit = self:GetProperty("unit")
+    local name, _, textureID, startTimeMs, endTimeMs, _, notInterruptible, spellID = UnitChannelInfo(unit)
     if name then
         self:SetProperty("state", "channeling")
-        self:SetProperty("label", name or text)
-        self:SetProperty("icon", texture)
+        self:SetProperty("label", name)
+        self:SetProperty("icon", textureID)
         self:SetProperty("spell", spellID)
         self:SetProperty("uninterruptible", notInterruptible)
 
@@ -373,8 +419,8 @@ function CastBar:UpdateChanneling()
         self.timer:SetShowLatency(false)
 
         local time = GetTime()
-        local startTime = startTimeMS / 1000
-        local endTime = endTimeMS / 1000
+        local startTime = startTimeMs / 1000
+        local endTime = endTimeMs / 1000
 
         self.timer:Start(endTime - time, 0, endTime - startTime)
 
@@ -385,12 +431,13 @@ function CastBar:UpdateChanneling()
 end
 
 function CastBar:UpdateCasting()
-    local name, text, texture, startTimeMS, endTimeMS, _, _, notInterruptible, spellID = UnitCastingInfo(self:GetProperty("unit"))
+    local unit = self:GetProperty("unit")
+    local name, displayName, textureID, startTimeMs, endTimeMs, _, _, notInterruptible, spellID = UnitCastingInfo(unit)
 
     if name then
         self:SetProperty("state", "casting")
-        self:SetProperty("label", text)
-        self:SetProperty("icon", texture)
+        self:SetProperty("label", displayName)
+        self:SetProperty("icon", textureID)
         self:SetProperty("spell", spellID)
         self:SetProperty("uninterruptible", notInterruptible)
 
@@ -398,8 +445,8 @@ function CastBar:UpdateCasting()
         self.timer:SetShowLatency(self:Displaying("latency"))
 
         local time = GetTime()
-        local startTime = startTimeMS / 1000
-        local endTime = endTimeMS / 1000
+        local startTime = startTimeMs / 1000
+        local endTime = endTimeMs / 1000
 
         self.timer:Start(time - startTime, 0, endTime - startTime)
 
@@ -411,14 +458,14 @@ end
 
 function CastBar:UpdateEmpowering()
     local unit = self:GetProperty("unit")
-    local name, text, texture, startTimeMS, endTimeMS, isTradeSkill, notInterruptible, spellID, _, numStages = UnitChannelInfo(unit)
+    local name, _, textureID, startTimeMs, endTimeMs, _, notInterruptible, spellID, _, numEmpowerStages = UnitChannelInfo(unit)
 
     if name then
-        numStages = tonumber(numStages) or 0
+        numEmpowerStages = tonumber(numEmpowerStages) or 0
 
         self:SetProperty("state", "empowering")
-        self:SetProperty("label", name or text)
-        self:SetProperty("icon", texture)
+        self:SetProperty("label", name)
+        self:SetProperty("icon", textureID)
         self:SetProperty("spell", spellID)
         self:SetProperty("uninterruptible", notInterruptible)
 
@@ -426,13 +473,13 @@ function CastBar:UpdateEmpowering()
         self.timer:SetShowLatency(false)
 
         local time = GetTime()
-        local startTime = startTimeMS / 1000
+        local startTime = startTimeMs / 1000
         local endTime
 
-		if numStages > 0 then
-			endTime = (endTimeMS + GetUnitEmpowerHoldAtMaxTime(unit)) / 1000;
+		if numEmpowerStages > 0 then
+			endTime = (endTimeMs + GetUnitEmpowerHoldAtMaxTime(unit)) / 1000;
         else
-            endTime = endTimeMS / 1000
+            endTime = endTimeMs / 1000
 		end
 
         self.timer:Start(time - startTime, 0, endTime - startTime)
@@ -530,23 +577,6 @@ function CastBar:SetupDemo()
             self:SetupDemo()
         end
     end)
-end
-
-function CastBar:GetRandomSpellID()
-    local spells = {}
-
-    for i = 1, GetNumSpellTabs() do
-        local _, _, offset, numSpells = GetSpellTabInfo(i)
-
-        for j = offset, (offset + numSpells) - 1 do
-            local _, spellID = GetSpellBookItemInfo(j, "player")
-            if spellID then
-                tinsert(spells, spellID)
-            end
-        end
-    end
-
-    return spells[math.random(1, #spells)]
 end
 
 --------------------------------------------------------------------------------
