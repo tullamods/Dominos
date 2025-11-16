@@ -42,8 +42,7 @@ bars\menuBar.lua
 bars\petBar.lua
 bars\possessBar.lua
 bars\queueStatusBar.lua [AllowLoadGameType mainline]
-bars\stanceBar.lua [AllowLoadGameType mainline]
-bars\stanceBar.classic.lua [AllowLoadGameType classic]
+bars\stanceBar.lua
 bars\talkingHeadBar.lua [AllowLoadGameType mainline]
 bars\totemBar.lua [AllowLoadGameType cata, wrath]
 # stuff you should be able to comment out and still have Dominos work
