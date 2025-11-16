@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 11.2.6
+
+* (Midnight) Enabled the cast bar after resolving some secret value comparison errors
+
 ## 11.2.5
 
 * Fixed an issue that would prevent bindings from working when in Edit House mode
