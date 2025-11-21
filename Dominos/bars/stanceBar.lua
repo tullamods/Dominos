@@ -15,7 +15,7 @@ if not ({
     EVOKER = true,
     HUNTER = Addon:IsBuild('mists', 'cata'),
     MAGE = false,
-    MONK = false,
+    MONK = Addon:IsBuild('mists'),
     PALADIN = true,
     PRIEST = Addon:IsBuild('retail', 'mists', 'cata', 'wrath'),
     ROGUE = true,
