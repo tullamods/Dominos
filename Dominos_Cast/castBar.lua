@@ -476,8 +476,16 @@ function CastBar:UpdateEmpowering()
         local startTime = startTimeMs / 1000
         local endTime
 
+        -- HACK: use hardcoded values in Midnight because the return of
+        -- GetUnitEmpowerHoldAtMaxTime is currently a secret
 		if numEmpowerStages > 0 then
-			endTime = (endTimeMs + GetUnitEmpowerHoldAtMaxTime(unit)) / 1000;
+            local holdTimeMs = GetUnitEmpowerHoldAtMaxTime(unit)
+            if (issecretvalue and issecretvalue(holdTimeMs)) then
+                local fakeHoldTimeMs = unit == "player" and 1000 or 0
+                endTime = (endTimeMs + fakeHoldTimeMs) / 1000
+            else
+                endTime = (endTimeMs + holdTimeMs) / 1000;
+            end
         else
             endTime = endTimeMs / 1000
 		end

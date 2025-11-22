@@ -1,5 +1,11 @@
 # Dominos Changelog
 
+## 11.2.9
+
+* (Midnight) Added a workaround for GetUnitEmpowerHoldAtMaxTime returning
+  secret values to prevent error messages when casting empowered spells.
+  Hopefully Blizzard will drop this restriction.
+
 ## 11.2.8
 
 * (Classic) Fixed the missing Monk class bar
