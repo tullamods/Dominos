@@ -90,6 +90,10 @@ Sets how many buttons appear on each action bar (1-12).
 
 ## Layout Commands
 
+**Available via slash commands**: Columns, Spacing, Padding
+
+**GUI-only (no slash commands)**: Row Offset, Row Spacing, Orientation
+
 ### Columns
 
 **Set Button Columns**

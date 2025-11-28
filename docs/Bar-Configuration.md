@@ -296,11 +296,16 @@ Create a diagonal staircase effect:
 
 ```
 /dominos setcols 1 6
-/dominos rowoffset 1 30
 /dominos space 1 2
 ```
 
+Then in configuration mode:
+1. Right-click bar 1
+2. Layout → Row Offset slider → Set to 30
+
 Result: 2 rows of 6 buttons, second row offset 30px to the right
+
+**Note**: Row Offset has no slash command and must be set via GUI.
 
 ### Minimal Bag Bar
 
