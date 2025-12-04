@@ -33,11 +33,28 @@ do
 
     function Addon:CreateClass(frameType, prototype)
         local class = self:CreateHiddenFrame(frameType)
-
-        local class_mt = {__index = class}
+        local function mixin(target, source)
+            for k, v in pairs(source) do
+                if target[k] == nil then
+                    target[k] = v
+                end
+            end
+        end
 
         class.Bind = function(_, object)
-            return setmetatable(object, class_mt)
+            -- copy methods from the class and its prototype chain without
+            -- replacing the frame's Blizzard-provided metatable (keeps
+            -- secure handles intact).
+            local source = class
+            local seen = {}
+
+            while source and not seen[source] do
+                seen[source] = true
+                mixin(object, source)
+                source = rawget(source, 'proto')
+            end
+
+            return object
         end
 
         if type(prototype) == 'table' then
