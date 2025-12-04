@@ -152,7 +152,13 @@ function ActionBar:ReleaseButton(button)
 end
 
 function ActionBar:OnAttachButton(button)
-    button:SetAttribute("action", button:GetAttribute("index") + (self:GetAttribute("actionOffset") or 0))
+    local offset = self:GetAttribute("actionOffset")
+    if offset == nil then
+        offset = (self.id - 1) * self:MaxLength()
+        self:SetAttribute("actionOffset", offset)
+    end
+
+    button:SetAttribute("action", button:GetAttribute("index") + offset)
     button:SetFlyoutDirectionInsecure(self:GetFlyoutDirection())
 
     for _, prop in pairs(self.ButtonProps) do
