@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 11.2.10
+
+* Added a workaround Dominos frame class inheritance to fix the Invalid 'self' frame handle errors in the latest Midnight build (Thanks, [Tyler Fleckenstein](https://github.com/tpfleck))
+
 ## 11.2.9
 
 * (Midnight) Added a workaround for GetUnitEmpowerHoldAtMaxTime returning
