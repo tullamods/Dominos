@@ -10,9 +10,9 @@ localization.xml
 config.lua
 main.lua
 progressBar.lua
-xpBar.lua
-reputationBar.lua
-artifactBar.lua [AllowLoadGameType mainline]
-azeriteBar.lua [AllowLoadGameType mainline]
-honorBar.lua
-goldBar.lua
+data/xp.lua
+data/reputation.lua
+data/artifact.lua [AllowLoadGameType mainline]
+data/azerite.lua [AllowLoadGameType mainline]
+data/honor.lua
+data/gold.lua

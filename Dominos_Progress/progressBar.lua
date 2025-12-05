@@ -6,7 +6,7 @@ local ProgressBar = Dominos:CreateClass('Frame', Dominos.ButtonBar)
 local function cleanupModes(modes)
 	for i = #modes, 1, -1 do
 		local mode = modes[i]
-		if not Addon.progressBarModes[mode] then
+		if not Addon.dataProviders[mode] then
 			tremove(modes, i)
 		end
 	end
@@ -125,6 +125,30 @@ end
 --[[ actions ]]--
 
 function ProgressBar:Update()
+	if not self.provider then return end
+
+	local value, max, bonus = self.provider:GetValues()
+	local label = self.provider:GetLabel()
+
+	self:SetValues(value, max, bonus)
+
+	if self.provider.GetColor then
+		self:SetColor(self.provider:GetColor())
+	end
+
+	if self.provider.GetBonusColor then
+		self:SetBonusColor(self.provider:GetBonusColor())
+	end
+
+	-- Handle special cases for text formatting
+	local bonusText = self.provider.GetBonusText and self.provider:GetBonusText()
+	local capped = self.provider.IsCapped and self.provider:IsCapped()
+
+	if bonusText then
+		self:UpdateText(label, value, max, bonusText, capped)
+	else
+		self:UpdateText(label, value, max, bonus, capped)
+	end
 end
 
 do
@@ -187,8 +211,8 @@ end
 function ProgressBar:GetMode()
 	local mode = Addon.Config:GetBarMode(self.id)
 
-	-- ensure the selected mode has a progress bar display
-	if mode and Addon.progressBarModes[mode] then
+	-- ensure the selected mode has a data provider
+	if mode and Addon.dataProviders[mode] then
 		return mode
 	end
 
@@ -208,10 +232,10 @@ function ProgressBar:GetModeIndex()
 end
 
 function ProgressBar:OnModeChanged(mode)
-	local newType = Addon.progressBarModes and Addon.progressBarModes[mode]
-	if newType then
-		newType:Bind(self)
-		self:Init()
+	local provider = Addon.dataProviders and Addon.dataProviders[mode]
+	if provider then
+		self.provider = provider
+		self:Update()
 	end
 end
 
@@ -227,6 +251,9 @@ function ProgressBar:UpdateMode()
 end
 
 function ProgressBar:IsModeActive()
+	if self.provider then
+		return self.provider:IsActive()
+	end
 	return false
 end
 
@@ -238,7 +265,8 @@ function ProgressBar:GetLastActiveMode()
 
 	for i = #modes, 2, -1 do
 		local mode = modes[i]
-		if Addon.progressBarModes[mode]:IsModeActive() then
+		local provider = Addon.dataProviders[mode]
+		if provider and provider:IsActive() then
 			return mode
 		end
 	end
@@ -270,8 +298,9 @@ function ProgressBar:GetNextActiveMode()
 	for offset = 1, #modes - 1 do
 		local index = Wrap(currentIndex + offset, #modes)
 		local mode = modes[index]
+		local provider = Addon.dataProviders[mode]
 
-		if Addon.progressBarModes[mode]:IsModeActive() then
+		if provider and provider:IsActive() then
 			return mode
 		end
 	end
@@ -888,4 +917,4 @@ do
 end
 
 Addon.ProgressBar = ProgressBar
-Addon.progressBarModes = Addon.progressBarModes or {}
+Addon.dataProviders = Addon.dataProviders or {}

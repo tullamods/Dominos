@@ -60,24 +60,24 @@ function ProgressBarModule:OnFirstLoad()
 	end
 
 	-- honor events
-	if Addon.HonorBar then
+	if Addon.dataProviders and Addon.dataProviders['honor'] then
 		self:RegisterEvent("HONOR_LEVEL_UPDATE")
 		self:RegisterEvent("HONOR_XP_UPDATE")
 	end
 
 	-- artifact events
-	if Addon.ArtifactBar then
+	if Addon.dataProviders and Addon.dataProviders['artifact'] then
 		self:RegisterEvent("ARTIFACT_XP_UPDATE")
 		self:RegisterEvent("UNIT_INVENTORY_CHANGED")
 	end
 
 	-- azerite events
-	if Addon.AzeriteBar then
+	if Addon.dataProviders and Addon.dataProviders['azerite'] then
 		self:RegisterEvent("AZERITE_ITEM_EXPERIENCE_CHANGED")
 	end
 
 	-- gold events
-	if Addon.GoldBar then
+	if Addon.dataProviders and Addon.dataProviders['gold'] then
 		self:RegisterEvent("PLAYER_MONEY")
 	end
 
@@ -184,7 +184,7 @@ function ProgressBarModule:AddOptionsPanel()
 				Addon.Config:SetColor(key, ...)
 
 				for _, bar in pairs(self.bars) do
-					bar:Init()
+					bar:Update()
 				end
 			end
 		}
