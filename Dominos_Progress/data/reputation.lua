@@ -43,6 +43,7 @@ end
 local function IsFriendshipFaction(factionID)
     if factionID then
         local getRep = C_GossipInfo and C_GossipInfo.GetFriendshipReputation
+
         if type(getRep) == "function" then
             local info = getRep(factionID)
 
@@ -59,7 +60,6 @@ local Reputation = {}
 
 function Reputation:GetValues()
     local name, reaction, min, max, value, factionID = GetWatchedFactionInfo()
-
     if not name then
         return 0, 1
     end
@@ -112,7 +112,6 @@ end
 
 function Reputation:GetBonusText()
     local name, reaction, min, max, value, factionID = GetWatchedFactionInfo()
-
     if not name then
         return nil
     end
@@ -132,7 +131,6 @@ end
 
 function Reputation:IsCapped()
     local name, reaction, min, max, value, factionID = GetWatchedFactionInfo()
-
     if not name then
         return false
     end

@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 11.2.11
+
+* Refactored the progress bar to use a data provider interface instead of metatable manipulation (which broke with the last Midnight fix)
+
 ## 11.2.10
 
 * Added a workaround Dominos frame class inheritance to fix the Invalid 'self' frame handle errors in the latest Midnight build (Thanks, [Tyler Fleckenstein](https://github.com/tpfleck))
