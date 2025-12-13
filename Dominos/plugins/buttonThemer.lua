@@ -29,22 +29,14 @@ elseif Addon:IsBuild("bcc") then
 
     -- reserved for if I want to retheme buttons in Dragonflight
     theme = function(button)
-        -- if button.SlotArt then
-        --     button.SlotArt:Hide()
-        -- end
-
-        -- if button.SlotBackground then
-        --     button.SlotBackground:Hide()
-        -- end
-
         -- crop icon edges to remove borders drawn into the icon
         local icon = getIcon(button)
         if icon then
-            icon:SetTexCoord(0.06, 0.94, 0.06, 0.94)
+            icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
         end
 
         -- resize the normal texture to fit (mostly for stance buttons)
-        local nt = button.NormalTexture or button:GetNormalTexture()
+        local nt = button.NormalTexture
         if nt then
             nt:SetSize(button:GetWidth() * NORMAL_TEXTURE_RATIO, button:GetHeight() * NORMAL_TEXTURE_RATIO)
         end
