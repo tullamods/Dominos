@@ -1,6 +1,4 @@
 local AddonName, Addon = ...
-if not Addon:IsBuild("retail") then return end
-
 local ActionButtons = CreateFrame('Frame', nil, nil, 'SecureHandlerAttributeTemplate')
 
 -- constants
@@ -38,6 +36,7 @@ function ActionButtons:Initialize()
     self:SetScript("OnEvent", function(f, event, ...) f[event](f, ...); end)
     self:RegisterEvent("ACTIONBAR_HIDEGRID")
     self:RegisterEvent("ACTIONBAR_SHOWGRID")
+    self:RegisterEvent("PET_BAR_HIDEGRID")
     self:RegisterEvent("ACTIONBAR_SLOT_CHANGED")
     self:RegisterEvent("PLAYER_ENTERING_WORLD")
     self:RegisterEvent("PLAYER_LOGIN")
@@ -156,6 +155,10 @@ function ActionButtons:ACTIONBAR_SHOWGRID()
 end
 
 function ActionButtons:ACTIONBAR_HIDEGRID()
+    self:SetShowGrid(false, self.ShowGridReasons.GAME_EVENT)
+end
+
+function ActionButtons:PET_BAR_HIDEGRID()
     self:SetShowGrid(false, self.ShowGridReasons.GAME_EVENT)
 end
 
