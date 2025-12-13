@@ -1,93 +1,57 @@
 local _, Addon = ...
-if not Addon:IsBuild('retail') then return end
 
--- move a frame to the hidden shadow UI parent
-local function apply(func, ...)
-    for i = 1, select('#', ...) do
-        local name = (select(i, ...))
-        local frame = _G[name]
+local framesToHide = {
+    "MainMenuBar",
+    "MainActionBar",
+    "MultiBar5",
+    "MultiBar6",
+    "MultiBar7",
+    "MultiBarBottomLeft",
+    "MultiBarBottomRight",
+    "MultiBarLeft",
+    "MultiBarRight",
+    "StanceBar",
+    "MainMenuBarVehicleLeaveButton",
+    "MainMenuBarArtFrame"
+}
 
-        if frame then
-            func(frame)
-        else
-            Addon:Printf('Could not find frame %q', name)
+local keepEvents = {
+    MainActionBar = true
+}
+
+local wipeActionButtons = {
+    MultiBar5 = true,
+    MultiBar6 = true,
+    MultiBar7 = true,
+    MultiBarBottomLeft = true,
+    MultiBarBottomRight = true,
+    MultiBarLeft = true,
+    MultiBarRight = true
+}
+
+for _, frameName in ipairs(framesToHide) do
+    local frame = _G[frameName]
+
+    if frame then
+        (frame.HideBase or frame.Hide)(frame)
+        frame:SetParent(Addon.ShadowUIParent)
+
+        if not keepEvents[frameName] then
+            frame:UnregisterAllEvents()
         end
+
+        if frame.actionButtons and type(frame.actionButtons) == "table" then
+            for _, button in pairs(frame.actionButtons) do
+                button:UnregisterAllEvents()
+                button:SetAttributeNoHandler("statehidden", true)
+                button:Hide()
+            end
+
+            if wipeActionButtons[frameName] then
+                table.wipe(frame.actionButtons)
+            end
+        end
+    else
+        Addon:Printf('Could not find frame %q', frameName)
     end
 end
-
-local function banish(frame)
-    (frame.HideBase or frame.Hide)(frame)
-    frame:SetParent(Addon.ShadowUIParent)
-end
-
-local function unregisterEvents(frame)
-    frame:UnregisterAllEvents()
-end
-
-local function disableActionButtons(bar)
-    local buttons = bar.actionButtons
-    if type(buttons) ~= "table" then
-        return
-    end
-
-    for _, button in pairs(buttons) do
-        button:UnregisterAllEvents()
-        button:SetAttributeNoHandler("statehidden", true)
-        button:Hide()
-    end
-end
-
-local function wipeActionButtons(bar)
-    table.wipe(bar.actionButtons)
-end
-
-apply(banish,
-    MainActionBar and "MainActionBar" or "MainMenuBar",
-    "MainMenuBarVehicleLeaveButton",
-    -- "MicroButtonAndBagsBar",
-    "MultiBar5",
-    "MultiBar6",
-    "MultiBar7",
-    "MultiBarBottomLeft",
-    "MultiBarBottomRight",
-    "MultiBarLeft",
-    "MultiBarRight",
-    "PossessActionBar",
-    "StanceBar"
-)
-
-apply(unregisterEvents,
-    "MainMenuBarVehicleLeaveButton",
-    "MultiBar5",
-    "MultiBar6",
-    "MultiBar7",
-    "MultiBarBottomLeft",
-    "MultiBarBottomRight",
-    "MultiBarLeft",
-    "MultiBarRight",
-    "PossessActionBar",
-    "StanceBar"
-)
-
-apply(disableActionButtons,
-    MainActionBar and "MainActionBar" or "MainMenuBar",
-    "MultiBar5",
-    "MultiBar6",
-    "MultiBar7",
-    "MultiBarBottomLeft",
-    "MultiBarBottomRight",
-    "MultiBarLeft",
-    "MultiBarRight",
-    "PossessActionBar",
-    "StanceBar"
-)
-
-apply(wipeActionButtons,
-    "MultiBar5",
-    "MultiBar6",
-    "MultiBar7",
-    "MultiBarBottomLeft",
-    "MultiBarBottomRight",
-    "MultiBarLeft",
-    "MultiBarRight"
-)
