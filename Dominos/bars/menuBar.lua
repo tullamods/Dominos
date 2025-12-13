@@ -54,6 +54,9 @@ else
 end
 
 local MICRO_BUTTON_NAMES = {
+    ['ProfessionMicroButton'] = PROFESSIONS_BUTTON,
+    ['PlayerSpellsMicroButton'] = PLAYERSPELLS_BUTTON,
+    ['HousingMicroButton'] = HOUSING_MICRO_BUTTON,
     ['AchievementMicroButton'] = ACHIEVEMENT_BUTTON,
     ['CharacterMicroButton'] = CHARACTER_BUTTON,
     ['CollectionsMicroButton'] = COLLECTIONS,
