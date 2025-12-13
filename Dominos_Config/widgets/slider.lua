@@ -66,12 +66,12 @@ do
 
 	function Slider:New(options)
 		local f
-		if Addon:IsBuild("classic") then
+		if Addon:IsBuild("bcc", "classic") then
 			f = self:Bind(CreateFrame('Slider', nextName(), options.parent, 'HorizontalSliderTemplate'))
 		else
 			f = self:Bind(CreateFrame('Slider', nextName(), options.parent, 'UISliderTemplate'))
 		end
-		
+
 		f.min = options.min or 0
 		f.max = options.max or 100
 		f.step = options.step or 1
