@@ -276,7 +276,7 @@ function Addon:GetDatabaseDefaults()
             showTooltipsCombat = true,
             showSpellGlows = true,
             showSpellAnimations = true,
-            useOverrideUI = not self:IsBuild('classic'),
+            useOverrideUI = not self:IsBuild('classic', 'bcc'),
 
             ab = {
                 count = self.ACTION_BUTTON_COUNT / NUM_ACTIONBAR_BUTTONS,
