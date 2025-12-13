@@ -1,4 +1,4 @@
-## Interface: 120001, 120000, 110207, 50503, 11508
+## Interface: 120001, 120000, 110207, 50503, 20505, 11508
 ## Title: Dominos
 ## Notes: A main actionbar replacement
 ## Notes-zhCN: 一种动作条替换方案
@@ -23,15 +23,15 @@ core\bindableButton.lua
 core\fadeManager.lua
 core\overrideController.lua [AllowLoadGameType mainline, mists, cata, wrath, tbc]
 core\tooltipController.lua
-core\blizzardHider.lua [AllowLoadGameType mainline]
-core\blizzardHider.classic.lua [AllowLoadGameType classic]
+core\blizzardHider.lua [AllowLoadGameType mainline, tbc]
+core\blizzardHider.classic.lua [AllowLoadGameType mists, cata, wrath, vanilla]
 # builtin bars
 bars\actionBar\bindings.lua [AllowLoadGameType mainline]
 bars\actionBar\flyout.lua [AllowLoadGameType mainline]
-bars\actionBar\button.lua [AllowLoadGameType mainline]
-bars\actionBar\button.classic.lua [AllowLoadGameType classic]
-bars\actionBar\buttons.lua [AllowLoadGameType mainline]
-bars\actionBar\buttons.classic.lua [AllowLoadGameType classic]
+bars\actionBar\button.lua [AllowLoadGameType mainline, tbc]
+bars\actionBar\button.classic.lua [AllowLoadGameType mists, cata, wrath, vanilla]
+bars\actionBar\buttons.lua [AllowLoadGameType mainline, tbc]
+bars\actionBar\buttons.classic.lua [AllowLoadGameType mists, cata, wrath, vanilla]
 bars\actionBar\bar.lua
 bars\actionBar\menu.lua
 bars\actionBar\bars.lua
