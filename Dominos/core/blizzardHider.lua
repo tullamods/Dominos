@@ -1,7 +1,6 @@
 local _, Addon = ...
 
 local framesToHide = {
-    "MainMenuBar",
     "MainActionBar",
     "MultiBar5",
     "MultiBar6",
@@ -9,11 +8,13 @@ local framesToHide = {
     "MultiBarBottomLeft",
     "MultiBarBottomRight",
     "MultiBarLeft",
-    "MultiBarRight",
-    "StanceBar",
-    "MainMenuBarVehicleLeaveButton",
-    "MainMenuBarArtFrame"
+    "MultiBarRight"
 }
+
+if not Addon:IsBuild("retail") then
+    framesToHide[#framesToHide + 1] = "MainMenuBar"
+    framesToHide[#framesToHide + 1] = "MainMenuBarArtFrame"
+end
 
 local keepEvents = {
     MainActionBar = true
@@ -33,12 +34,12 @@ for _, frameName in ipairs(framesToHide) do
     local frame = _G[frameName]
 
     if frame then
-        (frame.HideBase or frame.Hide)(frame)
-        frame:SetParent(Addon.ShadowUIParent)
-
         if not keepEvents[frameName] then
             frame:UnregisterAllEvents()
         end
+
+        (frame.HideBase or frame.Hide)(frame)
+        frame:SetParent(Addon.ShadowUIParent)
 
         if frame.actionButtons and type(frame.actionButtons) == "table" then
             for _, button in pairs(frame.actionButtons) do
