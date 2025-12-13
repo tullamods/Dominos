@@ -1,6 +1,4 @@
 local _, Addon = ...
-if not Addon:IsBuild("retail") then return end
-
 local ActionButton = {}
 
 local function GetActionButtonCommand(id)

@@ -1,6 +1,4 @@
 local AddonName, Addon = ...
-if Addon:IsBuild("retail") then return end
-
 local ActionButtons = CreateFrame('Frame', nil, nil, 'SecureHandlerBaseTemplate')
 
 -- constants

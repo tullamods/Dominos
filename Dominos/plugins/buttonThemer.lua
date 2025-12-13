@@ -2,6 +2,7 @@ local AddonName, Addon = ...
 local ButtonThemer = Addon:NewModule('ButtonThemer')
 
 local theme
+-- modern theming
 if Addon:IsBuild("retail") then
     -- reserved for if I want to retheme buttons in Dragonflight
     theme = function(button)
@@ -10,9 +11,47 @@ if Addon:IsBuild("retail") then
             button.SlotBackground:Show()
         end
     end
--- classic theming
+-- classic, post edit mode
+elseif Addon:IsBuild("bcc") then
+    local NORMAL_TEXTURE_RATIO = Round(ActionButton1.NormalTexture:GetWidth()) / Round(ActionButton1:GetWidth())
+
+    local function getIcon(button)
+        local icon = button.icon
+        if icon and icon.SetTexCoord then
+            return icon
+        end
+
+        icon = button.Icon
+        if icon and icon.SetTexCoord then
+            return icon
+        end
+    end
+
+    -- reserved for if I want to retheme buttons in Dragonflight
+    theme = function(button)
+        -- if button.SlotArt then
+        --     button.SlotArt:Hide()
+        -- end
+
+        -- if button.SlotBackground then
+        --     button.SlotBackground:Hide()
+        -- end
+
+        -- crop icon edges to remove borders drawn into the icon
+        local icon = getIcon(button)
+        if icon then
+            icon:SetTexCoord(0.06, 0.94, 0.06, 0.94)
+        end
+
+        -- resize the normal texture to fit (mostly for stance buttons)
+        local nt = button.NormalTexture or button:GetNormalTexture()
+        if nt then
+            nt:SetSize(button:GetWidth() * NORMAL_TEXTURE_RATIO, button:GetHeight() * NORMAL_TEXTURE_RATIO)
+        end
+    end
+-- classic
 else
-    local ActionButtonWidth = Round(ActionButton1:GetWidth())
+    local ACTION_BUTTON_WIDTH = Round(ActionButton1:GetWidth())
 
     local function getIconTexture(button)
         if button.Icon and button.Icon.SetTexCoord then
@@ -34,7 +73,7 @@ else
             hotkey:SetWidth(button:GetWidth())
 
             local font, size, flags = hotkey:GetFont()
-            size = Round(size * button:GetWidth() / ActionButtonWidth)
+            size = Round(size * button:GetWidth() / ACTION_BUTTON_WIDTH)
 
             hotkey:SetFont(font, size, flags)
         end
@@ -62,7 +101,7 @@ else
         local normalTexture = button:GetNormalTexture()
         if not normalTexture then return end
 
-        local abRatio = Round(button:GetWidth()) / ActionButtonWidth
+        local abRatio = Round(button:GetWidth()) / ACTION_BUTTON_WIDTH
 
         normalTexture:ClearAllPoints()
         normalTexture:SetPoint('TOPLEFT', -15 * abRatio, 15 * abRatio)

@@ -46,6 +46,10 @@ local StanceButtons = setmetatable({}, {
         -- register mouse clicks
         button:EnableMouseWheel(true)
 
+        if button.SlotBackground then
+            button.SlotBackground:Hide()
+        end
+
         -- apply hooks for quick binding
         Addon.BindableButton:AddQuickBindingSupport(button)
 

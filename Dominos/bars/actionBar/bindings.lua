@@ -9,7 +9,6 @@
 --------------------------------------------------------------------------------
 
 local _, Addon = ...
-if not Addon:IsBuild("retail") then return end
 if not OverrideActionBar then return end
 
 local Binder = CreateFrame("Frame", nil, nil, "SecureHandlerAttributeTemplate")
