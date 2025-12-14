@@ -212,7 +212,9 @@ function StanceBarModule:OnFirstLoad()
             button:Hide()
         end
 
-        table.wipe(StanceBar.actionButtons)
+        -- Don't wipe the action buttons of the stance bar - the standard UI
+        -- accesses buttons directly in its code
+        -- table.wipe(StanceBar.actionButtons)
     end
 end
 
