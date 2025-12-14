@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 11.2.13
+
+* Fix an issue with unregistering the Blizzard stance bar that was causing errors
+
 ## 11.2.12
 
 * Added support for Burning Crusade Classic Anniversary Edition
