@@ -19,9 +19,9 @@ local WOW_BUILD
 do
     local l = LE_EXPANSION_LEVEL_CURRENT
     if l == LE_EXPANSION_CLASSIC then
-        WOW_BUILD = 'classic'
+        WOW_BUILD = 'vanilla'
     elseif l == LE_EXPANSION_BURNING_CRUSADE then
-        WOW_BUILD = 'bcc'
+        WOW_BUILD = 'tbc'
     elseif l == LE_EXPANSION_WRATH_OF_THE_LICH_KING then
         WOW_BUILD = 'wrath'
     elseif l == LE_EXPANSION_CATACLYSM then
@@ -261,7 +261,7 @@ end
 function Addon:GetDatabaseDefaults()
     return {
         profile = {
-            possessBar = self:IsBuild("classic") and "pet" or 1,
+            possessBar = self:IsBuild("vanilla") and "pet" or 1,
             -- if true, applies a default dominos skin to buttons
             -- when masque is not enabled
             applyButtonTheme = true,
@@ -276,7 +276,7 @@ function Addon:GetDatabaseDefaults()
             showTooltipsCombat = true,
             showSpellGlows = true,
             showSpellAnimations = true,
-            useOverrideUI = not self:IsBuild('classic', 'bcc'),
+            useOverrideUI = not self:IsBuild('vanilla', 'tbc'),
 
             ab = {
                 count = self.ACTION_BUTTON_COUNT / NUM_ACTIONBAR_BUTTONS,
@@ -777,7 +777,7 @@ function Addon:SetUseOverrideUI(enable)
 end
 
 function Addon:UsingOverrideUI()
-    return self.db.profile.useOverrideUI and not self:IsBuild('classic')
+    return self.db.profile.useOverrideUI and not self:IsBuild('vanilla')
 end
 
 --------------------------------------------------------------------------------

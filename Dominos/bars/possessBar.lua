@@ -100,7 +100,7 @@ function DominosPossessBar:GetDisplayConditions()
         return '[canexitvehicle][possessbar]show;hide'
     end
 
-    if Addon:IsBuild("bcc") then
+    if Addon:IsBuild("tbc") then
         local eye = C_Spell.GetSpellInfo(126)
         if eye then
             return ('[pet:%s][canexitvehicle][possessbar]show;hide'):format(eye.name)
@@ -180,7 +180,7 @@ function PossessBarModule:Load()
     self:RegisterEvent("PLAYER_ENTERING_WORLD", "Update")
     self:RegisterEvent("VEHICLE_UPDATE", "Update")
 
-    if not Addon:IsBuild("classic") then
+    if not Addon:IsBuild("vanilla") then
         self:RegisterEvent("UPDATE_MULTI_CAST_ACTIONBAR", "Update")
         self:RegisterEvent("UPDATE_OVERRIDE_ACTIONBAR", "Update")
         self:RegisterEvent("UPDATE_POSSESS_BAR", "Update")

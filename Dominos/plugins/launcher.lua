@@ -67,7 +67,7 @@ function Launcher:CreateDataBrokerObject()
 
                     GameTooltip_AddBlankLinesToTooltip(tooltip, 1)
                     GameTooltip_AddNormalLine(tooltip, MAINMENUBAR_LATENCY_LABEL:format(latencyHome, latencyWorld))
-                elseif Addon:IsBuild('classic') then
+                elseif Addon:IsBuild('vanilla') then
                     local _,_, latencyHome, latencyWorld = GetNetStats()
                     local latency = math.max(latencyHome, latencyWorld)
 

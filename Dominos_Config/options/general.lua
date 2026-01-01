@@ -114,7 +114,7 @@ Addon:AddOptionsPanelOptions("general", {
             type = "toggle",
             name = L.ShowOverrideUI,
             desc = L.ShowOverrideUIDesc,
-            hidden = ParentAddon:IsBuild("classic"),
+            hidden = ParentAddon:IsBuild("vanilla"),
             get = function()
                 return ParentAddon:UsingOverrideUI()
             end,
@@ -135,7 +135,7 @@ Addon:AddOptionsPanelOptions("general", {
                     tinsert(items, L.ActionBarNumber:format(i))
                 end
 
-                if ParentAddon:IsBuild("bcc", "classic") then
+                if ParentAddon:IsBuild("tbc", "vanilla") then
                     items.pet = ParentAddon.Frame:Get("pet"):GetDisplayName()
                 end
 

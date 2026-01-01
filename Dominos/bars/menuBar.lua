@@ -192,7 +192,7 @@ function MenuBar:IsMenuButtonEnabled(button)
     end
 end
 
-if Addon:IsBuild("retail", "bcc") then
+if Addon:IsBuild("retail", "tbc") then
     function MenuBar:Layout()
         for _, button in pairs(MicroButtons) do
             button:Hide()

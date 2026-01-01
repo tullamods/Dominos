@@ -282,7 +282,7 @@ else
 end
 
 function BagBarModule:RegisterKeyRingButton()
-    if not (Addon:IsBuild("classic", "bcc") and KeyRingButton) then
+    if not (Addon:IsBuild("vanilla", "tbc") and KeyRingButton) then
         return
     end
 
