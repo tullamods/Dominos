@@ -1,8 +1,12 @@
 # Dominos Changelog
 
+## 11.2.14
+
+* (Retail) Fixed an menu bar error when entering/exiting pet battles
+
 ## 11.2.13
 
-* Fix an issue with unregistering the Blizzard stance bar that was causing errors
+* Fixed an issue with unregistering the Blizzard stance bar that was causing errors
 
 ## 11.2.12
 
