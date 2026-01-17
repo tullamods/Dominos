@@ -12,25 +12,22 @@ local MicroButtons = {}
 local PetMicroButtonFrame = PetBattleFrame and PetBattleFrame.BottomFrame.MicroButtonFrame
 
 if MicroMenu then
-    local function registerButtons(t, ...)
-        for i = 1, select('#', ...) do
-            local button = select(i, ...)
+    -- post edit mode, grab all of the buttons in order
+    for _, button in ipairs { MicroMenu:GetChildren() } do
+        -- always reparent the button in retail
+        if Addon:IsBuild("retail") then
+            button:SetParent(Addon.ShadowUIParent)
 
-            -- always reparent the button
-            if Addon:IsBuild("retail") then
-                button:SetParent(Addon.ShadowUIParent)
-            end
-
-            -- ...but only display it on our bar if it was already enabled
             if button:IsShown() then
-                t[#t + 1] = button
+                MicroButtons[#MicroButtons + 1] = button
             end
+        else
+            MicroButtons[#MicroButtons + 1] = button
         end
     end
-
-    registerButtons(MicroButtons, MicroMenu:GetChildren())
 else
-    for _, buttonName in ipairs{
+    -- pre edit mode versions, we need to rely upon a manual list of buttons
+    for _, buttonName in ipairs {
         "CharacterMicroButton",
         "SpellbookMicroButton",
         "TalentMicroButton",
@@ -369,14 +366,14 @@ function MenuBarModule:OnFirstLoad()
         perf:SetPoint('BOTTOM', 0, 0)
     end
 
-    local layout = Addon:Debounce(function()
-        local frame = self.frame
-        if frame then
-            self.frame:Layout()
+    -- layout the frame again after an UpdateMicroButtons call, as Blizzard
+    -- repositions the buttons at that point
+    hooksecurefunc("UpdateMicroButtons", function()
+        local f = self.frame
+        if f then
+            f:Layout()
         end
     end)
-
-    hooksecurefunc("UpdateMicroButtons", layout)
 
     -- ensure that the micro menu remains banished
     -- otherwise, it'll try laying itself out again and trigger an error

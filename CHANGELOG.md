@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 11.2.15
+
+* (TBC) Fixed the talent button not appearing on the menu bar
+
 ## 11.2.14
 
 * (Retail) Fixed an menu bar error when entering/exiting pet battles
