@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 11.2.16
+
+* (Retail) Better handle secret icons on the cast bar.
+
 ## 11.2.15
 
 * (TBC) Fixed the talent button not appearing on the menu bar
