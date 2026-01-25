@@ -254,7 +254,7 @@ end
 
 local function IsKeyInSet(key, ...)
     for i = 1, select('#', ...) do
-        if key == (select(i, ...)) then
+        if key == select(i, ...) then
             return true
         end
     end
@@ -270,10 +270,11 @@ function DragFrame:OnKeyDown(key)
         elseif IsKeyInSet(key, GetBindingKey('MOVEBACKWARD')) then
             self:NudgeFrame(0, -KEYBOARD_MOVEMENT_INCREMENT)
             handled = true
-        elseif IsKeyInSet(key, GetBindingKey('TURNLEFT')) then
+        -- Modern keybindings place WASD on strafe left/right. Allow both for movement.
+        elseif IsKeyInSet(key, GetBindingKey('STRAFELEFT'), GetBindingKey('TURNLEFT')) then
             self:NudgeFrame(-KEYBOARD_MOVEMENT_INCREMENT, 0)
             handled = true
-        elseif IsKeyInSet(key, GetBindingKey('TURNRIGHT')) then
+        elseif IsKeyInSet(key, GetBindingKey('STRAFERIGHT'), GetBindingKey('TURNRIGHT')) then
             self:NudgeFrame(KEYBOARD_MOVEMENT_INCREMENT, 0)
             handled = true
         end
