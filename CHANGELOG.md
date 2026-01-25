@@ -1,5 +1,10 @@
 # Dominos Changelog
 
+## 11.2.17
+
+* Keyboard nudging now checks your Strafe Left/Right keybindings in addition to Turn Left/Right. (Handles the Modern/Legacy control options in 12.x)
+* (TBC) Added latency information to the minimap icon, like in Vanilla (Thanks [PortalPi ](https://github.com/PortalPi))
+
 ## 11.2.16
 
 * (Retail) Better handle secret icons on the cast bar.
