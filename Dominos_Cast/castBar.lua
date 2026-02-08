@@ -169,19 +169,29 @@ end
 -- Channel cast GUIDs can sometimes be nil, so we use "nil" as a default to
 -- identify those casts. I would prefer using spellID, but that value is secret
 -- post Midnight
-function CastBar:UNIT_SPELLCAST_CHANNEL_START(event, unit, castID, spellID)
-    if castID == nil then
+function CastBar:UNIT_SPELLCAST_CHANNEL_START(event, unitTarget, castGUID, spellID, castBarID)
+    local castID
+    if castBarID then
+        castID = castBarID
+    elseif castGUID then
+        castID = castGUID
+    else
         castID = "nil"
     end
 
-    self:SetProperty("unit", unit)
     self:SetProperty("castID", castID)
+    self:SetProperty("unit", unitTarget)
 
     self:UpdateChanneling()
 end
 
-function CastBar:UNIT_SPELLCAST_CHANNEL_UPDATE(event, unit, castID, spellID)
-    if castID == nil then
+function CastBar:UNIT_SPELLCAST_CHANNEL_UPDATE(event, unitTarget, castGUID, spellID, castBarID)
+    local castID
+    if castBarID then
+        castID = castBarID
+    elseif castGUID then
+        castID = castGUID
+    else
         castID = "nil"
     end
 
@@ -193,8 +203,13 @@ function CastBar:UNIT_SPELLCAST_CHANNEL_UPDATE(event, unit, castID, spellID)
     self:UpdateChanneling()
 end
 
-function CastBar:UNIT_SPELLCAST_CHANNEL_STOP(event, unit, castID, spellID)
-    if castID == nil then
+function CastBar:UNIT_SPELLCAST_CHANNEL_STOP(event, unitTarget, castGUID, spellID, castBarID)
+    local castID
+    if castBarID then
+        castID = castBarID
+    elseif castGUID then
+        castID = castGUID
+    else
         castID = "nil"
     end
 
@@ -206,19 +221,29 @@ function CastBar:UNIT_SPELLCAST_CHANNEL_STOP(event, unit, castID, spellID)
 end
 
 -- empower events
-function CastBar:UNIT_SPELLCAST_EMPOWER_START(event, unit, castID, spellID)
-    if castID == nil then
+function CastBar:UNIT_SPELLCAST_EMPOWER_START(event, unitTarget, castGUID, spellID, castBarID)
+    local castID
+    if castBarID then
+        castID = castBarID
+    elseif castGUID then
+        castID = castGUID
+    else
         castID = "nil"
     end
 
     self:SetProperty("castID", castID)
-    self:SetProperty("unit", unit)
+    self:SetProperty("unit", unitTarget)
 
     self:UpdateEmpowering()
 end
 
-function CastBar:UNIT_SPELLCAST_EMPOWER_UPDATE(event, unit, castID, spellID)
-    if castID == nil then
+function CastBar:UNIT_SPELLCAST_EMPOWER_UPDATE(event, unitTarget, castGUID, spellID, castBarID)
+    local castID
+    if castBarID then
+        castID = castBarID
+    elseif castGUID then
+        castID = castGUID
+    else
         castID = "nil"
     end
 
@@ -229,8 +254,13 @@ function CastBar:UNIT_SPELLCAST_EMPOWER_UPDATE(event, unit, castID, spellID)
     self:UpdateEmpowering()
 end
 
-function CastBar:UNIT_SPELLCAST_EMPOWER_STOP(event, unit, castID, spellID)
-    if castID == nil then
+function CastBar:UNIT_SPELLCAST_EMPOWER_STOP(event, unitTarget, castGUID, spellID, castBarID)
+    local castID
+    if castBarID then
+        castID = castBarID
+    elseif castGUID then
+        castID = castGUID
+    else
         castID = "nil"
     end
 
@@ -242,18 +272,32 @@ function CastBar:UNIT_SPELLCAST_EMPOWER_STOP(event, unit, castID, spellID)
 end
 
 -- spellcast events
-function CastBar:UNIT_SPELLCAST_START(event, unit, castID, spellID)
-    if castID == nil then
-        return
+function CastBar:UNIT_SPELLCAST_START(event, unitTarget, castGUID, spellID, castBarID)
+    local castID
+    if castBarID then
+        castID = castBarID
+    elseif castGUID then
+        castID = castGUID
+    else
+        castID = "nil"
     end
 
     self:SetProperty("castID", castID)
-    self:SetProperty("unit", unit)
+    self:SetProperty("unit", unitTarget)
 
     self:UpdateCasting()
 end
 
-function CastBar:UNIT_SPELLCAST_STOP(event, unit, castID, spellID)
+function CastBar:UNIT_SPELLCAST_STOP(event, unitTarget, castGUID, spellID, castBarID)
+    local castID
+    if castBarID then
+        castID = castBarID
+    elseif castGUID then
+        castID = castGUID
+    else
+        castID = "nil"
+    end
+
     if castID ~= self:GetProperty("castID") then
         return
     end
@@ -261,7 +305,16 @@ function CastBar:UNIT_SPELLCAST_STOP(event, unit, castID, spellID)
     self:SetProperty("state", "stopped")
 end
 
-function CastBar:UNIT_SPELLCAST_FAILED(event, unit, castID, spellID)
+function CastBar:UNIT_SPELLCAST_FAILED(event, unitTarget, castGUID, spellID, castBarID)
+    local castID
+    if castBarID then
+        castID = castBarID
+    elseif castGUID then
+        castID = castGUID
+    else
+        castID = "nil"
+    end
+
     if castID ~= self:GetProperty("castID") then
         return
     end
@@ -272,7 +325,16 @@ end
 
 CastBar.UNIT_SPELLCAST_FAILED_QUIET = CastBar.UNIT_SPELLCAST_FAILED
 
-function CastBar:UNIT_SPELLCAST_INTERRUPTED(event, unit, castID, spellID)
+function CastBar:UNIT_SPELLCAST_INTERRUPTED(event, unitTarget, castGUID, spellID, castBarID)
+    local castID
+    if castBarID then
+        castID = castBarID
+    elseif castGUID then
+        castID = castGUID
+    else
+        castID = "nil"
+    end
+
     if castID ~= self:GetProperty("castID") then
         return
     end
@@ -281,7 +343,16 @@ function CastBar:UNIT_SPELLCAST_INTERRUPTED(event, unit, castID, spellID)
     self:SetProperty("state", "interrupted")
 end
 
-function CastBar:UNIT_SPELLCAST_DELAYED(event, unit, castID, spellID)
+function CastBar:UNIT_SPELLCAST_DELAYED(event, unitTarget, castGUID, spellID, castBarID)
+    local castID
+    if castBarID then
+        castID = castBarID
+    elseif castGUID then
+        castID = castGUID
+    else
+        castID = "nil"
+    end
+
     if castID ~= self:GetProperty("castID") then
         return
     end
