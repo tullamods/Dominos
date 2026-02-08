@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 11.2.18
+
+* (Retail) Fix more secret errors with the cast bar by using castBarID when available.
+
 ## 11.2.17
 
 * Keyboard nudging now checks your Strafe Left/Right keybindings in addition to Turn Left/Right. (Handles the Modern/Legacy control options in 12.x)
