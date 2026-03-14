@@ -9,7 +9,11 @@ if not GetFriendshipReputation then
     end
 end
 
-local IsFactionParagon = C_Reputation and C_Reputation.IsFactionParagon
+local IsFactionParagon = C_Reputation and (
+    C_Reputation.IsFactionParagonForCurrentPlayer
+    or C_Reputation.IsFactionParagon
+)
+
 if not IsFactionParagon then
     IsFactionParagon = function()
         return false
