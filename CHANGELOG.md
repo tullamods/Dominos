@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 11.2.19
+
+* (Retail) Fixed the reputation bar for major factions (Thanks [fediazgon](https://github.com/fediazgon))
+
 ## 11.2.18
 
 * (Retail) Fix more secret errors with the cast bar by using castBarID when available.
