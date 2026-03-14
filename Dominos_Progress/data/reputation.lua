@@ -64,7 +64,11 @@ function Reputation:GetValues()
         return 0, 1
     end
 
-    if IsFactionParagon(factionID) then
+    if IsMajorFaction(factionID) then
+        local info = C_MajorFactions.GetMajorFactionData(factionID)
+        local capped = C_MajorFactions.HasMaximumRenown(factionID)
+        return capped and info.renownLevelThreshold or (info.renownReputationEarned or 0), info.renownLevelThreshold
+    elseif IsFactionParagon(factionID) then
         local currentValue, threshold = C_Reputation.GetFactionParagonInfo(factionID)
         return currentValue % threshold, threshold
     elseif IsFriendshipFaction(factionID) then
@@ -74,10 +78,6 @@ function Reputation:GetValues()
         else
             return 1, 1
         end
-    elseif IsMajorFaction(factionID) then
-        local info = C_MajorFactions.GetMajorFactionData(factionID)
-        local capped = C_MajorFactions.HasMaximumRenown(factionID)
-        return capped and info.renownLevelThreshold or (info.renownReputationEarned or 0), info.renownLevelThreshold
     else
         if reaction == MAX_REPUTATION_REACTION then
             return 1, 1
@@ -97,12 +97,12 @@ function Reputation:GetColor()
 
     if not name then
         color = FACTION_BAR_COLORS[1]
+    elseif IsMajorFaction(factionID) then
+        color = BLUE_FONT_COLOR
     elseif IsFactionParagon(factionID) then
         color = FACTION_BAR_COLORS[PARAGON_FACTION_COLOR_INDEX]
     elseif IsFriendshipFaction(factionID) then
         color = FACTION_BAR_COLORS[reaction]
-    elseif IsMajorFaction(factionID) then
-        color = BLUE_FONT_COLOR
     else
         color = FACTION_BAR_COLORS[reaction]
     end
@@ -116,14 +116,14 @@ function Reputation:GetBonusText()
         return nil
     end
 
-    if IsFactionParagon(factionID) then
+    if IsMajorFaction(factionID) then
+        local info = C_MajorFactions.GetMajorFactionData(factionID)
+        return RENOWN_LEVEL_LABEL:format(info.renownLevel)
+    elseif IsFactionParagon(factionID) then
         return GetText("FACTION_STANDING_LABEL" .. reaction, UnitSex("player"))
     elseif IsFriendshipFaction(factionID) then
         local info = C_GossipInfo.GetFriendshipReputation(factionID)
         return info.reaction
-    elseif IsMajorFaction(factionID) then
-        local info = C_MajorFactions.GetMajorFactionData(factionID)
-        return RENOWN_LEVEL_LABEL:format(info.renownLevel)
     else
         return GetText("FACTION_STANDING_LABEL" .. reaction, UnitSex("player"))
     end
@@ -135,11 +135,11 @@ function Reputation:IsCapped()
         return false
     end
 
-    if IsFriendshipFaction(factionID) then
+    if IsMajorFaction(factionID) then
+        return C_MajorFactions.HasMaximumRenown(factionID)
+    elseif IsFriendshipFaction(factionID) then
         local info = C_GossipInfo.GetFriendshipReputation(factionID)
         return not info.nextThreshold
-    elseif IsMajorFaction(factionID) then
-        return C_MajorFactions.HasMaximumRenown(factionID)
     else
         return reaction == MAX_REPUTATION_REACTION
     end
