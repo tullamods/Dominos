@@ -203,7 +203,7 @@ function CastBar:UNIT_SPELLCAST_CHANNEL_UPDATE(event, unitTarget, castGUID, spel
     self:UpdateChanneling()
 end
 
-function CastBar:UNIT_SPELLCAST_CHANNEL_STOP(event, unitTarget, castGUID, spellID, castBarID)
+function CastBar:UNIT_SPELLCAST_CHANNEL_STOP(event, unitTarget, castGUID, spellID, interruptedBy, castBarID)
     local castID
     if castBarID then
         castID = castBarID

@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 11.2.20
+
+* (Retail) Fixed an issue causing the cast bar to not disappear when canceling a channeled spell.
+
 ## 11.2.19
 
 * (Retail) Fixed the reputation bar for major factions (Thanks [fediazgon](https://github.com/fediazgon))
