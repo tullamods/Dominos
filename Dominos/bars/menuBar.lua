@@ -402,18 +402,6 @@ function MenuBarModule:OnFirstLoad()
         MicroMenuContainer:SetParent(Addon.ShadowUIParent)
     end
 
-    if OverrideActionBar then
-        local f = CreateFrame("Frame", nil, OverrideActionBar)
-        f:SetScript("OnShow", layout)
-        f:SetScript("OnHide", layout)
-    end
-
-    if PetMicroButtonFrame then
-        local f = CreateFrame("Frame", nil, PetMicroButtonFrame)
-        f:SetScript("OnShow", layout)
-        f:SetScript("OnHide", layout)
-    end
-
     -- a consistent bug in classic era, AchievementFrameAchievements_OnEvent
     -- tries to call a function that does not exist
     if not (Addon:IsBuild('retail') or type(AchievementMicroButton_Update) == 'function') then
