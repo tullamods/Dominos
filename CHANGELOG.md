@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 11.2.21
+
+* Update TOCs for 12.0.5
+
 ## 11.2.20
 
 * (Retail) Fixed an issue causing the cast bar to not disappear when canceling a channeled spell.
