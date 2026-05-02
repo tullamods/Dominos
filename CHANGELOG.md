@@ -1,5 +1,10 @@
 # Dominos Changelog
 
+## 11.3.0-beta1
+
+* Note: This version won't work on 5.5.3 (hence the beta designation)
+* Update TOCs for the 12.0.7 and 5.5.4 PTRs
+
 ## 11.2.21
 
 * Update TOCs for 12.0.5
