@@ -12,7 +12,7 @@ if Addon:IsBuild("retail") then
         end
     end
 -- classic, post edit mode
-elseif Addon:IsBuild("tbc") then
+elseif Addon:IsBuild("mists", "tbc") then
     local NORMAL_TEXTURE_RATIO = Round(ActionButton1.NormalTexture:GetWidth()) / Round(ActionButton1:GetWidth())
 
     local function getIcon(button)
