@@ -3,12 +3,23 @@ local AddonName, Addon = ...
 local KeyBound = LibStub('LibKeyBound-1.0')
 local COMMAND_TEMPLATE = 'CLICK %s:HOTKEY'
 
+local function getBindingCompat()
+    return Addon.BindingCompat
+end
+
 -- binding method definitions
 -- returns the binding action associated with the button
 
 -- we use a virtual button (arbitrarily named HOTKEY)
 -- to enable cast on key press support
 local function getButtonBindingAction(button)
+    local bindingCompat = getBindingCompat()
+    if bindingCompat then
+        return bindingCompat.NormalizeCommandName(button:GetAttribute("commandName"))
+            or bindingCompat.GetActionButtonCommand(button:GetAttribute("bindingID"), button)
+            or bindingCompat.GetFallbackClickBinding(button, button:GetAttribute("bindingID"))
+    end
+
     return button:GetAttribute("commandName")
         or COMMAND_TEMPLATE:format(button:GetName())
 end
@@ -20,6 +31,13 @@ local function getButtonBindingActionName(button)
 end
 
 local function getButtonBindings(button)
+    local bindingID = button:GetAttribute("bindingID")
+    local bindingCompat = getBindingCompat()
+
+    if bindingID and bindingCompat and bindingCompat.GetActionButtonBindingKeys then
+        return unpack(bindingCompat.GetActionButtonBindingKeys(bindingID, button))
+    end
+
     return GetBindingKey(getButtonBindingAction(button))
 end
 
@@ -36,7 +54,12 @@ end
 
 -- returns a space separated list of all bindings for the given button
 local function getButtonBindingsList(button)
-    return strjoin(' ', getButtonBindings(button))
+    local key = getButtonBindings(button)
+    if key then
+        return strjoin(' ', getButtonBindings(button))
+    end
+
+    return ''
 end
 
 -- set bindings
@@ -45,13 +68,28 @@ local function setButtonBinding(button, key)
 end
 
 -- clears all bindings from the button
-local function clearButtonBindings(button)
-    local key = (getButtonBindings(button))
+local function clearButtonBindingCommand(command)
+    local key = GetBindingKey(command)
 
     while key do
         SetBinding(key, nil)
-        key = (getButtonBindings(button))
+        key = GetBindingKey(command)
     end
+end
+
+local function clearButtonBindings(button)
+    local bindingID = button:GetAttribute("bindingID")
+    local bindingCompat = getBindingCompat()
+
+    if bindingID and bindingCompat and bindingCompat.GetActionButtonCommands then
+        local commands = bindingCompat.GetActionButtonCommands(bindingID, button)
+        for _, command in ipairs(commands) do
+            clearButtonBindingCommand(command)
+        end
+        return
+    end
+
+    clearButtonBindingCommand(getButtonBindingAction(button))
 end
 
 -- used to implement keybinding support without applying all of the LibKeyBound
@@ -108,6 +146,16 @@ function BindableButton:AddQuickBindingSupport(button)
 end
 
 function BindableButton:UpdateHotkeys()
+    local bindingAction = getButtonBindingAction(self)
+
+    -- Blizzard's ActionBarActionButtonMixin may rebuild bindingAction from
+    -- GetID(), which Dominos intentionally keeps decoupled from secure paging.
+    -- Restore the stable binding contract after the native hotkey update path
+    -- runs so external binding-highlighting hooks see the same command Dominos
+    -- displays and binds.
+    self.commandName = bindingAction
+    self.bindingAction = bindingAction
+
     local key = (self.GetHotkey or getButtonHotkey)(self) or ''
     local hotkey = self.HotKey
 

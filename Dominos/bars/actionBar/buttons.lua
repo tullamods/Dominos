@@ -21,6 +21,9 @@ ActionButtons.ShowGridReasons = {
 -- states
 -- [button] = action
 ActionButtons.buttons = {}
+ActionButtons.blizzardActionButtonBridge = {}
+ActionButtons.blizzardActionButtonBridgeHooked = {}
+ActionButtons.pendingExternalOverrideUpdates = {}
 
 ActionButtons:Execute([[
     ActionButtons = table.new()
@@ -181,6 +184,44 @@ function ActionButtons:PLAYER_LOGIN()
     self:LAYOUT_LOADED()
 end
 
+function ActionButtons:PLAYER_REGEN_ENABLED()
+    self:UnregisterEvent("PLAYER_REGEN_ENABLED")
+
+    for sourceButton, targetButton in pairs(self.blizzardActionButtonBridge) do
+        self:MirrorBlizzardActionButtonOverride(sourceButton, targetButton)
+    end
+
+    for button in pairs(self.pendingExternalOverrideUpdates) do
+        if button.UpdateShown then
+            button:UpdateShown()
+        end
+
+        if button.UpdateOverrideBindings then
+            button:UpdateOverrideBindings()
+        end
+
+        self.pendingExternalOverrideUpdates[button] = nil
+    end
+
+    self:ForAll("UpdateShown")
+    self:ForAll("UpdateOverrideBindings")
+end
+
+function ActionButtons:OnExternalOverrideChanged(buttonName)
+    local button = _G[buttonName]
+    if not button or not self.buttons[button] then
+        return
+    end
+
+    if InCombatLockdown() then
+        self:QueueExternalOverrideUpdate(button)
+        return
+    end
+
+    button:UpdateShown()
+    button:UpdateOverrideBindings()
+end
+
 -- force a visibility updates when spells changed (typically called when
 -- switching talents)
 function ActionButtons:SPELLS_CHANGED()
@@ -234,6 +275,19 @@ local ActionButton_AttributeChanged = [[
 
             control:CallMethod("OnActionChanged", self:GetName(), value, prevValue)
         end
+    elseif name == "type"
+        or name == "type1"
+        or name == "*type1"
+        or name == "typerelease"
+        or name == "clickbutton"
+        or name == "clickbutton1"
+        or name == "*clickbutton1"
+        or name == "gse-button"
+        or name == "gse-eff-action"
+    then
+        DirtyButtons[self] = true
+        control:SetAttribute("commit", 0)
+        control:CallMethod("OnExternalOverrideChanged", self:GetName(), name)
     end
 ]]
 
@@ -260,6 +314,202 @@ local ActionButton_ReceiveDragAfter = [[
 local ActionButton_OnShowHide = [[
     self:RunAttribute("UpdateShown")
 ]]
+
+
+local MIRRORED_EXTERNAL_OVERRIDE_ATTRIBUTES = {
+    "gse-button",
+    "gse-eff-action",
+    "type",
+    "type1",
+    "type2",
+    "*type1",
+    "*type2",
+    "typerelease",
+    "clickbutton",
+    "clickbutton1",
+    "clickbutton2",
+    "*clickbutton1",
+    "*clickbutton2",
+    "macro",
+    "macro1",
+    "macro2",
+    "*macro1",
+    "*macro2",
+    "macrotext",
+    "macrotext1",
+    "macrotext2",
+    "*macrotext1",
+    "*macrotext2",
+    "spell",
+    "spell1",
+    "spell2",
+    "*spell1",
+    "*spell2",
+    "item",
+    "item1",
+    "item2",
+    "*item1",
+    "*item2",
+    "unit",
+    "unit1",
+    "unit2",
+    "*unit1",
+    "*unit2",
+}
+
+local MIRRORED_EXTERNAL_OVERRIDE_ATTRIBUTE_SET = {}
+for _, attributeName in ipairs(MIRRORED_EXTERNAL_OVERRIDE_ATTRIBUTES) do
+    MIRRORED_EXTERNAL_OVERRIDE_ATTRIBUTE_SET[attributeName] = true
+end
+
+local function IsMirroredExternalOverrideAttribute(attributeName)
+    return MIRRORED_EXTERNAL_OVERRIDE_ATTRIBUTE_SET[attributeName] == true
+end
+
+local function IsExternalActionOverrideType(actionType)
+    return actionType ~= nil and actionType ~= "action" and actionType ~= "actionrelease"
+end
+
+local function HasExternalActionOverrideAttributes(button)
+    if not button or not button.GetAttribute then
+        return nil
+    end
+
+    return button:GetAttribute("gse-button")
+        or button:GetAttribute("clickbutton")
+        or IsExternalActionOverrideType(button:GetAttribute("type"))
+        or IsExternalActionOverrideType(button:GetAttribute("type1"))
+        or IsExternalActionOverrideType(button:GetAttribute("*type1"))
+end
+
+local function SetAttributeIfChanged(button, attributeName, value)
+    if button:GetAttribute(attributeName) ~= value then
+        button:SetAttribute(attributeName, value)
+    end
+end
+
+local function GetButtonIcon(button)
+    if not button then
+        return nil
+    end
+
+    return button.icon or button.Icon or (button.GetName and _G[button:GetName() .. "Icon"])
+end
+
+local function CopyButtonIcon(sourceButton, targetButton)
+    local sourceIcon = GetButtonIcon(sourceButton)
+    local targetIcon = GetButtonIcon(targetButton)
+    if not sourceIcon or not targetIcon or not sourceIcon.GetTexture then
+        return
+    end
+
+    local texture = sourceIcon:GetTexture()
+    if texture then
+        targetIcon:SetTexture(texture)
+        targetIcon:Show()
+    end
+end
+
+local function ScheduleButtonIconCopy(sourceButton, targetButton)
+    CopyButtonIcon(sourceButton, targetButton)
+
+    if C_Timer and C_Timer.After then
+        C_Timer.After(0, function()
+            if targetButton and targetButton.GetAttribute and targetButton:GetAttribute("gse-button") then
+                CopyButtonIcon(sourceButton, targetButton)
+            end
+        end)
+    end
+end
+
+local function RestoreNativeActionAttributes(button)
+    SetAttributeIfChanged(button, "type", "action")
+    SetAttributeIfChanged(button, "typerelease", "actionrelease")
+
+    for _, attributeName in ipairs(MIRRORED_EXTERNAL_OVERRIDE_ATTRIBUTES) do
+        if attributeName ~= "type" and attributeName ~= "typerelease" then
+            SetAttributeIfChanged(button, attributeName, nil)
+        end
+    end
+end
+
+function ActionButtons:QueueExternalOverrideUpdate(button)
+    if not button then
+        return
+    end
+
+    self.pendingExternalOverrideUpdates[button] = true
+    self:RegisterEvent("PLAYER_REGEN_ENABLED")
+end
+
+function ActionButtons:MirrorBlizzardActionButtonOverride(sourceButton, targetButton)
+    if not sourceButton or not targetButton or sourceButton == targetButton then
+        return
+    end
+
+    if InCombatLockdown() then
+        self:QueueExternalOverrideUpdate(targetButton)
+        return
+    end
+
+    if HasExternalActionOverrideAttributes(sourceButton) then
+        targetButton.dominosExternalOverrideBridgeSource = sourceButton
+
+        for _, attributeName in ipairs(MIRRORED_EXTERNAL_OVERRIDE_ATTRIBUTES) do
+            SetAttributeIfChanged(targetButton, attributeName, sourceButton:GetAttribute(attributeName))
+        end
+
+        if sourceButton:GetAttribute("clickbutton") and not targetButton:GetAttribute("type") then
+            SetAttributeIfChanged(targetButton, "type", "click")
+        end
+
+        ScheduleButtonIconCopy(sourceButton, targetButton)
+    elseif targetButton.dominosExternalOverrideBridgeSource == sourceButton then
+        targetButton.dominosExternalOverrideBridgeSource = nil
+        RestoreNativeActionAttributes(targetButton)
+    end
+
+    if targetButton.UpdateShown then
+        targetButton:UpdateShown()
+    end
+
+    if targetButton.UpdateOverrideBindings then
+        targetButton:UpdateOverrideBindings()
+    end
+end
+
+local function BlizzardActionButton_OnAttributeChanged(sourceButton, attributeName)
+    if not IsMirroredExternalOverrideAttribute(attributeName) then
+        return
+    end
+
+    local targetButton = ActionButtons.blizzardActionButtonBridge[sourceButton]
+    if targetButton then
+        ActionButtons:MirrorBlizzardActionButtonOverride(sourceButton, targetButton)
+    end
+end
+
+function ActionButtons:RegisterBlizzardActionButtonBridge(button, id)
+    if type(id) ~= "number" or id < 1 or id > 12 then
+        return
+    end
+
+    local sourceButton = _G[("ActionButton%d"):format(id)]
+    if not sourceButton or sourceButton == button then
+        return
+    end
+
+    self.blizzardActionButtonBridge[sourceButton] = button
+    button.dominosBlizzardActionButtonBridgeSource = sourceButton
+    button.blizzardActionButtonName = sourceButton:GetName()
+
+    if not self.blizzardActionButtonBridgeHooked[sourceButton] then
+        sourceButton:HookScript("OnAttributeChanged", BlizzardActionButton_OnAttributeChanged)
+        self.blizzardActionButtonBridgeHooked[sourceButton] = true
+    end
+
+    self:MirrorBlizzardActionButtonOverride(sourceButton, button)
+end
 
 local function GetActionButtonName(id)
     if id <= 0 then
@@ -363,39 +613,54 @@ function ActionButtons:GetOrCreateActionButton(id, parent)
         self.buttons[button] = 0
     end
 
+    self:RegisterBlizzardActionButtonBridge(button, id)
+
     return button
 end
 
 -- update the pushed state of our parent button when pressing and releasing
--- the button's hotkey
+-- the button's hotkey. The hidden secure proxy owns override bindings for normal
+-- slot execution. When an external addon replaces the visible button contract
+-- with a clickbutton/macro/spell override, bindings are retargeted to the visible
+-- button so the external secure override receives the same click as the mouse.
 local function bindButton_PreClick(self, _, down)
     local owner = self:GetParent()
+    if not owner then
+        return
+    end
 
     if down then
         if owner:GetButtonState() == "NORMAL" then
             owner:SetButtonState("PUSHED")
         end
-    else
-        if owner:GetButtonState() == "PUSHED" then
-            owner:SetButtonState("NORMAL")
+    elseif owner:GetButtonState() == "PUSHED" then
+        owner:SetButtonState("NORMAL")
+    end
+end
+
+local function bindButton_SetOverrideBindings(self, useVisibleButton, ...)
+    ClearOverrideBindings(self)
+
+    local owner = self:GetParent()
+    local targetName = useVisibleButton and owner and owner:GetName() or self:GetName()
+    local targetButton = useVisibleButton and "LeftButton" or "HOTKEY"
+    if not targetName then
+        return
+    end
+
+    for i = 1, select("#", ...) do
+        local key = select(i, ...)
+        if key then
+            SetOverrideBindingClick(self, false, key, targetName, targetButton)
         end
     end
 end
 
-local function bindButton_SetOverrideBindings(self, ...)
-    ClearOverrideBindings(self)
-
-    local name = self:GetName()
-    for i = 1, select("#", ...) do
-        SetOverrideBindingClick(self, false, select(i, ...), name, "HOTKEY")
-    end
-end
-
--- cast on keypress support is implemented by using a second hidden button
--- that mirrors all ofthe attributes of its parent button. This is to work
--- around inconsistent handling of drag and drop if we just use the
--- SecureActionButtonTemplate for buttons, as well as the OnClick handler
--- for action buttons only triggering actions on key release.
+-- Cast-on-keypress support is implemented by using a second hidden button that
+-- mirrors the secure action attributes of its parent. Native Blizzard binding
+-- keys are captured with override bindings and redirected here for normal action
+-- slots so addon-created Dominos buttons are not executed through Blizzard's
+-- restricted ACTIONBUTTON binding snippets.
 function ActionButtons:AddCastOnKeyPressSupport(button)
     local bind = CreateFrame("Button", "$parentHotkey", button, "SecureActionButtonTemplate")
 
@@ -412,16 +677,15 @@ function ActionButtons:AddCastOnKeyPressSupport(button)
 
     bind:EnableMouseWheel()
     bind:RegisterForClicks("AnyUp", "AnyDown")
-
     bind:SetScript("PreClick", bindButton_PreClick)
-
     bind.SetOverrideBindings = bindButton_SetOverrideBindings
 
     if Addon.SpellFlyout then
         Addon.SpellFlyout:Register(bind)
     end
 
-    -- translate HOTKEY button "clicks" into LeftButton
+    -- Translate HOTKEY button clicks into LeftButton. This matches the old
+    -- Dominos fallback path while preserving flyout safety on Midnight builds.
     if Addon:IsAfterMidnight() then
         self:WrapScript(bind, "OnClick", [[
             if button == "HOTKEY" then
