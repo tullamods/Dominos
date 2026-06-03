@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 11.3.0
+
+* Tagged as release
+
 ## 11.3.0-beta1
 
 * Note: This version won't work on 5.5.3 (hence the beta designation)
