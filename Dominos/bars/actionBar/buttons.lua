@@ -4,6 +4,9 @@ local ActionButtons = CreateFrame('Frame', nil, nil, 'SecureHandlerAttributeTemp
 -- constants
 local ACTION_BUTTON_NAME_TEMPLATE = AddonName .. "ActionButton%d"
 
+local function noop()
+end
+
 --------------------------------------------------------------------------------
 -- State
 --------------------------------------------------------------------------------
@@ -114,15 +117,22 @@ function ActionButtons:Initialize()
     -- of the reasons only triggered by game events (like ACTIONBAR_SHOWGRID).
     -- Propagate those changes to all the buttons managed by the controller.
     -- This allows us to properly show and hide action buttons in combat
-    -- when the player is attempting to drag and drop abilities
-    self:WrapScript(ActionButton1, "OnAttributeChanged", [[
-        if name ~= "showgrid" then return end
+    -- when the player is attempting to drag and drop abilities.
+    --
+    -- Midnight hardens native action button attributes and cooldown values.
+    -- Dominos detaches hidden stock buttons from Blizzard's shared dispatchers
+    -- there, so avoid wrapping ActionButton1 and rely on the explicit
+    -- ACTIONBAR_SHOWGRID/ACTIONBAR_HIDEGRID events registered above.
+    if not Addon:IsAfterMidnight() then
+        self:WrapScript(ActionButton1, "OnAttributeChanged", [[
+            if name ~= "showgrid" then return end
 
-        for reason = 2, 4, 2 do
-            local show = value % (reason * 2) >= reason
-            control:RunAttribute("SetShowGrid", show, reason)
-        end
-    ]])
+            for reason = 2, 4, 2 do
+                local show = value % (reason * 2) >= reason
+                control:RunAttribute("SetShowGrid", show, reason)
+            end
+        ]])
+    end
 
     -- overlay glow hiding
     if ActionButtonSpellAlertManager then
@@ -180,7 +190,10 @@ end
 -- reset grid state at login. This covers waiting for the game to apply the
 -- always show buttons state to the main bar
 function ActionButtons:PLAYER_LOGIN()
-    ActionButton1:SetAttribute("showgrid", 0)
+    if not Addon:IsAfterMidnight() then
+        ActionButton1:SetAttribute("showgrid", 0)
+    end
+
     self:LAYOUT_LOADED()
 end
 
@@ -382,6 +395,388 @@ local function HasExternalActionOverrideAttributes(button)
         or IsExternalActionOverrideType(button:GetAttribute("*type1"))
 end
 
+local ACTION_BUTTON_CAST_TYPE_CAST = 1
+local ACTION_BUTTON_CAST_TYPE_CHANNEL = 2
+local ACTION_BUTTON_CAST_TYPE_EMPOWERED = 3
+
+local function ClearCooldown(cooldown)
+    if cooldown and cooldown.Clear then
+        cooldown:Clear()
+    end
+end
+
+local function ClearActionButtonCooldownsSafe(button)
+    ClearCooldown(button and button.cooldown)
+    ClearCooldown(button and button.chargeCooldown)
+    ClearCooldown(button and button.lossOfControlCooldown)
+end
+
+local function SetCooldownFromDurationObject(cooldown, duration)
+    if not cooldown then
+        return
+    end
+
+    if duration and cooldown.SetCooldownFromDurationObject then
+        cooldown:SetCooldownFromDurationObject(duration, true)
+    else
+        cooldown:Clear()
+    end
+end
+
+local function GetActionCooldownDuration(action, ignoreGCD)
+    if C_ActionBar and C_ActionBar.GetActionCooldownDuration then
+        return C_ActionBar.GetActionCooldownDuration(action, ignoreGCD and true or false)
+    end
+end
+
+local function GetActionChargeDuration(action)
+    if C_ActionBar and C_ActionBar.GetActionChargeDuration then
+        return C_ActionBar.GetActionChargeDuration(action)
+    end
+end
+
+local function GetActionLossOfControlCooldownDuration(action)
+    if C_ActionBar and C_ActionBar.GetActionLossOfControlCooldownDuration then
+        return C_ActionBar.GetActionLossOfControlCooldownDuration(action)
+    end
+end
+
+local function HasActionSafe(action)
+    if action and C_ActionBar and C_ActionBar.HasAction then
+        return C_ActionBar.HasAction(action)
+    end
+
+    return action and HasAction(action)
+end
+
+local function GetActionTextureForUpdate(action)
+    if C_ActionBar and C_ActionBar.GetActionTexture then
+        return C_ActionBar.GetActionTexture(action)
+    end
+
+    return GetActionTexture(action)
+end
+
+local function DominosActionButton_UpdateCount(button)
+    local updateCount = button and button.dominosNativeUpdateCount
+    if type(updateCount) ~= "function" then
+        return
+    end
+
+    local ok = pcall(updateCount, button)
+    if not ok and button.Count then
+        button.Count:SetText("")
+    end
+end
+
+local function DominosActionButton_UpdateCooldown(button)
+    local action = button and (button.action or button:GetAttribute("action"))
+    if not action or not HasActionSafe(action) then
+        ClearActionButtonCooldownsSafe(button)
+        return
+    end
+
+    -- Midnight cooldown APIs can return secret start/duration values.  The safe
+    -- public replacement path is to pass Blizzard's duration object directly to
+    -- the cooldown frame instead of reading start/duration and calling SetCooldown.
+    SetCooldownFromDurationObject(button.cooldown, GetActionCooldownDuration(action, false))
+    SetCooldownFromDurationObject(button.chargeCooldown, GetActionChargeDuration(action))
+
+    if button.enableLOCCooldown then
+        SetCooldownFromDurationObject(button.lossOfControlCooldown, GetActionLossOfControlCooldownDuration(action))
+    else
+        ClearCooldown(button.lossOfControlCooldown)
+    end
+end
+
+local function InstallMidnightPressAndHoldUpdater(button)
+    if not button or button.dominosMidnightPressAndHoldUpdaterInstalled then
+        return
+    end
+
+    if type(button.SetAttributeNoHandler) ~= "function" then
+        return
+    end
+
+    button:SetAttributeNoHandler("UpdatePressAndHoldAction", [[
+        local pressAndHoldAction = false
+        local action
+
+        if self.CalculateAction then
+            action = self:CalculateAction()
+        end
+
+        if not action then
+            action = self:GetAttribute("action")
+        end
+
+        if action and action ~= 0 then
+            local actionType, id = GetActionInfo(action)
+            if actionType == "spell" and id then
+                pressAndHoldAction = IsPressHoldReleaseSpell(id)
+            end
+        end
+
+        if self:GetAttribute("pressAndHoldAction") ~= pressAndHoldAction then
+            self:SetAttribute("pressAndHoldAction", pressAndHoldAction)
+        end
+    ]])
+
+    button.dominosMidnightPressAndHoldUpdaterInstalled = true
+end
+
+local function DominosActionButton_UpdatePressAndHoldAction(button)
+    if button and button.RunAttribute and button:GetAttribute("UpdatePressAndHoldAction") then
+        button:RunAttribute("UpdatePressAndHoldAction")
+    end
+end
+
+local function DominosActionButton_Update(button)
+    local action = button.action or button:GetAttribute("action")
+    local icon = button.icon
+    local texture = GetActionTextureForUpdate(action)
+
+    if icon then
+        icon:SetDesaturated(false)
+    end
+
+    if HasActionSafe(action) then
+        if not button.eventsRegistered and ActionBarActionEventsFrame then
+            ActionBarActionEventsFrame:RegisterFrame(button)
+            button.eventsRegistered = true
+        end
+
+        if button.UpdateState then button:UpdateState() end
+        if button.UpdateUsable then button:UpdateUsable() end
+        if button.UpdateProfessionQuality then button:UpdateProfessionQuality() end
+        if button.UpdateTypeOverlay then button:UpdateTypeOverlay() end
+        DominosActionButton_UpdateCooldown(button)
+        if button.UpdateFlash then button:UpdateFlash() end
+        if button.UpdateHighlightMark then button:UpdateHighlightMark() end
+        if button.UpdateSpellHighlightMark then button:UpdateSpellHighlightMark() end
+    else
+        if button.eventsRegistered and ActionBarActionEventsFrame then
+            ActionBarActionEventsFrame:UnregisterFrame(button)
+            button.eventsRegistered = nil
+        end
+
+        ClearActionButtonCooldownsSafe(button)
+        if button.ClearFlash then button:ClearFlash() end
+        button:SetChecked(false)
+        if button.ClearProfessionQuality then button:ClearProfessionQuality() end
+        if button.ClearTypeOverlay then button:ClearTypeOverlay() end
+
+        if button.LevelLinkLockIcon then
+            button.LevelLinkLockIcon:SetShown(false)
+        end
+    end
+
+    DominosActionButton_UpdatePressAndHoldAction(button)
+
+    local border = button.Border
+    if border then
+        if action and C_ActionBar and C_ActionBar.IsEquippedAction and C_ActionBar.IsEquippedAction(action) then
+            border:SetVertexColor(0, 1.0, 0, 0.5)
+            border:Show()
+        else
+            border:Hide()
+        end
+    end
+
+    local actionName = button.Name
+    if actionName then
+        if action and C_ActionBar and C_ActionBar.UsesActionText and C_ActionBar.UsesActionText(action) then
+            actionName:SetText(C_ActionBar.GetActionText(action))
+        else
+            actionName:SetText("")
+        end
+    end
+
+    if texture and icon then
+        icon:SetTexture(texture)
+        icon:Show()
+        if button.UpdateCount then button:UpdateCount() end
+    else
+        if button.Count then button.Count:SetText("") end
+        if icon then icon:Hide() end
+        ClearActionButtonCooldownsSafe(button)
+
+        local hotkey = button.HotKey
+        if hotkey then
+            if hotkey:GetText() == RANGE_INDICATOR then
+                hotkey:Hide()
+            elseif ACTIONBAR_HOTKEY_FONT_COLOR then
+                hotkey:SetVertexColor(ACTIONBAR_HOTKEY_FONT_COLOR:GetRGB())
+            end
+        end
+    end
+
+    if button.UpdateFlyout then button:UpdateFlyout() end
+    if button.UpdateSpellAlert then button:UpdateSpellAlert() end
+
+    if GameTooltip:GetOwner() == button and button.SetTooltip then
+        button:SetTooltip()
+    end
+
+    button.feedback_action = action
+end
+
+local function DominosActionButton_OnEvent(button, event, ...)
+    local arg1 = ...
+
+    if ((event == "UNIT_INVENTORY_CHANGED" and arg1 == "player") or event == "LEARNED_SPELL_IN_SKILL_LINE") then
+        if GameTooltip:GetOwner() == button and button.SetTooltip then
+            button:SetTooltip()
+        end
+    elseif event == "ACTIONBAR_SLOT_CHANGED" then
+        if arg1 == 0 or arg1 == tonumber(button.action) then
+            ClearNewActionHighlight(button.action, true)
+            button:UpdateAction(true)
+        end
+    elseif event == "PLAYER_ENTERING_WORLD" then
+        button:Update()
+    elseif event == "UPDATE_SHAPESHIFT_FORM" then
+        local texture = GetActionTextureForUpdate(button.action)
+        if texture then
+            button.icon:SetTexture(texture)
+        end
+    elseif event == "UPDATE_BINDINGS" or event == "GAME_PAD_ACTIVE_CHANGED" then
+        button:UpdateHotkeys(button.buttonType)
+    elseif event == "UNIT_FLAGS" or event == "UNIT_AURA" or event == "PET_BAR_UPDATE" then
+        button.flashDirty = true
+        button.stateDirty = true
+        button:CheckNeedsUpdate()
+    elseif event == "ACTIONBAR_UPDATE_STATE"
+        or ((event == "UNIT_ENTERED_VEHICLE" or event == "UNIT_EXITED_VEHICLE") and arg1 == "player")
+        or (event == "COMPANION_UPDATE" and arg1 == "MOUNT")
+    then
+        button:UpdateState()
+    elseif event == "PLAYER_MOUNT_DISPLAY_CHANGED" then
+        button:UpdateUsable()
+    elseif event == "LOSS_OF_CONTROL_UPDATE" then
+        DominosActionButton_UpdateCooldown(button)
+    elseif event == "ACTIONBAR_UPDATE_COOLDOWN" or event == "LOSS_OF_CONTROL_ADDED" then
+        DominosActionButton_UpdateCooldown(button)
+        if GameTooltip:GetOwner() == button and button.SetTooltip then
+            button:SetTooltip()
+        end
+    elseif event == "TRADE_SKILL_SHOW" or event == "TRADE_SKILL_CLOSE" or event == "ARCHAEOLOGY_CLOSED" then
+        button:UpdateState()
+    elseif event == "PLAYER_ENTER_COMBAT" then
+        if C_ActionBar and C_ActionBar.IsAttackAction and C_ActionBar.IsAttackAction(button.action) then
+            button:StartFlash()
+        end
+    elseif event == "PLAYER_LEAVE_COMBAT" then
+        if C_ActionBar and C_ActionBar.IsAttackAction and C_ActionBar.IsAttackAction(button.action) then
+            button:StopFlash()
+        end
+    elseif event == "START_AUTOREPEAT_SPELL" then
+        if C_ActionBar and C_ActionBar.IsAutoRepeatAction and C_ActionBar.IsAutoRepeatAction(button.action) then
+            button:StartFlash()
+        end
+    elseif event == "STOP_AUTOREPEAT_SPELL" then
+        if button:IsFlashing() and not (C_ActionBar and C_ActionBar.IsAttackAction and C_ActionBar.IsAttackAction(button.action)) then
+            button:StopFlash()
+        end
+    elseif event == "PET_STABLE_UPDATE" or event == "PET_STABLE_SHOW" then
+        button:Update()
+    elseif event == "SPELL_ACTIVATION_OVERLAY_GLOW_SHOW" then
+        local actionType, id, subType = GetActionInfo(button.action)
+        if actionType == "spell" and id == arg1 then
+            ActionButtonSpellAlertManager:ShowAlert(button)
+        elseif actionType == "macro" and subType == "spell" and id == arg1 then
+            ActionButtonSpellAlertManager:ShowAlert(button)
+        elseif actionType == "flyout" and FlyoutHasSpell(id, arg1) then
+            ActionButtonSpellAlertManager:ShowAlert(button)
+        end
+    elseif event == "SPELL_ACTIVATION_OVERLAY_GLOW_HIDE" then
+        local actionType, id, subType = GetActionInfo(button.action)
+        if actionType == "spell" and id == arg1 then
+            ActionButtonSpellAlertManager:HideAlert(button)
+        elseif actionType == "macro" and subType == "spell" and id == arg1 then
+            ActionButtonSpellAlertManager:HideAlert(button)
+        elseif actionType == "flyout" and FlyoutHasSpell(id, arg1) then
+            ActionButtonSpellAlertManager:HideAlert(button)
+        end
+    elseif event == "SPELL_UPDATE_CHARGES" then
+        button:UpdateCount()
+    elseif event == "UPDATE_SUMMONPETS_ACTION" then
+        local actionType = GetActionInfo(button.action)
+        if actionType == "summonpet" then
+            local texture = GetActionTextureForUpdate(button.action)
+            if texture then
+                button.icon:SetTexture(texture)
+            end
+        end
+    elseif event == "SPELL_UPDATE_ICON" then
+        button:Update()
+    elseif event == "ACTION_RANGE_CHECK_UPDATE" then
+        local inRange, checksRange = select(2, ...)
+        ActionButton_UpdateRangeIndicator(button, checksRange, inRange)
+    elseif event == "UNIT_SPELLCAST_INTERRUPTED" then
+        button:PlaySpellInterruptedAnim()
+    elseif event == "UNIT_SPELLCAST_START" then
+        button:PlaySpellCastAnim(ACTION_BUTTON_CAST_TYPE_CAST)
+    elseif event == "UNIT_SPELLCAST_STOP" then
+        button:StopSpellCastAnim(true, ACTION_BUTTON_CAST_TYPE_CAST)
+        button:StopTargettingReticleAnim()
+    elseif event == "UNIT_SPELLCAST_SUCCEEDED" then
+        button:StopSpellCastAnim(false, ACTION_BUTTON_CAST_TYPE_CAST)
+        button:StopTargettingReticleAnim()
+    elseif event == "UNIT_SPELLCAST_SENT" or event == "UNIT_SPELLCAST_FAILED" then
+        button:StopTargettingReticleAnim()
+    elseif event == "UNIT_SPELLCAST_EMPOWER_START" then
+        button:PlaySpellCastAnim(ACTION_BUTTON_CAST_TYPE_EMPOWERED)
+    elseif event == "UNIT_SPELLCAST_EMPOWER_STOP" then
+        local _, _, _, castComplete = ...
+        local interrupted = not castComplete
+        if interrupted then
+            button:PlaySpellInterruptedAnim()
+        else
+            button:StopSpellCastAnim(interrupted, ACTION_BUTTON_CAST_TYPE_EMPOWERED)
+        end
+    elseif event == "UNIT_SPELLCAST_CHANNEL_START" then
+        button:PlaySpellCastAnim(ACTION_BUTTON_CAST_TYPE_CHANNEL)
+    elseif event == "UNIT_SPELLCAST_CHANNEL_STOP" then
+        button:StopSpellCastAnim(false, ACTION_BUTTON_CAST_TYPE_CHANNEL)
+    elseif event == "UNIT_SPELLCAST_RETICLE_TARGET" then
+        button:PlayTargettingReticleAnim()
+    elseif event == "UNIT_SPELLCAST_RETICLE_CLEAR" then
+        button:StopTargettingReticleAnim()
+    elseif event == "AssistedCombatManager.OnSetActionSpell" then
+        button:UpdateAssistedCombatRotationFrame()
+    end
+end
+
+local function ApplyMidnightActionButtonSafety(button)
+    -- Midnight restricts passing action cooldown start/duration secrets through
+    -- tainted Lua. Dominos buttons are addon-owned ActionButtonTemplate frames, so
+    -- using Blizzard's shared OnEvent/Update path now pushes protected cooldown and
+    -- press-and-hold mutations through a tainted stack. Keep the Blizzard frame
+    -- contract, but replace only the unsafe dispatch methods with duration-object
+    -- based equivalents.
+    if not Addon:IsAfterMidnight() then
+        return
+    end
+
+    InstallMidnightPressAndHoldUpdater(button)
+
+    if button.dominosMidnightActionButtonSafetyApplied then
+        return
+    end
+
+    button.dominosNativeOnEvent = button.OnEvent
+    button.dominosNativeUpdate = button.Update
+    button.dominosNativeUpdatePressAndHoldAction = button.UpdatePressAndHoldAction
+    button.dominosNativeUpdateCount = button.UpdateCount
+
+    button.OnEvent = DominosActionButton_OnEvent
+    button.Update = DominosActionButton_Update
+    button.UpdateCount = DominosActionButton_UpdateCount
+    button.UpdatePressAndHoldAction = DominosActionButton_UpdatePressAndHoldAction
+    button.dominosMidnightActionButtonSafetyApplied = true
+end
+
 local function SetAttributeIfChanged(button, attributeName, value)
     if button:GetAttribute(attributeName) ~= value then
         button:SetAttribute(attributeName, value)
@@ -489,15 +884,72 @@ local function BlizzardActionButton_OnAttributeChanged(sourceButton, attributeNa
     end
 end
 
-function ActionButtons:RegisterBlizzardActionButtonBridge(button, id)
-    if type(id) ~= "number" or id < 1 or id > 12 then
+local function SuppressHiddenBlizzardActionButtonSource(sourceButton)
+    if not Addon:IsAfterMidnight() or not sourceButton or sourceButton.dominosBlizzardBridgeSourceSuppressed then
         return
     end
 
-    local sourceButton = _G[("ActionButton%d"):format(id)]
+    -- These source buttons are kept only as Blizzard-compatible external contract
+    -- anchors. They must not continue running Blizzard's native action update path
+    -- while Dominos owns the visible action button, because that path can call
+    -- protected SetAttribute/SetCooldown with Midnight secret values from a
+    -- Dominos-tainted stack.
+    sourceButton.dominosNativeOnEvent = sourceButton.OnEvent
+    sourceButton.dominosNativeOnUpdate = sourceButton.OnUpdate
+    sourceButton.dominosNativeUpdate = sourceButton.Update
+    sourceButton.dominosNativeUpdateAction = sourceButton.UpdateAction
+    sourceButton.dominosNativeUpdatePressAndHoldAction = sourceButton.UpdatePressAndHoldAction
+    sourceButton.dominosNativeCheckNeedsUpdate = sourceButton.CheckNeedsUpdate
+    sourceButton.dominosNativeActionButtonOnClick = sourceButton.ActionBarActionButtonDerivedMixin_OnClick
+
+    sourceButton.OnEvent = noop
+    sourceButton.OnUpdate = noop
+    sourceButton.Update = noop
+    sourceButton.UpdateAction = noop
+    sourceButton.UpdatePressAndHoldAction = noop
+    sourceButton.CheckNeedsUpdate = noop
+    sourceButton.ActionBarActionButtonDerivedMixin_OnClick = noop
+    sourceButton.eventsRegistered = nil
+    sourceButton.needsUpdate = nil
+    sourceButton.dominosBlizzardBridgeSourceSuppressed = true
+end
+
+local function GetBlizzardActionButtonName(id)
+    if id >= 1 and id <= 12 then
+        return ("ActionButton%d"):format(id)
+    elseif id >= 25 and id <= 36 then
+        return ("MultiBarRightButton%d"):format(id - 24)
+    elseif id >= 37 and id <= 48 then
+        return ("MultiBarLeftButton%d"):format(id - 36)
+    elseif id >= 49 and id <= 60 then
+        return ("MultiBarBottomRightButton%d"):format(id - 48)
+    elseif id >= 61 and id <= 72 then
+        return ("MultiBarBottomLeftButton%d"):format(id - 60)
+    elseif id >= 133 and id <= 144 then
+        return ("MultiBar5Button%d"):format(id - 132)
+    elseif id >= 145 and id <= 156 then
+        return ("MultiBar6Button%d"):format(id - 144)
+    elseif id >= 157 and id <= 168 then
+        return ("MultiBar7Button%d"):format(id - 156)
+    end
+end
+
+function ActionButtons:ApplyMidnightActionButtonSafety(button)
+    ApplyMidnightActionButtonSafety(button)
+end
+
+function ActionButtons:RegisterBlizzardActionButtonBridge(button, id)
+    local sourceName = GetBlizzardActionButtonName(id)
+    if not sourceName then
+        return
+    end
+
+    local sourceButton = _G[sourceName]
     if not sourceButton or sourceButton == button then
         return
     end
+
+    SuppressHiddenBlizzardActionButtonSource(sourceButton)
 
     self.blizzardActionButtonBridge[sourceButton] = button
     button.dominosBlizzardActionButtonBridgeSource = sourceButton
@@ -593,6 +1045,9 @@ function ActionButtons:GetOrCreateActionButton(id, parent)
     end
 
     if created then
+        ApplyMidnightActionButtonSafety(button)
+        self:AddOverrideActionProxy(button)
+
         -- add secure handlers
         self:WrapScript(button, "OnAttributeChanged", ActionButton_AttributeChanged)
         self:WrapScript(button, "PostClick", ActionButton_PostClick)
@@ -616,6 +1071,54 @@ function ActionButtons:GetOrCreateActionButton(id, parent)
     self:RegisterBlizzardActionButtonBridge(button, id)
 
     return button
+end
+
+local function GetOverrideActionProxyName(button)
+    local name = button and button:GetName()
+    if name then
+        return name .. "OverrideActionProxy"
+    end
+end
+
+function ActionButtons:AddOverrideActionProxy(button)
+    if button.dominosOverrideActionProxy then
+        return button.dominosOverrideActionProxy
+    end
+
+    local proxyName = GetOverrideActionProxyName(button)
+    if not proxyName then
+        return nil
+    end
+
+    -- This transparent child is only shown while Dominos' configured
+    -- override/vehicle/possess bar is active.  It executes the current action
+    -- slot through Blizzard's native SecureActionButtonTemplate while the
+    -- visible Dominos button keeps any GSE/clickbutton attributes untouched.
+    local proxy = CreateFrame("Button", proxyName, button, "SecureActionButtonTemplate")
+    proxy:SetAllPoints(button)
+    proxy:SetFrameLevel(button:GetFrameLevel() + 10)
+    proxy:EnableMouse(true)
+    proxy:RegisterForClicks("AnyUp", "LeftButtonDown", "RightButtonDown")
+
+    proxy:SetAttributeNoHandler("type", "action")
+    proxy:SetAttributeNoHandler("typerelease", "actionrelease")
+    proxy:SetAttributeNoHandler("useparent-action", true)
+    proxy:SetAttributeNoHandler("useparent-checkfocuscast", true)
+    proxy:SetAttributeNoHandler("useparent-checkmouseovercast", true)
+    proxy:SetAttributeNoHandler("useparent-checkselfcast", true)
+    proxy:SetAttributeNoHandler("useparent-flyoutDirection", true)
+    proxy:SetAttributeNoHandler("useparent-pressAndHoldAction", true)
+    proxy:SetAttributeNoHandler("useparent-unit", true)
+    proxy:Hide()
+
+    SecureHandlerSetFrameRef(button, "dominos-override-action-proxy", proxy)
+    button.dominosOverrideActionProxy = proxy
+
+    if Addon.SpellFlyout then
+        Addon.SpellFlyout:Register(proxy)
+    end
+
+    return proxy
 end
 
 -- update the pushed state of our parent button when pressing and releasing

@@ -55,12 +55,29 @@ local function SetRegionParent(region, parent)
     end
 end
 
+local function IsSecureTruthy(value)
+    return value == true or value == 1 or value == "1"
+end
+
+local function IsOverrideActionBarActive(button)
+    return button and IsSecureTruthy(button:GetAttribute("dominos-override-action-active"))
+end
+
 local function IsExternalActionOverrideType(actionType)
     return actionType ~= nil and actionType ~= "action" and actionType ~= "actionrelease"
 end
 
 local function HasExternalActionOverride(button)
     if not button then
+        return nil
+    end
+
+    -- While the configured Dominos override/vehicle/possess bar is active,
+    -- external clickbutton/GSE attributes on the normal button must not make
+    -- the swapped action look occupied.  Actual clicks are handled by a
+    -- separate override-only secure proxy, so the normal button can keep its
+    -- external attributes untouched for instant restoration afterward.
+    if IsOverrideActionBarActive(button) then
         return nil
     end
 
@@ -103,6 +120,7 @@ function ActionButton:OnCreate(id)
     self:SetAttributeNoHandler("action", 0)
     self:SetAttributeNoHandler("showgrid", 0)
     self:SetAttributeNoHandler("statehidden", nil)
+    self:SetAttributeNoHandler("dominos-override-action-active", nil)
     self:SetAttributeNoHandler("checkfocuscast", true)
     self:SetAttributeNoHandler("checkmouseovercast", true)
     self:SetAttributeNoHandler("checkselfcast", true)
@@ -110,6 +128,9 @@ function ActionButton:OnCreate(id)
     self:SetAttributeNoHandler("useparent-checkmouseovercast", true)
     self:SetAttributeNoHandler("useparent-checkselfcast", true)
     self:SetAttributeNoHandler("useparent-unit", true)
+
+    -- Midnight press-and-hold handling is installed by ActionButtons so the same
+    -- hardened path can be reused by native extra-action buttons.
 
     -- register for clicks exactly like Blizzard action buttons: mouse-up for
     -- normal actions, plus down-click support for ActionButtonUseKeyDown paths.
@@ -119,12 +140,54 @@ function ActionButton:OnCreate(id)
 
     -- secure handlers
     self:SetAttributeNoHandler('_childupdate-offset', [[
-        local offset = message or 0
-        local id = self:GetAttribute('index') + offset
+        local encodedOffset = tonumber(message) or 0
+        local active
+
+        if encodedOffset >= 100000 then
+            encodedOffset = encodedOffset - 100000
+            active = 1
+        end
+
+        local id = self:GetAttribute('index') + encodedOffset
 
         if self:GetAttribute('action') ~= id then
             self:SetAttribute('action', id)
         end
+
+        if self:GetAttribute("dominos-override-action-active") ~= active then
+            self:SetAttribute("dominos-override-action-active", active)
+        end
+
+        local proxy = self:GetFrameRef("dominos-override-action-proxy")
+        if proxy then
+            if active then
+                proxy:Show(true)
+            else
+                proxy:Hide(true)
+            end
+        end
+    ]])
+
+    self:SetAttributeNoHandler('_childupdate-overrideactive', [[
+        local active
+        if message == true or message == 1 or message == "1" then
+            active = 1
+        end
+
+        if self:GetAttribute("dominos-override-action-active") ~= active then
+            self:SetAttribute("dominos-override-action-active", active)
+        end
+
+        local proxy = self:GetFrameRef("dominos-override-action-proxy")
+        if proxy then
+            if active then
+                proxy:Show(true)
+            else
+                proxy:Hide(true)
+            end
+        end
+
+        self:RunAttribute("UpdateShown")
     ]])
 
     self:SetAttributeNoHandler("SetShowGrid", [[
@@ -150,6 +213,10 @@ function ActionButton:OnCreate(id)
                 or (buttonType and buttonType ~= "action" and buttonType ~= "actionrelease")
                 or (type1 and type1 ~= "action" and type1 ~= "actionrelease")
 
+            if self:GetAttribute("dominos-override-action-active") then
+                hasExternalActionOverride = nil
+            end
+
             local show = (value > 0
                     or HasAction(self:GetAttribute("action"))
                     or hasExternalActionOverride)
@@ -170,6 +237,10 @@ function ActionButton:OnCreate(id)
             or self:GetAttribute("clickbutton")
             or (buttonType and buttonType ~= "action" and buttonType ~= "actionrelease")
             or (type1 and type1 ~= "action" and type1 ~= "actionrelease")
+
+        if self:GetAttribute("dominos-override-action-active") then
+            hasExternalActionOverride = nil
+        end
 
         local show = (self:GetAttribute("showgrid") > 0
                 or HasAction(self:GetAttribute("action"))

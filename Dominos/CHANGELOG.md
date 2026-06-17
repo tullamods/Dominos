@@ -1,7 +1,38 @@
 # Dominos Changelog
 
+### Midnight extra action button taint isolation
+
+- Applied Dominos' Midnight action-button safety wrapper to the native `ExtraActionButton1` so Blizzard shared action events cannot call protected `SetAttribute()` / cooldown paths through a Dominos-tainted stack.
+- Reused the secure press-and-hold updater for both Dominos action buttons and the native extra-action button, preserving slot-driven Blizzard execution.
+
+### Midnight extra action bar event relay
+
+- Restored Blizzard extra-action button visibility on Midnight builds after Dominos disables the native `ActionBarController` event pump.
+- Added a narrow Dominos relay for `UPDATE_EXTRA_ACTIONBAR` / `PLAYER_ENTERING_WORLD` that calls Blizzard's native `ExtraActionBar_Update()` instead of replacing extra-action execution.
+- Hardened `bars/extraAbilityBar.lua` against missing Retail/Classic extra-bar helpers and preserved secure `ExtraActionButton1` click behavior.
+
+### Midnight native override action-bar taint isolation
+
+- Forced Dominos-owned override-bar handling on Midnight builds instead of using Blizzard's native `OverrideActionBar` button frame.
+- Detached native `OverrideActionBarButton*` frames from Blizzard shared action button dispatchers so hidden native override buttons cannot call protected `SetCooldown` / `SetAttribute` paths with secret values from a Dominos-tainted stack.
+- Stopped wrapping native `OverrideActionBarButton1` show/hide scripts on Midnight; override routing now uses Dominos secure override-page state instead.
+
+### Midnight native action-bar controller taint isolation
+
+- Stopped hiding or reparenting protected Blizzard action-bar frames on Midnight builds; Dominos now visually suppresses them with alpha/mouse suppression instead.
+- Disabled Blizzard's native ActionBarController event pump on Midnight so hidden `MainActionBar` is not shown, hidden, or repaged by Blizzard after Dominos has taken ownership of the visible action bars.
+- Preserved the Classic/TBC/Mists hiding path unchanged.
+
+### Midnight native button taint isolation
+
+- Detached hidden Blizzard stock action buttons from Blizzard shared action button dispatcher frames on Midnight builds.
+- Avoided Dominos touching `ActionButton1` showgrid attributes on Midnight; Dominos now relies on explicit showgrid events there.
+- Prevented hidden native `MultiBar*Button*` frames from reaching Blizzard `UpdatePressAndHoldAction()` / `ActionButton_UpdateCooldown()` after Dominos has hidden the stock bars.
+
+
 ## Unreleased - Phase 2: Blizzard-compatible action button frame contract rebase
 
+* (Midnight) Replaced the Dominos-owned action button cooldown/update dispatch with a Blizzard-compatible duration-object path. This avoids passing secret cooldown `start`/`duration` values through tainted Lua and prevents protected `pressAndHoldAction` attribute writes from Blizzard's shared `ActionButton_Update` path.
 * Rebased the Phase 2 action-button frame contract work onto the updated `Dominos-master` base without downgrading the newer 11.3.0-beta1 TOC metadata or Mists loading directives.
 * Added `core/bindingCompat.lua` as the centralized binding identity layer for native Blizzard binding commands, Dominos fallback CLICK bindings, and stable action-button binding IDs.
 * Updated action-button setup to expose stable binding fields and attributes such as `commandName`, `bindingAction`, `bindingID`, `dominosButtonID`, `nativeCommandName`, and `fallbackCommandName` without deriving stable identity from paged action slots.

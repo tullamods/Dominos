@@ -11,12 +11,15 @@
 local _, Addon = ...
 if not OverrideActionBar then return end
 
+local afterMidnight = Addon.IsAfterMidnight and Addon:IsAfterMidnight()
+
 local Binder = CreateFrame("Frame", nil, nil, "SecureHandlerAttributeTemplate")
 
 local MAX_OVERRIDE_BINDINGS = NUM_OVERRIDE_BUTTONS or 6
 local MAX_BINDING_SOURCES = 6
 local SOURCE_ATTRIBUTE_TEMPLATE = "ACTIONBUTTON%d_SOURCE%d"
 local ENABLED_ATTRIBUTE_TEMPLATE = "ACTIONBUTTON%d_ENABLED"
+local TARGET_ATTRIBUTE_TEMPLATE = "ACTIONBUTTON%d_TARGET"
 local BUTTON_REF_TEMPLATE = "overrideButton%d"
 
 Binder:SetAttribute("maxOverrideBindings", MAX_OVERRIDE_BINDINGS)
@@ -36,6 +39,18 @@ local function GetOverrideButton(index)
     end
 end
 
+local function IsValidClickTargetName(name)
+    return type(name) == "string" and name ~= "" and not name:find(":", 1, true)
+end
+
+local function GetOverrideClickTarget(button)
+    if button and button.dominosOverrideActionProxy then
+        return button.dominosOverrideActionProxy
+    end
+
+    return button
+end
+
 local function SetSourceAttribute(self, buttonIndex, sourceIndex, value)
     self:SetAttribute(SOURCE_ATTRIBUTE_TEMPLATE:format(buttonIndex, sourceIndex), value)
 end
@@ -44,19 +59,27 @@ local function ClearOverrideButtonSources(self, buttonIndex)
     for sourceIndex = 1, MAX_BINDING_SOURCES do
         SetSourceAttribute(self, buttonIndex, sourceIndex, nil)
     end
+
+    self:SetAttribute(TARGET_ATTRIBUTE_TEMPLATE:format(buttonIndex), nil)
+    self:SetAttribute(ENABLED_ATTRIBUTE_TEMPLATE:format(buttonIndex), nil)
 end
 
 local function SetOverrideButtonSources(self, buttonIndex, button)
     ClearOverrideButtonSources(self, buttonIndex)
 
     if not button then
-        self:SetAttribute(ENABLED_ATTRIBUTE_TEMPLATE:format(buttonIndex), nil)
+        return
+    end
+
+    local targetButton = GetOverrideClickTarget(button)
+    local targetName = targetButton and targetButton.GetName and targetButton:GetName()
+    if not IsValidClickTargetName(targetName) then
         return
     end
 
     local bindingCompat = GetBindingCompat()
     if bindingCompat and bindingCompat.GetActionButtonCommands then
-        local commands = bindingCompat.GetActionButtonCommands(button:GetAttribute("bindingID"), button)
+        local commands = bindingCompat.GetActionButtonCommands(button:GetAttribute("bindingID"), button) or {}
         for sourceIndex = 1, math.min(#commands, MAX_BINDING_SOURCES) do
             SetSourceAttribute(self, buttonIndex, sourceIndex, commands[sourceIndex])
         end
@@ -64,7 +87,8 @@ local function SetOverrideButtonSources(self, buttonIndex, button)
         SetSourceAttribute(self, buttonIndex, 1, button:GetAttribute("commandName"))
     end
 
-    self:SetFrameRef(BUTTON_REF_TEMPLATE:format(buttonIndex), button)
+    self:SetFrameRef(BUTTON_REF_TEMPLATE:format(buttonIndex), targetButton)
+    self:SetAttribute(TARGET_ATTRIBUTE_TEMPLATE:format(buttonIndex), targetName)
     self:SetAttribute(ENABLED_ATTRIBUTE_TEMPLATE:format(buttonIndex), 1)
 end
 
@@ -123,13 +147,17 @@ function Binder:UPDATE_BINDINGS()
     MarkBindingsDirty(self)
 end
 
-Binder:WrapScript(OverrideActionBarButton1, "OnShow", [[
-    control:SetAttribute("overrideui", 1)
-]])
+if not afterMidnight then
+    Binder:WrapScript(OverrideActionBarButton1, "OnShow", [[
+        control:SetAttribute("overrideui", 1)
+    ]])
 
-Binder:WrapScript(OverrideActionBarButton1, "OnHide", [[
-    control:SetAttribute("overrideui", 0)
-]])
+    Binder:WrapScript(OverrideActionBarButton1, "OnHide", [[
+        control:SetAttribute("overrideui", 0)
+    ]])
+else
+    Binder:SetAttributeNoHandler("overrideui", 0)
+end
 
 Binder:SetAttributeNoHandler("SetCommandBindings", [[
     local targetCommand = ...
@@ -148,7 +176,11 @@ Binder:SetAttributeNoHandler("SetCommandBindings", [[
 ]])
 
 Binder:SetAttributeNoHandler("SetClickBindings", [[
-    local targetButton = ...
+    local targetName = ...
+
+    if type(targetName) ~= "string" or targetName == "" or targetName:match(":") then
+        return
+    end
 
     for sourceIndex = 2, select("#", ...) do
         local sourceCommand = select(sourceIndex, ...)
@@ -156,7 +188,7 @@ Binder:SetAttributeNoHandler("SetClickBindings", [[
             for keyIndex = 1, select("#", GetBindingKey(sourceCommand)) do
                 local key = select(keyIndex, GetBindingKey(sourceCommand))
                 if key then
-                    self:SetBindingClick(true, key, targetButton, "LeftButton")
+                    self:SetBindingClick(true, key, targetName, "LeftButton")
                 end
             end
         end
@@ -198,11 +230,11 @@ Binder:SetAttributeNoHandler("UpdateBindings", [[
         for buttonIndex = 1, maxOverrideBindings do
             if self:GetAttribute("ACTIONBUTTON" .. buttonIndex .. "_ENABLED") == 1 then
                 local targetCommand = "ACTIONBUTTON" .. buttonIndex
-                local targetButton = self:GetFrameRef("overrideButton" .. buttonIndex)
-                if targetButton then
+                local targetName = self:GetAttribute(targetCommand .. "_TARGET")
+                if targetName then
                     self:RunAttribute(
                         "SetClickBindings",
-                        targetButton,
+                        targetName,
                         targetCommand,
                         self:GetAttribute(targetCommand .. "_SOURCE1"),
                         self:GetAttribute(targetCommand .. "_SOURCE2"),
@@ -225,7 +257,7 @@ Binder:SetScript("OnEvent", function(self, event)
     if event == "PLAYER_LOGIN" then
         self:UnregisterEvent(event)
 
-        self:SetAttribute("overrideui", OverrideActionBarButton1:IsVisible() and 1 or 0)
+        self:SetAttribute("overrideui", afterMidnight and 0 or (OverrideActionBarButton1:IsVisible() and 1 or 0))
         SetUseOverrideUI(self, Addon:UsingOverrideUI())
         RegisterAttributeDriver(self, "petbattleui", "[petbattle]1;0")
 
