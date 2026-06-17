@@ -777,6 +777,17 @@ function Addon:SetUseOverrideUI(enable)
 end
 
 function Addon:UsingOverrideUI()
+    -- Midnight hardens native OverrideActionBar action buttons and cooldown
+    -- values. Once Dominos has integrated with the action bar system, allowing
+    -- Blizzard's native override UI to remain the active button owner can route
+    -- protected SetAttribute/SetCooldown calls through a Dominos-tainted stack.
+    -- Dominos still supports override, vehicle, possess, and temp-shapeshift
+    -- action slots through its own secure override bar state controller; only
+    -- the native OverrideActionBar art/button frame is disabled on Midnight.
+    if self:IsAfterMidnight() then
+        return false
+    end
+
     return self.db.profile.useOverrideUI and not self:IsBuild('vanilla')
 end
 

@@ -261,7 +261,9 @@ function ActionBar:LoadStateController()
         local offset = 0
 
         local overridePage = self:GetAttribute('state-overridepage') or 0
-        if overridePage > 0 and self:GetAttribute('state-overridebar') then
+        local overrideActive = overridePage > 0 and self:GetAttribute('state-overridebar')
+
+        if overrideActive then
             offset = (overridePage - 1) * self:GetAttribute('overrideBarLength')
         else
             local page = self:GetAttribute('state-page') or 1
@@ -275,7 +277,16 @@ function ActionBar:LoadStateController()
         end
 
         self:SetAttribute('actionOffset', offset)
-        control:ChildUpdate('offset', offset)
+
+        -- Keep the visible button's GSE/clickbutton contract untouched.  The
+        -- high offset flag makes every action-slot update self-heal the
+        -- override proxy state, so a missed/delayed overrideactive child update
+        -- cannot leave the transparent proxy covering a normal GSE button.
+        local overrideFlag = overrideActive and 100000 or 0
+        local overrideValue = overrideActive and 1 or 0
+
+        control:ChildUpdate('offset', offset + overrideFlag)
+        control:ChildUpdate('overrideactive', overrideValue)
     ]])
 
     self:UpdateOverrideBar()

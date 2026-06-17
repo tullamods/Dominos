@@ -1,74 +1,295 @@
 --------------------------------------------------------------------------------
--- Sets priority bindings to the Pet Battle and Override UI when either frame
--- is visible
+-- Secure binding bridge for Blizzard override/pet-battle action routing.
 --
--- TODO:
--- Load the override bindings from whatever bar we've configured as the Dominos
--- override bar. Ensure that the bindings displayed for those frames are sourced
--- from those
+-- Default action bars route ACTIONBUTTON1-6 through Blizzard's secure action
+-- button functions when the Override UI or Pet Battle UI is active. Dominos
+-- also has a configurable override bar, so the bridge must preserve both:
+--   1. Blizzard's priority ACTIONBUTTON routing when the default UI owns it.
+--   2. Dominos' configured override-bar buttons when Dominos owns it.
 --------------------------------------------------------------------------------
 
 local _, Addon = ...
 if not OverrideActionBar then return end
 
+local afterMidnight = Addon.IsAfterMidnight and Addon:IsAfterMidnight()
+
 local Binder = CreateFrame("Frame", nil, nil, "SecureHandlerAttributeTemplate")
 
-Binder:WrapScript(OverrideActionBarButton1, "OnShow", [[
-    control:SetAttribute("overrideui", 1)
-]])
+local MAX_OVERRIDE_BINDINGS = NUM_OVERRIDE_BUTTONS or 6
+local MAX_BINDING_SOURCES = 6
+local SOURCE_ATTRIBUTE_TEMPLATE = "ACTIONBUTTON%d_SOURCE%d"
+local ENABLED_ATTRIBUTE_TEMPLATE = "ACTIONBUTTON%d_ENABLED"
+local TARGET_ATTRIBUTE_TEMPLATE = "ACTIONBUTTON%d_TARGET"
+local BUTTON_REF_TEMPLATE = "overrideButton%d"
 
-Binder:WrapScript(OverrideActionBarButton1, "OnHide", [[
-    control:SetAttribute("overrideui", 0)
-]])
+Binder:SetAttribute("maxOverrideBindings", MAX_OVERRIDE_BINDINGS)
 
-Binder:SetAttributeNoHandler("_onattributechanged", [[
-    if name == "bind" then return end
+local function GetBindingCompat()
+    return Addon.BindingCompat
+end
 
-    local bind = (
-        (self:GetAttribute("overrideui") == 1 and self:GetAttribute("useoverrideui") == 1)
-        or self:GetAttribute("petbattleui") == 1
-    )
+local function GetOverrideButton(index)
+    if not Addon.GetOverrideBar then
+        return nil
+    end
 
-    if self:GetAttribute("bind") ~= bind then
-        self:SetAttribute("bind", bind)
-        self:ClearBindings()
+    local bar = Addon:GetOverrideBar()
+    if bar and bar.buttons then
+        return bar.buttons[index]
+    end
+end
 
-        if bind then
-            for i = 1, 6 do
-                local command = "ACTIONBUTTON" .. i
-                local keyCommand = self:GetAttribute(command) or command
-                self:RunAttribute("SetBindings", command, GetBindingKey(keyCommand))
+local function IsValidClickTargetName(name)
+    return type(name) == "string" and name ~= "" and not name:find(":", 1, true)
+end
+
+local function GetOverrideClickTarget(button)
+    if button and button.dominosOverrideActionProxy then
+        return button.dominosOverrideActionProxy
+    end
+
+    return button
+end
+
+local function SetSourceAttribute(self, buttonIndex, sourceIndex, value)
+    self:SetAttribute(SOURCE_ATTRIBUTE_TEMPLATE:format(buttonIndex, sourceIndex), value)
+end
+
+local function ClearOverrideButtonSources(self, buttonIndex)
+    for sourceIndex = 1, MAX_BINDING_SOURCES do
+        SetSourceAttribute(self, buttonIndex, sourceIndex, nil)
+    end
+
+    self:SetAttribute(TARGET_ATTRIBUTE_TEMPLATE:format(buttonIndex), nil)
+    self:SetAttribute(ENABLED_ATTRIBUTE_TEMPLATE:format(buttonIndex), nil)
+end
+
+local function SetOverrideButtonSources(self, buttonIndex, button)
+    ClearOverrideButtonSources(self, buttonIndex)
+
+    if not button then
+        return
+    end
+
+    local targetButton = GetOverrideClickTarget(button)
+    local targetName = targetButton and targetButton.GetName and targetButton:GetName()
+    if not IsValidClickTargetName(targetName) then
+        return
+    end
+
+    local bindingCompat = GetBindingCompat()
+    if bindingCompat and bindingCompat.GetActionButtonCommands then
+        local commands = bindingCompat.GetActionButtonCommands(button:GetAttribute("bindingID"), button) or {}
+        for sourceIndex = 1, math.min(#commands, MAX_BINDING_SOURCES) do
+            SetSourceAttribute(self, buttonIndex, sourceIndex, commands[sourceIndex])
+        end
+    else
+        SetSourceAttribute(self, buttonIndex, 1, button:GetAttribute("commandName"))
+    end
+
+    self:SetFrameRef(BUTTON_REF_TEMPLATE:format(buttonIndex), targetButton)
+    self:SetAttribute(TARGET_ATTRIBUTE_TEMPLATE:format(buttonIndex), targetName)
+    self:SetAttribute(ENABLED_ATTRIBUTE_TEMPLATE:format(buttonIndex), 1)
+end
+
+local function MarkBindingsDirty(self)
+    if InCombatLockdown() then
+        self.needsBindingRefresh = true
+        self:RegisterEvent("PLAYER_REGEN_ENABLED")
+        return
+    end
+
+    self:SetAttribute("bindingUpdate", (self:GetAttribute("bindingUpdate") or 0) + 1)
+end
+
+local function SetUseOverrideUI(self, enabled)
+    if InCombatLockdown() then
+        self.pendingUseOverrideUI = enabled and true or false
+        self:RegisterEvent("PLAYER_REGEN_ENABLED")
+        return
+    end
+
+    self:SetAttribute("useoverrideui", enabled and 1 or 0)
+end
+
+function Binder:UpdateOverrideBindingSources()
+    if InCombatLockdown() then
+        self.needsOverrideBindingSourceUpdate = true
+        self:RegisterEvent("PLAYER_REGEN_ENABLED")
+        return
+    end
+
+    for buttonIndex = 1, MAX_OVERRIDE_BINDINGS do
+        SetOverrideButtonSources(self, buttonIndex, GetOverrideButton(buttonIndex))
+    end
+
+    MarkBindingsDirty(self)
+end
+
+function Binder:PLAYER_REGEN_ENABLED()
+    self:UnregisterEvent("PLAYER_REGEN_ENABLED")
+
+    if self.pendingUseOverrideUI ~= nil then
+        self:SetAttribute("useoverrideui", self.pendingUseOverrideUI and 1 or 0)
+        self.pendingUseOverrideUI = nil
+    end
+
+    if self.needsOverrideBindingSourceUpdate then
+        self.needsOverrideBindingSourceUpdate = nil
+        self:UpdateOverrideBindingSources()
+    elseif self.needsBindingRefresh then
+        self.needsBindingRefresh = nil
+        MarkBindingsDirty(self)
+    end
+end
+
+function Binder:UPDATE_BINDINGS()
+    MarkBindingsDirty(self)
+end
+
+if not afterMidnight then
+    Binder:WrapScript(OverrideActionBarButton1, "OnShow", [[
+        control:SetAttribute("overrideui", 1)
+    ]])
+
+    Binder:WrapScript(OverrideActionBarButton1, "OnHide", [[
+        control:SetAttribute("overrideui", 0)
+    ]])
+else
+    Binder:SetAttributeNoHandler("overrideui", 0)
+end
+
+Binder:SetAttributeNoHandler("SetCommandBindings", [[
+    local targetCommand = ...
+
+    for sourceIndex = 2, select("#", ...) do
+        local sourceCommand = select(sourceIndex, ...)
+        if sourceCommand then
+            for keyIndex = 1, select("#", GetBindingKey(sourceCommand)) do
+                local key = select(keyIndex, GetBindingKey(sourceCommand))
+                if key then
+                    self:SetBinding(true, key, targetCommand)
+                end
             end
         end
     end
 ]])
 
-Binder:SetAttributeNoHandler("SetBindings", [[
-    local command = ...
-    for i = 2, select("#", ...) do
-        self:SetBinding(true, select(i, ...), command)
+Binder:SetAttributeNoHandler("SetClickBindings", [[
+    local targetName = ...
+
+    if type(targetName) ~= "string" or targetName == "" or targetName:match(":") then
+        return
+    end
+
+    for sourceIndex = 2, select("#", ...) do
+        local sourceCommand = select(sourceIndex, ...)
+        if sourceCommand then
+            for keyIndex = 1, select("#", GetBindingKey(sourceCommand)) do
+                local key = select(keyIndex, GetBindingKey(sourceCommand))
+                if key then
+                    self:SetBindingClick(true, key, targetName, "LeftButton")
+                end
+            end
+        end
     end
 ]])
 
--- initialize state
-Binder:SetScript("OnEvent", function(self, event)
-    self:SetScript("OnEvent", nil)
-    self:UnregisterEvent(event)
+Binder:SetAttributeNoHandler("UpdateBindings", [[
+    local overrideUIValue = self:GetAttribute("overrideui")
+    local useOverrideUIValue = self:GetAttribute("useoverrideui")
+    local petBattleValue = self:GetAttribute("petbattleui")
+    local statePetBattleValue = self:GetAttribute("state-petbattleui")
+    local overridePage = tonumber(self:GetAttribute("state-overridepage")) or 0
+    local maxOverrideBindings = tonumber(self:GetAttribute("maxOverrideBindings")) or 6
 
-    self:SetAttribute("overrideui", OverrideActionBarButton1:IsVisible() and 1 or 0)
-    self:SetAttribute("useoverrideui", Addon:UsingOverrideUI() and 1 or 0)
-    RegisterAttributeDriver(self, "petbattleui", "[petbattle]1;0")
+    local overrideUIActive = overrideUIValue == 1 or overrideUIValue == "1" or overrideUIValue == true
+    local useOverrideUI = useOverrideUIValue == 1 or useOverrideUIValue == "1" or useOverrideUIValue == true
+    local petBattleActive = petBattleValue == 1 or petBattleValue == "1" or petBattleValue == true
+        or statePetBattleValue == 1 or statePetBattleValue == "1" or statePetBattleValue == true
+    local dominosOverrideActive = overridePage > 0 and not useOverrideUI and not petBattleActive
+
+    self:ClearBindings()
+
+    if (overrideUIActive and useOverrideUI) or petBattleActive then
+        for buttonIndex = 1, maxOverrideBindings do
+            local targetCommand = "ACTIONBUTTON" .. buttonIndex
+            self:RunAttribute(
+                "SetCommandBindings",
+                targetCommand,
+                targetCommand,
+                self:GetAttribute(targetCommand .. "_SOURCE1"),
+                self:GetAttribute(targetCommand .. "_SOURCE2"),
+                self:GetAttribute(targetCommand .. "_SOURCE3"),
+                self:GetAttribute(targetCommand .. "_SOURCE4"),
+                self:GetAttribute(targetCommand .. "_SOURCE5"),
+                self:GetAttribute(targetCommand .. "_SOURCE6")
+            )
+        end
+    elseif dominosOverrideActive then
+        for buttonIndex = 1, maxOverrideBindings do
+            if self:GetAttribute("ACTIONBUTTON" .. buttonIndex .. "_ENABLED") == 1 then
+                local targetCommand = "ACTIONBUTTON" .. buttonIndex
+                local targetName = self:GetAttribute(targetCommand .. "_TARGET")
+                if targetName then
+                    self:RunAttribute(
+                        "SetClickBindings",
+                        targetName,
+                        targetCommand,
+                        self:GetAttribute(targetCommand .. "_SOURCE1"),
+                        self:GetAttribute(targetCommand .. "_SOURCE2"),
+                        self:GetAttribute(targetCommand .. "_SOURCE3"),
+                        self:GetAttribute(targetCommand .. "_SOURCE4"),
+                        self:GetAttribute(targetCommand .. "_SOURCE5"),
+                        self:GetAttribute(targetCommand .. "_SOURCE6")
+                    )
+                end
+            end
+        end
+    end
+]])
+
+Binder:SetAttributeNoHandler("_onattributechanged", [[
+    self:RunAttribute("UpdateBindings")
+]])
+
+Binder:SetScript("OnEvent", function(self, event)
+    if event == "PLAYER_LOGIN" then
+        self:UnregisterEvent(event)
+
+        self:SetAttribute("overrideui", afterMidnight and 0 or (OverrideActionBarButton1:IsVisible() and 1 or 0))
+        SetUseOverrideUI(self, Addon:UsingOverrideUI())
+        RegisterAttributeDriver(self, "petbattleui", "[petbattle]1;0")
+
+        if Addon.OverrideController then
+            Addon.OverrideController:Add(self)
+        end
+
+        self:RegisterEvent("UPDATE_BINDINGS")
+        self:UpdateOverrideBindingSources()
+        return
+    end
+
+    if self[event] then
+        self[event](self)
+    end
 end)
 
 Binder:RegisterEvent("PLAYER_LOGIN")
 
 function Binder:USE_OVERRRIDE_UI_CHANGED(_, enabled)
-    self:SetAttribute("useoverrideui", enabled and 1 or 0)
+    SetUseOverrideUI(self, enabled)
 end
 
 function Binder:LAYOUT_LOADED()
-    self:SetAttribute("useoverrideui", Addon:UsingOverrideUI() and 1 or 0)
+    SetUseOverrideUI(self, Addon:UsingOverrideUI())
+    self:UpdateOverrideBindingSources()
+end
+
+function Binder:OVERRIDE_BAR_UPDATED()
+    self:UpdateOverrideBindingSources()
 end
 
 Addon.RegisterCallback(Binder, "USE_OVERRRIDE_UI_CHANGED")
 Addon.RegisterCallback(Binder, "LAYOUT_LOADED")
+Addon.RegisterCallback(Binder, "OVERRIDE_BAR_UPDATED")

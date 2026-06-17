@@ -19,6 +19,7 @@ core\barStates\[Game].lua
 core\shadowUIParent.lua
 core\frame.lua
 core\buttonBar.lua
+core\bindingCompat.lua
 core\bindableButton.lua
 core\fadeManager.lua
 core\overrideController.lua [AllowLoadGameType mainline, mists, cata, wrath, tbc]
