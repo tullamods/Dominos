@@ -419,22 +419,14 @@ function ActionButtons:AddCastOnKeyPressSupport(button)
 
     if Addon.SpellFlyout then
         Addon.SpellFlyout:Register(bind)
-    end
-
-    -- translate HOTKEY button "clicks" into LeftButton
-    if Addon:IsAfterMidnight() then
+    else
+        -- translate HOTKEY button "clicks" into LeftButton
         self:WrapScript(bind, "OnClick", [[
             if button == "HOTKEY" then
                 if GetActionInfo(self:GetEffectiveAttribute("action")) == "flyout" then
                     return false
                 end
 
-                return "LeftButton"
-            end
-        ]])
-    else
-        self:WrapScript(bind, "OnClick", [[
-            if button == "HOTKEY" then
                 return "LeftButton"
             end
         ]])

@@ -27,7 +27,7 @@ core\blizzardHider.lua [AllowLoadGameType mainline, mists, tbc]
 core\blizzardHider.classic.lua [AllowLoadGameType cata, wrath, vanilla]
 # builtin bars
 bars\actionBar\bindings.lua [AllowLoadGameType mainline]
-bars\actionBar\flyout.lua [AllowLoadGameType mainline]
+bars\actionBar\flyout.lua [AllowLoadGameType mists]
 bars\actionBar\button.lua [AllowLoadGameType mainline, mists, tbc]
 bars\actionBar\button.classic.lua [AllowLoadGameType cata, wrath, vanilla]
 bars\actionBar\buttons.lua [AllowLoadGameType mainline, mists, tbc]

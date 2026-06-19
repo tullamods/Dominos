@@ -4,13 +4,8 @@
 --------------------------------------------------------------------------------
 
 local AddonName, Addon = ...
-if (not Addon:IsBuild("retail") or Addon:IsAfterMidnight()) then return end
-
--- A precalculated list of all known valid flyout ids. Not robust, but also sparse.
--- TODO: regeneate this list once every build
-local VALID_FLYOUT_IDS = {
-	1, 8, 9, 10, 11, 12, 66, 67, 84, 92, 93, 96, 103, 106, 217, 219, 220, 222, 223, 224, 225, 226, 227, 229
-}
+-- All known valid flyout ids (will be computed later)
+local VALID_FLYOUT_IDS = {}
 
 -- layout constants from SpellFlyout.lua
 local SPELLFLYOUT_DEFAULT_SPACING = 4
@@ -92,10 +87,13 @@ function SpellFlyoutButtonMixin:Update()
 end
 
 function SpellFlyoutButtonMixin:UpdateCooldown()
-	if Addon:IsAfterMidnight() then return end
+	local spellID = self.spellID
 
-	if self.spellID then
-		ActionButton_UpdateCooldown(self)
+	if spellID then
+		local duraton = C_Spell.GetSpellCooldownDuration(spellID)
+		self.cooldown:SetCooldownFromDurationObject(duraton)
+	else
+		self.cooldown:Clear()
 	end
 end
 
@@ -103,8 +101,7 @@ function SpellFlyoutButtonMixin:UpdateState()
 	local spellID = self.spellID
 
 	if spellID then
-		local current = C_Spell.IsCurrentSpell(spellID)
-		self:SetChecked(current and true)
+		self:SetChecked(C_Spell.IsCurrentSpell(spellID))
 	else
 		self:SetChecked(false)
 	end
@@ -128,21 +125,17 @@ function SpellFlyoutButtonMixin:UpdateUsable()
 			icon:SetVertexColor(0.4, 0.4, 0.4)
 		end
 	else
-        icon:SetDesaturated(false)
-        icon:SetVertexColor(1, 1, 1)
+		icon:SetDesaturated(false)
+		icon:SetVertexColor(1, 1, 1)
 	end
 end
 
 function SpellFlyoutButtonMixin:UpdateCount()
 	local spellID = self.spellID
 
-	if spellID and IsConsumableSpell(spellID) then
-		local count = C_Spell.GetSpellCastCount(spellID)
-		if count > (self.maxDisplayCount or 9999) then
-			self.Count:SetText("*")
-		else
-			self.Count:SetText(count)
-		end
+	if spellID and C_Spell.IsConsumableSpell(spellID) then
+		local displayCount = C_Spell.GetSpellDisplayCount(spellID, self.maxDisplayCount or 9999)
+		self.Count:SetText(displayCount)
 	else
 		self.Count:SetText("")
 	end
@@ -381,11 +374,17 @@ function SpellFlyoutFrameMixin:SetBorderSize(size)
 end
 
 function SpellFlyoutFrameMixin:UpdateKnownFlyouts()
-	local slotsNeeded = 0
+	if #VALID_FLYOUT_IDS == 0 then
+		for flyoutID = 1, 300 do
+			if pcall(GetFlyoutInfo, flyoutID) then
+				VALID_FLYOUT_IDS[#VALID_FLYOUT_IDS + 1] = flyoutID
+			end
+		end
+	end
 
+	local slotsNeeded = 0
 	for i = 1, #VALID_FLYOUT_IDS do
 		local numSlots = self:UpdateFlyoutInfo(VALID_FLYOUT_IDS[i])
-
 		if numSlots > slotsNeeded then
 			slotsNeeded = numSlots
 		end
@@ -512,13 +511,13 @@ end
 -- Flyout API/event manager
 --------------------------------------------------------------------------------
 
-local SpellFlyout = { }
+local SpellFlyout = {}
 
 LibStub('AceEvent-3.0'):Embed(SpellFlyout)
 
-local button_OnClick = [[
-    local type, id = GetActionInfo(self:GetEffectiveAttribute("action", button))
-    if type == 'flyout' then
+local button_OnClick = [[	
+	local type, id = GetActionInfo(self:GetEffectiveAttribute("action", button))
+	if type == 'flyout' then
 		if not down then
 			control:SetAttribute("caller", self:GetFrameRef("owner") or self)
 			control:RunAttribute("Toggle", id)
@@ -528,9 +527,9 @@ local button_OnClick = [[
 ]]
 
 function SpellFlyout:Register(button)
-    local frame = self.frame
+	local frame = self.frame
 
-    if not frame then
+	if not frame then
 		frame = CreateFrame("Frame", nil, nil, "SecureHandlerShowHideTemplate")
 
 		Mixin(frame, SpellFlyoutFrameMixin)
@@ -542,8 +541,8 @@ function SpellFlyout:Register(button)
 		self:RegisterEvent("SPELL_FLYOUT_UPDATE")
 		self:RegisterEvent("PET_STABLE_UPDATE")
 
-        self.frame = frame
-    end
+		self.frame = frame
+	end
 
 	frame:WrapScript(button, "OnClick", button_OnClick)
 end
