@@ -1,4 +1,4 @@
-## Interface: 120007, 120005, 50504, 20505, 11508
+## Interface: 120100, 120007, 50504, 20505, 11508
 ## Title: Dominos
 ## Notes: A main actionbar replacement
 ## Notes-zhCN: 一种动作条替换方案
