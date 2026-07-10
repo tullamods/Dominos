@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 11.3.2
+
+* Update TOCs for 2.5.6
+
 ## 11.3.1
 
 * (Mists) Fixed errors when opening flyouts from keybindings
