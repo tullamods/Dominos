@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 11.3.3
+
+* Add support for 1.15.9
+
 ## 11.3.2
 
 * Update TOCs for 2.5.6
