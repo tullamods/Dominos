@@ -1,8 +1,6 @@
-local _, Addon = ...
-if not Addon:IsBuild('retail', 'mists', 'cata', 'wrath', 'tbc') then
-	return
-end
+if not OverrideActionBar then return end
 
+local _, Addon = ...
 local OverrideController = CreateFrame('Frame', nil, OverrideActionBar, 'SecureHandlerAttributeTemplate, SecureHandlerShowHideTemplate')
 
 function OverrideController:OnLoad()
