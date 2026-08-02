@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 11.3.4
+
+* Fix Override UI in TBC (Thanks [Martin Falke](https://github.com/martinfalke))
+
 ## 11.3.3
 
 * Add support for 1.15.9
