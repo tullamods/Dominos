@@ -1,5 +1,5 @@
 local _, Addon = ...
-if not Addon:IsBuild('retail', 'mists', 'cata', 'wrath') then
+if not Addon:IsBuild('retail', 'mists', 'cata', 'wrath', 'tbc') then
 	return
 end
 
