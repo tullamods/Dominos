@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 11.3.5
+
+* Adjust Menu Bar setup to better handle GetEdgeButton errors in Mists
+
 ## 11.3.4
 
 * Fix Override UI in TBC (Thanks [Martin Falke](https://github.com/martinfalke))
