@@ -8,47 +8,30 @@
 local AddonName, Addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(AddonName)
 
-local MicroButtons = {}
 local PetMicroButtonFrame = PetBattleFrame and PetBattleFrame.BottomFrame.MicroButtonFrame
 
-if MicroMenu then
-    -- post edit mode, grab all of the buttons in order
-    for _, button in ipairs { MicroMenu:GetChildren() } do
-        -- always reparent the button in retail
-        if Addon:IsBuild("retail") then
-            button:SetParent(Addon.ShadowUIParent)
-
-            if button:IsShown() then
-                MicroButtons[#MicroButtons + 1] = button
-            end
-        else
-            MicroButtons[#MicroButtons + 1] = button
-        end
+local MicroButtons = {}
+for _, buttonInfo in ipairs(MicroMenu:GenerateButtonInfos()) do
+    local skip
+    if buttonInfo.gameRule then
+        skip = C_GameRules.IsGameRuleActive(buttonInfo.gameRule)
+    elseif buttonInfo.callback then
+        skip = buttonInfo.callback()
+    else
+        skip = false
     end
-else
-    -- pre edit mode versions, we need to rely upon a manual list of buttons
-    for _, buttonName in ipairs {
-        "CharacterMicroButton",
-        "SpellbookMicroButton",
-        "TalentMicroButton",
-        "AchievementMicroButton",
-        "QuestLogMicroButton",
-        "SocialsMicroButton",
-        "GuildMicroButton",
-        "PVPMicroButton",
-        "LFGMicroButton",
-        "CollectionsMicroButton",
-        "EJMicroButton",
-        "WorldMapMicroButton",
-        "StoreMicroButton",
-        "MainMenuMicroButton",
-        "HelpMicroButton"
-    } do
-        local button = _G[buttonName]
 
-        if button then
-            MicroButtons[#MicroButtons + 1] = button
-        end
+    -- drop layout index to fix issues with UpdateHelpTicketButtonAnchor calls
+    local button = buttonInfo.button
+    if button.layoutIndex ~= nil then
+        button.layoutIndex = nil
+    end
+
+    -- two hacks:
+    -- use button:IsShown to better handle some of the conditional buttons
+    -- allow the talent button to show up even if you don't yet have talents
+    if not skip and (button:IsShown() or button == TalentMicroButton) then
+        MicroButtons[#MicroButtons + 1] = button
     end
 end
 
@@ -189,100 +172,51 @@ function MenuBar:IsMenuButtonEnabled(button)
     end
 end
 
-if Addon:IsBuild("retail", "tbc") then
-    function MenuBar:Layout()
-        for _, button in pairs(MicroButtons) do
-            button:Hide()
-        end
-
-        if OverrideActionBar and OverrideActionBar:IsVisible() then
-            for i, button in ipairs(MicroButtons) do
-                button:ClearAllPoints()
-                button:SetParent(OverrideActionBar)
-                button:SetScale(0.8)
-
-                if i == 1 then
-                    local x, y = OverrideActionBar:GetMicroButtonAnchor()
-                    button:SetPoint('BOTTOMLEFT', x + button:GetWidth(), y + button:GetHeight())
-                elseif i == 7 then
-                    button:SetPoint('TOPLEFT', MicroButtons[1], 'BOTTOMLEFT', 0, 0)
-                else
-                    button:SetPoint('BOTTOMLEFT', MicroButtons[i - 1], 'BOTTOMRIGHT', 0, 0)
-                end
-
-                button:Show()
-            end
-        elseif PetMicroButtonFrame and PetMicroButtonFrame:IsVisible() then
-            for i, button in ipairs(MicroButtons) do
-                button:ClearAllPoints()
-                button:SetParent(PetMicroButtonFrame)
-                button:SetScale(1)
-
-                if i == 1 then
-                    button:SetPoint('TOPLEFT', -17, 9)
-                elseif i == 7 then
-                    button:SetPoint('TOPLEFT', MicroButtons[1], 'BOTTOMLEFT', 0, 6)
-                else
-                    button:SetPoint('TOPLEFT', MicroButtons[i - 1], 'TOPRIGHT', -5, 0)
-                end
-
-                button:Show()
-            end
-        else
-            for _, button in pairs(self.buttons) do
-                button:SetScale(1)
-                button:Show()
-            end
-
-            MenuBar.proto.Layout(self)
-        end
+function MenuBar:Layout()
+    for _, button in pairs(MicroButtons) do
+        button:Hide()
     end
-else
-    function MenuBar:Layout()
-        for _, button in pairs(MicroButtons) do
-            button:Hide()
+
+    if OverrideActionBar and OverrideActionBar:IsVisible() then
+        for i, button in ipairs(MicroButtons) do
+            button:ClearAllPoints()
+            button:SetParent(OverrideActionBar)
+            button:SetScale(0.8)
+
+            if i == 1 then
+                local x, y = OverrideActionBar:GetMicroButtonAnchor()
+                button:SetPoint('BOTTOMLEFT', x + button:GetWidth(), y + button:GetHeight())
+            elseif i == 7 then
+                button:SetPoint('TOPLEFT', MicroButtons[1], 'BOTTOMLEFT', 0, 0)
+            else
+                button:SetPoint('BOTTOMLEFT', MicroButtons[i - 1], 'BOTTOMRIGHT', 0, 0)
+            end
+
+            button:Show()
         end
-        self:UpdateActiveButtons()
+    elseif PetMicroButtonFrame and PetMicroButtonFrame:IsVisible() then
+        for i, button in ipairs(MicroButtons) do
+            button:ClearAllPoints()
+            button:SetParent(PetMicroButtonFrame)
+            button:SetScale(1)
 
-        if OverrideActionBar and OverrideActionBar:IsVisible() then
-            local l, r, t, b = self:GetButtonInsets()
-
-            for i, button in pairs(self.activeButtons) do
-                if i > 1 then
-                    button:ClearAllPoints()
-
-                    if i == 7 then
-                        button:SetPoint('TOPLEFT', self.activeButtons[1], 'BOTTOMLEFT', 0, (t - b) + 3)
-                    else
-                        button:SetPoint('BOTTOMLEFT', self.activeButtons[i - 1], 'BOTTOMRIGHT', (l - r) - 1, 0)
-                    end
-                end
-
-                button:Show()
-            end
-        elseif PetMicroButtonFrame and PetMicroButtonFrame:IsVisible() then
-            local l, r, t, b = self:GetButtonInsets()
-
-            for i, button in pairs(self.activeButtons) do
-                if i > 1 then
-                    button:ClearAllPoints()
-
-                    if i == 7 then
-                        button:SetPoint('TOPLEFT', self.activeButtons[1], 'BOTTOMLEFT', 0, (t - b) + 3)
-                    else
-                        button:SetPoint('BOTTOMLEFT', self.activeButtons[i - 1], 'BOTTOMRIGHT', (l - r) - 1, 0)
-                    end
-                end
-
-                button:Show()
-            end
-        else
-            for _, button in pairs(self.activeButtons) do
-                button:Show()
+            if i == 1 then
+                button:SetPoint('TOPLEFT', -17, 9)
+            elseif i == 7 then
+                button:SetPoint('TOPLEFT', MicroButtons[1], 'BOTTOMLEFT', 0, 6)
+            else
+                button:SetPoint('TOPLEFT', MicroButtons[i - 1], 'TOPRIGHT', -5, 0)
             end
 
-            MenuBar.proto.Layout(self)
+            button:Show()
         end
+    else
+        for _, button in pairs(self.buttons) do
+            button:SetScale(1)
+            button:Show()
+        end
+
+        MenuBar.proto.Layout(self)
     end
 end
 
