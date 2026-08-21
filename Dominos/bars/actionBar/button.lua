@@ -101,6 +101,7 @@ function ActionButton:OnCreate(id)
 
     -- ...and the rest
     Addon.BindableButton:AddQuickBindingSupport(self)
+    Addon.ButtonFlash:Add(self)
 
     if Addon.SpellFlyout then
         Addon.SpellFlyout:Register(self)
@@ -213,6 +214,10 @@ end
 
 function ActionButton:SetShowMacroText(show)
     self.Name:SetShown(show and true)
+end
+
+function ActionButton:SetShowButtonFlash(show)
+    Addon.ButtonFlash:SetEnabled(self, show)
 end
 
 -- exports

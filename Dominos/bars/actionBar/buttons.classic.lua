@@ -37,6 +37,8 @@ function ActionButtons:Initialize()
     self:RegisterEvent("CVAR_UPDATE")
     self:RegisterEvent("PLAYER_REGEN_ENABLED")
 
+    Addon.RegisterCallback(self, "SHOW_BUTTON_FLASH_CHANGED")
+
     -- watch for keybound show/hide
     local keybound = LibStub("LibKeyBound-1.0", true)
     if keybound then
@@ -68,6 +70,10 @@ end
 
 function ActionButtons:LIBKEYBOUND_DISABLED()
     self:SetShowGrid(false, self.ShowGridReasons.KEYBOUND_EVENT)
+end
+
+function ActionButtons:SHOW_BUTTON_FLASH_CHANGED(_, show)
+    self:ForAll("SetShowButtonFlash", show)
 end
 
 function ActionButtons:TrySetAttribute(key, value)

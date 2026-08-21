@@ -21,6 +21,7 @@ core\frame.lua
 core\buttonBar.lua
 core\bindableButton.lua
 core\fadeManager.lua
+core\buttonFlash.lua
 core\overrideController.lua [AllowLoadGameType mainline, mists, cata, wrath, tbc]
 core\tooltipController.lua
 core\blizzardHider.lua [AllowLoadGameType mainline, mists, tbc, vanilla]

@@ -51,6 +51,7 @@ function ActionButton:OnCreate(id)
 
     -- bindings setup
     Addon.BindableButton:AddQuickBindingSupport(self)
+    Addon.ButtonFlash:Add(self)
 end
 
 function ActionButton:UpdateShown()
@@ -136,6 +137,10 @@ end
 
 function ActionButton:SetShowMacroText(show)
     self.Name:SetShown(show and true)
+end
+
+function ActionButton:SetShowButtonFlash(show)
+    Addon.ButtonFlash:SetEnabled(self, show)
 end
 
 if ActionButton_UpdateHotkeys then

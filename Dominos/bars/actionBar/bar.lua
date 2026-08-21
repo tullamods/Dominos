@@ -159,6 +159,7 @@ function ActionBar:OnAttachButton(button)
         button['SetShow' .. prop](button, self['Showing' .. prop](self))
     end
 
+    button:SetShowButtonFlash(Addon:ShowingButtonFlash())
     button:SetShowCooldowns(self:GetAlpha() > 0)
     button:SetAttributeNoHandler("statehidden", (button:GetAttribute("index") > self:NumButtons()) or nil)
     button:UpdateShown()

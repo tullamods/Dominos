@@ -46,6 +46,7 @@ function ActionButtons:Initialize()
     Addon.RegisterCallback(self, "LAYOUT_LOADED")
     Addon.RegisterCallback(self, "SHOW_SPELL_ANIMATIONS_CHANGED")
     Addon.RegisterCallback(self, "SHOW_SPELL_GLOWS_CHANGED")
+    Addon.RegisterCallback(self, "SHOW_BUTTON_FLASH_CHANGED")
 
     -- library callbacks
     local keybound = LibStub("LibKeyBound-1.0", true)
@@ -204,9 +205,14 @@ function ActionButtons:SHOW_SPELL_GLOWS_CHANGED(_, show)
     self:SetShowSpellGlows(show)
 end
 
+function ActionButtons:SHOW_BUTTON_FLASH_CHANGED(_, show)
+    self:SetShowButtonFlash(show)
+end
+
 function ActionButtons:LAYOUT_LOADED()
     self:SetShowSpellGlows(Addon:ShowingSpellGlows())
     self:SetShowSpellAnimations(Addon:ShowingSpellAnimations())
+    self:SetShowButtonFlash(Addon:ShowingButtonFlash())
 end
 
 function ActionButtons:OnActionChanged(buttonName, action)
@@ -442,6 +448,10 @@ end
 
 function ActionButtons:SetShowGrid(show, reason, force)
     self:ForAll("SetShowGridInsecure", show, reason, force)
+end
+
+function ActionButtons:SetShowButtonFlash(enable)
+    self:ForAll("SetShowButtonFlash", enable)
 end
 
 function ActionButtons:SetShowSpellGlows(enable)

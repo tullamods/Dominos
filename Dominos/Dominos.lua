@@ -276,6 +276,7 @@ function Addon:GetDatabaseDefaults()
             showTooltipsCombat = true,
             showSpellGlows = true,
             showSpellAnimations = true,
+            showButtonFlash = false,
             useOverrideUI = not self:IsBuild('vanilla'),
 
             ab = {
@@ -697,6 +698,18 @@ end
 
 function Addon:ShowingSpellAnimations()
     return self.db.profile.showSpellAnimations
+end
+
+-- button press flash
+function Addon:SetShowButtonFlash(enable)
+    enable = enable and true
+
+    self.db.profile.showButtonFlash = enable
+    self.callbacks:Fire("SHOW_BUTTON_FLASH_CHANGED", enable)
+end
+
+function Addon:ShowingButtonFlash()
+    return self.db.profile.showButtonFlash
 end
 
 -- spell overlay glows
