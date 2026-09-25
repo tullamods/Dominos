@@ -63,7 +63,7 @@ ActionBar.mainbarOffsets = {
             pages.stealth = 6
             pages.shadowdance = 6
         elseif i == 'WARRIOR' then
-            if Addon:IsBuild('vanilla', 'tbc', 'wrath', 'cata') then
+            if Addon:IsBuild('forever', 'vanilla', 'tbc', 'wrath', 'cata') then
                 pages.battle = 6
                 pages.defensive = 7
                 pages.berserker = 8

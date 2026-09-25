@@ -11,7 +11,7 @@ local framesToHide = {
     "MultiBarRight"
 }
 
-if not Addon:IsBuild("retail") then
+if not Addon:IsBuild('standard', "forever") then
     framesToHide[#framesToHide + 1] = "MainMenuBar"
     framesToHide[#framesToHide + 1] = "MainMenuBarArtFrame"
 end

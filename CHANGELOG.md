@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 11.4.0
+
+* Add support for 1.16.1 (Forever)
+
 ## 11.3.5
 
 * Adjust Menu Bar setup to better handle GetEdgeButton errors in Mists

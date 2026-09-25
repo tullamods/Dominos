@@ -1,10 +1,11 @@
-## Interface: 120100, 50504, 20506, 11509
+## Interface: 120105, 120100, 50504, 20506, 11601, 11509
 ## Title: Dominos
 ## Notes: A main actionbar replacement
 ## Notes-zhCN: 一种动作条替换方案
 ## Author: Tuller
 ## Category: Action Bars
 ## Version: @project-version@
+## X-GameType: [Game]
 ## SavedVariables: DominosDB
 ## OptionalDeps: Ace3, LibKeyBound-1.0, LibSharedMedia-3.0, Masque, FlyPaper, LibDualSpec-1.0
 ## IconTexture: Interface/AddOns/Dominos/Dominos
@@ -21,27 +22,27 @@ core\frame.lua
 core\buttonBar.lua
 core\bindableButton.lua
 core\fadeManager.lua
-core\overrideController.lua [AllowLoadGameType mainline, mists, cata, wrath, tbc]
+core\overrideController.lua [ExcludeLoadGameType vanilla]
 core\tooltipController.lua
-core\blizzardHider.lua [AllowLoadGameType mainline, mists, tbc, vanilla]
+core\blizzardHider.lua [ExcludeLoadGameType cata, wrath]
 core\blizzardHider.classic.lua [AllowLoadGameType cata, wrath]
 # builtin bars
 bars\actionBar\bindings.lua [AllowLoadGameType mainline]
 bars\actionBar\flyout.lua [AllowLoadGameType mists]
-bars\actionBar\button.lua [AllowLoadGameType mainline, mists, tbc, vanilla]
+bars\actionBar\button.lua [ExcludeLoadGameType cata, wrath]
 bars\actionBar\button.classic.lua [AllowLoadGameType cata, wrath]
-bars\actionBar\buttons.lua [AllowLoadGameType mainline, mists, tbc, vanilla]
+bars\actionBar\buttons.lua [ExcludeLoadGameType cata, wrath]
 bars\actionBar\buttons.classic.lua [AllowLoadGameType cata, wrath]
 bars\actionBar\bar.lua
 bars\actionBar\menu.lua
 bars\actionBar\bars.lua
 bars\bagBar.lua
-bars\extraAbilityBar.lua [AllowLoadGameType mainline, mists, cata, wrath, tbc]
+bars\extraAbilityBar.lua [AllowLoadGameType standard, mists, cata, wrath, tbc]
 bars\encounterBar.lua [AllowLoadGameType mainline, mists, cata, wrath]
 bars\menuBar.lua
 bars\petBar.lua
 bars\possessBar.lua
-bars\queueStatusBar.lua [AllowLoadGameType mainline]
+bars\queueStatusBar.lua [AllowLoadGameType mainline, camelot]
 bars\stanceBar.lua
 bars\talkingHeadBar.lua [AllowLoadGameType mainline]
 bars\totemBar.lua [AllowLoadGameType cata, wrath]

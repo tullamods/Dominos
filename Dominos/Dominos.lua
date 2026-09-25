@@ -15,21 +15,13 @@ Addon.callbacks = LibStub('CallbackHandler-1.0'):New(Addon)
 -- how many action buttons we support, and what button to map keybinding presses
 Addon.ACTION_BUTTON_COUNT = 14 * NUM_ACTIONBAR_BUTTONS
 
-local WOW_BUILD
+local WOW_GAME_TYPE
 do
-    local l = LE_EXPANSION_LEVEL_CURRENT
-    if l == LE_EXPANSION_CLASSIC then
-        WOW_BUILD = 'vanilla'
-    elseif l == LE_EXPANSION_BURNING_CRUSADE then
-        WOW_BUILD = 'tbc'
-    elseif l == LE_EXPANSION_WRATH_OF_THE_LICH_KING then
-        WOW_BUILD = 'wrath'
-    elseif l == LE_EXPANSION_CATACLYSM then
-        WOW_BUILD = 'cata'
-    elseif l == LE_EXPANSION_MISTS_OF_PANDARIA then
-        WOW_BUILD = 'mists'
+    local gameType = C_AddOns.GetAddOnMetadata(AddonName, 'X-GameType') or 'Unknown'
+    if gameType == 'Camelot' then
+        WOW_GAME_TYPE = 'forever'
     else
-        WOW_BUILD = 'retail'
+        gameType = gameType:lower()
     end
 end
 
@@ -95,7 +87,7 @@ function Addon:OnUpgradeDatabase(oldVersion, newVersion)
 end
 
 function Addon:OnUpgradeAddon(oldVersion, newVersion)
-    self:Printf(L.Updated, ADDON_VERSION, WOW_BUILD)
+    self:Printf(L.Updated, ADDON_VERSION, WOW_GAME_TYPE)
 end
 
 -- binding events
@@ -284,7 +276,7 @@ function Addon:GetDatabaseDefaults()
             },
 
             alignmentGrid = {
-                enabled = not self:IsBuild("retail"),
+                enabled = not self:IsBuild("standard"),
                 size = 32
             },
 
@@ -880,12 +872,12 @@ end
 
 -- display the current addon build being used
 function Addon:PrintVersion()
-    self:Printf('%s-%s', ADDON_VERSION, WOW_BUILD)
+    self:Printf('%s-%s', ADDON_VERSION, WOW_GAME_TYPE)
 end
 
 -- check if we're running the addon on one of a given set of wow versions
 function Addon:IsBuild(...)
-    local build = WOW_BUILD
+    local build = WOW_GAME_TYPE
 
     for i = 1, select('#', ...) do
         if build == select(i, ...):lower() then
