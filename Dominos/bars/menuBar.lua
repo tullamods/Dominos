@@ -76,7 +76,7 @@ MenuBar:Extend('OnCreate', function(self)
 end)
 
 function MenuBar:GetDefaults()
-    if Addon:IsBuild("retail") then
+    if Addon:IsGameType("standard") then
         return {
             displayLayer = 'LOW',
             point = 'BOTTOMRIGHT',
@@ -161,12 +161,12 @@ function MenuBar:IsMenuButtonEnabled(button)
 
     if buttonName == "StoreMicroButton" then
         return C_StorePublic.IsEnabled()
-    elseif buttonName == "GuildMicroButton" and not Addon:IsBuild("retail") then
+    elseif buttonName == "GuildMicroButton" and not Addon:IsGameType("standard") then
         return not C_CVar.GetCVarBool("useClassicGuildUI")
-    elseif buttonName == "SocialsMicroButton" and not Addon:IsBuild("retail") then
+    elseif buttonName == "SocialsMicroButton" and not Addon:IsGameType("standard") then
         return C_CVar.GetCVarBool("useClassicGuildUI")
     elseif buttonName == "HelpMicroButton" then
-        return not Addon:IsBuild("mists")
+        return not Addon:IsGameType("mists")
     else
         return true
     end
@@ -338,7 +338,7 @@ function MenuBarModule:OnFirstLoad()
 
     -- a consistent bug in classic era, AchievementFrameAchievements_OnEvent
     -- tries to call a function that does not exist
-    if not (Addon:IsBuild('retail') or type(AchievementMicroButton_Update) == 'function') then
+    if not (Addon:IsGameType('standard') or type(AchievementMicroButton_Update) == 'function') then
         AchievementMicroButton_Update = function() end
     end
 end

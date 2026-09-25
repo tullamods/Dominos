@@ -3,7 +3,7 @@ local ButtonThemer = Addon:NewModule('ButtonThemer')
 
 local theme
 -- modern theming
-if Addon:IsBuild('standard', "forever") then
+if Addon:IsGameType('standard', "forever") then
     -- reserved for if I want to retheme buttons in Dragonflight
     theme = function(button)
         if button.SlotArt and button.SlotArt:IsShown() then

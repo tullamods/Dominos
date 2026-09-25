@@ -15,14 +15,9 @@ Addon.callbacks = LibStub('CallbackHandler-1.0'):New(Addon)
 -- how many action buttons we support, and what button to map keybinding presses
 Addon.ACTION_BUTTON_COUNT = 14 * NUM_ACTIONBAR_BUTTONS
 
-local WOW_GAME_TYPE
-do
-    local gameType = C_AddOns.GetAddOnMetadata(AddonName, 'X-GameType') or 'Unknown'
-    if gameType == 'Camelot' then
-        WOW_GAME_TYPE = 'forever'
-    else
-        gameType = gameType:lower()
-    end
+local GAME_TYPE = (C_AddOns.GetAddOnMetadata(AddonName, 'X-GameType') or 'Unknown'):lower()
+if GAME_TYPE == 'camelot' then
+    GAME_TYPE = 'forever'
 end
 
 -- initialize binding names
@@ -43,7 +38,7 @@ end
 -- Events
 --------------------------------------------------------------------------------
 
-function Addon:OnInitialize()
+function Addon:OnInitialize()    
     -- setup db
     self:CreateDatabase()
     self:UpgradeDatabase()
@@ -87,7 +82,7 @@ function Addon:OnUpgradeDatabase(oldVersion, newVersion)
 end
 
 function Addon:OnUpgradeAddon(oldVersion, newVersion)
-    self:Printf(L.Updated, ADDON_VERSION, WOW_GAME_TYPE)
+    self:Printf(L.Updated, ADDON_VERSION, GAME_TYPE)
 end
 
 -- binding events
@@ -253,7 +248,7 @@ end
 function Addon:GetDatabaseDefaults()
     return {
         profile = {
-            possessBar = self:IsBuild("vanilla") and "pet" or 1,
+            possessBar = self:IsGameType("vanilla") and "pet" or 1,
             -- if true, applies a default dominos skin to buttons
             -- when masque is not enabled
             applyButtonTheme = true,
@@ -268,7 +263,7 @@ function Addon:GetDatabaseDefaults()
             showTooltipsCombat = true,
             showSpellGlows = true,
             showSpellAnimations = true,
-            useOverrideUI = not self:IsBuild('vanilla'),
+            useOverrideUI = not self:IsGameType('vanilla'),
 
             ab = {
                 count = self.ACTION_BUTTON_COUNT / NUM_ACTIONBAR_BUTTONS,
@@ -276,7 +271,7 @@ function Addon:GetDatabaseDefaults()
             },
 
             alignmentGrid = {
-                enabled = not self:IsBuild("standard"),
+                enabled = not self:IsGameType("standard"),
                 size = 32
             },
 
@@ -769,7 +764,7 @@ function Addon:SetUseOverrideUI(enable)
 end
 
 function Addon:UsingOverrideUI()
-    return self.db.profile.useOverrideUI and not self:IsBuild('vanilla')
+    return self.db.profile.useOverrideUI and not self:IsGameType('vanilla')
 end
 
 --------------------------------------------------------------------------------
@@ -872,12 +867,12 @@ end
 
 -- display the current addon build being used
 function Addon:PrintVersion()
-    self:Printf('%s-%s', ADDON_VERSION, WOW_GAME_TYPE)
+    self:Printf('%s-%s', ADDON_VERSION, GAME_TYPE)
 end
 
 -- check if we're running the addon on one of a given set of wow versions
-function Addon:IsBuild(...)
-    local build = WOW_GAME_TYPE
+function Addon:IsGameType(...)
+    local build = GAME_TYPE
 
     for i = 1, select('#', ...) do
         if build == select(i, ...):lower() then

@@ -63,19 +63,19 @@ ActionBar.mainbarOffsets = {
             pages.stealth = 6
             pages.shadowdance = 6
         elseif i == 'WARRIOR' then
-            if Addon:IsBuild('forever', 'vanilla', 'tbc', 'wrath', 'cata') then
+            if Addon:IsGameType('forever', 'vanilla', 'tbc', 'wrath', 'cata') then
                 pages.battle = 6
                 pages.defensive = 7
                 pages.berserker = 8
-            elseif Addon:IsBuild('mists') then
+            elseif Addon:IsGameType('mists') then
                 pages.defensive = 7
                 pages.berserker = 8
             end
-        elseif i == 'PRIEST' and not Addon:IsBuild('retail') then
+        elseif i == 'PRIEST' and not Addon:IsGameType('standard') then
             pages.shadowform = 6
         end
 
-        if Addon:IsBuild("retail") then
+        if Addon:IsGameType("standard") then
             pages.dragonriding = 10
         end
 

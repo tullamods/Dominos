@@ -154,7 +154,7 @@ function CastBar:RegisterEvents()
         self:RegisterUnitEvent("UNIT_SPELLCAST_START", ...)
         self:RegisterUnitEvent("UNIT_SPELLCAST_STOP", ...)
 
-        if Dominos:IsBuild("retail") then
+        if Dominos:IsGameType("standard") then
             self:RegisterUnitEvent('UNIT_SPELLCAST_EMPOWER_START', ...)
             self:RegisterUnitEvent('UNIT_SPELLCAST_EMPOWER_STOP', ...)
             self:RegisterUnitEvent('UNIT_SPELLCAST_EMPOWER_UPDATE', ...)

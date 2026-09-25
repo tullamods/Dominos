@@ -19,7 +19,7 @@ function BagBar:GetDisplayName()
 end
 
 function BagBar:GetDefaults()
-    if Addon:IsBuild("retail") then
+    if Addon:IsGameType("standard") then
         return {
             displayLayer = 'LOW',
             point = 'BOTTOMRIGHT',
@@ -57,7 +57,7 @@ function BagBar:SetShowKeyRing(enable)
 end
 
 function BagBar:ShowKeyRing()
-    return self.sets.keyRing and not Addon:IsBuild('retail', 'mists', 'cata')
+    return self.sets.keyRing and not Addon:IsGameType('standard', 'mists', 'cata')
 end
 
 -- the bag bar has variable sized buttons, so use a bit of a more complicated
@@ -186,7 +186,7 @@ do
         table.wipe(slots)
 
         if self:ShowKeyRing() then
-            local buttonName = Addon:IsBuild("forever") and 'KeyRingButton' or AddonName .. 'KeyRingButton'
+            local buttonName = Addon:IsGameType("forever") and 'KeyRingButton' or AddonName .. 'KeyRingButton'
             maybeAddBagSlot(slots, buttonName)
         end
 
@@ -214,7 +214,7 @@ function BagBar:NumButtons()
     return #self.bagSlots
 end
 
-if Addon:IsBuild("retail") then
+if Addon:IsGameType("standard") then
     function BagBar:GetButtonSize()
         local w, h = MainMenuBarBackpackButton:GetSize()
         local l, r, t, b = self:GetButtonInsets()
@@ -240,7 +240,7 @@ function BagBar:OnCreateMenu(menu)
         end
     }
 
-    if not Addon:IsBuild('retail', 'mists', 'cata') then
+    if not Addon:IsGameType('standard', 'mists', 'cata') then
         layoutPanel:NewCheckButton {
             name = L.BagBarShowKeyRing,
             get = function()
@@ -335,7 +335,7 @@ function BagBarModule:LayoutBagBar()
     self.needsUpdate = nil
 end
 
-if Addon:IsBuild("retail") then
+if Addon:IsGameType("standard") then
     function BagBarModule:RegisterButton(name)
         local button = _G[name]
         if not button then
@@ -351,7 +351,7 @@ if Addon:IsBuild("retail") then
 
         BagButtons[#BagButtons + 1] = button
     end
-elseif Addon:IsBuild("mists", "cata", "wrath") then
+elseif Addon:IsGameType("mists", "cata", "wrath") then
     function BagBarModule:RegisterButton(name)
         local button = _G[name]
         if not button then
@@ -380,12 +380,12 @@ else
 end
 
 function BagBarModule:RegisterKeyRingButton()
-    if Addon:IsBuild("forever") then
+    if Addon:IsGameType("forever") then
         self:RegisterButton('KeyRingButton')
         return
     end
 
-    if Addon:IsBuild("vanilla", "tbc") then
+    if Addon:IsGameType("vanilla", "tbc") then
         -- force hide the old keyring button
         KeyRingButton:Hide()
 

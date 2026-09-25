@@ -1,5 +1,5 @@
 local AddonName, Addon = ...
-if not (QueueStatusButton and Addon:IsBuild("retail")) then
+if not (QueueStatusButton and Addon:IsGameType("standard")) then
     return
 end
 

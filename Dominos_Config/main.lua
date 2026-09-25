@@ -77,8 +77,8 @@ function Addon:CreateClass(...)
     return ParentAddon:CreateClass(...)
 end
 
-function Addon:IsBuild(...)
-    return ParentAddon:IsBuild(...)
+function Addon:IsGameType(...)
+    return ParentAddon:IsGameType(...)
 end
 
 -- returns a function that generates unique names for frames

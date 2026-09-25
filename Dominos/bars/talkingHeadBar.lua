@@ -5,7 +5,7 @@
 
 local AddonName, Addon = ...
 
-if not (TalkingHeadFrame and Addon:IsBuild("retail")) then
+if not (TalkingHeadFrame and Addon:IsGameType("standard")) then
     return
 end
 

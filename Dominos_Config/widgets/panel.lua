@@ -546,7 +546,7 @@ function Panel:AddAdvancedOptions(displayConditionsOnly)
 		self:NewClickThroughCheckbox()
 	end
 
-	if ParentAddon:IsBuild("retail") then
+	if ParentAddon:IsGameType("standard") then
 		self:NewShowInOverrideUICheckbox()
 		self:NewShowInPetBattleUICheckbox()
 	end

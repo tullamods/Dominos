@@ -1,7 +1,4 @@
 local _, Addon = ...
-
-if Addon:IsBuild('retail') then return end
-
 local CLASS = UnitClassBase('player')
 
 local function hide(...)
@@ -51,7 +48,7 @@ hide(
     StanceBarFrame
 )
 
-if not (CLASS == 'SHAMAN' and Addon:IsBuild('wrath')) then
+if not (CLASS == 'SHAMAN' and Addon:IsGameType('wrath')) then
     hide(MultiCastActionBarFrame)
 end
 

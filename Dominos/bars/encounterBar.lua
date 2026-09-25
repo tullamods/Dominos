@@ -114,7 +114,7 @@ function PowerBarModule:OnFirstLoad()
 		ppb:SetUserPlaced(true)
 
 		-- tell blizzard that we don't it to manage this frame's position
-		if not Addon:IsBuild("standard") then
+		if not Addon:IsGameType("standard") then
 			ppb.ignoreFramePositionManager = true
 		end
 

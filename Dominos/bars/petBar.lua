@@ -50,7 +50,7 @@ function PetBar:UpdateOverrideBar()
     self:UpdateDisplayConditions()
 end
 
-if Addon:IsBuild('vanilla', 'tbc') then
+if Addon:IsGameType('vanilla', 'tbc') then
     function PetBar:GetDisplayConditions()
         if self:IsOverrideBar() then
             return '[@pet,exists][bonusbar:5]show;hide'
