@@ -60,6 +60,103 @@ function BagBar:ShowKeyRing()
     return self.sets.keyRing and not Addon:IsBuild('retail', 'mists', 'cata')
 end
 
+-- the bag bar has variable sized buttons, so use a bit of a more complicated
+-- layout function to better help with this.
+function BagBar:Layout()
+    local buttonCount = math.min(self:NumButtons(), #self.buttons)
+    if buttonCount == 0 then
+        ButtonBar.proto.Layout(self)
+        return
+    end
+
+    local columnCount = math.max(1, math.min(self:NumColumns(), buttonCount))
+    local rowCount = math.ceil(buttonCount / columnCount)
+
+    local leftInset, _, topInset = self:GetButtonInsets()
+    local defaultButtonWidth, defaultButtonHeight = self:GetButtonSize()
+    local paddingWidth, paddingHeight = self:GetPadding()
+    local columnSpacing = self:GetSpacing()
+    local rowSpacing = self:GetRowSpacing()
+    local rowOffset = self:GetRowOffset()
+    local leftToRight = self:GetLeftToRight()
+    local topToBottom = self:GetTopToBottom()
+
+    local columnWidths = {}
+    local rowHeights = {}
+    local columnOffsets = {}
+    local rowOffsets = {}
+    local buttonRows = {}
+    local buttonColumns = {}
+
+    -- Measure the widest button in each column and tallest in each row.
+    for column = 1, columnCount do
+        columnWidths[column] = 0
+    end
+    for row = 1, rowCount do
+        rowHeights[row] = 0
+    end
+
+    for buttonIndex = 1, buttonCount do
+        local row = math.floor((buttonIndex - 1) / columnCount) + 1
+        local column = (buttonIndex - 1) % columnCount + 1
+
+        if not topToBottom then
+            row = rowCount - row + 1
+        end
+        if not leftToRight then
+            column = columnCount - column + 1
+        end
+
+        buttonRows[buttonIndex] = row
+        buttonColumns[buttonIndex] = column
+
+        local buttonWidth, buttonHeight = self.buttons[buttonIndex]:GetSize()
+        buttonWidth = buttonWidth > 0 and buttonWidth or defaultButtonWidth
+        buttonHeight = buttonHeight > 0 and buttonHeight or defaultButtonHeight
+
+        columnWidths[column] = math.max(columnWidths[column], buttonWidth)
+        rowHeights[row] = math.max(rowHeights[row], buttonHeight)
+    end
+
+    -- Calculate each column's and row's starting offset.
+    local gridWidth, gridHeight = 0, 0
+
+    for column = 1, columnCount do
+        columnOffsets[column] = gridWidth
+        gridWidth = gridWidth + columnWidths[column] + columnSpacing
+    end
+    for row = 1, rowCount do
+        rowOffsets[row] = gridHeight
+        gridHeight = gridHeight + rowHeights[row] + rowSpacing
+    end
+
+    gridWidth = gridWidth - columnSpacing
+    gridHeight = gridHeight - rowSpacing
+
+    -- Place each button in its grid cell.
+    for buttonIndex = 1, buttonCount do
+        local row = buttonRows[buttonIndex]
+        local column = buttonColumns[buttonIndex]
+        local horizontalRowOffset =
+            (rowOffset >= 0 and row - 1 or row - rowCount) * rowOffset
+
+        local x = paddingWidth - leftInset
+            + columnOffsets[column]
+            + horizontalRowOffset
+        local y = paddingHeight - topInset + rowOffsets[row]
+
+        local button = self.buttons[buttonIndex]
+        button:ClearAllPoints()
+        button:SetParent(self)
+        button:SetPoint('TOPLEFT', x, -y)
+    end
+
+    self:TrySetSize(
+        gridWidth + 2 * paddingWidth + math.abs(rowOffset) * (rowCount - 1),
+        gridHeight + 2 * paddingHeight
+    )
+end
+
 -- Frame Overrides
 BagBar:Extend(
     'OnCreate',
@@ -89,7 +186,8 @@ do
         table.wipe(slots)
 
         if self:ShowKeyRing() then
-            maybeAddBagSlot(slots, AddonName .. 'KeyRingButton')
+            local buttonName = Addon:IsBuild("forever") and 'KeyRingButton' or AddonName .. 'KeyRingButton'
+            maybeAddBagSlot(slots, buttonName)
         end
 
         if self:ShowBags() then
@@ -282,56 +380,59 @@ else
 end
 
 function BagBarModule:RegisterKeyRingButton()
-    if not (Addon:IsBuild("vanilla", "tbc") and KeyRingButton) then
+    if Addon:IsBuild("forever") then
+        self:RegisterButton('KeyRingButton')
         return
     end
 
-    -- force hide the old keyring button
-    KeyRingButton:Hide()
-
-    -- setup the dominos specific one
-    local keyring = CreateFrame('CheckButton', AddonName .. 'KeyRingButton', UIParent, 'ItemButtonTemplate')
-
-    keyring:RegisterForClicks('LeftButtonUp', 'RightButtonUp')
-    keyring:SetID(KEYRING_CONTAINER)
-    keyring.icon:SetTexture([[Interface\Icons\INV_Misc_Bag_16]])
-
-    keyring:SetScript('OnClick', function()
-        if CursorHasItem() then
-            PutKeyInKeyRing()
-        else
-            ToggleBag(KEYRING_CONTAINER)
-        end
-    end)
-
-    keyring:SetScript('OnReceiveDrag', function()
-        if CursorHasItem() then
-            PutKeyInKeyRing()
-        end
-    end)
-
-    keyring:SetScript('OnEnter', function(frame)
-        GameTooltip:SetOwner(frame, 'ANCHOR_LEFT')
-
-        local color = HIGHLIGHT_FONT_COLOR
-        GameTooltip:SetText(KEYRING, color.r, color.g, color.b)
-        GameTooltip:AddLine()
-    end)
-
-    keyring:SetScript('OnLeave', function()
-        GameTooltip:Hide()
-    end)
-
-    MainMenuBarBackpackButton:HookScript('OnClick', function()
-        if IsControlKeyDown() then
-            ToggleBag(KEYRING_CONTAINER)
-        end
-    end)
-
-    -- prevent the button from coming back
-    hooksecurefunc('MainMenuBar_UpdateKeyRing', function()
+    if Addon:IsBuild("vanilla", "tbc") then
+        -- force hide the old keyring button
         KeyRingButton:Hide()
-    end)
 
-    self:RegisterButton(keyring:GetName())
+        -- setup the dominos specific one
+        local keyring = CreateFrame('CheckButton', AddonName .. 'KeyRingButton', UIParent, 'ItemButtonTemplate')
+
+        keyring:RegisterForClicks('LeftButtonUp', 'RightButtonUp')
+        keyring:SetID(KEYRING_CONTAINER)
+        keyring.icon:SetTexture([[Interface\Icons\INV_Misc_Bag_16]])
+
+        keyring:SetScript('OnClick', function()
+            if CursorHasItem() then
+                PutKeyInKeyRing()
+            else
+                ToggleBag(KEYRING_CONTAINER)
+            end
+        end)
+
+        keyring:SetScript('OnReceiveDrag', function()
+            if CursorHasItem() then
+                PutKeyInKeyRing()
+            end
+        end)
+
+        keyring:SetScript('OnEnter', function(frame)
+            GameTooltip:SetOwner(frame, 'ANCHOR_LEFT')
+
+            local color = HIGHLIGHT_FONT_COLOR
+            GameTooltip:SetText(KEYRING, color.r, color.g, color.b)
+            GameTooltip:AddLine()
+        end)
+
+        keyring:SetScript('OnLeave', function()
+            GameTooltip:Hide()
+        end)
+
+        MainMenuBarBackpackButton:HookScript('OnClick', function()
+            if IsControlKeyDown() then
+                ToggleBag(KEYRING_CONTAINER)
+            end
+        end)
+
+        -- prevent the button from coming back
+        hooksecurefunc('MainMenuBar_UpdateKeyRing', function()
+            KeyRingButton:Hide()
+        end)
+
+        self:RegisterButton(keyring:GetName())
+    end
 end
