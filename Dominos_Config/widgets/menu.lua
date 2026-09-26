@@ -23,7 +23,7 @@ function Menu:New(parent)
 	tr:SetAllPoints(_G[menu:GetName() .. 'TitleBG'])
 
 	-- reposition close button, as it is positioned poorly in vanilla
-	if not Addon:GetParent():IsGameType("standard") then
+	if not Addon:GetParent():IsGameType("standard", "forever") then
 		local cb = _G[menu:GetName() .. 'Close']
 		cb:SetPoint("TOPRIGHT", 2, 0)
 	end
