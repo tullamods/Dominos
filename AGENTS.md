@@ -17,8 +17,8 @@ usage of gas turbines to power them).
   doesn't typically look great to boot.
 
 - Full vibe coding. This isn't conductive to something being maintainable in the 
-  long term (LLMs like to add more than refactor), and it doe not really help 
+  long term (LLMs like to add more than refactor), and it does not really help 
   with your own understanding of the codebase.
 
-- Generating user-facing documentation whole cloth. The coherency isn't really 
-  there, and writing it can better help with your own understanding.
+- Whole cloth generation of user-facing documentation. The coherency isn't 
+  really there, and writing it can better help with your own understanding.
