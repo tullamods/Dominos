@@ -95,5 +95,5 @@ are evaluated in array index order.
 4. **race** - Race-specific states
 5. **target** - Target conditions
 
-This can be overriden on a per actionBar basis by setting updating the
-ActionBar.statePrecedence array.
+This can be overriden on a per actionBar basis by updating the 
+`ActionBar.statePrecedence` array.
