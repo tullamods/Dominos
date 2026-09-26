@@ -11,7 +11,7 @@ usage of gas turbines to power them).
 ## Disallowed Use Cases
 
 - Things you could have done faster with your IDE. You can search and replace 
-  without boilng an ocean.
+  without boiling an ocean.
 
 - Generating art assets. It is largely built upon the aforementioned theft, and 
   doesn't typically look great to boot.
