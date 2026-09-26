@@ -272,7 +272,7 @@ function Addon:GetDatabaseDefaults()
 
             alignmentGrid = {
                 enabled = not self:IsGameType("standard"),
-                size = 32
+                size = 8
             },
 
             frames = {
