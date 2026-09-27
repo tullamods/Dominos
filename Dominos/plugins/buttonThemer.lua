@@ -27,7 +27,6 @@ else
         end
     end
 
-    -- reserved for if I want to retheme buttons in Dragonflight
     theme = function(button)
         -- crop icon edges to remove borders drawn into the icon
         local icon = getIcon(button)
@@ -70,44 +69,14 @@ if Masque then
         theme(button)
     end
 
-    -- handle differences in the masque API
-    if MasqueVersion < 80100 then
-        -- in older verisons, fallback to the dominos theme when disabled
-        Masque:Register(
-            AddonName,
-            function(...)
-                local _, group, _, _, _, _, disabled = ...
-
-                if disabled then
-                    for button in pairs(Masque:Group(AddonName, group).Buttons) do
-                        theme(button)
-                    end
-                end
-            end
-        )
-
-        function ButtonThemer:Reskin()
-            if not self.shouldReskin then
-                return
-            end
-
-            self.shouldReskin = nil
-
-            for _, groupName in pairs(Masque:Group(AddonName).SubList) do
-                Masque:Group(AddonName, groupName):ReSkin()
-            end
+    function ButtonThemer:Reskin()
+        if not self.shouldReskin then
+            return
         end
-    else
-        function ButtonThemer:Reskin()
-            if not self.shouldReskin then
-                return
-            end
 
-            self.shouldReskin = nil
-
-            for _, group in pairs(Masque:Group(AddonName).SubList) do
-                group:ReSkin()
-            end
+        self.shouldReskin = nil
+        for _, group in pairs(Masque:Group(AddonName).SubList) do
+            group:ReSkin()
         end
     end
 else
