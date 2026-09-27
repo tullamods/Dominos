@@ -431,7 +431,9 @@ function BagBarModule:RegisterKeyRingButton()
         end
 
         hooksecurefunc(KeyRingButton, "UpdateOrientation", updateRotation)
-        hooksecurefunc(KeyRingButton, "UpdateTextures", updateRotation)
+
+        -- commented out because this seems angry in Forever at the moment
+        -- hooksecurefunc(KeyRingButton, "UpdateTextures", updateRotation)
         self:RegisterButton('KeyRingButton')
         return
     end
