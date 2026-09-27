@@ -88,6 +88,10 @@ function BagBar:Layout()
     local buttonRows = {}
     local buttonColumns = {}
 
+    if Addon:IsGameType("forever") then
+        KeyRingButton:UpdateOrientation(self:IsHorizontal())
+    end
+
     -- Measure the widest button in each column and tallest in each row.
     for column = 1, columnCount do
         columnWidths[column] = 0
@@ -176,7 +180,7 @@ do
     local function maybeAddBagSlot(bagSlots, buttonName)
         local button = _G[buttonName]
         if button then
-            bagSlots[#bagSlots+1] = button
+            bagSlots[#bagSlots + 1] = button
         end
     end
 
@@ -212,6 +216,15 @@ end
 
 function BagBar:NumButtons()
     return #self.bagSlots
+end
+
+function BagBar:IsHorizontal()
+    local buttonCount = math.min(self:NumButtons(), #self.buttons)
+    if buttonCount == 0 then
+        return false
+    end
+
+    return math.max(1, math.min(self:NumColumns(), buttonCount)) > 1
 end
 
 if Addon:IsGameType("standard") then
@@ -381,6 +394,44 @@ end
 
 function BagBarModule:RegisterKeyRingButton()
     if Addon:IsGameType("forever") then
+        local function updateRotation(button)
+            local bar = self.frame
+            if not bar then
+                return
+            end
+
+            local width, height
+            local textureWidth, textureHeight
+
+            if bar:IsHorizontal() then
+                width = button.initialWidth
+                height = button.initialHeight
+                textureWidth = button.normalAndPushedTextureWidth or 46
+                textureHeight = button.normalAndPushedTextureHeight or 46
+            else
+                width = button.initialHeight
+                height = button.initialWidth
+                textureWidth = button.normalAndPushedTextureHeight or 46
+                textureHeight = button.normalAndPushedTextureWidth or 46
+            end
+
+            button:SetSize(width, height)
+
+            local nt = button:GetNormalTexture()
+            nt:SetSize(textureWidth, textureHeight)
+            nt:SetRotation(0)
+
+            local pt = button:GetPushedTexture()
+            pt:SetSize(textureWidth, textureHeight)
+            pt:SetRotation(0)
+
+            local ht = button:GetHighlightTexture()
+            ht:SetSize(textureWidth, textureHeight)
+            ht:SetRotation(0)
+        end
+
+        hooksecurefunc(KeyRingButton, "UpdateOrientation", updateRotation)
+        hooksecurefunc(KeyRingButton, "UpdateTextures", updateRotation)
         self:RegisterButton('KeyRingButton')
         return
     end
