@@ -216,7 +216,7 @@ Addon:AddOptionsPanelOptions("general", {
         {
             type = "toggle",
             name = L.ShowSpellAnimations,
-            hidden = not ParentAddon:IsGameType("standard"),
+            hidden = not ParentAddon:IsGameType("standard", "forever"),
             get = function()
                 return ParentAddon:ShowingSpellAnimations()
             end,
@@ -229,7 +229,7 @@ Addon:AddOptionsPanelOptions("general", {
         {
             type = "toggle",
             name = L.ShowSpellGlows,
-            hidden = not ParentAddon:IsGameType("standard"),
+            hidden = not ParentAddon:IsGameType("standard", "forever"),
             get = function()
                 return ParentAddon:ShowingSpellGlows()
             end,
