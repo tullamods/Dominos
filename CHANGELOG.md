@@ -1,5 +1,11 @@
 # Dominos Changelog
 
+## 11.4.1
+
+* (Forever) Add support for 1.60.1 (Forever-ever)
+* (Forever) Enabled toggles for cast animations on action buttons
+* (Forever) Better render the keyring when vertical
+
 ## 11.4.0
 
 * Add support for 1.16.1 (Forever)
