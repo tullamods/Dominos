@@ -883,10 +883,6 @@ function Addon:IsGameType(...)
     return false
 end
 
-function Addon:IsAfterMidnight()
-    return select(4, GetBuildInfo()) >= 120000
-end
-
 function Addon.OnLaunch(_, button)
     if button == 'LeftButton' then
         if IsShiftKeyDown() then

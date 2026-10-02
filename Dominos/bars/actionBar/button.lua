@@ -164,7 +164,7 @@ function ActionButton:SetShowCooldowns(show)
         if self.cooldown:GetParent() ~= self then
             self.cooldown:SetParent(self)
 
-            if not Addon:IsAfterMidnight() then
+            if not Addon:IsBuild("standard", "camelot") then
                 ActionButton_UpdateCooldown(self)
             end
         end
