@@ -1,4 +1,4 @@
-## Interface: 120105, 120100, 50504, 20506, 11601, 11509
+## Interface: 120105, 120100, 50504, 20506, 16001, 11509
 ## Title: Dominos
 ## Notes: A main actionbar replacement
 ## Notes-zhCN: 一种动作条替换方案
@@ -45,7 +45,7 @@ bars\possessBar.lua
 bars\queueStatusBar.lua [AllowLoadGameType mainline, camelot]
 bars\stanceBar.lua
 bars\talkingHeadBar.lua [AllowLoadGameType mainline]
-bars\totemBar.lua [AllowLoadGameType cata, wrath]
+bars\totemBar.lua [AllowLoadGameType cata, wrath, camelot]
 # stuff you should be able to comment out and still have Dominos work
 plugins\slashCommands.lua
 plugins\launcher.lua
