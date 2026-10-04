@@ -1,5 +1,10 @@
 # Dominos Changelog
 
+## 11.4.2
+
+* Rewrote the menu bar's positioning logic to be a bit more consistent and 
+  resolve some combat related errors
+
 ## 11.4.1
 
 * (Forever) Add support for 1.60.1 (Forever-ever)
