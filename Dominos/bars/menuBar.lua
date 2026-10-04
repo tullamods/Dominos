@@ -265,7 +265,7 @@ end
 -- module
 --------------------------------------------------------------------------------
 
-local MenuBarModule = Addon:NewModule('MenuBar')
+local MenuBarModule = Addon:NewModule('MenuBar', 'AceEvent-3.0')
 
 function MenuBarModule:Load()
     self.bar = MenuBar:New()
@@ -313,12 +313,18 @@ function MenuBarModule:OnFirstLoad()
     hooksecurefunc(MicroMenu, 'SetParent', function(_, parent)
         if parent == OverrideActionBar and Addon:UsingOverrideUI() then
             self:DetachButtons()
-        elseif PetBattleFrame and parent == PetBattleFrame.BottomFrame.MicroButtonFrame then
+        elseif PetBattleFrame and parent == PetBattleFrame.BottomFrame.MicroButtonFrame and C_PetBattles.IsInBattle() then
             self:DetachButtons()
-        elseif parent == MicroMenuContainer then
+        else
             self:AttachButtons()
         end
     end)
+
+    -- the pet battle frame doesn't reparent the MicroMenu when exiting, so
+    -- so reattach based on the event
+    if PetBattleFrame then
+        self:RegisterEvent('PET_BATTLE_CLOSE', 'AttachButtons')
+    end
 
     if MicroMenu:GetParent() == MicroMenuContainer then
         self:AttachButtons()

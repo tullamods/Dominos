@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 11.4.3
+
+* Fix an issue with the menu bar not appearing after leaving a pet battle
+
 ## 11.4.2
 
 * Rewrote the menu bar's positioning logic to be a bit more consistent and 
