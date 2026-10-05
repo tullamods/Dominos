@@ -1,5 +1,10 @@
 # Dominos Changelog
 
+## 11.4.4
+
+* Improved action button display performance
+* (Forever) Fixed a display error action bars that are transparent
+
 ## 11.4.3
 
 * Fix an issue with the menu bar not appearing after leaving a pet battle
