@@ -21,11 +21,7 @@ ActionButtons.ShowGridReasons = {
 -- states
 -- [button] = action
 ActionButtons.buttons = {}
-
-ActionButtons:Execute([[
-    ActionButtons = table.new()
-    DirtyButtons = table.new()
-]])
+ActionButtons:Execute([[ ActionButtons = table.new() ]])
 
 --------------------------------------------------------------------------------
 -- Event and Callback Handling
@@ -74,33 +70,6 @@ function ActionButtons:Initialize()
 
             for button in pairs(ActionButtons) do
                 button:RunAttribute("SetShowGrid", show, reason)
-            end
-        end
-    ]])
-
-    self:SetAttributeNoHandler("ForActionSlot", [[
-        local id, method = ...
-        for button, action in pairs(ActionButtons) do
-            if action == id then
-                button:RunAttribute(method)
-            end
-        end
-    ]])
-
-    -- commit hack:
-    -- we can leverage and attribute or secure state driver driver in order to
-    -- cause something to happen on the next frame or so. We do this by marking
-    -- buttons as dirty when something changes that we want to handle later, and
-    -- then setting the commit attribute to 0. After STATE_DRIVER_UPDATE_THROTTLE
-    -- duration (200ms), the value of commit will reset to our constant value of
-    -- 1 and we'll apply the visibility change
-    RegisterAttributeDriver(self, "commit", 1)
-
-    self:SetAttributeNoHandler("_onattributechanged", [[
-        if name == "commit" and value == 1 then
-            for button in pairs(DirtyButtons) do
-                button:RunAttribute("UpdateShown")
-                DirtyButtons[button] = nil
             end
         end
     ]])
@@ -221,30 +190,24 @@ end
 --------------------------------------------------------------------------------
 
 -- keep track of the current action associated with a button
--- mark the button as dirty when the action changes, so that we can make sure
--- it is properly shown later
 local ActionButton_AttributeChanged = [[
     if name == "action" then
         local prevValue = ActionButtons[self]
         if prevValue ~= value then
             ActionButtons[self] = value
-
-            DirtyButtons[self] = value
-            control:SetAttribute("commit", 0)
-
             control:CallMethod("OnActionChanged", self:GetName(), value, prevValue)
         end
     end
 ]]
 
--- after clicking a button, or after dragging something onto a button, update
--- the visibility of any button with the same action. This is to handle placing
--- new actions on a button
+-- update vis after potentially placing an action on the button
 local ActionButton_PostClick = [[
-    control:RunAttribute("ForActionSlot", self:GetAttribute("action"), "UpdateShown")
+    if HasAction(self:GetAttribute("action")) then
+        self:Show(true)
+    end
 ]]
 
--- if we're dragging something onto a button, make sure to update the visibil;it
+-- if we're dragging something onto a button, make sure to update vis afterwards
 local ActionButton_ReceiveDragBefore = [[
     if kind then
         return "message", kind
@@ -252,13 +215,9 @@ local ActionButton_ReceiveDragBefore = [[
 ]]
 
 local ActionButton_ReceiveDragAfter = [[
-    control:RunAttribute("ForActionSlot", self:GetAttribute("action"), "UpdateShown")
-]]
-
--- when showing or hiding a button, reapply the visibility of the button to
--- work around delayed updates and help mitigate flashing
-local ActionButton_OnShowHide = [[
-    self:RunAttribute("UpdateShown")
+    if HasAction(self:GetAttribute("action")) then
+        self:Show(true)
+    end
 ]]
 
 local function GetActionButtonName(id)
@@ -347,9 +306,6 @@ function ActionButtons:GetOrCreateActionButton(id, parent)
         self:WrapScript(button, "OnAttributeChanged", ActionButton_AttributeChanged)
         self:WrapScript(button, "PostClick", ActionButton_PostClick)
         self:WrapScript(button, "OnReceiveDrag", ActionButton_ReceiveDragBefore, ActionButton_ReceiveDragAfter)
-        self:WrapScript(button, "OnShow", ActionButton_OnShowHide)
-        self:WrapScript(button, "OnHide", ActionButton_OnShowHide)
-
         self:AddCastOnKeyPressSupport(button)
 
         -- register the button with the controller

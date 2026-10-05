@@ -51,16 +51,26 @@ function ActionButton:OnCreate(id)
     self:EnableMouseWheel()
     self:RegisterForClicks("AnyUp", "AnyDown")
 
-    -- secure handlers
+    -- handle action id updates
     self:SetAttributeNoHandler('_childupdate-offset', [[
         local offset = message or 0
         local id = self:GetAttribute('index') + offset
 
         if self:GetAttribute('action') ~= id then
             self:SetAttribute('action', id)
+
+            local show = (self:GetAttribute("showgrid") > 0 or HasAction(id))
+                and not self:GetAttribute("statehidden")
+
+            if show then
+                self:Show(true)
+            else
+                self:Hide(true)
+            end
         end
     ]])
 
+    -- showgrid tracking
     self:SetAttributeNoHandler("SetShowGrid", [[
         local show, reason, force = ...
         local value = self:GetAttribute("showgrid")
@@ -85,17 +95,6 @@ function ActionButton:OnCreate(id)
             else
                 self:Hide(true)
             end
-        end
-    ]])
-
-    self:SetAttributeNoHandler("UpdateShown", [[
-        local show = (self:GetAttribute("showgrid") > 0 or HasAction(self:GetAttribute("action")))
-            and not self:GetAttribute("statehidden")
-
-        if show then
-            self:Show(true)
-        else
-            self:Hide(true)
         end
     ]])
 
