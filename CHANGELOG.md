@@ -1,5 +1,10 @@
 # Dominos Changelog
 
+## 11.4.5
+
+* Fix a typo causing an error on mouseover of fully transparent action bars
+* Improved handling of action button changes outside of combat
+
 ## 11.4.4
 
 * Improved action button display performance
