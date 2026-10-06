@@ -163,7 +163,7 @@ function ActionButton:SetShowCooldowns(show)
         if self.cooldown:GetParent() ~= self then
             self.cooldown:SetParent(self)
 
-            if not Addon:IsBuild("standard", "forever") then
+            if not Addon:IsGameType("standard", "forever") then
                 ActionButton_UpdateCooldown(self)
             end
         end
