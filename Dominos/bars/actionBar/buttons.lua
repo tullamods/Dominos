@@ -133,9 +133,9 @@ end
 
 function ActionButtons:ACTIONBAR_SLOT_CHANGED(slot)
     if slot == 0 or slot == nil then
-        self:ForAll("UpdateIcon")
+        self:ForAll("OnSlotChanged")
     else
-        self:ForActionSlot(slot, "UpdateIcon")
+        self:ForActionSlot(slot, "OnSlotChanged")
     end
 end
 
