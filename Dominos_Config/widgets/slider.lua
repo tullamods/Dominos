@@ -1,247 +1,276 @@
-local Addon = select(2, ...)
-local Slider = Addon:CreateClass('Slider')
+local _, Addon = ...
 
-do
-	local nextName = Addon:CreateNameGenerator('Slider')
+local function noop() end
 
-	local getOrCall = function(self, v, ...)
-		if type(v) == 'function' then
-			return v(self, ...)
-		end
-		return v
-	end
-
-	local function editBox_OnEditFocusGained(self)
-		self:HighlightText(0, #self:GetText())
-	end
-
-	local function editBox_OnEditFocusLost(self)
-		self:GetParent():UpdateText()
-	end
-
-	local function editBox_OnTextChanged(self)
-		local value = tonumber(self:GetText())
-		local current = self:GetParent():GetValue()
-
-		if value and value ~= current then
-			self:GetParent():TrySetValue(value, self:GetParent().softLimits)
-		end
-	end
-
-	local function editBox_OnEscapePressed(self)
-		self:ClearFocus()
-	end
-
-	-- a hacky way to go to the next edit box
-	-- with the assumption we only care about edit boxes that are
-	-- valText properties of other elements
-	local function editBox_FocusNext(self, ...)
-		local editBoxes = {}
-
-		local index = nil
-		for i = 1, select('#', ...) do
-			local vt = select(i, ...).valText
-			if vt and vt:GetObjectType() == 'EditBox' then
-				table.insert(editBoxes, vt)
-
-				if vt == self then
-					index = i
-				end
-			end
-		end
-
-		editBoxes[index % #editBoxes + 1]:SetFocus()
-	end
-
-	local function editBox_OnTabPressed(self)
-		editBox_FocusNext(self, self:GetParent():GetParent():GetChildren())
-
-		local value = self:GetNumber()
-		local current = self:GetParent():GetValue()
-
-		if value and value ~= current then
-			self:GetParent():TrySetValue(value, self:GetParent().softLimits)
-		end
-	end
-
-	function Slider:New(options)
-		local f
-		if Addon:IsGameType("tbc", "vanilla") then
-			f = self:Bind(CreateFrame('Slider', nextName(), options.parent, 'HorizontalSliderTemplate'))
-		else
-			f = self:Bind(CreateFrame('Slider', nextName(), options.parent, 'UISliderTemplate'))
-		end
-
-		f.min = options.min or 0
-		f.max = options.max or 100
-		f.step = options.step or 1
-		f.softLimits = options.softLimits
-		f.GetSavedValue = options.get
-		f.SetSavedValue = options.set
-		f.format = options.format
-
-		f.text = f:CreateFontString(nil, 'ARTWORK', 'GameFontNormalLeft')
-		f.text:SetPoint('BOTTOMLEFT', f, 'TOPLEFT')
-		f.text:SetText(options.name or '')
-
-		f:SetSize(268, 18)
-		f:EnableMouseWheel(true)
-		f:SetValueStep(f.step)
-		f:SetObeyStepOnDrag(true)
-
-		local editBox = CreateFrame('EditBox', nil, f)
-		editBox:SetPoint('BOTTOMRIGHT', f, 'TOPRIGHT')
-		editBox:SetNumeric(false)
-		editBox:SetAutoFocus(false)
-		editBox:SetFontObject('GameFontHighlightRight')
-		editBox:SetHeight(f.text:GetHeight() * 1.25)
-		editBox:SetWidth(f.text:GetHeight() * 3)
-		editBox:HighlightText(0, 0)
-		editBox:SetScript('OnTextChanged', editBox_OnTextChanged)
-		editBox:SetScript('OnEditFocusGained', editBox_OnEditFocusGained)
-		editBox:SetScript('OnEditFocusLost', editBox_OnEditFocusLost)
-		editBox:SetScript('OnEscapePressed', editBox_OnEscapePressed)
-
-		-- clear focus when enter is pressed (minor quality of life preference)
-		editBox:SetScript('OnEnterPressed', editBox_OnEscapePressed)
-		editBox:SetScript('OnTabPressed', editBox_OnTabPressed)
-
-		local bg = editBox:CreateTexture(nil, 'BACKGROUND')
-		bg:SetAllPoints(bg:GetParent())
-		bg:SetColorTexture(0.2, 0.2, 0.2, 0.5)
-		editBox.bg = bg
-		f.valText = editBox
-
-		-- register Events
-		f:SetScript('OnShow', f.OnShow)
-		f:SetScript('OnValueChanged', f.OnValueChanged)
-		f:SetScript('OnMouseWheel', f.OnMouseWheel)
-
-		return f
-	end
-
-	--[[ Frame Events ]]--
-
-	function Slider:TrySetValue(value, breakLimits)
-		local min, max = self:GetMinMaxValues()
-
-		if breakLimits then
-			local changed = false
-			if value < min then
-				min = value
-				changed = true
-			elseif value > max then
-				max = value
-				changed = true
-			end
-
-			if changed then
-				self:SetMinMaxValues(min, max)
-			end
-		else
-			value = Clamp(value, min, max)
-		end
-
-		if value ~= self:GetValue() then
-			self:SetValue(value)
-		end
-	end
-
-	function Slider:OnShow()
-		Addon:Render(self)
-	end
-
-	function Slider:OnRender()
-		self:UpdateRange()
-		self:UpdateValue()
-	end
-
-	function Slider:OnValueChanged(value)
-		self:SetSavedValue(value)
-		self:UpdateText(value)
-	end
-
-	function Slider:OnMouseWheel(direction)
-		local value = self:GetValue()
-		local step = self:GetValueStep() * direction
-
-		self:TrySetValue(value + step, self.softLimits and IsModifierKeyDown())
-	end
-
-	--[[ Update Methods ]]--
-
-	function Slider:GetEffectiveSize()
-		local width, height = self:GetSize()
-
-		height = height + self.text:GetHeight()
-
-		return width, height
-	end
-
-	function Slider:SetSavedValue(value)
-		assert(false, 'Hey, you forgot to set SetSavedValue for ' .. self:GetName())
-	end
-
-	function Slider:GetSavedValue()
-		assert(false, 'Hey, you forgot to set GetSavedValue for ' .. self:GetName())
-	end
-
-	function Slider:UpdateRange()
-		local min = getOrCall(self, self.min)
-		local max = getOrCall(self, self.max)
-		local value = self:GetSavedValue()
-
-		if self.softLimits then
-			min = math.min(value, min)
-			max = math.max(value, max)
-		end
-
-		local oldMin, oldMax = self:GetMinMaxValues()
-		if oldMin ~= min or oldMax ~= max then
-			if min < max then
-				self:SetEnabled(true)
-				self:SetMinMaxValues(min, max)
-			else
-				self:SetEnabled(false)
-				-- self:SetMinMaxValues(0, 1)
-			end
-		end
-
-		local step = getOrCall(self, self.step)
-		if step ~= self:GetValueStep() then
-			self:SetValueStep(step)
-		end
-	end
-
-	function Slider:UpdateValue()
-		local min, max = self:GetMinMaxValues()
-		local value = self:GetSavedValue()
-
-		self:SetValue(Clamp(value, min, max))
-		self:SetEnabled(min < max)
-	end
-
-	function Slider:UpdateText(value)
-		value = value or self:GetSavedValue()
-
-		if type(self.format) == "function" then
-			self.valText:SetText(self:format(value))
-		elseif type(self.format) == "string" then
-			self.valText:SetText(self.format:format(value))
-		else
-			self.valText:SetText(value)
-		end
-	end
-
-	function Slider:SetEnabled(enable)
-		if enable then
-			self.text:SetVertexColor(NORMAL_FONT_COLOR.r , NORMAL_FONT_COLOR.g , NORMAL_FONT_COLOR.b)
-			self:Enable()
-		else
-			self.text:SetVertexColor(GRAY_FONT_COLOR.r, GRAY_FONT_COLOR.g, GRAY_FONT_COLOR.b)
-			self:Disable()
-		end
-	end
+local function slider_OnMouseWheel(self, direction)
+    if direction > 0 then
+        self:GetParent():Increment()
+    else
+        self:GetParent():Decrement()
+    end
 end
 
-Addon.Slider = Slider
+local function slider_OnValueChanged(self, value, isUserInput)
+    if isUserInput then
+        self:GetParent():SetValue(value)
+    end
+end
+
+local function slider_Create(parent)
+    local slider = CreateFrame('Slider', nil, parent, 'MinimalSliderTemplate')
+
+    slider:EnableMouseWheel(true)
+    slider:SetObeyStepOnDrag(true)
+    slider:SetMinMaxValues(0, 100)
+    slider:SetValueStep(1)
+    slider:SetValue(0)
+
+    slider:SetScript('OnMouseWheel', slider_OnMouseWheel)
+    slider:SetScript('OnValueChanged', slider_OnValueChanged)
+
+    return slider
+end
+
+local function label_Create(parent, text, template)
+	local label = parent:CreateFontString(nil, 'ARTWORK', template or 'GameFontHighlight')
+
+	label:SetJustifyH('LEFT')
+	label:SetJustifyV('BOTTOM')
+	label:SetText(text or 'PLACEHOLDER_TEXT')
+	label:SetHeight(label:GetStringHeight())
+
+    return label
+end
+
+local function input_OnEnter(self)
+    self.HoverBG:Show()
+end
+
+local function input_OnLeave(self)
+    if not self:HasFocus() then
+        self.HoverBG:Hide()
+    end
+end
+
+local function input_OnTabPressed(self)
+    -- TODO: focus next input on panel
+end
+
+local function input_OnEscapePressed(self)
+    self:ClearFocus()
+end
+
+local function input_OnFocusGained(self)
+    self:HighlightText(0, -1)
+    self.HoverBG:Show()
+end
+
+local function input_OnFocusLost(self)
+    self:HighlightText(0, 0)
+    self:SetText(self:GetParent().value or "")
+
+    if not self:IsMouseOver() then
+        self.HoverBG:Hide()
+    end
+end
+
+local function input_OnChange(self, text, isUserInput)
+    if isUserInput then
+        local value = tonumber(text, 10)
+        if value ~= nil then
+            self:GetParent():TrySetValue(value)
+        end
+    end
+end
+
+local function input_OnMouseWheel(self, direction)
+    if direction > 0 then
+        self:GetParent():Increment()
+    else
+        self:GetParent():Decrement()
+    end
+end
+
+local function input_Create(parent)
+    local input = CreateFrame('EditBox', nil, parent)
+
+    input:SetAutoFocus(false)
+    input:ClearFocus()
+    input:SetFontObject('GameFontHighlight')
+    input:SetJustifyH('RIGHT')
+    input:SetJustifyV('MIDDLE')
+    input:SetSize(36, 20)
+
+    input:SetScript('OnEnter', input_OnEnter)
+    input:SetScript('OnLeave', input_OnLeave)
+
+    input:SetScript('OnEscapePressed', input_OnEscapePressed)
+    input:SetScript('OnEscapePressed', input_OnEscapePressed)
+    input:SetScript("OnTabPressed", input_OnTabPressed)
+    input:SetScript("OnEditFocusGained", input_OnFocusGained)
+    input:SetScript("OnEditFocusLost", input_OnFocusLost)
+    input:SetScript("OnTextChanged", input_OnChange)
+    input:SetScript('OnMouseWheel', input_OnMouseWheel)
+
+    input.HoverBG = Addon:CreateHoverBackground(input)
+
+    return input
+end
+
+local SliderMixin = {}
+
+function SliderMixin:OnShow()
+    Addon:Render(self)
+end
+
+function SliderMixin:OnRender()
+    self.value = self:GetProp('value') or 0
+    self.minValue = self:GetProp('min') or 0
+    self.maxValue = self:GetProp('max') or 100
+    self.step = self:GetProp('step') or 1
+
+    self.Label:SetText(self:GetProp('label') or 'PLACEHOLDER_TEXT')
+
+    if self.MinLabel then
+        self.MinLabel:SetText(self.minValue)
+    end
+
+    if self.MaxLabel then
+        self.MaxLabel:SetText(self.maxValue)
+    end
+
+    local value = Clamp(self.value, self.minValue, self.maxValue)
+
+    self.Slider:SetMinMaxValues(self.minValue, self.maxValue)
+    self.Slider:SetValueStep(self.step)
+    self.Slider:SetValue(value)
+    self.ValueInput:SetText(value)
+end
+
+function SliderMixin:GetProp(key, ...)
+    local value = self.props[key]
+    if type(value) == "function" then
+        return value(self, ...)
+    end
+
+    return value
+end
+
+function SliderMixin:Refresh()
+    Addon:Render(self)
+end
+
+function SliderMixin:Increment()
+    self:TrySetValue(self.value + self.step)
+end
+
+function SliderMixin:Decrement()
+    self:TrySetValue(self.value - self.step)
+end
+
+function SliderMixin:Focus()
+    self.ValueInput:Focus()
+end
+
+function SliderMixin:GetValue()
+    return self.value
+end
+
+function SliderMixin:SetValue(value, force)
+    if (self.value ~= value) or force then
+        self.value = value
+
+        self.Slider:SetValue(value)
+        self.ValueInput:SetText(value)
+        self.onChange(value)
+    end
+end
+
+function SliderMixin:TrySetValue(value)
+    if self:ShouldBreakLimits() then
+        if value < self.minValue then
+            self:SetMinMaxValues(value, self.maxValue)
+        elseif value > self.maxValue then
+            self:SetMinMaxValues(self.minValue, value)
+        end
+    end
+
+    self:SetValue(Clamp(value, self.minValue, self.maxValue))
+end
+
+function SliderMixin:SetMinMaxValues(minValue, maxValue)
+    if minValue ~= nil then
+        self.minValue = minValue
+    end
+
+    if maxValue ~= nil then
+        self.maxValue = maxValue
+    end
+
+    if self.MinLabel then
+        self.MinLabel:SetText(self.minValue)
+    end
+
+    if self.MaxLabel then
+        self.MaxLabel:SetText(self.maxValue)
+    end
+
+    self.Slider:SetMinMaxValues(self.minValue, self.maxValue)
+    self.Slider:SetValue(Clamp(self.Slider:GetValue(), self.minValue, self.maxValue))
+end
+
+function SliderMixin:ShouldBreakLimits()
+    return self:GetProp('softLimits') and IsShiftKeyDown()
+end
+
+function SliderMixin:SetEnabled(enable)
+    if enable then
+        self.Slider:Enable()
+        self.ValueInput:Enable()
+    else
+        self.Slider:Disable()
+        self.ValueInput:Disable()
+    end
+end
+
+
+function Addon:CreateSlider(options)
+    local frame = CreateFrame('Frame', nil, options.parent, 'ResizeLayoutFrame')
+
+    Mixin(frame, SliderMixin)
+
+    frame.expand = true
+
+    frame.props = {
+        min = options.min or 0,
+        max = options.max or 100,
+        value = options.get,
+        step = options.step or 1,
+        softLimits = options.softLimits or false,
+        label = options.label or options.name or "MISSING_LABEL"
+    }
+
+    local setter = options.set
+    if type(setter) == "function" then
+        frame.onChange = function(value) setter(value) end
+    else
+        frame.onChange = noop
+    end
+
+    -- Addon:ApplyDebugBackground(frame)
+
+    frame.Label = label_Create(frame)
+    frame.Label:SetPoint('TOPLEFT', 2, -4)
+
+    frame.ValueInput = input_Create(frame)
+    frame.ValueInput:SetPoint('TOPRIGHT', -4, 0)
+
+    frame.Slider = slider_Create(frame)
+    frame.Slider:SetPoint('BOTTOMLEFT')
+    frame.Slider:SetPoint('BOTTOMRIGHT')
+
+    frame:SetScript('OnShow', frame.OnShow)
+    frame:MarkDirty()
+
+    return frame
+end

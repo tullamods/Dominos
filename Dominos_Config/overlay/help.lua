@@ -69,12 +69,12 @@ function HelpDialog:OnLoad(owner)
     local showGridButtonText = showGridButton.Text or showGridButton.text
     showGridButtonText:SetText(L.ShowAlignmentGrid)
 
-    showGridButton:SetChecked(Addon:GetParent():GetAlignmentGridEnabled())
+    showGridButton:SetChecked(Dominos:GetAlignmentGridEnabled())
     showGridButton:SetScript('OnClick', function(button) self:OnShowGridButtonClicked(button) end)
     showGridButton:SetPoint('BOTTOMLEFT', 14, 10)
 
 
-	local slider = Addon.Slider:New({
+	local slider = Addon:CreateSlider {
 		name = L.GridDensity,
 
         min = GRID_SIZE_MINIMUM,
@@ -82,13 +82,13 @@ function HelpDialog:OnLoad(owner)
         step = GRID_SIZE_STEP,
 
 		get = function()
-			return Addon:GetParent():GetAlignmentGridSize()
+			return Dominos:GetAlignmentGridSize()
 		end,
 
 		set = function(_, value)
-			Addon:GetParent():SetAlignmentGridSize(value)
+			Dominos:SetAlignmentGridSize(value)
 		end
-    })
+    }
 
     slider:SetParent(self)
     slider:SetScale(0.8)

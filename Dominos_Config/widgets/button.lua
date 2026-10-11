@@ -1,8 +1,7 @@
-local Addon = select(2, ...)
-local Button = Addon:CreateClass('Button')
+local _, Addon = ...
 
-function Button:New(options)
-	local button = self:Bind(CreateFrame('Button', nil, options.parent, 'UIPanelButtonTemplate'))
+function Addon:CreateButton(options)
+	local button = CreateFrame('Button', nil, options.parent, 'UIPanelButtonTemplate')
 
 	if options.name then
 		button:SetText(options.name)
@@ -22,5 +21,3 @@ function Button:New(options)
 
 	return button
 end
-
-Addon.Button = Button

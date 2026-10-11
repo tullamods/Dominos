@@ -1,81 +1,50 @@
 local _, Addon = ...
-local PanelSelector = Addon:CreateClass("Frame")
 
-local PANEL_SELECTOR_BUTTON_HEIGHT = 24
+local PanelSelectorMixin = {}
 
-local function IsTextTruncated(self)
-	return self:GetWidth() < self:GetFontString():GetStringWidth()
+local function selectButton_OnClick(self)
+	self.owner:Select(self.id)
 end
 
-local function PanelSelectorButton_OnClick(self)
-	self.parent:Select(self.id)
-end
-
--- show a tooltip containing the name of the button if the text for a button is 
--- truncated
-local function PanelSelectorButton_OnEnter(self)
-	if IsTextTruncated(self) then
-		GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+local function selectButton_OnEnter(self)
+	if self:GetWidth() < self:GetFontString():GetStringWidth() then
+		GameTooltip:SetOwner(self, 'ANCHOR_RIGHT')
 		GameTooltip:SetText(self:GetText())
 		GameTooltip:Show()
 	end
 end
 
-local function PanelSelectorButton_OnLeave(self)
-	if GameTooltip:GetOwner() == self then
+local function selectButton_OnLeave(self)
+	if GameTooltip:IsOwned(self) then
 		GameTooltip:Hide()
 	end
 end
 
-local function PanelSelectorButton_Create(id, parent)
-	local button = CreateFrame('Button', nil, parent)
+local function createSelectButton(id, parent, owner)
+	local button = CreateFrame('Button', nil, parent, 'ResizeLayoutFrame')
+
+	button:SetFixedSize(80, 24)
 	button:SetNormalFontObject('GameFontNormalSmall')
 	button:SetHighlightFontObject('GameFontHighlightSmall')
+	button:SetHighlightTexture(Addon:CreateHoverBackground(button))
 	button:SetText(id)
-	button:GetFontString():SetAllPoints(button)
-	button:SetHeight(PANEL_SELECTOR_BUTTON_HEIGHT)
-	button.parent = parent
+	button:GetFontString():SetAllPoints()
 
-	local highlight = button:CreateTexture()
-	highlight:SetColorTexture(1, 1, 1, 0.1)
-	highlight:SetAllPoints(button)
-	button:SetHighlightTexture(highlight)
-
-	button:SetScript('OnClick', PanelSelectorButton_OnClick)
-	button:SetScript('OnEnter', PanelSelectorButton_OnEnter)
-	button:SetScript('OnLeave', PanelSelectorButton_OnLeave)
+	button:SetScript('OnClick', selectButton_OnClick)
+	button:SetScript('OnEnter', selectButton_OnEnter)
+	button:SetScript('OnLeave', selectButton_OnLeave)
 
 	button.id = id
+	button.owner = owner or parent
 
 	return button
 end
 
-function PanelSelector:New(parent)
-	local frame = self:Bind(CreateFrame('Frame', nil, parent))
-
-	local bg = frame:CreateTexture(nil, 'ARTWORK')
-	bg:SetAllPoints(frame)
-	bg:SetColorTexture(0.2, 0.2, 0.2, 0.5)
-
-	frame.buttons = {}
-	frame.parent = parent
-
-	return frame
+function PanelSelectorMixin:OnRender()
+	self:MarkDirty()
 end
 
-function PanelSelector:OnRender()
-	for i, button in pairs(self.buttons) do
-		if i == 1 then
-			button:SetPoint('TOPLEFT')
-			button:SetPoint('TOPRIGHT')
-		else
-			button:SetPoint('TOPLEFT', self.buttons[i - 1], 'BOTTOMLEFT')
-			button:SetPoint('TOPRIGHT', self.buttons[i - 1], 'BOTTOMRIGHT')
-		end
-	end
-end
-
-function PanelSelector:Select(id)
+function PanelSelectorMixin:Select(id)
 	local oldID = self.currentPanelID
 
 	if oldID ~= id then
@@ -92,14 +61,43 @@ function PanelSelector:Select(id)
 	end
 end
 
-function PanelSelector:OnSelect(id) end
+function PanelSelectorMixin:OnSelect(id) end
 
-function PanelSelector:AddPanel(id)
-	local button = PanelSelectorButton_Create(id, self)
+function PanelSelectorMixin:AddPanel(id)
+	local index = #self.buttons + 1
 
-	tinsert(self.buttons, button)
+	local button = createSelectButton(id, self:GetContent(), self)
 
-	Addon:Render(self)
+	button.layoutIndex = index
+
+	self.buttons[index] = button
+
+	self:MarkDirty()
 end
 
-Addon.PanelSelector = PanelSelector
+function Addon:CreatePanelSelector(parent)
+    local frame = self:CreateScrollableContainer(parent)
+
+	Mixin(frame, PanelSelectorMixin)
+
+	frame.buttons = {}
+
+    frame.Content = CreateFrame('Frame', nil, frame, 'VerticalLayoutFrame')
+	frame.Content.expand = true
+	frame.Content.spacing = 4
+	frame.Content.topPadding = 4
+	frame.Content.bottomPadding = 4
+	frame.Content.leftPadding = 4
+	frame.Content.rightPadding = 6
+	frame:SetContent(frame.Content)
+
+	frame.Divider = frame:CreateTexture(nil, 'ARTWORK')
+	frame.Divider:SetColorTexture(1, 1, 1, 0.3)
+	frame.Divider:SetPoint('TOPLEFT', frame, 'TOPRIGHT', -2, 0)
+	frame.Divider:SetPoint('BOTTOMRIGHT', 0, 0)
+	frame.Divider.ignoreInLayout = true
+
+	frame:MarkDirty()
+
+	return frame
+end

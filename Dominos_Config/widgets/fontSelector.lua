@@ -3,7 +3,7 @@
 		Displays a list of fonts registered with LibSharedMedia for the user to pick from
 --]]
 
-local Addon = select(2, ...)
+local _, Addon = ...
 
 -- wrapper around LSM in case i want to replace it with something else
 -- in the future
@@ -26,10 +26,42 @@ do
 end
 
 --[[
-	The Texture Button
+	The Font Button
 --]]
 
-local FontButton = Addon:CreateClass('CheckButton')
+local FontButtonMixin = {}
+
+function FontButtonMixin:OnClick()
+	self.owner:OnSelectValue(self.value)
+	self:SetChecked(true)
+end
+
+function FontButtonMixin:OnEnter()
+	self.bg:SetDesaturated(false)
+end
+
+function FontButtonMixin:OnLeave()
+	self.bg:SetDesaturated(true)
+end
+
+function FontButtonMixin:SetValue(value, selectedValue)
+	local font = Fonts:Get(value)
+
+	self.value = value
+	self:SetChecked(value == selectedValue)
+	self:GetFontString():SetFont(font, 14)
+
+	self:SetText(value)
+end
+
+function FontButtonMixin:Free()
+	self:ClearAllPoints()
+	self:SetParent(nil)
+	self:Hide()
+
+	table.insert(self.unused, self)
+end
+
 do
 	local unused = {}
 
@@ -51,144 +83,120 @@ do
 		return button
 	end
 
-	function FontButton:New(parent, owner)
+	local function createFontButton(parent, owner)
 		local button = table.remove(unused)
 
 		if button then
 			button:SetParent(parent)
 			button:Show()
 		else
-			button = self:Bind(createButton(parent))
-			button:SetScript('OnClick', self.OnClick)
-			-- button:SetScript('OnEnter', self.OnEnter)
-			-- button:SetScript('OnLeave', self.OnLeave)
+			button = createButton(parent)
+			Mixin(button, FontButtonMixin)
+			button:SetScript('OnClick', button.OnClick)
+			button.unused = unused
 		end
 
 		button.owner = owner or parent
 		return button
 	end
 
-	function FontButton:Free()
-		self:ClearAllPoints()
-		self:SetParent(nil)
-		self:Hide()
+	Addon.CreateFontButton = createFontButton
+end
 
-		table.insert(unused, self)
-	end
+--[[
+	The Font Selector
+--]]
 
-	function FontButton:OnClick()
-		self.owner:OnSelectValue(self.value)
-		self:SetChecked(true)
-	end
+local FontSelectorMixin = {}
 
-	function FontButton:OnEnter()
-		self.bg:SetDesaturated(false)
-	end
+FontSelectorMixin.buttonWidth = 266
+FontSelectorMixin.buttonHeight = 24
+FontSelectorMixin.buttonPadding = 4
 
-	function FontButton:OnLeave()
-		self.bg:SetDesaturated(true)
-	end
+function FontSelectorMixin:OnShow()
+	self:Refresh()
+end
 
-	function FontButton:SetValue(value, selectedValue)
-		local font = Fonts:Get(value)
-
-		self.value = value
-		self:SetChecked(value == selectedValue)
-		self:GetFontString():SetFont(font, 14)
-
-		self:SetText(value)
+function FontSelectorMixin:OnHide()
+	local button = table.remove(self.buttons)
+	while button do
+		button:Free()
+		button = table.remove(self.buttons)
 	end
 end
 
-local FontSelector = Addon:CreateClass('Frame')
-do
-	FontSelector.buttonWidth = 266
-	FontSelector.buttonHeight = 24
-	FontSelector.buttonPadding = 4
+function FontSelectorMixin:OnSelectValue(value)
+	self:SetSavedValue(value)
+	self:UpdateSelected()
+end
 
-	function FontSelector:New(options)
-		local f = self:Bind(CreateFrame('Frame', nil, options.parent))
+function FontSelectorMixin:Refresh()
+	local selectedValue = self:GetSavedValue()
+	local width = 0
 
-		f.SetSavedValue = options.set
-		f.GetSavedValue = options.get
-		f:SetScript('OnShow', self.OnShow)
-		f:SetScript('OnHide', self.OnHide)
-		f.buttons = {}
-		f:SetAllPoints(options.parent)
+	for i, id in Fonts:GetAll() do
+		local button = self:GetOrCreateButton(i)
 
-		return f
-	end
-
-	function FontSelector:OnShow()
-		self:Refresh()
-	end
-
-	function FontSelector:OnHide()
-		local button = table.remove(self.buttons)
-		while button do
-			button:Free()
-			button = table.remove(self.buttons)
-		end
-	end
-
-	function FontSelector:OnSelectValue(value)
-		self:SetSavedValue(value)
-		self:UpdateSelected()
-	end
-
-	function FontSelector:Refresh()
-		local selectedValue = self:GetSavedValue()
-		local width = 0
-
-		for i, id in Fonts:GetAll() do
-			local button = self:GetOrCreateButton(i)
-
-			button:ClearAllPoints()
-			if i == 1 then
-				button:SetPoint('TOPLEFT')
-			else
-				button:SetPoint('TOPLEFT', self.buttons[i - 1], 'BOTTOMLEFT', 0, -self.buttonPadding)
-			end
-
-			button:SetPoint('RIGHT')
-			button:SetSize(self.buttonWidth, self.buttonHeight)
-			button:SetValue(id, selectedValue)
-			button:Show()
-
-			width = max(width, button:GetWidth())
+		button:ClearAllPoints()
+		if i == 1 then
+			button:SetPoint('TOPLEFT')
+		else
+			button:SetPoint('TOPLEFT', self.buttons[i - 1], 'BOTTOMLEFT', 0, -self.buttonPadding)
 		end
 
-		local height = (#self.buttons * self.buttons[1]:GetHeight()) + (#self.buttons-1) * self.buttonPadding
+		button:SetPoint('RIGHT')
+		button:SetSize(self.buttonWidth, self.buttonHeight)
+		button:SetValue(id, selectedValue)
+		button:Show()
 
-		self:GetParent():SetSize(width, height)
+		width = max(width, button:GetWidth())
 	end
 
-	function FontSelector:GetOrCreateButton(i)
-		local button = self.buttons[i]
+	local height = (#self.buttons * self.buttons[1]:GetHeight()) + (#self.buttons-1) * self.buttonPadding
 
-		if not button then
-			button = FontButton:New(self)
-			self.buttons[i] = button
-		end
+	self:GetParent():SetSize(width, height)
+end
 
-		return button
+function FontSelectorMixin:GetOrCreateButton(i)
+	local button = self.buttons[i]
+
+	if not button then
+		button = Addon.CreateFontButton(self, self)
+		self.buttons[i] = button
 	end
 
-	function FontSelector:SetSavedValue(value)
-		assert(false, 'Hey, you forgot to set SetSavedValue for ' .. self:GetName())
-	end
+	return button
+end
 
-	function FontSelector:GetSavedValue()
-		assert(false, 'Hey, you forgot to set GetSavedValue for ' .. self:GetName())
-	end
+function FontSelectorMixin:SetSavedValue(value)
+	assert(false, 'Hey, you forgot to set SetSavedValue for ' .. self:GetName())
+end
 
-	function FontSelector:UpdateSelected()
-		local selectedValue = self:GetSavedValue()
+function FontSelectorMixin:GetSavedValue()
+	assert(false, 'Hey, you forgot to set GetSavedValue for ' .. self:GetName())
+end
 
-		for _, button in pairs(self.buttons) do
-			button:SetChecked(button:GetAttribute('texture') == selectedValue)
-		end
+function FontSelectorMixin:UpdateSelected()
+	local selectedValue = self:GetSavedValue()
+
+	for _, button in pairs(self.buttons) do
+		button:SetChecked(button:GetAttribute('texture') == selectedValue)
 	end
 end
 
-Addon.FontSelector = FontSelector
+function Addon:CreateFontSelector(options)
+	local f = CreateFrame('Frame', nil, options.parent)
+
+	Mixin(f, FontSelectorMixin)
+
+	f.SetSavedValue = options.set
+	f.GetSavedValue = options.get
+	f:SetScript('OnShow', f.OnShow)
+	f:SetScript('OnHide', f.OnHide)
+	f.buttons = {}
+	f:SetAllPoints(options.parent)
+
+	return f
+end
+
+Addon.FontSelector = FontSelectorMixin

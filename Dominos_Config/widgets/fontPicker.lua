@@ -40,68 +40,60 @@ do
 	end
 end
 
-local FontPicker = Addon:CreateClass('Frame')
+local FontPickerMixin = {}
 
-do
-	function FontPicker:New(options)
-		local menu = self:Bind(CreateFrame('Frame', nil, options.parent))
+function FontPickerMixin:SetSavedValue(value) end
 
-		menu.SetSavedValue = options.set
-		menu.GetSavedValue = options.get
+function FontPickerMixin:GetSavedValue() end
 
-		local dropdownMenu = CreateFrame("DropdownButton", nil, menu, "WowStyle1DropdownTemplate")
-		dropdownMenu:SetPoint('RIGHT', -8, 0)
+function Addon:CreateFontPicker(options)
+	local menu = CreateFrame('Frame', nil, options.parent)
 
-		local ddWidth = 200
+	Mixin(menu, FontPickerMixin)
 
-		dropdownMenu:SetupMenu(function(_, rootDescription)
-			rootDescription:SetGridMode(MenuConstants.VerticalGridDirection);
+	menu.SetSavedValue = options.set
+	menu.GetSavedValue = options.get
 
-			for index, fontID in Fonts:GetAll() do
-				local radio = rootDescription:CreateRadio(
-					fontID,
-					function() return fontID == menu:GetSavedValue() end,
-					function() menu:SetSavedValue(fontID) end,
-					index
-				)
+	local dropdownMenu = CreateFrame("DropdownButton", nil, menu, "WowStyle1DropdownTemplate")
+	dropdownMenu:SetPoint('RIGHT', -8, 0)
 
-				radio:AddInitializer(function(button)
-					local font = Fonts:GetFontObject(fontID)
-					if font then
-						button.fontString:SetFontObject(font)
-						button.fontString:SetText(fontID)
-					end
-				end);
-			end
-		end)
+	local ddWidth = 200
 
-		dropdownMenu:SetWidth(ddWidth)
+	dropdownMenu:SetupMenu(function(_, rootDescription)
+		rootDescription:SetGridMode(MenuConstants.VerticalGridDirection);
 
-		menu.dropdownMenu = dropdownMenu
+		for index, fontID in Fonts:GetAll() do
+			local radio = rootDescription:CreateRadio(
+				fontID,
+				function() return fontID == menu:GetSavedValue() end,
+				function() menu:SetSavedValue(fontID) end,
+				index
+			)
 
-		local text = menu:CreateFontString(nil, 'ARTWORK', 'GameFontNormalLeft')
-		text:SetPoint('LEFT')
-		text:SetPoint('RIGHT', dropdownMenu, 'LEFT', -8, 0)
-		text:SetText(options.name)
-		menu.text = text
+			radio:AddInitializer(function(button)
+				local font = Fonts:GetFontObject(fontID)
+				if font then
+					button.fontString:SetFontObject(font)
+					button.fontString:SetText(fontID)
+				end
+			end);
+		end
+	end)
 
-		local width = max(16 + text:GetWidth() + dropdownMenu:GetWidth(), 260)
-		local height = 4 + max(dropdownMenu:GetHeight(), text:GetStringHeight())
+	dropdownMenu:SetWidth(ddWidth)
 
-		menu:SetSize(width, height)
+	menu.dropdownMenu = dropdownMenu
 
-		return menu
-	end
+	local text = menu:CreateFontString(nil, 'ARTWORK', 'GameFontNormalLeft')
+	text:SetPoint('LEFT')
+	text:SetPoint('RIGHT', dropdownMenu, 'LEFT', -8, 0)
+	text:SetText(options.name)
+	menu.text = text
 
-	function FontPicker:GetEffectiveSize()
-		return self:GetSize()
-	end
+	local width = max(16 + text:GetWidth() + dropdownMenu:GetWidth(), 260)
+	local height = 4 + max(dropdownMenu:GetHeight(), text:GetStringHeight())
 
-	--[[ Update Methods ]] --
+	menu:SetSize(width, height)
 
-	function FontPicker:SetSavedValue(value) end
-
-	function FontPicker:GetSavedValue() end
+	return menu
 end
-
-Addon.FontPicker = FontPicker

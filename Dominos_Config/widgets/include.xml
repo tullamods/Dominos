@@ -2,6 +2,7 @@
 	<!-- base elements -->
 	<Script file="panel.lua"/>
 	<Script file="scrollableContainer.lua"/>
+	<Script file="hoverBackground.lua"/>
 
 	<Script file="button.lua"/>
 	<Script file="checkButton.lua"/>

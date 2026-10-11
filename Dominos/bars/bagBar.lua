@@ -242,27 +242,23 @@ function BagBar:OnCreateMenu(menu)
     local layoutPanel = menu:NewPanel(L.Layout)
 
     layoutPanel:NewCheckButton {
-        name = L.BagBarShowBags,
+        label = L.BagBarShowBags,
         get = function()
             return layoutPanel.owner:ShowBags()
         end,
         set = function(_, enable)
             layoutPanel.owner:SetShowBags(enable)
-            layoutPanel.colsSlider:UpdateRange()
-            layoutPanel.colsSlider:UpdateValue()
         end
     }
 
     if not Addon:IsGameType('standard', 'mists', 'cata') then
         layoutPanel:NewCheckButton {
-            name = L.BagBarShowKeyRing,
+            label = L.BagBarShowKeyRing,
             get = function()
                 return layoutPanel.owner:ShowKeyRing()
             end,
             set = function(_, enable)
                 layoutPanel.owner:SetShowKeyRing(enable)
-                layoutPanel.colsSlider:UpdateRange()
-                layoutPanel.colsSlider:UpdateValue()
             end
         }
     end

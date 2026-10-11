@@ -218,11 +218,9 @@ local function Menu_AddDisableMenuButtonsPanel(menu)
     local L = LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')
 
     local panel = menu:NewPanel(L.Buttons)
-    local width, height = 0, 0
-    local prev = nil
 
     for _, container in ipairs(MicroButtons) do
-        local toggle = panel:NewCheckButton({
+        panel:NewCheckButton({
             name = container.displayName,
 
             get = function()
@@ -233,23 +231,7 @@ local function Menu_AddDisableMenuButtonsPanel(menu)
                 panel.owner:SetEnableMenuButton(container, enable)
             end
         })
-
-        if prev then
-            toggle:SetPoint('TOPLEFT', prev, 'BOTTOMLEFT', 0, -2)
-        else
-            toggle:SetPoint('TOPLEFT', 0, -2)
-        end
-
-        local bWidth, bHeight = toggle:GetEffectiveSize()
-
-        width = math.max(width, bWidth)
-        height = height + (bHeight + 2)
-
-        prev = toggle
     end
-
-    panel.width = width
-    panel.height = height
 
     return panel
 end
