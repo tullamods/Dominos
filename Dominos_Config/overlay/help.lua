@@ -4,106 +4,81 @@
 --------------------------------------------------------------------------------
 
 local _, Addon = ...
-local L = _G.LibStub("AceLocale-3.0"):GetLocale(Addon:GetParent():GetName())
+local L = LibStub("AceLocale-3.0"):GetLocale(Addon:GetParent():GetName())
 
 local GRID_SIZE_MINIMUM = 1
 local GRID_SIZE_MAXIMUM = 128
 local GRID_SIZE_STEP = 1
 
-local HelpDialog = _G.CreateFrame('Frame', nil, nil, _G.BackdropTemplateMixin and 'BackdropTemplate')
-
-HelpDialog:Hide()
+local HelpDialog = CreateFrame('Frame', nil, nil, 'VerticalLayoutFrame'); HelpDialog:Hide()
 
 function HelpDialog:OnLoad(owner)
     self:SetParent(owner)
-
     self:EnableMouse(true)
     self:RegisterForDrag('LeftButton')
     self:SetClampedToScreen(true)
     self:SetFrameStrata('FULLSCREEN_DIALOG')
     self:SetMovable(true)
     self:SetSize(360, 120)
-
-    self:SetBackdrop {
-        bgFile = 'Interface\\DialogFrame\\UI-DialogBox-Background',
-        edgeFile = 'Interface\\DialogFrame\\UI-DialogBox-Border',
-        tile = true,
-        insets = {left = 11, right = 12, top = 12, bottom = 11},
-        tileSize = 32,
-        edgeSize = 32
-    }
-
     self:SetPoint('TOP', 0, -24)
     self:SetScript('OnDragStart', self.OnDragStart)
     self:SetScript('OnDragStop', self.OnDragStop)
 
-    local header = self:CreateTexture(nil, 'ARTWORK')
-    header:SetTexture('Interface\\DialogFrame\\UI-DialogBox-Header')
-    header:SetWidth(326)
-    header:SetHeight(64)
-    header:SetPoint('TOP', 0, 12)
+    self.minimumWidth = 320
+    self.minimumHeight = 120
+    self.topPadding = 36
+    self.bottomPadding = 18
+    self.leftPadding = 18
+    self.rightPadding = 18
+    self.spacing = 10
 
-    local title = self:CreateFontString(nil, 'ARTWORK')
-    title:SetFontObject('GameFontNormal')
-    title:SetPoint('TOP', header, 'TOP', 0, -14)
-    title:SetText(L.ConfigMode)
+    self.Border = CreateFrame('Frame', nil, self, 'DialogBorderTemplate')
+    self.Border.ignoreInLayout = true
 
-    local desc = self:CreateFontString(nil, 'ARTWORK')
-    desc:SetFontObject('GameFontHighlight')
-    desc:SetJustifyV('TOP')
-    desc:SetJustifyH('LEFT')
-    desc:SetPoint('TOPLEFT', 18, -32)
-    desc:SetPoint('BOTTOMRIGHT', -18, 48)
-    desc:SetText(L.ConfigModeHelp)
+    self.Header = CreateFrame('Frame', nil, self, 'DialogHeaderTemplate')
+    self.Header.Text:SetText(L.ConfigMode)
+    self.Header.ignoreInLayout = true
 
-    local exitButton = _G.CreateFrame('Button', nil, self, 'UIPanelButtonNoTooltipResizeToFitTemplate')
+    local close = CreateFrame('Button', nil, self, 'UIPanelCloseButton')
+    close:SetPoint('TOPRIGHT', 3, 4)
+    close.ignoreInLayout = true
+    self.onCloseCallback = function() Addon:GetParent():SetLock(true); end
 
-    exitButton.Text:SetText(_G.EXIT)
-    exitButton:SetScript('OnClick', function() self:OnExitButtonClicked() end)
-    exitButton:SetPoint('BOTTOMRIGHT', -14, 14)
+    local description = self:CreateFontString(nil, 'ARTWORK')
+    description:SetFontObject('GameFontHighlight')
+    description:SetJustifyV('TOP')
+    description:SetJustifyH('LEFT')
+    description:SetText(L.ConfigModeHelp)
+    description:SetWidth(320)
+    description.layoutIndex = 1
+    description.expand = true
 
-    self.exitButton = exitButton
+    self.Description = description
 
-    local showGridButton = _G.CreateFrame('CheckButton', nil, self, "UICheckButtonTemplate")
+    local showGrid = Addon:CreateCheckButton {
+        label = L.ShowAlignmentGrid,
+        parent = self,
+        get = function() return Dominos:GetAlignmentGridEnabled(); end,
+        set = function(_, enable) print("showGrid", enable); Dominos:SetAlignmentGridEnabled(enable); end,
+    }
 
-    local showGridButtonText = showGridButton.Text or showGridButton.text
-    showGridButtonText:SetText(L.ShowAlignmentGrid)
+    showGrid.layoutIndex = 2
+    showGrid.expand = true
 
-    showGridButton:SetChecked(Dominos:GetAlignmentGridEnabled())
-    showGridButton:SetScript('OnClick', function(button) self:OnShowGridButtonClicked(button) end)
-    showGridButton:SetPoint('BOTTOMLEFT', 14, 10)
-
-
-	local slider = Addon:CreateSlider {
-		name = L.GridDensity,
-
+    local gridDensity = Addon:CreateSlider {
+        label = L.GridDensity,
+        parent = self,
         min = GRID_SIZE_MINIMUM,
         max = GRID_SIZE_MAXIMUM,
         step = GRID_SIZE_STEP,
-
-		get = function()
-			return Dominos:GetAlignmentGridSize()
-		end,
-
-		set = function(_, value)
-			Dominos:SetAlignmentGridSize(value)
-		end
+        get = function() return Dominos:GetAlignmentGridSize(); end,
+        set = function(value) Dominos:SetAlignmentGridSize(value); end,
     }
 
-    slider:SetParent(self)
-    slider:SetScale(0.8)
-    slider:SetPoint('LEFT', showGridButton, 'RIGHT', 75, -6)
-    slider:SetPoint('RIGHT', exitButton, 'LEFT', -2, -6)
-
-    self.showGridButton = showGridButton
-
-    Addon:GetParent().RegisterCallback(self, "ALIGNMENT_GRID_ENABLED")
+    gridDensity.layoutIndex = 3
+    gridDensity.expand = true
 
     self:Show()
-end
-
-function HelpDialog:ALIGNMENT_GRID_ENABLED(_, enable)
-    self.showGridButton:SetChecked(enable)
 end
 
 function HelpDialog:OnDragStart()
@@ -112,14 +87,6 @@ end
 
 function HelpDialog:OnDragStop()
     self:StopMovingOrSizing()
-end
-
-function HelpDialog:OnExitButtonClicked()
-    Addon:GetParent():SetLock(true)
-end
-
-function HelpDialog:OnShowGridButtonClicked(button)
-    Addon:GetParent():SetAlignmentGridEnabled(button:GetChecked())
 end
 
 --------------------------------------------------------------------------------
