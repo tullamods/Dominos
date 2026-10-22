@@ -11,9 +11,9 @@ local ACTION_BUTTON_COUNT = Addon.ACTION_BUTTON_COUNT
 local ActionBar = Addon:CreateClass('Frame', Addon.ButtonBar)
 
 ActionBar.ButtonProps = {
+    'EmptyButtons',
     'BindingText',
     'Counts',
-    'EmptyButtons',
     'EquippedItemBorders',
     'MacroText',
 }
