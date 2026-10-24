@@ -435,9 +435,9 @@ function Addon:ShowOptionsFrame()
     return false
 end
 
-function Addon:NewMenu()
+function Addon:ShowContextMenu(bar)
     if self:IsConfigAddonEnabled() and self:LoadConfigAddon() then
-        return self.Options.Menu:New()
+        self.Options.ContextMenus:Open(bar)
     end
 end
 

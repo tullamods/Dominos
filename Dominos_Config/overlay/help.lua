@@ -67,6 +67,9 @@ function HelpDialog:OnLoad(owner)
     label:SetPoint("LEFT", checkbox, "RIGHT", 4, 0)
     label:SetText(L.ShowAlignmentGrid)
 
+    -- let clicks on the label reach the check box
+    checkbox:SetHitRectInsets(0, -(label:GetStringWidth() + 4), 0, 0)
+
     local slider = CreateFrame("Frame", nil, row, "MinimalSliderWithSteppersTemplate")
     slider:SetPoint("RIGHT", row, "RIGHT", -36, 0)
     slider:SetSize(170, 32)
@@ -95,6 +98,25 @@ function HelpDialog:OnLoad(owner)
     end, slider)
 
     slider:SetEnabled(checkbox:GetChecked())
+
+    local function showTooltip(owner)
+        GameTooltip:SetOwner(owner, 'ANCHOR_RIGHT')
+        GameTooltip_SetTitle(GameTooltip, L.AlignmentGridSize)
+        GameTooltip_AddNormalLine(GameTooltip, L.AlignmentGridSizeTooltip)
+        GameTooltip:Show()
+    end
+
+    local function hideTooltip(owner)
+        if GameTooltip:IsOwned(owner) then
+            GameTooltip:Hide()
+        end
+    end
+
+    -- the slider's own buttons and thumb are children, so hook each
+    for _, region in ipairs({ slider, slider.Slider, slider.Back, slider.Forward }) do
+        region:HookScript('OnEnter', function() showTooltip(slider) end)
+        region:HookScript('OnLeave', function() hideTooltip(slider) end)
+    end
     
     self:Show()
 end

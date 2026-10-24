@@ -741,105 +741,97 @@ end
 
 --[[ menu ]]--
 
-do
-	function ProgressBar:OnCreateMenu(menu)
-		self:AddGeneralPanel(menu)
-		self:AddAppearancePanel(menu)
-
-		menu:AddVisibilityPanel()
-		menu:AddAdvancedPanel{ basic = true }
-	end
-
-	function ProgressBar:AddGeneralPanel(menu)
-		local C = LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')
-		local panel = menu:NewPanel(C.General)
-
-		local l = LibStub('AceLocale-3.0'):GetLocale('Dominos-Progress')
-
-		panel:AddOptions{
+ProgressBar.contextMenu = Dominos.Frame.contextMenu:Extend {
+	{
+		insert = 'General',
+		at = 'start',
+		controls = {
 			{
 				type = 'slider',
-				name = l.SegmentCount,
+				name = 'SegmentCount',
+				locale = 'Dominos-Progress',
 				min = 1,
 				max = 100,
 				get = 'GetSegmentCount',
 				set = 'SetSegmentCount'
 			},
-			{
-				type = 'slider',
-				name = C.Width,
-				min = 1,
-				max = function(bar)
-					return math.ceil(_G.UIParent:GetWidth() / bar:GetScale())
-				end,
-				get = 'GetDesiredWidth',
-				set = 'SetDesiredWidth'
-			},
-			{
-				type = 'slider',
-				name = C.Height,
-				min = 1,
-				max = function(bar)
-					return math.ceil(_G.UIParent:GetHeight() / bar:GetScale())
-				end,
-				get = 'GetDesiredHeight',
-				set = 'SetDesiredHeight'
-			},
-			Dominos.Options.OptionDefs.spacing
+			'WidthSlider',
+			'HeightSlider',
+			'SpacingSlider'
 		}
-
-		panel:AddGeneralOptions{ basic = true }
-	end
-
-	function ProgressBar:AddAppearancePanel(menu)
-		local C = LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')
-		local l = LibStub('AceLocale-3.0'):GetLocale('Dominos-Progress')
-		local panel = menu:AddAppearancePanel()
-
-		local function displayOption(part)
-			return {
+	},
+	{
+		addPanel = 'Appearance',
+		after = 'General',
+		locale = 'Dominos-Progress',
+		controls = {
+			{
+				type = 'header',
+				name = 'Style'
+			},
+			{
+				type = 'texture',
+				name = 'Texture',
+				get = 'GetTextureID',
+				set = 'SetTextureID'
+			},
+			{
+				type = 'font',
+				name = 'Font',
+				get = 'GetFontID',
+				set = 'SetFontID'
+			},
+			{
+				type = 'header',
+				name = 'Behavior'
+			},
+			{
 				type = 'check',
-				name = l['Display_' .. part],
-				get = function(bar) return bar:Displaying(part) end,
-				set = function(bar, enable) bar:SetDisplay(part, enable) end
-			}
-		end
-
-		panel:AddOptions{
-			{ type = 'header', name = C.Style },
-			{ type = 'texture', name = C.Texture, get = 'GetTextureID', set = 'SetTextureID' },
-			{ type = 'font', name = C.Font, get = 'GetFontID', set = 'SetFontID' },
-
-			{ type = 'header', name = C.Behavior },
-			{ type = 'check', name = l.HideAtMaxLevel, get = 'HideAtMaxLevel', set = 'SetHideAtMaxLevel' }
-		}
-
-		if #self.modes > 1 then
-			panel:AddOptions{
-				{
-					type = 'check',
-					name = l.AutoSwitchModes,
-					get = function(bar) return not bar:IsModeLocked() end,
-					set = function(bar, enable) bar:SetLockMode(not enable) end
-				}
-			}
-		end
-
-		panel:AddOptions{
-			{ type = 'check', name = l.AlwaysShowText, get = 'GetAlwaysShowText', set = 'SetAlwaysShowText' },
-			{ type = 'check', name = l.CompressValues, get = 'CompressValues', set = 'SetCompressValues' },
+				name = 'HideAtMaxLevel',
+				get = 'HideAtMaxLevel',
+				set = 'SetHideAtMaxLevel'
+			},
+			{
+				type = 'check',
+				name = 'AutoSwitchModes',
+				-- only bars with more than one mode have anything to switch
+				available = function(bar)
+					return #bar.modes > 1
+				end,
+				get = function(bar)
+					return not bar:IsModeLocked()
+				end,
+				set = function(bar, enable)
+					bar:SetLockMode(not enable)
+				end
+			},
+			{
+				type = 'check',
+				name = 'AlwaysShowText',
+				get = 'GetAlwaysShowText',
+				set = 'SetAlwaysShowText'
+			},
+			{
+				type = 'check',
+				name = 'CompressValues',
+				get = 'CompressValues',
+				set = 'SetCompressValues'
+			},
 
 			-- the parts of the text, in the order they're displayed
-			{ type = 'header', name = C.Content },
-			displayOption('label'),
-			displayOption('value'),
-			displayOption('max'),
-			displayOption('remaining'),
-			displayOption('bonus'),
-			displayOption('percent')
+			{
+				type = 'header',
+				name = 'Content'
+			},
+			Dominos:CreateDisplayCheck('label'),
+			Dominos:CreateDisplayCheck('value'),
+			Dominos:CreateDisplayCheck('max'),
+			Dominos:CreateDisplayCheck('remaining'),
+			Dominos:CreateDisplayCheck('bonus'),
+			Dominos:CreateDisplayCheck('percent')
 		}
-	end
-end
+	}
+}
 
 Addon.ProgressBar = ProgressBar
 Addon.dataProviders = Addon.dataProviders or {}

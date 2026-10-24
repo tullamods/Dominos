@@ -29,7 +29,6 @@ L.ConfigModeHelp = '<拖曳> 任何條列移動位置  <右鍵> 進行設定。 
 L.CopyDesc = '複製設定，從 <profile>'
 L.DeleteDesc = '刪除 <profile>'
 L.ExtraBarDescription = "顯示區域和首領戰特殊能力"
-L.GridDensity = "網格大小"
 L.Hidden = "隱藏"
 L.HideBar = '<中鍵 或 Shift+右鍵> 隱藏'
 L.HideFramesDesc = '隱藏 <frameList>'

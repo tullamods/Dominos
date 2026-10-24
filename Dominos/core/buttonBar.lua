@@ -26,11 +26,23 @@ ButtonBar:Extend(
     end
 )
 
-function ButtonBar:OnCreateMenu(menu)
-    menu:AddGeneralPanel()
-    menu:AddVisibilityPanel()
-    menu:AddAdvancedPanel()
+function ButtonBar:CanClickThrough()
+    return true
 end
+
+ButtonBar.contextMenu = Addon.Frame.contextMenu:Extend {
+    {
+        insert = 'General',
+        at = 'start',
+        controls = {
+            'LayoutDirectionDropdown',
+            'ColumnsSlider',
+            'SpacingSlider',
+            'RowSpacingSlider',
+            'RowOffsetSlider'
+        }
+    }
+}
 
 function ButtonBar:AcquireButton(index)
     error(("Bar %s has not implemented Acquire Button"):format(self.id), 2)

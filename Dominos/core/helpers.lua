@@ -10,6 +10,22 @@ function Addon:CreateHiddenFrame(...)
     return frame
 end
 
+-- a context menu control that shows or hides one part of a bar that has
+-- Displaying(part) and SetDisplay(part, enable). its name is the key
+-- Display_<part>
+function Addon:CreateDisplayCheck(part)
+    return {
+        type = 'check',
+        name = 'Display_' .. part,
+        get = function(bar)
+            return bar:Displaying(part)
+        end,
+        set = function(bar, enable)
+            bar:SetDisplay(part, enable)
+        end
+    }
+end
+
 -- A utility function for extending blizzard widget types (Frames, Buttons, etc)
 do
     -- extend basically just does a post hook of an existing object method
@@ -65,15 +81,6 @@ do
         end
 
         return class
-    end
-end
--- returns a function that generates unique names for frames
--- in the format <AddonName>_<Prefix>[1, 2, ...]
-function Addon:CreateNameGenerator(prefix)
-    local id = 0
-    return function()
-        id = id + 1
-        return ('%s_%s_%d'):format(AddonName, prefix, id)
     end
 end
 

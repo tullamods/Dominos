@@ -266,86 +266,54 @@ function MirrorTimer:Update()
     self:Start(timerName, value, maxValue, scale, paused, timerLabel)
 end
 
-function MirrorTimer:OnCreateMenu(menu)
-    self:AddGeneralPanel(menu)
-    self:AddAppearancePanel(menu)
-    menu:AddVisibilityPanel()
-    menu:AddAdvancedPanel{ basic = true }
-
-    self.menu = menu
-
-    self.menu:HookScript(
-        'OnShow',
-        function()
-            self:Start('BREATH', random(20, 60) * 1000, 60000, -1, 1, BREATH_LABEL)
-        end
-    )
-
-    self.menu:HookScript(
-        'OnHide',
-        function()
-            self:Update()
-        end
-    )
-end
-
----@param menu table
-function MirrorTimer:AddGeneralPanel(menu)
-    local C = LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')
-    local panel = menu:NewPanel(C.General)
-    local options = {}
-
-    tinsert(options, {
-        type = 'slider',
-        name = C.Width,
-        min = 1,
-        max = function(bar)
-            return math.ceil(_G.UIParent:GetWidth() / bar:GetScale())
-        end,
-        get = 'GetDesiredWidth',
-        set = 'SetDesiredWidth'
-    })
-
-    tinsert(options, {
-        type = 'slider',
-        name = C.Height,
-        min = 1,
-        max = function(bar)
-            return math.ceil(_G.UIParent:GetHeight() / bar:GetScale())
-        end,
-        get = 'GetDesiredHeight',
-        set = 'SetDesiredHeight'
-    })
-
-    panel:AddOptions(options)
-    panel:AddGeneralOptions{ basic = true }
-end
-
----@param menu table
-function MirrorTimer:AddAppearancePanel(menu)
-    local panel = menu:AddAppearancePanel()
-
-    local function displayOption(part)
-        return {
-            type = 'check',
-            name = L['Display_' .. part],
-            get = function(bar) return bar:Displaying(part) end,
-            set = function(bar, enable) bar:SetDisplay(part, enable) end
+MirrorTimer.contextMenu = Dominos.Frame.contextMenu:Extend {
+    {
+        insert = 'General',
+        at = 'start',
+        controls = {
+            'WidthSlider',
+            'HeightSlider'
         }
-    end
-
-    local C = LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')
-
-    panel:AddOptions {
-        { type = 'header', name = C.Style },
-        { type = 'texture', name = C.Texture, get = 'GetTextureID', set = 'SetTextureID' },
-        { type = 'font', name = C.Font, get = 'GetFontID', set = 'SetFontID' },
-        displayOption('border'),
-
-        { type = 'header', name = C.Content },
-        displayOption('label'),
-        displayOption('time')
+    },
+    {
+        addPanel = 'Appearance',
+        after = 'General',
+        locale = 'Dominos-CastBar',
+        controls = {
+            {
+                type = 'header',
+                name = 'Style'
+            },
+            {
+                type = 'texture',
+                name = 'Texture',
+                get = 'GetTextureID',
+                set = 'SetTextureID'
+            },
+            {
+                type = 'font',
+                name = 'Font',
+                get = 'GetFontID',
+                set = 'SetFontID'
+            },
+            Dominos:CreateDisplayCheck('border'),
+            {
+                type = 'header',
+                name = 'Content'
+            },
+            Dominos:CreateDisplayCheck('label'),
+            Dominos:CreateDisplayCheck('time')
+        }
     }
+}
+
+-- show a timer while the menu is open, so there is something to style
+function MirrorTimer:OnMenuShown()
+    self:Start('BREATH', random(20, 60) * 1000, 60000, -1, 1, BREATH_LABEL)
+end
+
+function MirrorTimer:OnMenuHidden()
+    self:Update()
 end
 
 --[[ exports ]]

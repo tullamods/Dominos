@@ -762,105 +762,93 @@ end
 -- Cast Bar Right Click Menu
 --------------------------------------------------------------------------------
 
-function CastBar:OnCreateMenu(menu)
-    self:AddGeneralPanel(menu)
-    self:AddAppearancePanel(menu)
-
-    menu:AddVisibilityPanel()
-    -- the cast bar always shows with the override and pet battle UIs
-    menu:AddAdvancedPanel{ basic = true, alwaysShowInSpecialUI = true }
-
-    menu:HookScript("OnShow", function()
-        self.menuShown = true
-
-        local state = self:GetProperty("state")
-        if not (state == "casting" or state == "channeling" or state == "empowering") then
-            self:SetupDemo()
-        end
-    end)
-
-    menu:HookScript("OnHide", function()
-        self.menuShown = nil
-
-        if self:GetProperty("state") == "demo" then
-            self:Stop()
-        end
-    end)
-end
-
-function CastBar:AddGeneralPanel(menu)
-    local C = LibStub("AceLocale-3.0"):GetLocale("Dominos-Config")
-    local panel = menu:NewPanel(C.General)
-
-    panel:AddOptions {
-        {
-            type = 'slider',
-            name = C.Width,
-            min = 1,
-            max = function(bar)
-                return math.ceil(UIParent:GetWidth() / bar:GetScale())
-            end,
-            get = 'GetDesiredWidth',
-            set = 'SetDesiredWidth'
-        },
-        {
-            type = 'slider',
-            name = C.Height,
-            min = 1,
-            max = function(bar)
-                return math.ceil(UIParent:GetHeight() / bar:GetScale())
-            end,
-            get = 'GetDesiredHeight',
-            set = 'SetDesiredHeight'
+CastBar.contextMenu = Dominos.Frame.contextMenu:Extend {
+    {
+        insert = 'General',
+        at = 'start',
+        controls = {
+            'WidthSlider',
+            'HeightSlider'
+        }
+    },
+    {
+        addPanel = 'Appearance',
+        after = 'General',
+        locale = 'Dominos-CastBar',
+        controls = {
+            {
+                type = 'header',
+                name = 'Style'
+            },
+            {
+                type = 'texture',
+                name = 'Texture',
+                get = 'GetTextureID',
+                set = 'SetTextureID'
+            },
+            {
+                type = 'font',
+                name = 'Font',
+                get = 'GetFontID',
+                set = 'SetFontID'
+            },
+            {
+                type = 'check',
+                name = 'UseSpellReactionColors',
+                tooltip = 'UseSpellReactionColorsTip',
+                get = 'UseSpellReactionColors',
+                set = 'SetUseSpellReactionColors'
+            },
+            Dominos:CreateDisplayCheck('border'),
+            Dominos:CreateDisplayCheck('spark'),
+            {
+                type = 'header',
+                name = 'Content'
+            },
+            Dominos:CreateDisplayCheck('icon'),
+            Dominos:CreateDisplayCheck('time'),
+            {
+                type = 'header',
+                name = 'Latency'
+            },
+            Dominos:CreateDisplayCheck('latency'),
+            {
+                type = 'slider',
+                name = 'LatencyPadding',
+                min = 0,
+                max = 500,
+                get = 'GetLatencyPadding',
+                set = 'SetLatencyPadding'
+            }
         }
     }
+}
 
-    panel:AddGeneralOptions{ basic = true }
+-- the cast bar always shows with the override and pet battle UIs
+function CastBar:CanShowInOverrideUI()
+    return false
 end
 
-function CastBar:AddAppearancePanel(menu)
-    local panel = menu:AddAppearancePanel()
+function CastBar:CanShowInPetBattleUI()
+    return false
+end
 
-    local function displayOption(part)
-        return {
-            type = 'check',
-            name = L["Display_" .. part],
-            get = function(bar) return bar:Displaying(part) end,
-            set = function(bar, enable) bar:SetDisplay(part, enable) end
-        }
+-- show a cast while the menu is open, so there is something to style
+function CastBar:OnMenuShown()
+    self.menuShown = true
+
+    local state = self:GetProperty("state")
+    if not (state == "casting" or state == "channeling" or state == "empowering") then
+        self:SetupDemo()
     end
+end
 
-    local C = LibStub("AceLocale-3.0"):GetLocale("Dominos-Config")
+function CastBar:OnMenuHidden()
+    self.menuShown = nil
 
-    panel:AddOptions {
-        { type = 'header', name = C.Style },
-        { type = 'texture', name = C.Texture, get = 'GetTextureID', set = 'SetTextureID' },
-        { type = 'font', name = C.Font, get = 'GetFontID', set = 'SetFontID' },
-        {
-            type = 'check',
-            name = L.UseSpellReactionColors,
-            tooltip = L.UseSpellReactionColorsTip,
-            get = 'UseSpellReactionColors',
-            set = 'SetUseSpellReactionColors'
-        },
-        displayOption('border'),
-        displayOption('spark'),
-
-        { type = 'header', name = C.Content },
-        displayOption('icon'),
-        displayOption('time'),
-
-        { type = 'header', name = L.Latency },
-        displayOption('latency'),
-        {
-            type = 'slider',
-            name = L.LatencyPadding,
-            min = 0,
-            max = 500,
-            get = 'GetLatencyPadding',
-            set = 'SetLatencyPadding'
-        }
-    }
+    if self:GetProperty("state") == "demo" then
+        self:Stop()
+    end
 end
 
 -- exports

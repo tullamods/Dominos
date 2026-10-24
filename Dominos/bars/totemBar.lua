@@ -52,12 +52,6 @@ function TotemBar:Layout()
     self:SetSize(w + pW, h + pH)
 end
 
-function TotemBar:OnCreateMenu(menu)
-    menu:AddGeneralPanel{ basic = true }
-    menu:AddVisibilityPanel()
-    menu:AddAdvancedPanel{ basic = true }
-end
-
 -- export
 Addon.TotemBar = TotemBar
 

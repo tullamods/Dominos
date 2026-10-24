@@ -53,30 +53,20 @@ function TalkingHeadBar:RepositionTalkingHeadFrame()
     TalkingHeadFrame:SetParent(self)
 end
 
-function TalkingHeadBar:OnCreateMenu(menu)
-    self:AddGeneralPanel(menu)
-    menu:AddVisibilityPanel()
-    menu:AddAdvancedPanel{ basic = true }
-end
-
-function TalkingHeadBar:AddGeneralPanel(menu)
-    local l = LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')
-
-    local panel = menu:NewPanel(l.General)
-
-    panel:AddOptions{
-        {
-            type = 'check',
-            name = _G.MUTE,
-            get = 'MuteSounds',
-            set = 'SetMuteSounds'
+TalkingHeadBar.contextMenu = Addon.Frame.contextMenu:Extend {
+    {
+        insert = 'General',
+        at = 'start',
+        controls = {
+            {
+                type = 'check',
+                name = _G.MUTE,
+                get = 'MuteSounds',
+                set = 'SetMuteSounds'
+            }
         }
     }
-
-    panel:AddGeneralOptions{ basic = true }
-
-    return panel
-end
+}
 
 function TalkingHeadBar:SetMuteSounds(enable)
     self.sets.muteSounds = (enable and true) or nil

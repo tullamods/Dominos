@@ -85,26 +85,20 @@ function ExtraAbilityBar:RepositionExtraAbilityContainer()
     end
 end
 
-function ExtraAbilityBar:OnCreateMenu(menu)
-    menu:AddGeneralPanel{ basic = true }
-    self:AddAppearancePanel(menu)
-
-    menu:AddVisibilityPanel()
-    menu:AddAdvancedPanel{ basic = true }
-end
-
-function ExtraAbilityBar:AddAppearancePanel(menu)
-    local l = LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')
-
-    menu:AddAppearancePanel():AddOptions{
-        {
-            type = 'check',
-            name = l.ExtraBarShowBlizzardTexture,
-            get = 'ShowingBlizzardTexture',
-            set = 'ShowBlizzardTexture'
+ExtraAbilityBar.contextMenu = Addon.Frame.contextMenu:Extend {
+    {
+        addPanel = 'Appearance',
+        after = 'General',
+        controls = {
+            {
+                type = 'check',
+                name = 'ExtraBarShowBlizzardTexture',
+                get = 'ShowingBlizzardTexture',
+                set = 'ShowBlizzardTexture'
+            }
         }
     }
-end
+}
 
 function ExtraAbilityBar:ShowBlizzardTexture(show)
     self.sets.hideBlizzardTeture = not show

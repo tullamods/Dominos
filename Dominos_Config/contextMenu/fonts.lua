@@ -32,18 +32,4 @@ do
 	end
 end
 
--- options is modified, so pass a copy
-function Addon:CreateFontPicker(options)
-	options.items = Fonts.GetAll
-
-	-- preview each font in the menu using the font itself
-	options.initItem = function(button, fontID)
-		local font = Fonts:GetFontObject(fontID)
-		if font then
-			button.fontString:SetFontObject(font)
-			button.fontString:SetText(fontID)
-		end
-	end
-
-	return Addon:CreateDropdown(options)
-end
+Addon.Fonts = Fonts

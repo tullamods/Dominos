@@ -124,15 +124,27 @@ MenuBar:Extend('OnCreate', function(self)
     self.activeButtons = {}
 end)
 
-MenuBar:Extend('OnAttachButton', function(_, button)
-    button:SetShown(true)
-    button:AttachButton()
+MenuBar:Extend('OnAttachButton', function(self, container)
+    container:SetShown(true)
+    container:AttachButton()
+    container.button:EnableMouse(not self:GetClickThrough())
 end)
 
 MenuBar:Extend('OnDetachButton', function(_, button)
     button:SetShown(false)
     button:DetachButton()
 end)
+
+-- the containers are just placeholders, so apply click through to the contained
+-- micro buttons as well
+function MenuBar:UpdateClickThrough()
+    MenuBar.proto.UpdateClickThrough(self)
+
+    local enableMouse = not self:GetClickThrough()
+    for _, container in pairs(self.buttons) do
+        container.button:EnableMouse(enableMouse)
+    end
+end
 
 function MenuBar:GetDefaults()
     if Addon:IsGameType("standard") then
@@ -214,32 +226,32 @@ Addon.MenuBar = MenuBar
 -- context menu
 --------------------------------------------------------------------------------
 
--- which micro buttons to show on the bar
-local function Menu_AddAppearancePanel(menu)
-    local options = {}
+MenuBar.contextMenu = Addon.ButtonBar.contextMenu:Extend {
+    {
+        addPanel = 'Appearance',
+        after = 'General',
 
-    for _, container in ipairs(MicroButtons) do
-        tinsert(options, {
-            type = 'check',
-            name = container.displayName,
-            get = function(bar) return bar:IsMenuButtonEnabled(container) end,
-            set = function(bar, enable) bar:SetEnableMenuButton(container, enable) end
-        })
-    end
+        -- which micro buttons to show on the bar
+        controls = function()
+            local controls = {}
 
-    local panel = menu:AddAppearancePanel()
+            for _, container in ipairs(MicroButtons) do
+                tinsert(controls, {
+                    type = 'check',
+                    name = container.displayName,
+                    get = function(bar)
+                        return bar:IsMenuButtonEnabled(container)
+                    end,
+                    set = function(bar, enable)
+                        bar:SetEnableMenuButton(container, enable)
+                    end
+                })
+            end
 
-    panel:AddOptions(options)
-
-    return panel
-end
-
-function MenuBar:OnCreateMenu(menu)
-    menu:AddGeneralPanel()
-    Menu_AddAppearancePanel(menu)
-    menu:AddVisibilityPanel()
-    menu:AddAdvancedPanel()
-end
+            return controls
+        end
+    }
+}
 
 --------------------------------------------------------------------------------
 -- module
@@ -261,6 +273,10 @@ end
 function MenuBarModule:AttachButtons()
     for _, container in ipairs(MicroButtons) do
         container:AttachButton()
+    end
+
+    if self.bar then
+        self.bar:UpdateClickThrough()
     end
 end
 

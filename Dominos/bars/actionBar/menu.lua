@@ -1,131 +1,132 @@
 -- the context menu for an action bar in config mode
 local _, Addon = ...
 
-function Addon.ActionBar:OnCreateMenu(menu)
-    local L = LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')
+-- the paging dropdowns offer every bar, so the list is made again only when the
+-- number of bars changes
+local pagingItems = {}
+local pagingItemsNumBars = -1
 
-    local dropdownItems = {}
-    local lastNumBars = -1
+local function getPagingItems()
+    local numBars = Addon:NumBars()
 
-    local function getDropdownItems()
-        local numBars = Addon:NumBars()
+    if pagingItemsNumBars ~= numBars then
+        local L = LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')
 
-        if lastNumBars ~= numBars then
-            dropdownItems = {
-                {value = -1, text = L.PagingDefault}
+        pagingItems = {
+            {
+                value = -1,
+                text = L.PagingDefault
             }
+        }
 
-            for i = 1, numBars do
-                dropdownItems[i + 1] = {
-                    value = i,
-                    text = L.ActionBarNumber:format(i)
-                }
-            end
-
-            lastNumBars = numBars
+        for i = 1, numBars do
+            pagingItems[i + 1] = {
+                value = i,
+                text = L.ActionBarNumber:format(i)
+            }
         end
 
-        return dropdownItems
+        pagingItemsNumBars = numBars
     end
 
-    local function addGeneralPanel()
-        local panel = menu:NewPanel(L.General)
+    return pagingItems
+end
 
-        panel:AddOptions {
+-- which parts of a button to show
+local function getAppearanceControls(bar)
+    local controls = {}
+
+    for _, prop in ipairs(bar.ButtonProps) do
+        tinsert(controls, {
+            type = 'check',
+            -- a hack to work around naming consistency on my part
+            name = (prop == 'Counts' and 'ShowCountText') or ('Show' .. prop),
+            get = 'Showing' .. prop,
+            set = 'SetShow' .. prop
+        })
+    end
+
+    return controls
+end
+
+local function addStateGroup(controls, categoryName, stateType)
+    if not Addon.BarStates:Exists(stateType) then
+        return
+    end
+
+    tinsert(controls, {
+        type = 'header',
+        name = categoryName
+    })
+
+    for _, state in Addon.BarStates:GetAll(stateType) do
+        local id = state.id
+
+        tinsert(controls, {
+            type = 'dropdown',
+            name = state.text or ('State_' .. id:upper()),
+            items = getPagingItems,
+            get = function(bar)
+                local offset = bar:GetOffset(id) or -1
+
+                if offset > -1 then
+                    return (bar.id + offset - 1) % Addon:NumBars() + 1
+                end
+
+                return offset
+            end,
+            set = function(bar, value)
+                local offset
+
+                if value == -1 then
+                    offset = nil
+                elseif value < bar.id then
+                    offset = (Addon:NumBars() - bar.id) + value
+                else
+                    offset = value - bar.id
+                end
+
+                bar:SetOffset(id, offset)
+            end
+        })
+    end
+end
+
+local function getPagingControls()
+    local controls = {}
+
+    addStateGroup(controls, UnitClass('player'), 'class')
+    addStateGroup(controls, (UnitRace('player')), 'race')
+    addStateGroup(controls, 'Modifiers', 'modifier')
+    addStateGroup(controls, 'QuickPaging', 'page')
+    addStateGroup(controls, 'Targeting', 'target')
+
+    return controls
+end
+
+Addon.ActionBar.contextMenu = Addon.ButtonBar.contextMenu:Extend {
+    {
+        insert = 'General',
+        before = 'ColumnsSlider',
+        controls = {
             {
                 type = 'slider',
-                name = L.NumButtons,
+                name = 'NumButtons',
                 min = 1,
                 max = 'MaxLength',
                 get = 'NumButtons',
                 set = 'SetNumButtons'
             }
         }
-
-        panel:AddGeneralOptions()
-
-        return panel
-    end
-
-    local function addAppearancePanel()
-        local panel = menu:AddAppearancePanel()
-        local options = {}
-
-        for _, prop in ipairs(self.ButtonProps) do
-            tinsert(options, {
-                type = 'check',
-                -- a hack to work around naming consistency on my part
-                name = L[(prop == "Counts" and "ShowCountText") or ("Show" .. prop)],
-                get = "Showing" .. prop,
-                set = "SetShow" .. prop
-            })
-        end
-
-        panel:AddOptions(options)
-
-        return panel
-    end
-
-    local function addStateGroup(options, categoryName, stateType)
-        if not Addon.BarStates:Exists(stateType) then
-            return
-        end
-
-        tinsert(options, { type = 'header', name = categoryName })
-
-        for _, state in Addon.BarStates:GetAll(stateType) do
-            local id = state.id
-
-            tinsert(options, {
-                type = 'dropdown',
-                name = state.text or L['State_' .. id:upper()],
-                items = getDropdownItems,
-                get = function(bar)
-                    local offset = bar:GetOffset(id) or -1
-                    if offset > -1 then
-                        return (bar.id + offset - 1) % Addon:NumBars() + 1
-                    end
-                    return offset
-                end,
-                set = function(bar, value)
-                    local offset
-
-                    if value == -1 then
-                        offset = nil
-                    elseif value < bar.id then
-                        offset = (Addon:NumBars() - bar.id) + value
-                    else
-                        offset = value - bar.id
-                    end
-
-                    bar:SetOffset(id, offset)
-                end
-            })
-        end
-    end
-
-    local function addPagingPanel()
-        local panel = menu:NewPanel(L.Paging)
-
-        local options = {}
-
-        addStateGroup(options, UnitClass('player'), 'class')
-        addStateGroup(options, (UnitRace('player')), 'race')
-        addStateGroup(options, L.Modifiers, 'modifier')
-        addStateGroup(options, L.QuickPaging, 'page')
-        addStateGroup(options, L.Targeting, 'target')
-
-        panel:AddOptions(options)
-
-        return panel
-    end
-
-    -- add panels
-    addGeneralPanel()
-    addAppearancePanel()
-    addPagingPanel()
-    menu:AddVisibilityPanel()
-    menu:AddAdvancedPanel()
-
-    Addon.ActionBar.menu = menu
-end
+    },
+    {
+        addPanel = 'Appearance',
+        after = 'General',
+        controls = getAppearanceControls
+    },
+    {
+        addPanel = 'Paging',
+        after = 'Appearance',
+        controls = getPagingControls
+    }
+}

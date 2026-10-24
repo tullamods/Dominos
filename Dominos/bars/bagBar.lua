@@ -236,36 +236,29 @@ if Addon:IsGameType("standard") then
     end
 end
 
-function BagBar:OnCreateMenu(menu)
-    local L = LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')
-
-    menu:AddGeneralPanel()
-
-    local appearance = menu:AddAppearancePanel()
-
-    appearance:AddOptions {
-        {
-            type = 'check',
-            name = L.BagBarShowBags,
-            get = 'ShowBags',
-            set = 'SetShowBags'
-        }
-    }
-
-    if not Addon:IsGameType('standard', 'mists', 'cata') then
-        appearance:AddOptions {
+BagBar.contextMenu = Addon.ButtonBar.contextMenu:Extend {
+    {
+        addPanel = 'Appearance',
+        after = 'General',
+        controls = {
             {
                 type = 'check',
-                name = L.BagBarShowKeyRing,
+                name = 'BagBarShowBags',
+                get = 'ShowBags',
+                set = 'SetShowBags'
+            },
+            {
+                type = 'check',
+                name = 'BagBarShowKeyRing',
                 get = 'ShowKeyRing',
-                set = 'SetShowKeyRing'
+                set = 'SetShowKeyRing',
+                available = function()
+                    return not Addon:IsGameType('standard', 'mists', 'cata')
+                end
             }
         }
-    end
-
-    menu:AddVisibilityPanel()
-    menu:AddAdvancedPanel()
-end
+    }
+}
 
 --------------------------------------------------------------------------------
 --	module

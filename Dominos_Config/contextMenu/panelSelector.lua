@@ -27,7 +27,7 @@ local function selectButton_OnLeave(self)
 	end
 end
 
-local function createSelectButton(id, parent, owner)
+local function createSelectButton(id, name, parent, owner)
 	local button = CreateFrame('Button', nil, parent, 'ResizeLayoutFrame')
 
 	button:SetFixedSize(BUTTON_MIN_WIDTH, BUTTON_HEIGHT)
@@ -39,7 +39,7 @@ local function createSelectButton(id, parent, owner)
 	button.Selected:SetAtlas('Options_List_Active')
 	button.Selected:SetAllPoints()
 	button.Selected:Hide()
-	button:SetText(id)
+	button:SetText(name or id)
 	button:GetFontString():SetAllPoints()
 
 	button:SetScript('OnClick', selectButton_OnClick)
@@ -50,10 +50,6 @@ local function createSelectButton(id, parent, owner)
 	button.owner = owner or parent
 
 	return button
-end
-
-function PanelSelectorMixin:OnRender()
-	self:MarkDirty()
 end
 
 function PanelSelectorMixin:Select(id)
@@ -74,10 +70,10 @@ end
 
 function PanelSelectorMixin:OnSelect(id) end
 
-function PanelSelectorMixin:AddPanel(id)
+function PanelSelectorMixin:AddPanel(id, name)
 	local index = #self.buttons + 1
 
-	local button = createSelectButton(id, self:GetContent(), self)
+	local button = createSelectButton(id, name, self:GetContent(), self)
 
 	button.layoutIndex = index
 

@@ -150,23 +150,20 @@ function DominosStanceBar:ShowingBindingText()
     return result
 end
 
-function DominosStanceBar:OnCreateMenu(menu)
-    local L = LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')
-
-    menu:AddGeneralPanel()
-
-    menu:AddAppearancePanel():AddOptions {
-        {
-            type = 'check',
-            name = L.ShowBindingText,
-            get = 'ShowingBindingText',
-            set = 'SetShowBindingText'
+DominosStanceBar.contextMenu = Addon.ButtonBar.contextMenu:Extend {
+    {
+        addPanel = 'Appearance',
+        after = 'General',
+        controls = {
+            {
+                type = 'check',
+                name = 'ShowBindingText',
+                get = 'ShowingBindingText',
+                set = 'SetShowBindingText'
+            }
         }
     }
-
-    menu:AddVisibilityPanel()
-    menu:AddAdvancedPanel()
-end
+}
 
 -- export
 Addon.StanceBar = DominosStanceBar

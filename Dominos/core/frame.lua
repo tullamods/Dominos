@@ -975,34 +975,70 @@ end
 -- Context Menus
 --------------------------------------------------------------------------------
 
-function Frame:CreateMenu()
-    local menu = Addon:NewMenu()
-
-    if menu then
-        self:OnCreateMenu(menu)
-        return menu
-    end
+-- the questions the context menu asks about a bar
+function Frame:CanClickThrough()
+    return false
 end
 
-function Frame:OnCreateMenu(menu)
-    menu:AddGeneralPanel{ basic = true }
-    menu:AddVisibilityPanel()
-    menu:AddAdvancedPanel{ basic = true }
+function Frame:CanShowInOverrideUI()
+    return Addon:IsGameType('standard', 'mists', 'forever')
 end
+
+function Frame:CanShowInPetBattleUI()
+    return self:CanShowInOverrideUI() and not Addon:IsGameType('forever')
+end
+
+Frame.contextMenu = Addon.ContextMenu {
+    {
+        id = 'General',
+        controls = {
+            'PaddingSlider',
+            'ScaleSlider',
+            'OpacitySlider'
+        }
+    },
+    {
+        id = 'Visibility',
+        controls = {
+            {
+                type = 'header',
+                name = 'MouseoverFading'
+            },
+            'FadedOpacitySlider',
+            'FadeInDelaySlider',
+            'FadeInTimeSlider',
+            'FadeOutDelaySlider',
+            'FadeOutTimeSlider',
+            {
+                type = 'header',
+                name = 'ShowStates'
+            },
+            'ShowPresetDropdown',
+            'ShowStatesText'
+        }
+    },
+    {
+        id = 'Advanced',
+        controls = {
+            {
+                type = 'header',
+                name = 'Behavior'
+            },
+            'ClickThroughCheck',
+            'ShowInOverrideUICheck',
+            'ShowInPetBattleUICheck',
+            {
+                type = 'header',
+                name = 'DrawOrder'
+            },
+            'FrameStrataDropdown',
+            'FrameLevelSlider'
+        }
+    }
+}
 
 function Frame:ShowMenu()
-    local menu = self.menu
-    if not menu then
-        menu = self:CreateMenu()
-        self.menu = menu
-    end
-
-    if menu then
-        menu:Hide()
-        menu:SetOwner(self)
-        menu:ShowPanel(LibStub('AceLocale-3.0'):GetLocale('Dominos-Config').General)
-        menu:Show()
-    end
+    Addon:ShowContextMenu(self)
 end
 
 --------------------------------------------------------------------------------

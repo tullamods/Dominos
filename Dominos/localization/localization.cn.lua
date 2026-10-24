@@ -23,7 +23,6 @@ L.ConfigModeHelp = '<拖动> 移动技能条(按住Alt键可以不粘附)。\n<�
 L.CopyDesc = '从 <profile> 复制设置'
 L.DeleteDesc = '删除 <profile>'
 L.ExtraBarDescription = "显示区域或遭遇战的特殊技能"
-L.GridDensity = "密度"
 L.Hidden = "隐藏"
 L.HideBar = '<中键或者Shift+右键> 隐藏'
 L.HideFramesDesc = '隐藏 <frameList>'
