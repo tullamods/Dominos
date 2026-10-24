@@ -5,6 +5,8 @@
 local _, Addon = ...
 local L = Addon:GetLocale()
 
+local MAX_BAR_HEIGHT_PIXELS = 64
+
 -- combines the left to right and top to bottom settings into the direction
 -- buttons fill the grid in
 local LAYOUT_DIRECTION_ITEMS = {
@@ -41,6 +43,16 @@ local function getShowPreset(bar)
 end
 
 local Controls = {}
+
+-- width and height are shown as screen pixels but stored in ui units, so the
+-- number changes with the bar's scale
+local function toPixels(bar, uiUnits)
+	return Round(uiUnits * bar:GetEffectiveScale() / PixelUtil.GetPixelToUIUnitFactor())
+end
+
+local function fromPixels(bar, pixels)
+	return pixels * PixelUtil.GetPixelToUIUnitFactor() / bar:GetEffectiveScale()
+end
 
 -- general
 Controls.ColumnsSlider = {
@@ -156,23 +168,24 @@ Controls.FrameLevelSlider = {
 	set = 'SetDisplayLevel'
 }
 
--- size, for frames that set their own (not a grid of buttons)
 Controls.WidthSlider = {
 	type = 'slider',
 	name = L.Width,
 	min = 1,
-	max = function(bar) return math.ceil(UIParent:GetWidth() / bar:GetScale()) end,
-	get = 'GetDesiredWidth',
-	set = 'SetDesiredWidth'
+	max = function() return (GetPhysicalScreenSize()) end,
+	softLimits = true,
+	get = function(bar) return toPixels(bar, bar:GetDesiredWidth()) end,
+	set = function(bar, value) bar:SetDesiredWidth(fromPixels(bar, value)) end
 }
 
 Controls.HeightSlider = {
 	type = 'slider',
 	name = L.Height,
 	min = 1,
-	max = function(bar) return math.ceil(UIParent:GetHeight() / bar:GetScale()) end,
-	get = 'GetDesiredHeight',
-	set = 'SetDesiredHeight'
+	max = MAX_BAR_HEIGHT_PIXELS,
+	softLimits = true,
+	get = function(bar) return toPixels(bar, bar:GetDesiredHeight()) end,
+	set = function(bar, value) bar:SetDesiredHeight(fromPixels(bar, value)) end
 }
 
 -- visibility
