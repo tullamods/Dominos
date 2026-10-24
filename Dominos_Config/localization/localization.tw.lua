@@ -14,9 +14,7 @@ local L = LibStub('AceLocale-3.0'):NewLocale('Dominos-Config', 'zhTW')
 if not L then return end
 
 L.ActionBarBehavior = "快捷列行為"
-L.ActionBarNumber = "快捷列 %d"
 L.ActionButtonLookAndFeel = "快捷列按鈕外觀"
-L.Advanced = "進階"
 L.BagBarShowBags = "顯示更換背包欄位"
 L.BagBarShowKeyRing = "顯示鑰匙圈"
 L.Bar = "快捷列 %d"
@@ -31,27 +29,16 @@ L.ConfirmResetProfile = "是否確定要重置設定檔?"
 L.Copy = "複製"
 L.CopyProfile = "複製設定檔..."
 L.CreateProfile = "建立設定檔..."
-L.Delay = "延遲 (秒)"
-L.Delete = _G.DELETE
 L.DisableMenuButtons = "停用按鈕"
-L.Duration = "持續時間 (秒)"
 L.EnterBindingMode = "設定快捷鍵..."
 L.EnterConfigMode = "設定快捷列..."
 L.EnterName = "輸入名稱"
 L.ExtraBarShowBlizzardTexture = "顯示暴雪預設材質"
 L.FadedOpacity = "淡出透明度"
-L.FadeIn = "淡入"
-L.FadeOut = "淡出"
-L.Fading = "淡出"
 L.FrameStrata = "框架層級"
-L.FrameStrata_BACKGROUND = "背景"
-L.FrameStrata_LOW = LOW
 L.FrameStrata_MEDIUM = "中"
-L.FrameStrata_HIGH = HIGH
 L.FrameLevel = "框架層數"
-L.General = "一般"
 L.Layout = "外觀"
-L.LeftToRight = "按鈕由左至右排列"
 L.LinkedOpacity = "吸附的快捷列繼承相同的透明度"
 L.LockActionButtons = "鎖定快捷列按鈕圖示"
 L.MetaKey = 'Meta鍵'
@@ -68,7 +55,6 @@ L.Profiles = "設定檔"
 L.ProfilesPanelDesc = "管理儲存的快捷列版面配置"
 L.QuickMoveKey = "快速移動鍵"
 L.QuickPaging = "快速切換"
-L.RCUFocus = "專注目標"
 L.RCUPlayer = "自己"
 L.RCUToT = "目標的目標"
 L.ResetProfile = "重置設定檔..."
@@ -79,7 +65,6 @@ L.SelfcastKey = "自我施法鍵"
 L.Set = "設定"
 L.ShowBindingText = "顯示快捷鍵文字"
 L.ShowCountText = "顯示物品數量文字"
-L.ShowEmptyButtons = "顯示空按鈕"
 L.ShowEquippedItemBorders = "已裝備的物品顯示邊框"
 L.ShowInOverrideUI = "在載具上時要顯示"
 L.ShowInPetBattleUI = "寵物戰鬥時要顯示"
@@ -91,7 +76,6 @@ L.ShowOverrideUIDesc = "駕駛車輛或其他相關情況時，顯示暴雪預�
 L.ShowStates = "顯示條件 - 可輸入巨集指令，例如:\n [combat][harm,nodead]show;hide"
 L.ShowTooltips = "顯示滑鼠提示"
 L.ShowTooltipsCombat = "戰鬥中顯示滑鼠提示"
-L.Size = "大小"
 L.Spacing = "間距"
 L.State_HARM = "敵方"
 L.State_HELP = "友方"
@@ -101,7 +85,6 @@ L.StickyBars = "磁吸式對齊"
 L.Targeting = "目標為"
 L.ThemeActionButtons = "套用達美樂的按鈕外觀主題 (需要重新載入)"
 L.ThemeActionButtonsDesc = "啟用時，會對快捷列按鈕套用一些自訂的樣式調整。停用時則保持原樣。"
-L.TopToBottom = "按鈕由上到下排列"
 L.Visibility = "顯示/隱藏"
 
 if IsMacClient() then
@@ -111,3 +94,7 @@ else
 end
 
 L.ParentAddonName = "達美樂快捷列 "
+L.Width = '寬度'
+L.Height = '高度'
+L.Font = '字體'
+L.Texture = '材質'

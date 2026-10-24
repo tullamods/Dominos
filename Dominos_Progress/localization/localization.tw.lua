@@ -10,12 +10,7 @@ if not L then return end
 
 L.OneBarMode = '合併成一個經驗條'
 L.Progress = '經驗條'
-L.Texture = '材質'
-L.Width = '寬度'
-L.Height = '高度'
 L.AlwaysShowText = '保持顯示文字'
-L.Segmented = '區段格子'
-L.Font = '字體'
 L.AutoSwitchModes = '自動切換模式'
 L.Display_label = '顯示標籤文字'
 L.Display_value = '顯示目前數值'
@@ -34,7 +29,6 @@ L.Color_azerite = '艾澤萊晶岩之力顏色'
 L.Color_gold = '金錢顏色'
 L.Color_gold_realm = '伺服器金錢顏色'
 
-L.Paragon = '巔峰'
 L.Azerite = '艾澤萊晶岩'
 L.SkipInactiveModes = "跳過未啟動的模式"
 L.GoldGoal = "金錢目標數量"

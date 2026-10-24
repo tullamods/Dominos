@@ -10,12 +10,7 @@ if not L then return end
 
 L.OneBarMode = '只使用一条进度条'
 L.Progress = '进度条'
-L.Texture = '材质'
-L.Width = '宽'
-L.Height = '高'
 L.AlwaysShowText = '总显示文本'
-L.Segmented = '分割'
-L.Font = '字体'
 L.AutoSwitchModes = '自动切换模式'
 L.Display_label = '显示标签'
 L.Display_value = '显示当前数值'
@@ -34,7 +29,6 @@ L.Color_azerite = '艾泽里特条颜色'
 L.Color_gold = '金额颜色'
 L.Color_gold_realm = '服务器金额颜色'
 
-L.Paragon = '阵营'
 L.Azerite = '艾泽里特能量'
 L.SkipInactiveModes = "忽略未激活进度条"
 L.GoldGoal = "金额目标数量"

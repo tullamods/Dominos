@@ -70,4 +70,3 @@ L.TipVehicleBar = [[
 모든 다른 탈것의 행동을 추가바에 표시합니다.]]
 
 L.BarDisplayName = "%s 바" 
-L.ActionBarDisplayName = "행동 단축바 %s"

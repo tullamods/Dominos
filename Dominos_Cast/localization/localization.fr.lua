@@ -18,8 +18,4 @@
 local L = LibStub('AceLocale-3.0'):NewLocale('Dominos-CastBar', 'frFR')
 if not L then return end
 
-L.Texture = 'Texture'
-L.Width = 'Largeur'
-L.Height = 'Hauteur'
 L.Display_time = 'Montrer le temps'
-L.Padding = 'Remplissage'

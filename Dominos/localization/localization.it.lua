@@ -67,4 +67,3 @@ Mostra i controlli per entrare e uscire da un veicolo.
 Tutte le altre azioni del veicolo sono visualizzate sulla barra principale in uso.]]
 
 L.BarDisplayName = "Barra %s"
-L.ActionBarDisplayName = "Barra Azione %s"

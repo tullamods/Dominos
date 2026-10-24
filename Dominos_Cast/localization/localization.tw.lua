@@ -7,18 +7,12 @@
 
 local L = LibStub('AceLocale-3.0'):NewLocale('Dominos-CastBar', 'zhTW')
 if not L then return end
-L.Texture = '材質'
-L.Width = '寬度'
-L.Height = '高度'
 L.Display_time = "顯示時間"
 L.Display_icon = '顯示圖示'
 L.Display_border = '顯示邊框'
-L.Padding = '內距'
-L.Font = '字體'
 L.LatencyPadding = '延遲間隔 (毫秒)'
 
 -- 自行加入
-L.CastBarDisplayName = HUD_EDIT_MODE_CAST_BAR_LABEL or '施法條'
 L.Display_label = "顯示文字"
 L.Display_latency = "顯示延遲"
 L.Display_spark = "顯示亮點"
