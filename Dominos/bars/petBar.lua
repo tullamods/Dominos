@@ -36,6 +36,10 @@ function PetBar:New()
     return PetBar.proto.New(self, 'pet')
 end
 
+function PetBar:CanSetShowStates()
+    return false
+end
+
 function PetBar:GetDisplayName()
     return L.PetBarDisplayName
 end

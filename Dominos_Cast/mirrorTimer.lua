@@ -75,6 +75,10 @@ function MirrorTimer:GetDefaults()
     }
 end
 
+function MirrorTimer:CanSetShowStates()
+    return false
+end
+
 function MirrorTimer:GetDisplayName()
     return L.MirrorTimerDisplayName:format(self.timerID)
 end

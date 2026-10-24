@@ -35,6 +35,10 @@ function TalkingHeadBar:GetDefaults()
     }
 end
 
+function TalkingHeadBar:CanSetShowStates()
+    return false
+end
+
 function TalkingHeadBar:GetDisplayName()
     return L.TalkingHeadBarDisplayName
 end

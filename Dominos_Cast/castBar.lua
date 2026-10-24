@@ -824,6 +824,10 @@ CastBar.contextMenu = Dominos.Frame.contextMenu:Extend {
     }
 }
 
+function CastBar:CanSetShowStates()
+    return false
+end
+
 -- the cast bar always shows with the override and pet battle UIs
 function CastBar:CanShowInOverrideUI()
     return false

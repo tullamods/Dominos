@@ -239,6 +239,9 @@ MenuBar.contextMenu = Addon.ButtonBar.contextMenu:Extend {
                 tinsert(controls, {
                     type = 'check',
                     name = container.displayName,
+                    available = function()
+                        return container:ShouldShow()
+                    end,
                     get = function(bar)
                         return bar:IsMenuButtonEnabled(container)
                     end,

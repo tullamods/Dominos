@@ -12,6 +12,10 @@ function QueueStatusBar:New()
     return QueueStatusBar.proto.New(self, "queue")
 end
 
+function QueueStatusBar:CanSetShowStates()
+    return false
+end
+
 function QueueStatusBar:GetDisplayName()
     return L.QueueStatusBarDisplayName
 end

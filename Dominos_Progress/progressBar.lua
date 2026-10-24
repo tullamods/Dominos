@@ -334,6 +334,10 @@ function ProgressBar:HideAtMaxLevel()
 	return self.sets.hideAtMaxLevel or false
 end
 
+function ProgressBar:CanSetShowStates()
+	return false
+end
+
 function ProgressBar:GetDisplayConditions()
 	if self.sets.hideAtMaxLevel then
 		if UnitLevel("player") == (GetMaxLevelForPlayerExpansion or GetMaxPlayerLevel)() then

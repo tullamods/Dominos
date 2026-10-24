@@ -61,6 +61,10 @@ PowerBar:Extend('OnCreate', function(self)
 	end
 end)
 
+function PowerBar:CanSetShowStates()
+	return false
+end
+
 function PowerBar:GetDisplayName()
 	return L.EncounterBarDisplayName
 end

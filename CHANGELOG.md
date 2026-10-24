@@ -1,5 +1,9 @@
 # Dominos Changelog
 
+## 11.5.0
+
+* 
+
 ## 11.4.5
 
 * Fix a typo causing an error on mouseover of fully transparent action bars

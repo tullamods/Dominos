@@ -980,6 +980,12 @@ function Frame:CanClickThrough()
     return false
 end
 
+-- bars that only show when the game has something for them to show don't offer
+-- show states
+function Frame:CanSetShowStates()
+    return true
+end
+
 function Frame:CanShowInOverrideUI()
     return Addon:IsGameType('standard', 'mists', 'forever')
 end
@@ -1011,7 +1017,8 @@ Frame.contextMenu = Addon.ContextMenu {
             'FadeOutTimeSlider',
             {
                 type = 'header',
-                name = 'ShowStates'
+                name = 'ShowStates',
+                available = 'CanSetShowStates'
             },
             'ShowPresetDropdown',
             'ShowStatesText'

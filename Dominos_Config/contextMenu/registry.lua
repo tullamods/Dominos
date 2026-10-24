@@ -42,6 +42,12 @@ local function getShowPreset(bar)
 	return SHOW_PRESET_CUSTOM
 end
 
+-- layout settings have no effect on a single button. this is checked when a menu
+-- panel is built, so it follows the button count the menu was opened with
+local function hasMultipleButtons(bar)
+	return bar:NumButtons() > 1
+end
+
 local Controls = {}
 
 -- width and height are shown as screen pixels but stored in ui units, so the
@@ -60,6 +66,7 @@ Controls.ColumnsSlider = {
 	name = L.NumColumns,
 	min = 1,
 	max = 'NumButtons',
+	available = hasMultipleButtons,
 	get = 'NumColumns',
 	set = 'SetColumns'
 }
@@ -67,6 +74,7 @@ Controls.ColumnsSlider = {
 Controls.SpacingSlider = {
 	type = 'slider',
 	name = L.Spacing,
+	available = hasMultipleButtons,
 	min = -16,
 	max = 32,
 	softLimits = true,
@@ -94,6 +102,7 @@ Controls.OpacitySlider = {
 Controls.LayoutDirectionDropdown = {
 	type = 'dropdown',
 	name = L.LayoutDirection,
+	available = hasMultipleButtons,
 	items = LAYOUT_DIRECTION_ITEMS,
 	get = function(bar)
 		local leftToRight = bar:GetLeftToRight()
@@ -119,6 +128,7 @@ Controls.LayoutDirectionDropdown = {
 Controls.RowOffsetSlider = {
 	type = 'slider',
 	name = L.RowOffset,
+	available = hasMultipleButtons,
 	min = function(bar) return -bar:GetRowOffsetLimit() end,
 	max = 'GetRowOffsetLimit',
 	softLimits = true,
@@ -129,6 +139,7 @@ Controls.RowOffsetSlider = {
 Controls.RowSpacingSlider = {
 	type = 'slider',
 	name = L.RowSpacing,
+	available = hasMultipleButtons,
 	min = function(bar) return -bar:GetRowSpacingLimit() end,
 	max = 'GetRowSpacingLimit',
 	softLimits = true,

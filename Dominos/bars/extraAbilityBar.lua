@@ -11,6 +11,10 @@ function ExtraAbilityBar:New()
     return ExtraAbilityBar.proto.New(self, BAR_ID)
 end
 
+function ExtraAbilityBar:CanSetShowStates()
+    return false
+end
+
 function ExtraAbilityBar:GetDisplayName()
     return L.ExtraBarDisplayName
 end

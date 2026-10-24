@@ -90,6 +90,10 @@ function DominosPossessBar:New()
     return DominosPossessBar.proto.New(self, 'possess')
 end
 
+function DominosPossessBar:CanSetShowStates()
+    return false
+end
+
 function DominosPossessBar:GetDisplayName()
     return L.PossessBarDisplayName
 end
