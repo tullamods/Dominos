@@ -29,10 +29,23 @@ function BarStates:Load(config)
         states[#states + 1] = state
     end
 
+    -- label can be text, a spell id, or a list of spell ids to try in order, for
+    -- spells with a different id between game versions
     local function getLabelText(label)
         if type(label) == 'number' then
             return C_Spell.GetSpellName(label)
         end
+
+        if type(label) == 'table' then
+            for _, spellID in ipairs(label) do
+                local name = C_Spell.GetSpellName(spellID)
+                if name then
+                    return name
+                end
+            end
+            return
+        end
+
         return label
     end
 

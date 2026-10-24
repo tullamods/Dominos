@@ -26,7 +26,7 @@ end
 
 config.race = {
     NightElf = {
-        { 'shadowmeld', macro = '[stealth]', label = 20580 },
+        { 'shadowmeld', macro = '[stealth]', label = { 58984, 20580 } },
     }
 }
 

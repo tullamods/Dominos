@@ -5,7 +5,7 @@ local ScrollableContainerMixin = {}
 ScrollableContainerMixin.scrollBarX = -10
 ScrollableContainerMixin.scrollBarHideIfUnscrollable = true
 ScrollableContainerMixin.scrollBarHideTrackIfThumbExceedsTrack = true
-ScrollableContainerMixin.scrollBarTemplate = SCROLL_FRAME_SCROLL_BAR_TEMPLATE
+ScrollableContainerMixin.scrollBarTemplate = "MinimalScrollBar"
 
 function ScrollableContainerMixin:SetContent(content)
 	self:SetScrollChild(content)
@@ -68,7 +68,6 @@ function Addon:CreateScrollableContainer(parent)
 			if content.MarkDirty then
 				content:MarkDirty()
 			end
-
 
 			frame:MarkDirty()
 		end

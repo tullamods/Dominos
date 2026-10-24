@@ -153,21 +153,18 @@ end
 function DominosStanceBar:OnCreateMenu(menu)
     local L = LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')
 
-    local layoutPanel = menu:NewPanel(L.Layout)
+    menu:AddGeneralPanel()
 
-    layoutPanel:NewCheckButton {
-        name = L.ShowBindingText,
-        get = function()
-            return layoutPanel.owner:ShowingBindingText()
-        end,
-        set = function(_, enable)
-            layoutPanel.owner:SetShowBindingText(enable)
-        end
+    menu:AddAppearancePanel():AddOptions {
+        {
+            type = 'check',
+            name = L.ShowBindingText,
+            get = 'ShowingBindingText',
+            set = 'SetShowBindingText'
+        }
     }
 
-    layoutPanel:AddLayoutOptions()
-
-    menu:AddFadingPanel()
+    menu:AddVisibilityPanel()
     menu:AddAdvancedPanel()
 end
 

@@ -743,175 +743,100 @@ end
 
 do
 	function ProgressBar:OnCreateMenu(menu)
-		self:AddLayoutPanel(menu)
-		self:AddTextPanel(menu)
-		self:AddTexturePanel(menu)
-		self:AddFontPanel(menu)
+		self:AddGeneralPanel(menu)
+		self:AddAppearancePanel(menu)
 
-		menu:AddFadingPanel()
-		menu:AddAdvancedPanel(true)
+		menu:AddVisibilityPanel()
+		menu:AddAdvancedPanel{ basic = true }
 	end
 
-	function ProgressBar:AddLayoutPanel(menu)
-		local panel = menu:NewPanel(LibStub('AceLocale-3.0'):GetLocale('Dominos-Config').Layout)
+	function ProgressBar:AddGeneralPanel(menu)
+		local C = LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')
+		local panel = menu:NewPanel(C.General)
 
 		local l = LibStub('AceLocale-3.0'):GetLocale('Dominos-Progress')
 
-		panel.segmentCount = panel:NewSlider{
-			name = l.SegmentCount,
-
-			min = 1,
-
-			max = 100,
-
-			get = function()
-				return panel.owner:GetSegmentCount()
-			end,
-
-			set = function(_, value)
-				panel.owner:SetSegmentCount(value)
-			end,
+		panel:AddOptions{
+			{
+				type = 'slider',
+				name = l.SegmentCount,
+				min = 1,
+				max = 100,
+				get = 'GetSegmentCount',
+				set = 'SetSegmentCount'
+			},
+			{
+				type = 'slider',
+				name = C.Width,
+				min = 1,
+				max = function(bar)
+					return math.ceil(_G.UIParent:GetWidth() / bar:GetScale())
+				end,
+				get = 'GetDesiredWidth',
+				set = 'SetDesiredWidth'
+			},
+			{
+				type = 'slider',
+				name = C.Height,
+				min = 1,
+				max = function(bar)
+					return math.ceil(_G.UIParent:GetHeight() / bar:GetScale())
+				end,
+				get = 'GetDesiredHeight',
+				set = 'SetDesiredHeight'
+			},
+			Dominos.Options.OptionDefs.spacing
 		}
 
-		panel.widthSlider = panel:NewSlider{
-			name = l.Width,
-
-			min = 1,
-
-			max = function()
-				return math.ceil(_G.UIParent:GetWidth() / panel.owner:GetScale())
-			end,
-
-			get = function()
-				return panel.owner:GetDesiredWidth()
-			end,
-
-			set = function(_, value)
-				panel.owner:SetDesiredWidth(value)
-			end,
-		}
-
-		panel.heightSlider = panel:NewSlider{
-			name = l.Height,
-
-			min = 1,
-
-			max = function()
-				return math.ceil(_G.UIParent:GetHeight() / panel.owner:GetScale())
-			end,
-
-			get = function()
-				return panel.owner:GetDesiredHeight()
-			end,
-
-			set = function(_, value)
-				panel.owner:SetDesiredHeight(value)
-			end,
-		}
-
-		panel.spacingSlider = panel:NewSpacingSlider()
-
-		panel:AddBasicLayoutOptions()
+		panel:AddGeneralOptions{ basic = true }
 	end
 
-	function ProgressBar:AddTextPanel(menu)
+	function ProgressBar:AddAppearancePanel(menu)
+		local C = LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')
 		local l = LibStub('AceLocale-3.0'):GetLocale('Dominos-Progress')
-		local panel = menu:NewPanel(_G.DISPLAY)
+		local panel = menu:AddAppearancePanel()
 
-		panel:NewCheckButton{
-			name = l.HideAtMaxLevel,
+		local function displayOption(part)
+			return {
+				type = 'check',
+				name = l['Display_' .. part],
+				get = function(bar) return bar:Displaying(part) end,
+				set = function(bar, enable) bar:SetDisplay(part, enable) end
+			}
+		end
 
-			get = function()
-				return panel.owner:HideAtMaxLevel()
-			end,
+		panel:AddOptions{
+			{ type = 'header', name = C.Style },
+			{ type = 'texture', name = C.Texture, get = 'GetTextureID', set = 'SetTextureID' },
+			{ type = 'font', name = C.Font, get = 'GetFontID', set = 'SetFontID' },
 
-			set = function(_, enable)
-				panel.owner:SetHideAtMaxLevel(enable)
-			end
-		}	
+			{ type = 'header', name = C.Behavior },
+			{ type = 'check', name = l.HideAtMaxLevel, get = 'HideAtMaxLevel', set = 'SetHideAtMaxLevel' }
+		}
 
 		if #self.modes > 1 then
-			panel:NewCheckButton{
-				name = l.AutoSwitchModes,
-
-				get = function()
-					return not panel.owner:IsModeLocked()
-				end,
-
-				set = function(_, enable)
-					panel.owner:SetLockMode(not enable)
-				end
+			panel:AddOptions{
+				{
+					type = 'check',
+					name = l.AutoSwitchModes,
+					get = function(bar) return not bar:IsModeLocked() end,
+					set = function(bar, enable) bar:SetLockMode(not enable) end
+				}
 			}
 		end
 
-		panel:NewCheckButton{
-			name = l.AlwaysShowText,
+		panel:AddOptions{
+			{ type = 'check', name = l.AlwaysShowText, get = 'GetAlwaysShowText', set = 'SetAlwaysShowText' },
+			{ type = 'check', name = l.CompressValues, get = 'CompressValues', set = 'SetCompressValues' },
 
-			get = function()
-				return panel.owner:GetAlwaysShowText()
-			end,
-
-			set = function(_, enable)
-				panel.owner:SetAlwaysShowText(enable)
-			end
-		}
-
-		panel:NewCheckButton{
-			name = l.CompressValues,
-
-			get = function()
-				return panel.owner:CompressValues()
-			end,
-
-			set = function(_, enable)
-				panel.owner:SetCompressValues(enable)
-			end
-		}
-
-		for _, part in ipairs{'label', 'value', 'max', 'bonus', 'remaining', 'percent'} do
-			panel:NewCheckButton{
-				name = l['Display_' .. part],
-
-				get = function() return panel.owner:Displaying(part) end,
-
-				set = function(_, enable) panel.owner:SetDisplay(part, enable) end
-			}
-		end
-
-		return panel
-	end
-
-	function ProgressBar:AddFontPanel(menu)
-		local l = LibStub('AceLocale-3.0'):GetLocale('Dominos-Progress')
-		local panel = menu:NewPanel(l.Font)
-
-		panel.fontSelector = Dominos.Options.FontSelector:New{
-			parent = panel,
-
-			get = function()
-				return panel.owner:GetFontID()
-			end,
-
-			set = function(_, value)
-				panel.owner:SetFontID(value)
-			end,
-		}
-	end
-
-	function ProgressBar:AddTexturePanel(menu)
-		local l = LibStub('AceLocale-3.0'):GetLocale('Dominos-Progress')
-		local panel = menu:NewPanel(l.Texture)
-
-		panel.textureSelector = Dominos.Options.TextureSelector:New{
-			parent = panel,
-
-			get = function()
-				return panel.owner:GetTextureID()
-			end,
-
-			set = function(_, value)
-				panel.owner:SetTextureID(value)
-			end,
+			-- the parts of the text, in the order they're displayed
+			{ type = 'header', name = C.Content },
+			displayOption('label'),
+			displayOption('value'),
+			displayOption('max'),
+			displayOption('remaining'),
+			displayOption('bonus'),
+			displayOption('percent')
 		}
 	end
 end

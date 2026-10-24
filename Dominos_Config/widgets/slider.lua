@@ -119,6 +119,13 @@ end
 
 local SliderMixin = {}
 
+function SliderMixin:ShowTooltip()
+    GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+    GameTooltip_SetTitle(GameTooltip, self:GetProp('label'))
+    GameTooltip_AddNormalLine(GameTooltip, self:GetProp('tooltip'))
+    GameTooltip:Show()
+end
+
 function SliderMixin:OnShow()
     Addon:Render(self)
 end
@@ -247,7 +254,8 @@ function Addon:CreateSlider(options)
         value = options.get,
         step = options.step or 1,
         softLimits = options.softLimits or false,
-        label = options.label or options.name or "MISSING_LABEL"
+        label = options.label or options.name or "MISSING_LABEL",
+        tooltip = options.tooltip
     }
 
     local setter = options.set
@@ -256,8 +264,6 @@ function Addon:CreateSlider(options)
     else
         frame.onChange = noop
     end
-
-    -- Addon:ApplyDebugBackground(frame)
 
     frame.Label = label_Create(frame)
     frame.Label:SetPoint('TOPLEFT', 2, -4)
@@ -268,6 +274,19 @@ function Addon:CreateSlider(options)
     frame.Slider = slider_Create(frame)
     frame.Slider:SetPoint('BOTTOMLEFT')
     frame.Slider:SetPoint('BOTTOMRIGHT')
+
+    if options.tooltip then
+        local function showTooltip()
+            frame:ShowTooltip()
+        end
+
+        frame:SetMouseMotionEnabled(true)
+
+        for _, region in ipairs{ frame, frame.Slider, frame.ValueInput } do
+            region:HookScript('OnEnter', showTooltip)
+            region:HookScript('OnLeave', GameTooltip_Hide)
+        end
+    end
 
     frame:SetScript('OnShow', frame.OnShow)
     frame:MarkDirty()

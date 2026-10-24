@@ -54,24 +54,26 @@ function TalkingHeadBar:RepositionTalkingHeadFrame()
 end
 
 function TalkingHeadBar:OnCreateMenu(menu)
-    self:AddLayoutPanel(menu)
-    menu:AddFadingPanel()
-    menu:AddAdvancedPanel(true)
+    self:AddGeneralPanel(menu)
+    menu:AddVisibilityPanel()
+    menu:AddAdvancedPanel{ basic = true }
 end
 
-function TalkingHeadBar:AddLayoutPanel(menu)
+function TalkingHeadBar:AddGeneralPanel(menu)
     local l = LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')
 
-    local panel = menu:NewPanel(l.Layout)
+    local panel = menu:NewPanel(l.General)
 
-    panel.muteButton = panel:NewCheckButton
-    {
-        name = _G.MUTE,
-        get = function() return panel.owner:MuteSounds() end,
-        set = function(_, enable) panel.owner:SetMuteSounds(enable) end
+    panel:AddOptions{
+        {
+            type = 'check',
+            name = _G.MUTE,
+            get = 'MuteSounds',
+            set = 'SetMuteSounds'
+        }
     }
 
-    panel:AddBasicLayoutOptions()
+    panel:AddGeneralOptions{ basic = true }
 
     return panel
 end

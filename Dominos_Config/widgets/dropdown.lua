@@ -21,20 +21,14 @@ local function getItemLabel(item)
 	return item
 end
 
-local function frame_OnEnter(self)
-	self.HoverBackground:Show()
-end
-
-local function frame_OnLeave(self)
-	self.HoverBackground:Hide()
-end
-
-
 local DropdownMixin = {}
 
-function DropdownMixin:SetSavedValue(value) end
-
-function DropdownMixin:GetSavedValue() end
+function DropdownMixin:Refresh()
+	-- regenerating the menu re-reads the selected value
+	if self.Dropdown:GetMenuDescription() then
+		self.Dropdown:GenerateMenu()
+	end
+end
 
 function DropdownMixin:GetItems()
 	if type(self.items) == "function" then
@@ -58,9 +52,6 @@ function Addon:CreateDropdown(options)
 	Mixin(frame, DropdownMixin)
 
 	frame.items = options.items
-	frame.SetSavedValue = options.set
-	frame.GetSavedValue = options.get
-	frame:SetHighlightTexture(self:CreateHoverBackground(frame))
 	frame.leftPadding = 2
 	frame.rightPadding = 2
 	frame.topPadding = 2
@@ -69,28 +60,45 @@ function Addon:CreateDropdown(options)
 
 	local dropdown = CreateFrame("DropdownButton", nil, frame, "WowStyle1DropdownTemplate")
 
-	dropdown:SetPoint('RIGHT')
 	dropdown.expand = true
 
 	local function isSelected(index)
 		local item = frame:GetItem(index)
 		local value = getItemValue(item)
 
-		return value == frame:GetSavedValue()
+		return value == options.get()
 	end
 
 	local function handleSelect(index)
 		local item = frame:GetItem(index)
 		local value = getItemValue(item)
 
-		frame:SetSavedValue(value)
+		options.set(value)
 	end
 
-	dropdown:SetupMenu(function(_, rootDescription)
+	local function generateMenu(_, rootDescription)
 		rootDescription:SetGridMode(MenuConstants.VerticalGridDirection)
 
 		for i, item in ipairs(frame:GetItems()) do
-			rootDescription:CreateRadio(getItemLabel(item), isSelected, handleSelect, i)
+			local radio = rootDescription:CreateRadio(getItemLabel(item), isSelected, handleSelect, i)
+
+			local initItem = options.initItem
+			if initItem then
+				local value = getItemValue(item)
+
+				radio:AddInitializer(function(button)
+					initItem(button, value)
+				end)
+			end
+		end
+	end
+
+	-- SetupMenu generates the menu immediately, calling get before the panel
+	-- has an owner. so defer it to the first show; the dropdown template
+	-- regenerates the menu on subsequent shows
+	frame:HookScript('OnShow', function()
+		if not dropdown:GetMenuDescription() then
+			dropdown:SetupMenu(generateMenu)
 		end
 	end)
 
@@ -101,10 +109,13 @@ function Addon:CreateDropdown(options)
 	label:SetPoint('LEFT')
 	label:SetJustifyH('LEFT')
 	label:SetJustifyV('MIDDLE')
-	label:SetText(options.name)
+	label:SetText(options.name or "PLACEHOLDER_TEXT")
 	label:SetSize(120, label:GetStringHeight())
 
 	frame.Label = label
+
+	dropdown:SetPoint('LEFT', label, 'RIGHT', 5, 0)
+	dropdown:SetPoint('RIGHT')
 
 	frame:SetFixedHeight(max(dropdown:GetHeight() or -math.huge, label:GetStringHeight()))
 	frame:MarkDirty()

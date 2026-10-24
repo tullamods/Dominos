@@ -23,16 +23,8 @@ do
 		end
 	})
 
-	function Fonts:Get(key)
-		if key and LSM:IsValid("font", key) then
-			return LSM:Fetch("font", key)
-		end
-
-		return LSM:GetDefault("font")
-	end
-
 	function Fonts:GetAll()
-		return ipairs(LSM:List("font"))
+		return LSM:List("font")
 	end
 
 	function Fonts:GetFontObject(key)
@@ -40,60 +32,18 @@ do
 	end
 end
 
-local FontPickerMixin = {}
-
-function FontPickerMixin:SetSavedValue(value) end
-
-function FontPickerMixin:GetSavedValue() end
-
+-- options is modified, so pass a copy
 function Addon:CreateFontPicker(options)
-	local menu = CreateFrame('Frame', nil, options.parent)
+	options.items = Fonts.GetAll
 
-	Mixin(menu, FontPickerMixin)
-
-	menu.SetSavedValue = options.set
-	menu.GetSavedValue = options.get
-
-	local dropdownMenu = CreateFrame("DropdownButton", nil, menu, "WowStyle1DropdownTemplate")
-	dropdownMenu:SetPoint('RIGHT', -8, 0)
-
-	local ddWidth = 200
-
-	dropdownMenu:SetupMenu(function(_, rootDescription)
-		rootDescription:SetGridMode(MenuConstants.VerticalGridDirection);
-
-		for index, fontID in Fonts:GetAll() do
-			local radio = rootDescription:CreateRadio(
-				fontID,
-				function() return fontID == menu:GetSavedValue() end,
-				function() menu:SetSavedValue(fontID) end,
-				index
-			)
-
-			radio:AddInitializer(function(button)
-				local font = Fonts:GetFontObject(fontID)
-				if font then
-					button.fontString:SetFontObject(font)
-					button.fontString:SetText(fontID)
-				end
-			end);
+	-- preview each font in the menu using the font itself
+	options.initItem = function(button, fontID)
+		local font = Fonts:GetFontObject(fontID)
+		if font then
+			button.fontString:SetFontObject(font)
+			button.fontString:SetText(fontID)
 		end
-	end)
+	end
 
-	dropdownMenu:SetWidth(ddWidth)
-
-	menu.dropdownMenu = dropdownMenu
-
-	local text = menu:CreateFontString(nil, 'ARTWORK', 'GameFontNormalLeft')
-	text:SetPoint('LEFT')
-	text:SetPoint('RIGHT', dropdownMenu, 'LEFT', -8, 0)
-	text:SetText(options.name)
-	menu.text = text
-
-	local width = max(16 + text:GetWidth() + dropdownMenu:GetWidth(), 260)
-	local height = 4 + max(dropdownMenu:GetHeight(), text:GetStringHeight())
-
-	menu:SetSize(width, height)
-
-	return menu
+	return Addon:CreateDropdown(options)
 end

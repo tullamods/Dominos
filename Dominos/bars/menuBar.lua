@@ -214,32 +214,30 @@ Addon.MenuBar = MenuBar
 -- context menu
 --------------------------------------------------------------------------------
 
-local function Menu_AddDisableMenuButtonsPanel(menu)
-    local L = LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')
-
-    local panel = menu:NewPanel(L.Buttons)
+-- which micro buttons to show on the bar
+local function Menu_AddAppearancePanel(menu)
+    local options = {}
 
     for _, container in ipairs(MicroButtons) do
-        panel:NewCheckButton({
+        tinsert(options, {
+            type = 'check',
             name = container.displayName,
-
-            get = function()
-                return panel.owner:IsMenuButtonEnabled(container)
-            end,
-
-            set = function(_, enable)
-                panel.owner:SetEnableMenuButton(container, enable)
-            end
+            get = function(bar) return bar:IsMenuButtonEnabled(container) end,
+            set = function(bar, enable) bar:SetEnableMenuButton(container, enable) end
         })
     end
+
+    local panel = menu:AddAppearancePanel()
+
+    panel:AddOptions(options)
 
     return panel
 end
 
 function MenuBar:OnCreateMenu(menu)
-    menu:AddLayoutPanel()
-    Menu_AddDisableMenuButtonsPanel(menu)
-    menu:AddFadingPanel()
+    menu:AddGeneralPanel()
+    Menu_AddAppearancePanel(menu)
+    menu:AddVisibilityPanel()
     menu:AddAdvancedPanel()
 end
 

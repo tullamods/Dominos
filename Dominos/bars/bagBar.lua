@@ -239,33 +239,31 @@ end
 function BagBar:OnCreateMenu(menu)
     local L = LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')
 
-    local layoutPanel = menu:NewPanel(L.Layout)
+    menu:AddGeneralPanel()
 
-    layoutPanel:NewCheckButton {
-        label = L.BagBarShowBags,
-        get = function()
-            return layoutPanel.owner:ShowBags()
-        end,
-        set = function(_, enable)
-            layoutPanel.owner:SetShowBags(enable)
-        end
+    local appearance = menu:AddAppearancePanel()
+
+    appearance:AddOptions {
+        {
+            type = 'check',
+            name = L.BagBarShowBags,
+            get = 'ShowBags',
+            set = 'SetShowBags'
+        }
     }
 
     if not Addon:IsGameType('standard', 'mists', 'cata') then
-        layoutPanel:NewCheckButton {
-            label = L.BagBarShowKeyRing,
-            get = function()
-                return layoutPanel.owner:ShowKeyRing()
-            end,
-            set = function(_, enable)
-                layoutPanel.owner:SetShowKeyRing(enable)
-            end
+        appearance:AddOptions {
+            {
+                type = 'check',
+                name = L.BagBarShowKeyRing,
+                get = 'ShowKeyRing',
+                set = 'SetShowKeyRing'
+            }
         }
     end
 
-    layoutPanel:AddLayoutOptions()
-
-    menu:AddFadingPanel()
+    menu:AddVisibilityPanel()
     menu:AddAdvancedPanel()
 end
 

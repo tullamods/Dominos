@@ -12,13 +12,13 @@ function Addon.ActionBar:OnCreateMenu(menu)
 
         if lastNumBars ~= numBars then
             dropdownItems = {
-                {value = -1, text = DISABLE}
+                {value = -1, text = L.PagingDefault}
             }
 
             for i = 1, numBars do
                 dropdownItems[i + 1] = {
                     value = i,
-                    text = ('Action Bar %d'):format(i)
+                    text = L.ActionBarNumber:format(i)
                 }
             end
 
@@ -28,105 +28,103 @@ function Addon.ActionBar:OnCreateMenu(menu)
         return dropdownItems
     end
 
-    local function addStateGroup(panel, categoryName, stateType)
-        if not Addon.BarStates:Exists(stateType) then
-            return
-        end
+    local function addGeneralPanel()
+        local panel = menu:NewPanel(L.General)
 
-        panel:NewHeader(categoryName)
-
-        for _, state in Addon.BarStates:GetAll(stateType) do
-            local id = state.id
-            local name = state.text or L['State_' .. id:upper()]
-
-            panel:NewDropdown {
-                name = name,
-                items = getDropdownItems,
-                get = function()
-                    local owner = panel.owner
-                    if owner then
-                        local offset = owner:GetOffset(state.id) or -1
-                        if offset > -1 then
-                            return (owner.id + offset - 1) % Addon:NumBars() + 1
-                        end
-                        return offset
-                    end
-                end,
-                set = function(_, value)
-                    local offset
-
-                    if value == -1 then
-                        offset = nil
-                    elseif value < panel.owner.id then
-                        offset = (Addon:NumBars() - panel.owner.id) + value
-                    else
-                        offset = value - panel.owner.id
-                    end
-
-                    panel.owner:SetOffset(state.id, offset)
-                end
+        panel:AddOptions {
+            {
+                type = 'slider',
+                name = L.NumButtons,
+                min = 1,
+                max = 'MaxLength',
+                get = 'NumButtons',
+                set = 'SetNumButtons'
             }
-        end
-    end
-
-    local function addLayoutPanel()
-        local panel = menu:NewPanel(L.Layout)
-
-        panel.sizeSlizer = panel:NewSlider {
-            name = L.Size,
-            min = 1,
-            max = function()
-                return panel.owner:MaxLength()
-            end,
-            get = function()
-                return panel.owner:NumButtons()
-            end,
-            set = function(_, value)
-                panel.owner:SetNumButtons(value)
-
-                panel.colsSlider:UpdateRange()
-                panel.colsSlider:UpdateValue()
-            end
         }
 
-        panel:AddLayoutOptions()
+        panel:AddGeneralOptions()
 
         return panel
     end
 
-    local function addButtonPanel()
-        local panel = menu:NewPanel(L.Buttons)
+    local function addAppearancePanel()
+        local panel = menu:AddAppearancePanel()
+        local options = {}
 
         for _, prop in ipairs(self.ButtonProps) do
-            panel:NewCheckButton {
+            tinsert(options, {
+                type = 'check',
                 -- a hack to work around naming consistency on my part
                 name = L[(prop == "Counts" and "ShowCountText") or ("Show" .. prop)],
-                get = function()
-                    return panel.owner["Showing" .. prop](panel.owner)
+                get = "Showing" .. prop,
+                set = "SetShow" .. prop
+            })
+        end
+
+        panel:AddOptions(options)
+
+        return panel
+    end
+
+    local function addStateGroup(options, categoryName, stateType)
+        if not Addon.BarStates:Exists(stateType) then
+            return
+        end
+
+        tinsert(options, { type = 'header', name = categoryName })
+
+        for _, state in Addon.BarStates:GetAll(stateType) do
+            local id = state.id
+
+            tinsert(options, {
+                type = 'dropdown',
+                name = state.text or L['State_' .. id:upper()],
+                items = getDropdownItems,
+                get = function(bar)
+                    local offset = bar:GetOffset(id) or -1
+                    if offset > -1 then
+                        return (bar.id + offset - 1) % Addon:NumBars() + 1
+                    end
+                    return offset
                 end,
-                set = function(_, enable)
-                    panel.owner["SetShow" .. prop](panel.owner, enable)
+                set = function(bar, value)
+                    local offset
+
+                    if value == -1 then
+                        offset = nil
+                    elseif value < bar.id then
+                        offset = (Addon:NumBars() - bar.id) + value
+                    else
+                        offset = value - bar.id
+                    end
+
+                    bar:SetOffset(id, offset)
                 end
-            }
+            })
         end
     end
 
     local function addPagingPanel()
         local panel = menu:NewPanel(L.Paging)
 
-        addStateGroup(panel, UnitClass('player'), 'class')
-        addStateGroup(panel, L.QuickPaging, 'page')
-        addStateGroup(panel, L.Modifiers, 'modifier')
-        addStateGroup(panel, L.Targeting, 'target')
+        local options = {}
+
+        addStateGroup(options, UnitClass('player'), 'class')
+        addStateGroup(options, (UnitRace('player')), 'race')
+        addStateGroup(options, L.Modifiers, 'modifier')
+        addStateGroup(options, L.QuickPaging, 'page')
+        addStateGroup(options, L.Targeting, 'target')
+
+        panel:AddOptions(options)
 
         return panel
     end
 
     -- add panels
-    addLayoutPanel()
-    addButtonPanel()
+    addGeneralPanel()
+    addAppearancePanel()
     addPagingPanel()
-    menu:AddFadingPanel()
+    menu:AddVisibilityPanel()
     menu:AddAdvancedPanel()
 
     Addon.ActionBar.menu = menu

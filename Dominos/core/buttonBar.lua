@@ -27,8 +27,8 @@ ButtonBar:Extend(
 )
 
 function ButtonBar:OnCreateMenu(menu)
-    menu:AddLayoutPanel()
-    menu:AddFadingPanel()
+    menu:AddGeneralPanel()
+    menu:AddVisibilityPanel()
     menu:AddAdvancedPanel()
 end
 
@@ -139,6 +139,15 @@ end
 
 function ButtonBar:GetRowOffset()
     return self.sets.rowOffset or 0
+end
+
+-- how far rows can be offset or spaced, in a button's width and height
+function ButtonBar:GetRowOffsetLimit()
+    return Round(ActionButton1:GetWidth()) + self:GetSpacing()
+end
+
+function ButtonBar:GetRowSpacingLimit()
+    return Round(ActionButton1:GetHeight()) + self:GetSpacing()
 end
 
 function ButtonBar:SetRowSpacing(rowSpacing)

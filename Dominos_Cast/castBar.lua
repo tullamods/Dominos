@@ -763,14 +763,12 @@ end
 --------------------------------------------------------------------------------
 
 function CastBar:OnCreateMenu(menu)
-    self:AddLayoutPanel(menu)
-    self:AddDisplayPanel(menu)
-    self:AddTexturePanel(menu)
-    self:AddFontPanel(menu)
+    self:AddGeneralPanel(menu)
+    self:AddAppearancePanel(menu)
 
-    menu:AddFadingPanel()
-
-    menu:AddAdvancedPanel(true)
+    menu:AddVisibilityPanel()
+    -- the cast bar always shows with the override and pet battle UIs
+    menu:AddAdvancedPanel{ basic = true, alwaysShowInSpecialUI = true }
 
     menu:HookScript("OnShow", function()
         self.menuShown = true
@@ -790,106 +788,78 @@ function CastBar:OnCreateMenu(menu)
     end)
 end
 
-function CastBar:AddLayoutPanel(menu)
-    local panel = menu:NewPanel(LibStub("AceLocale-3.0"):GetLocale("Dominos-Config").Layout)
+function CastBar:AddGeneralPanel(menu)
+    local C = LibStub("AceLocale-3.0"):GetLocale("Dominos-Config")
+    local panel = menu:NewPanel(C.General)
 
-    panel.widthSlider = panel:NewSlider {
-        name = L.Width,
-        min = 1,
-        max = function()
-            return math.ceil(UIParent:GetWidth() / panel.owner:GetScale())
-        end,
-        get = function()
-            return panel.owner:GetDesiredWidth()
-        end,
-        set = function(_, value)
-            panel.owner:SetDesiredWidth(value)
-        end
+    panel:AddOptions {
+        {
+            type = 'slider',
+            name = C.Width,
+            min = 1,
+            max = function(bar)
+                return math.ceil(UIParent:GetWidth() / bar:GetScale())
+            end,
+            get = 'GetDesiredWidth',
+            set = 'SetDesiredWidth'
+        },
+        {
+            type = 'slider',
+            name = C.Height,
+            min = 1,
+            max = function(bar)
+                return math.ceil(UIParent:GetHeight() / bar:GetScale())
+            end,
+            get = 'GetDesiredHeight',
+            set = 'SetDesiredHeight'
+        }
     }
 
-    panel.heightSlider = panel:NewSlider {
-        name = L.Height,
-        min = 1,
-        max = function()
-            return math.ceil(UIParent:GetHeight() / panel.owner:GetScale())
-        end,
-        get = function()
-            return panel.owner:GetDesiredHeight()
-        end,
-        set = function(_, value)
-            panel.owner:SetDesiredHeight(value)
-        end
-    }
-
-    panel:AddBasicLayoutOptions()
+    panel:AddGeneralOptions{ basic = true }
 end
 
-function CastBar:AddDisplayPanel(menu)
-    local panel = menu:NewPanel(L.Display)
+function CastBar:AddAppearancePanel(menu)
+    local panel = menu:AddAppearancePanel()
 
-    panel:NewCheckButton {
-        name = L["UseSpellReactionColors"],
-        tooltip = L["UseSpellReactionColorsTip"],
-        get = function()
-            return panel.owner:UseSpellReactionColors()
-        end,
-        set = function(_, enable)
-            panel.owner:SetUseSpellReactionColors(enable)
-        end
-    }
-
-    for _, part in ipairs { "border", "icon", "spark", "time", "latency" } do
-        panel:NewCheckButton {
+    local function displayOption(part)
+        return {
+            type = 'check',
             name = L["Display_" .. part],
-            get = function()
-                return panel.owner:Displaying(part)
-            end,
-            set = function(_, enable)
-                panel.owner:SetDisplay(part, enable)
-            end
+            get = function(bar) return bar:Displaying(part) end,
+            set = function(bar, enable) bar:SetDisplay(part, enable) end
         }
     end
 
-    panel.latencySlider = panel:NewSlider {
-        name = L.LatencyPadding,
-        min = 0,
-        max = function()
-            return 500
-        end,
-        get = function()
-            return panel.owner:GetLatencyPadding()
-        end,
-        set = function(_, value)
-            panel.owner:SetLatencyPadding(value)
-        end
-    }
-end
+    local C = LibStub("AceLocale-3.0"):GetLocale("Dominos-Config")
 
-function CastBar:AddFontPanel(menu)
-    local panel = menu:NewPanel(L.Font)
+    panel:AddOptions {
+        { type = 'header', name = C.Style },
+        { type = 'texture', name = C.Texture, get = 'GetTextureID', set = 'SetTextureID' },
+        { type = 'font', name = C.Font, get = 'GetFontID', set = 'SetFontID' },
+        {
+            type = 'check',
+            name = L.UseSpellReactionColors,
+            tooltip = L.UseSpellReactionColorsTip,
+            get = 'UseSpellReactionColors',
+            set = 'SetUseSpellReactionColors'
+        },
+        displayOption('border'),
+        displayOption('spark'),
 
-    panel.fontSelector = Dominos.Options.FontSelector:New {
-        parent = panel,
-        get = function()
-            return panel.owner:GetFontID()
-        end,
-        set = function(_, value)
-            panel.owner:SetFontID(value)
-        end
-    }
-end
+        { type = 'header', name = C.Content },
+        displayOption('icon'),
+        displayOption('time'),
 
-function CastBar:AddTexturePanel(menu)
-    local panel = menu:NewPanel(L.Texture)
-
-    panel.textureSelector = Dominos.Options.TextureSelector:New {
-        parent = panel,
-        get = function()
-            return panel.owner:GetTextureID()
-        end,
-        set = function(_, value)
-            panel.owner:SetTextureID(value)
-        end
+        { type = 'header', name = L.Latency },
+        displayOption('latency'),
+        {
+            type = 'slider',
+            name = L.LatencyPadding,
+            min = 0,
+            max = 500,
+            get = 'GetLatencyPadding',
+            set = 'SetLatencyPadding'
+        }
     }
 end
 

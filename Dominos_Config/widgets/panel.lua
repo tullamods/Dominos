@@ -44,12 +44,23 @@ function PanelMixin:NewHeader(name)
 
 	frame.expand = true
 
+	-- space out sections, but not above the first control
+	if #self.widgets > 0 then
+		frame.topPadding = 8
+	end
+
 	local text = frame:CreateFontString(nil, 'ARTWORK', 'GameFontNormal')
 	text:SetJustifyH('LEFT')
 	text:SetPoint('TOPLEFT', 0, 1)
 	text:SetText(name)
 	text:SetHeight(text:GetStringHeight())
 
+	local divider = frame:CreateTexture(nil, 'ARTWORK')
+	divider:SetAtlas('Options_HorizontalDivider', true)
+	divider:SetPoint('BOTTOMLEFT')
+	divider:SetPoint('BOTTOMRIGHT')
+
+	frame:SetFixedHeight(text:GetStringHeight() + divider:GetHeight() + 4)
 	frame:MarkDirty()
 
 	addControl(self, frame)
@@ -57,10 +68,26 @@ function PanelMixin:NewHeader(name)
 	return frame
 end
 
-function PanelMixin:NewCheckButton(options)
-	options.parent = self
+-- returns a copy of options for a widget in this panel, so that callers' tables
+-- are left alone
+local function widgetOptions(panel, options, overrides)
+	local copy = { parent = panel }
 
-	local button = Addon:CreateCheckButton(options)
+	for k, v in pairs(options) do
+		copy[k] = v
+	end
+
+	if overrides then
+		for k, v in pairs(overrides) do
+			copy[k] = v
+		end
+	end
+
+	return copy
+end
+
+function PanelMixin:NewCheckButton(options)
+	local button = Addon:CreateCheckButton(widgetOptions(self, options))
 
 	addControl(self, button)
 
@@ -68,19 +95,7 @@ function PanelMixin:NewCheckButton(options)
 end
 
 function PanelMixin:NewSlider(options)
-	options.parent = self
-
-	local slider = Addon:CreateSlider(options)
-
-	addControl(self, slider)
-
-	return slider
-end
-
-function PanelMixin:NewLayerSlider(options)
-	options.parent = self
-
-	local slider = Addon:CreateSlider(options)
+	local slider = Addon:CreateSlider(widgetOptions(self, options))
 
 	addControl(self, slider)
 
@@ -88,19 +103,34 @@ function PanelMixin:NewLayerSlider(options)
 end
 
 function PanelMixin:NewDropdown(options)
-	options.parent = self
-
-	local dropdown = Addon:CreateDropdown(options)
+	local dropdown = Addon:CreateDropdown(widgetOptions(self, options))
 
 	addControl(self, dropdown)
 
 	return dropdown
 end
 
-function PanelMixin:NewFontPicker(options)
-	options.parent = self
+-- media settings may be missing or refer to media that isn't registered (ex,
+-- old lowercase defaults). LibSharedMedia falls back to its default in that
+-- case, so show that as the selected value
+local function getValidMedia(mediaType, get)
+	local LSM = LibStub('LibSharedMedia-3.0')
 
-	local dropdown = Addon:CreateFontPicker(options)
+	return function(...)
+		local value = get(...)
+
+		if value and LSM:IsValid(mediaType, value) then
+			return value
+		end
+
+		return LSM:GetDefault(mediaType)
+	end
+end
+
+function PanelMixin:NewFontPicker(options)
+	local dropdown = Addon:CreateFontPicker(widgetOptions(self, options, {
+		get = getValidMedia('font', options.get)
+	}))
 
 	addControl(self, dropdown)
 
@@ -108,9 +138,12 @@ function PanelMixin:NewFontPicker(options)
 end
 
 function PanelMixin:NewTextureSelector(options)
-	options.parent = self
-
-	local dropdown = Addon.Dropdown:New(options)
+	local dropdown = Addon:CreateDropdown(widgetOptions(self, options, {
+		items = function()
+			return LibStub('LibSharedMedia-3.0'):List('statusbar')
+		end,
+		get = getValidMedia('statusbar', options.get)
+	}))
 
 	addControl(self, dropdown)
 
@@ -118,339 +151,457 @@ function PanelMixin:NewTextureSelector(options)
 end
 
 function PanelMixin:NewTextInput(options)
-	options.parent = self
-
-	local textInput = Addon:CreateTextInput(options)
-
-	local prev = self.lastWidget
-	if prev then
-		textInput:SetPoint('TOPLEFT', self.lastWidget, 'BOTTOMLEFT', 0, -6)
-	else
-		textInput:SetPoint('TOPLEFT', 0, -6)
-	end
-
-	if options.width then
-		textInput:SetWidth(options.width)
-	else
-		textInput:SetPoint('RIGHT')
-	end
-
-	textInput:SetHeight(options.height)
+	local textInput = Addon:CreateTextInput(widgetOptions(self, options))
 
 	addControl(self, textInput)
 
 	return textInput
 end
 
---[[ specialized widgets ]]--
+--[[ table driven options ]]--
 
-function PanelMixin:NewScaleSlider()
-	return self:NewSlider{
-		name = L.Scale,
-		min = 50,
-		max = 200,
+-- returns a function that calls prop with the panel's current owner. prop can
+-- be a function(owner, ...) or the name of a method on the owner. anything
+-- else is returned as is. option is the definition prop came from, for errors
+local function bindOwner(panel, prop, option)
+	if type(prop) == 'string' then
+		return function(...)
+			local owner = panel.owner
+			local method = owner[prop]
 
-		get = function()
-			return Round(self.owner:GetFrameScale() * 100)
-		end,
+			if type(method) ~= 'function' then
+				error(('Option %q refers to %q, which %s does not have'):format(
+					tostring(option.name), prop, tostring(owner.id or owner)), 2)
+			end
 
-		set = function(value)
-			self.owner:SetFrameScale(value / 100)
+			return method(owner, ...)
 		end
-	}
+	end
+
+	if type(prop) == 'function' then
+		return function(...)
+			return prop(panel.owner, ...)
+		end
+	end
+
+	return prop
 end
 
-function PanelMixin:NewOpacitySlider()
-	return self:NewSlider{
-		name = L.Opacity,
-
-		get = function()
-			return Round(self.owner:GetFrameAlpha() * 100)
-		end,
-
-		set = function(value)
-			self.owner:SetFrameAlpha(value / 100)
-		end
-	}
-end
-
-function PanelMixin:NewFadeSlider()
-	return self:NewSlider{
-		name = L.FadedOpacity,
-
-		get = function()
-			return Round(self.owner:GetFadeMultiplier() * 100)
-		end,
-
-		set = function(value)
-			self.owner:SetFadeMultiplier(value / 100)
-		end
-	}
-end
-
-function PanelMixin:NewPaddingSlider()
-	return self:NewSlider{
-		name = L.Padding,
-		min = -16,
-		max = 32,
-		softLimits = true,
-
-		get = function()
-			return self.owner:GetPadding()
-		end,
-
-		set = function(value)
-			self.owner:SetPadding(value)
-		end
-	}
-end
-
-function PanelMixin:NewSpacingSlider()
-	return self:NewSlider{
-		name = L.Spacing,
-		min = -16,
-		max = 32,
-		softLimits = true,
-
-		get = function()
-			return self.owner:GetSpacing()
-		end,
-
-		set = function(value)
-			self.owner:SetSpacing(value)
-		end
-	}
-end
-
-function PanelMixin:NewColumnsSlider()
-	return self:NewSlider{
-		name = L.Columns,
-
-		min = 1,
-
-		max = function()
-			return self.owner:NumButtons()
-		end,
-
-		get = function()
-			return self.owner:NumColumns()
-		end,
-
-		set = function(value)
-			self.owner:SetColumns(value)
-		end
-	}
-end
-
-function PanelMixin:NewRowOffsetSlider()
-	return self:NewSlider{
-		name = L.RowOffset,
-
-		min = function()
-			return -(Round(ActionButton1:GetWidth()) + self.owner:GetSpacing())
-		end,
-
-		max = function()
-			return Round(ActionButton1:GetWidth()) + self.owner:GetSpacing()
-		end,
-
-		softLimits = true,
-
-		get = function()
-			return self.owner:GetRowOffset()
-		end,
-
-		set = function(value)
-			self.owner:SetRowOffset(value)
-		end
-	}
-end
-
-function PanelMixin:NewRowSpacingSlider()
-	return self:NewSlider{
-		name = L.RowSpacing,
-
-		min = function()
-			return -(Round(ActionButton1:GetHeight()) + self.owner:GetSpacing())
-		end,
-
-		max = function()
-			return Round(ActionButton1:GetHeight()) + self.owner:GetSpacing()
-		end,
-
-		softLimits = true,
-
-		get = function()
-			return self.owner:GetRowSpacing()
-		end,
-
-		set = function(value)
-			self.owner:SetRowSpacing(value)
-		end
-	}
-end
-
-local DISPLAY_LAYER_OPTIONS = {
-	{ value = "BACKGROUND", text = L["FrameStrata_BACKGROUND"] },
-	{ value = "LOW", text = L["FrameStrata_LOW"] },
-	{ value = "MEDIUM", text = L["FrameStrata_MEDIUM"] },
-	{ value = "HIGH", text = L["FrameStrata_HIGH"] }
+-- the widget to create for each option type. every widget calls set with the
+-- new value
+local OPTION_WIDGETS = {
+	slider = 'NewSlider',
+	check = 'NewCheckButton',
+	dropdown = 'NewDropdown',
+	font = 'NewFontPicker',
+	texture = 'NewTextureSelector',
+	text = 'NewTextInput',
 }
 
-function PanelMixin:NewDisplayLayerSlider()
-	return self:NewDropdown{
-		name = L.FrameStrata,
-		items = DISPLAY_LAYER_OPTIONS,
-		get = function()
-			if self.owner then
-				return self.owner:GetDisplayLayer()
+function PanelMixin:AddOption(def)
+	if def.type == 'header' then
+		return self:NewHeader(def.name)
+	end
+
+	local create = OPTION_WIDGETS[def.type]
+	assert(create, ('Unknown option type %q'):format(tostring(def.type)))
+
+	local label = tostring(def.name)
+	assert(def.get, ('Option %q is missing get'):format(label))
+	assert(def.set, ('Option %q is missing set'):format(label))
+
+	local options = {}
+	for k, v in pairs(def) do
+		options[k] = v
+	end
+
+	options.min = bindOwner(self, def.min, def)
+	options.max = bindOwner(self, def.max, def)
+	options.items = bindOwner(self, def.items, def)
+
+	options.get = bindOwner(self, def.get, def)
+
+	-- after any change, refresh the rest of the panel, as other options may
+	-- depend on this one (ex, columns is limited by size)
+	local set = bindOwner(self, def.set, def)
+	local widget
+	options.set = function(value)
+		set(value)
+		self:QueueRefresh(widget)
+	end
+
+	widget = self[create](self, options)
+
+	return widget
+end
+
+function PanelMixin:AddOptions(defs)
+	for _, def in ipairs(defs) do
+		self:AddOption(def)
+	end
+end
+
+-- refresh every widget, other than the ones that just changed, on the next
+-- frame. this batches up rapid changes (ex, dragging a slider)
+function PanelMixin:QueueRefresh(source)
+	self.refreshSources = self.refreshSources or {}
+	self.refreshSources[source] = true
+
+	if self.refreshQueued then
+		return
+	end
+
+	self.refreshQueued = true
+
+	C_Timer.After(0, function()
+		local sources = self.refreshSources
+
+		self.refreshQueued = nil
+		self.refreshSources = nil
+
+		for _, widget in ipairs(self.widgets) do
+			if not sources[widget] and widget.Refresh then
+				widget:Refresh()
 			end
-		end,
-		set = function(value) self.owner:SetDisplayLayer(value) end
-	}
+		end
+	end)
 end
 
-function PanelMixin:NewDisplayLevelSlider()
-	return self:NewSlider{
-		name = L.FrameLevel,
-		min = 1,
-		max = 200,
-		get = function() return self.owner:GetDisplayLevel() or 1 end,
-		set = function(value) self.owner:SetDisplayLevel(value) end
-	}
+--[[ shared option definitions ]]--
+
+-- combines the left to right and top to bottom settings into the direction
+-- buttons fill the grid in
+local LAYOUT_DIRECTION_ITEMS = {
+	{ value = "TOPLEFT", text = L.LayoutRightDown, leftToRight = true, topToBottom = true },
+	{ value = "TOPRIGHT", text = L.LayoutLeftDown, leftToRight = false, topToBottom = true },
+	{ value = "BOTTOMLEFT", text = L.LayoutRightUp, leftToRight = true, topToBottom = false },
+	{ value = "BOTTOMRIGHT", text = L.LayoutLeftUp, leftToRight = false, topToBottom = false }
+}
+
+-- common show state macro conditionals, so that people don't need to write
+-- them by hand
+local SHOW_PRESET_ITEMS = {
+	{ value = "ALWAYS", text = L.ShowAlways, conditions = "" },
+	{ value = "NEVER", text = L.ShowNever, conditions = "hide" },
+	{ value = "COMBAT", text = L.ShowInCombat, conditions = "[combat]show;hide" },
+	{ value = "NOCOMBAT", text = L.ShowOutOfCombat, conditions = "[combat]hide;show" },
+	{ value = "TARGET", text = L.ShowWithTarget, conditions = "[@target,exists]show;hide" },
+	{ value = "COMBAT_OR_TARGET", text = L.ShowInCombatOrWithTarget, conditions = "[combat][@target,exists]show;hide" },
+	{ value = "NOMOUNT", text = L.ShowNotMounted, conditions = "[mounted]hide;show" }
+}
+
+local SHOW_PRESET_CUSTOM = { value = "CUSTOM", text = L.ShowCustom }
+
+local function getShowPreset(bar)
+	local conditions = bar:GetUserDisplayConditions() or ""
+
+	for _, item in ipairs(SHOW_PRESET_ITEMS) do
+		if item.conditions == conditions then
+			return item
+		end
+	end
+
+	return SHOW_PRESET_CUSTOM
 end
 
-function PanelMixin:NewLeftToRightCheckbox()
-	return self:NewCheckButton{
-		name = L.LeftToRight,
-		get = function() return self.owner:GetLeftToRight() end,
-		set = function(_, enable) self.owner:SetLeftToRight(enable) end
-	}
+local OPTIONS = {}
+
+-- general
+OPTIONS.columns = {
+	type = 'slider',
+	name = L.NumColumns,
+	min = 1,
+	max = 'NumButtons',
+	get = 'NumColumns',
+	set = 'SetColumns'
+}
+
+OPTIONS.spacing = {
+	type = 'slider',
+	name = L.Spacing,
+	min = -16,
+	max = 32,
+	softLimits = true,
+	get = 'GetSpacing',
+	set = 'SetSpacing'
+}
+
+OPTIONS.scale = {
+	type = 'slider',
+	name = L.Scale,
+	min = 50,
+	max = 200,
+	get = function(bar) return Round(bar:GetFrameScale() * 100) end,
+	set = function(bar, value) bar:SetFrameScale(value / 100) end
+}
+
+OPTIONS.opacity = {
+	type = 'slider',
+	name = L.Opacity,
+	get = function(bar) return Round(bar:GetFrameAlpha() * 100) end,
+	set = function(bar, value) bar:SetFrameAlpha(value / 100) end
+}
+
+-- layout
+OPTIONS.layoutDirection = {
+	type = 'dropdown',
+	name = L.LayoutDirection,
+	items = LAYOUT_DIRECTION_ITEMS,
+	get = function(bar)
+		local leftToRight = bar:GetLeftToRight()
+		local topToBottom = bar:GetTopToBottom()
+
+		for _, item in ipairs(LAYOUT_DIRECTION_ITEMS) do
+			if item.leftToRight == leftToRight and item.topToBottom == topToBottom then
+				return item.value
+			end
+		end
+	end,
+	set = function(bar, value)
+		for _, item in ipairs(LAYOUT_DIRECTION_ITEMS) do
+			if item.value == value then
+				bar:SetLeftToRight(item.leftToRight)
+				bar:SetTopToBottom(item.topToBottom)
+				return
+			end
+		end
+	end
+}
+
+OPTIONS.rowOffset = {
+	type = 'slider',
+	name = L.RowOffset,
+	min = function(bar) return -bar:GetRowOffsetLimit() end,
+	max = 'GetRowOffsetLimit',
+	softLimits = true,
+	get = 'GetRowOffset',
+	set = 'SetRowOffset'
+}
+
+OPTIONS.rowSpacing = {
+	type = 'slider',
+	name = L.RowSpacing,
+	min = function(bar) return -bar:GetRowSpacingLimit() end,
+	max = 'GetRowSpacingLimit',
+	softLimits = true,
+	get = 'GetRowSpacing',
+	set = 'SetRowSpacing'
+}
+
+OPTIONS.padding = {
+	type = 'slider',
+	name = L.Padding,
+	min = -16,
+	max = 32,
+	softLimits = true,
+	get = 'GetPadding',
+	set = 'SetPadding'
+}
+
+OPTIONS.frameStrata = {
+	type = 'dropdown',
+	name = L.FrameStrata,
+	items = {
+		{ value = "BACKGROUND", text = L["FrameStrata_BACKGROUND"] },
+		{ value = "LOW", text = L["FrameStrata_LOW"] },
+		{ value = "MEDIUM", text = L["FrameStrata_MEDIUM"] },
+		{ value = "HIGH", text = L["FrameStrata_HIGH"] }
+	},
+	get = 'GetDisplayLayer',
+	set = 'SetDisplayLayer'
+}
+
+OPTIONS.frameLevel = {
+	type = 'slider',
+	name = L.FrameLevel,
+	min = 1,
+	max = 200,
+	get = function(bar) return bar:GetDisplayLevel() or 1 end,
+	set = 'SetDisplayLevel'
+}
+
+-- visibility
+OPTIONS.showPreset = {
+	type = 'dropdown',
+	name = L.Preset,
+	-- custom isn't something to pick; it's listed only to describe conditions
+	-- typed into the custom conditions box
+	items = function(bar)
+		if getShowPreset(bar) == SHOW_PRESET_CUSTOM then
+			local items = { unpack(SHOW_PRESET_ITEMS) }
+			tinsert(items, SHOW_PRESET_CUSTOM)
+			return items
+		end
+
+		return SHOW_PRESET_ITEMS
+	end,
+	get = function(bar)
+		return getShowPreset(bar).value
+	end,
+	set = function(bar, value)
+		for _, item in ipairs(SHOW_PRESET_ITEMS) do
+			if item.value == value then
+				bar:SetUserDisplayConditions(item.conditions)
+				return
+			end
+		end
+	end
+}
+
+OPTIONS.showStates = {
+	type = 'text',
+	name = L.CustomConditions,
+	tooltip = L.ShowStatesDescription,
+	numLines = 3,
+	-- a malformed conditional parses to nil. appending a catch-all clause means
+	-- a well formed one always returns something, even if nothing matches
+	validate = function(text)
+		return text == '' or SecureCmdOptionParse(text .. ';_') ~= nil
+	end,
+	get = 'GetUserDisplayConditions',
+	set = 'SetUserDisplayConditions'
+}
+
+OPTIONS.fadedOpacity = {
+	type = 'slider',
+	name = L.FadedOpacity,
+	tooltip = L.FadedOpacityTooltip,
+	get = function(bar) return Round(bar:GetFadeMultiplier() * 100) end,
+	set = function(bar, value) bar:SetFadeMultiplier(value / 100) end
+}
+
+OPTIONS.fadeInDelay = {
+	type = 'slider',
+	name = L.FadeInDelay,
+	min = 0,
+	max = 10,
+	step = 0.1,
+	get = 'GetFadeInDelay',
+	set = 'SetFadeInDelay'
+}
+
+OPTIONS.fadeInTime = {
+	type = 'slider',
+	name = L.FadeInTime,
+	min = 0.1,
+	max = 10,
+	step = 0.1,
+	get = 'GetFadeInDuration',
+	set = 'SetFadeInDuration'
+}
+
+OPTIONS.fadeOutDelay = {
+	type = 'slider',
+	name = L.FadeOutDelay,
+	min = 0,
+	max = 10,
+	step = 0.1,
+	get = 'GetFadeOutDelay',
+	set = 'SetFadeOutDelay'
+}
+
+OPTIONS.fadeOutTime = {
+	type = 'slider',
+	name = L.FadeOutTime,
+	min = 0.1,
+	max = 10,
+	step = 0.1,
+	get = 'GetFadeOutDuration',
+	set = 'SetFadeOutDuration'
+}
+
+OPTIONS.clickThrough = {
+	type = 'check',
+	name = L.ClickThrough,
+	get = 'GetClickThrough',
+	set = 'SetClickThrough'
+}
+
+OPTIONS.showInOverrideUI = {
+	type = 'check',
+	name = L.ShowInOverrideUI,
+	get = 'ShowingInOverrideUI',
+	set = 'ShowInOverrideUI'
+}
+
+OPTIONS.showInPetBattleUI = {
+	type = 'check',
+	name = L.ShowInPetBattleUI,
+	get = 'ShowingInPetBattleUI',
+	set = 'ShowInPetBattleUI'
+}
+
+Addon.OptionDefs = OPTIONS
+
+--[[ shared option groups ]]--
+
+-- the options people change most often. basic frames (ones that aren't a grid
+-- of buttons) only get padding, scale and opacity
+--- @param flags { basic: boolean? }?
+function PanelMixin:AddGeneralOptions(flags)
+	if not (flags and flags.basic) then
+		self:AddOptions{ OPTIONS.columns, OPTIONS.spacing, OPTIONS.padding, OPTIONS.scale, OPTIONS.opacity }
+	else
+		self:AddOptions{ OPTIONS.padding, OPTIONS.scale, OPTIONS.opacity }
+	end
 end
 
-function PanelMixin:NewTopToBottomCheckbox()
-	return self:NewCheckButton{
-		name = L.TopToBottom,
-		get = function() return self.owner:GetTopToBottom() end,
-		set = function(_, enable) self.owner:SetTopToBottom(enable) end
-	}
-end
-
-function PanelMixin:NewClickThroughCheckbox()
-	return self:NewCheckButton{
-		name = L.ClickThrough,
-		get = function() return self.owner:GetClickThrough() end,
-		set = function(_, enable) self.owner:SetClickThrough(enable) end
-	}
-end
-
-function PanelMixin:NewShowInOverrideUICheckbox()
-	return self:NewCheckButton{
-		name = L.ShowInOverrideUI,
-		get = function() return self.owner:ShowingInOverrideUI() end,
-		set = function(_, enable) self.owner:ShowInOverrideUI(enable) end
-	}
-end
-
-function PanelMixin:NewShowInPetBattleUICheckbox()
-	return self:NewCheckButton{
-		name = L.ShowInPetBattleUI,
-		get = function() return self.owner:ShowingInPetBattleUI() end,
-		set = function(_, enable) self.owner:ShowInPetBattleUI(enable) end
-	}
-end
-
-function PanelMixin:NewFadeDelaySlider(smoothType)
-    return self:NewSlider{
-		name = L.Delay,
-
-		min = 0,
-
-		max = 10,
-
-		step = 0.1,
-
-		format = "%.1f",
-
-        get = smoothType == "IN"
-			and function() return self.owner:GetFadeInDelay() end
-			or function() return self.owner:GetFadeOutDelay() end,
-
-        set = smoothType == "IN"
-			and function(_, value) self.owner:SetFadeInDelay(value) end
-            or function(_, value) self.owner:SetFadeOutDelay(value) end,
-    }
-end
-
-function PanelMixin:NewFadeDurationSlider(smoothType)
-    return self:NewSlider{
-        name = L.Duration,
-
-		min = 0.1,
-
-		max = 10,
-
-		step = 0.1,
-
-		format = "%.1f",
-
-        get = smoothType == "IN"
-			and function() return self.owner:GetFadeInDuration() end
-			or function() return self.owner:GetFadeOutDuration() end,
-
-        set = smoothType == "IN"
-			and function(_, value) self.owner:SetFadeInDuration(value) end
-			or function(_, value) self.owner:SetFadeOutDuration(value) end,
-    }
-end
-
+-- fine tuning of the frame's layout
 function PanelMixin:AddLayoutOptions()
-	self.colsSlider = self:NewColumnsSlider()
-	self.spacingSlider = self:NewSpacingSlider()
-	self.rowOffsetSlider = self:NewRowOffsetSlider()
-	self.rowSpacingSlider = self:NewRowSpacingSlider()
-	self:AddBasicLayoutOptions()
+	self:AddOptions{ OPTIONS.layoutDirection, OPTIONS.rowOffset, OPTIONS.rowSpacing }
 end
 
-function PanelMixin:AddBasicLayoutOptions()
-	self.paddingSlider = self:NewPaddingSlider()
-	self.scaleSlider = self:NewScaleSlider()
-	self.displayLayerSlider = self:NewDisplayLayerSlider()
-	self.displayLevelSlider = self:NewDisplayLevelSlider()
-end
+function PanelMixin:AddVisibilityOptions()
+	self:AddOptions{
+		{ type = 'header', name = L.MouseoverFading },
+		OPTIONS.fadedOpacity,
+		OPTIONS.fadeInDelay,
+		OPTIONS.fadeInTime,
+		OPTIONS.fadeOutDelay,
+		OPTIONS.fadeOutTime,
 
-function PanelMixin:AddAdvancedOptions(displayConditionsOnly)
-	if not displayConditionsOnly then
-		self:NewLeftToRightCheckbox()
-		self:NewTopToBottomCheckbox()
-		self:NewClickThroughCheckbox()
-	end
-
-	if ParentAddon:IsGameType("standard", "mists") then
-		self:NewShowInOverrideUICheckbox()
-		self:NewShowInPetBattleUICheckbox()
-	end
-
-	self.showStatesEditBox = self:NewTextInput{
-		name = L.ShowStates,
-		multiline = true,
-		width = 268,
-		height = 64,
-		get = function() return self.owner:GetUserDisplayConditions() end,
-		set = function(value) self.owner:SetUserDisplayConditions(value) end
+		{ type = 'header', name = L.ShowStates },
+		OPTIONS.showPreset,
+		OPTIONS.showStates
 	}
 end
 
-function PanelMixin:AddFadingOptions()
-	self:NewHeader(L.FadeIn)
-	self:NewOpacitySlider()
-	self:NewFadeDelaySlider("IN")
-	self:NewFadeDurationSlider("IN")
+-- options most people won't need to touch. basic frames (ones that aren't a
+-- grid of buttons) have no click through or layout settings. frames that always
+-- show with the override and pet battle UIs can skip those settings
+--- @param flags { basic: boolean?, alwaysShowInSpecialUI: boolean? }?
+function PanelMixin:AddAdvancedOptions(flags)
+	flags = flags or {}
 
-    self:NewHeader(L.FadeOut)
-    self:NewFadeSlider()
-	self:NewFadeDelaySlider("OUT")
-	self:NewFadeDurationSlider("OUT")
+	local basic = flags.basic
+	local alwaysShowInSpecialUI = flags.alwaysShowInSpecialUI
+	local behavior = {}
+
+	if not basic then
+		tinsert(behavior, OPTIONS.clickThrough)
+	end
+
+	if not alwaysShowInSpecialUI and ParentAddon:IsGameType("standard", "mists", "forever") then
+		tinsert(behavior, OPTIONS.showInOverrideUI)
+
+		if not ParentAddon:IsGameType("forever") then
+			tinsert(behavior, OPTIONS.showInPetBattleUI)
+		end
+	end
+
+	if #behavior > 0 then
+		self:NewHeader(L.Behavior)
+		self:AddOptions(behavior)
+	end
+
+	-- basic frames aren't a grid of buttons, so have no layout options here
+	if not basic then
+		self:NewHeader(L.Layout)
+		self:AddLayoutOptions()
+	end
+
+	self:NewHeader(L.DrawOrder)
+	self:AddOptions{ OPTIONS.frameStrata, OPTIONS.frameLevel }
 end
 
 function Addon:CreatePanel(parent)

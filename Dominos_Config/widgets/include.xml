@@ -4,6 +4,7 @@
 	<Script file="scrollableContainer.lua"/>
 	<Script file="hoverBackground.lua"/>
 
+	<Script file="row.lua" />
 	<Script file="button.lua"/>
 	<Script file="checkButton.lua"/>
 	<Script file="colorPicker.lua"/>
@@ -11,8 +12,6 @@
 	<Script file="textInput.lua"/>
 	<Script file="dropdown.lua"/>
 	<Script file="fontPicker.lua"/>
-	<Script file="textureSelector.lua"/>
-	<Script file="fontSelector.lua"/>
 
 	<Script file="menu.lua"/>
 	<Script file="panelSelector.lua"/>

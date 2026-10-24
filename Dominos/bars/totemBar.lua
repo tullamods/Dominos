@@ -53,18 +53,9 @@ function TotemBar:Layout()
 end
 
 function TotemBar:OnCreateMenu(menu)
-    self:AddLayoutPanel(menu)
-
-    menu:AddFadingPanel()
-    menu:AddAdvancedPanel(true)
-end
-
-function TotemBar:AddLayoutPanel(menu)
-    local l = LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')
-
-    local panel = menu:NewPanel(l.Layout)
-
-    panel:AddBasicLayoutOptions()
+    menu:AddGeneralPanel{ basic = true }
+    menu:AddVisibilityPanel()
+    menu:AddAdvancedPanel{ basic = true }
 end
 
 -- export

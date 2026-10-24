@@ -985,9 +985,9 @@ function Frame:CreateMenu()
 end
 
 function Frame:OnCreateMenu(menu)
-    menu:AddBasicLayoutPanel()
-    menu:AddFadingPanel()
-    menu:AddAdvancedPanel(true)
+    menu:AddGeneralPanel{ basic = true }
+    menu:AddVisibilityPanel()
+    menu:AddAdvancedPanel{ basic = true }
 end
 
 function Frame:ShowMenu()
@@ -1000,7 +1000,7 @@ function Frame:ShowMenu()
     if menu then
         menu:Hide()
         menu:SetOwner(self)
-        menu:ShowPanel(LibStub('AceLocale-3.0'):GetLocale('Dominos-Config').Layout)
+        menu:ShowPanel(LibStub('AceLocale-3.0'):GetLocale('Dominos-Config').General)
         menu:Show()
     end
 end

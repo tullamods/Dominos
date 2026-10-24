@@ -86,28 +86,24 @@ function ExtraAbilityBar:RepositionExtraAbilityContainer()
 end
 
 function ExtraAbilityBar:OnCreateMenu(menu)
-    self:AddLayoutPanel(menu)
+    menu:AddGeneralPanel{ basic = true }
+    self:AddAppearancePanel(menu)
 
-    menu:AddFadingPanel()
-    menu:AddAdvancedPanel(true)
+    menu:AddVisibilityPanel()
+    menu:AddAdvancedPanel{ basic = true }
 end
 
-function ExtraAbilityBar:AddLayoutPanel(menu)
+function ExtraAbilityBar:AddAppearancePanel(menu)
     local l = LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')
 
-    local panel = menu:NewPanel(l.Layout)
-
-    panel:NewCheckButton{
-        name = l.ExtraBarShowBlizzardTexture,
-        get = function()
-            return panel.owner:ShowingBlizzardTexture()
-        end,
-        set = function(_, enable)
-            panel.owner:ShowBlizzardTexture(enable)
-        end
+    menu:AddAppearancePanel():AddOptions{
+        {
+            type = 'check',
+            name = l.ExtraBarShowBlizzardTexture,
+            get = 'ShowingBlizzardTexture',
+            set = 'ShowBlizzardTexture'
+        }
     }
-
-    panel:AddBasicLayoutOptions()
 end
 
 function ExtraAbilityBar:ShowBlizzardTexture(show)

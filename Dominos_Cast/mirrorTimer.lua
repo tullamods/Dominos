@@ -267,11 +267,10 @@ function MirrorTimer:Update()
 end
 
 function MirrorTimer:OnCreateMenu(menu)
-    self:AddLayoutPanel(menu)
-    self:AddTexturePanel(menu)
-    self:AddFontPanel(menu)
-    menu:AddFadingPanel()
-    menu:AddAdvancedPanel(true)
+    self:AddGeneralPanel(menu)
+    self:AddAppearancePanel(menu)
+    menu:AddVisibilityPanel()
+    menu:AddAdvancedPanel{ basic = true }
 
     self.menu = menu
 
@@ -291,94 +290,62 @@ function MirrorTimer:OnCreateMenu(menu)
 end
 
 ---@param menu table
-function MirrorTimer:AddLayoutPanel(menu)
-    local panel = menu:NewPanel(LibStub('AceLocale-3.0'):GetLocale('Dominos-Config').Layout)
+function MirrorTimer:AddGeneralPanel(menu)
+    local C = LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')
+    local panel = menu:NewPanel(C.General)
+    local options = {}
 
-    for i, part in pairs({ 'label', 'time', 'border' }) do
-        panel:NewCheckButton(
-            {
-                name = L['Display_' .. part],
-                get = function()
-                    return panel.owner:Displaying(part)
-                end,
-                set = function(_, enable)
-                    panel.owner:SetDisplay(part, enable)
-                end
-            }
-        )
+    tinsert(options, {
+        type = 'slider',
+        name = C.Width,
+        min = 1,
+        max = function(bar)
+            return math.ceil(_G.UIParent:GetWidth() / bar:GetScale())
+        end,
+        get = 'GetDesiredWidth',
+        set = 'SetDesiredWidth'
+    })
+
+    tinsert(options, {
+        type = 'slider',
+        name = C.Height,
+        min = 1,
+        max = function(bar)
+            return math.ceil(_G.UIParent:GetHeight() / bar:GetScale())
+        end,
+        get = 'GetDesiredHeight',
+        set = 'SetDesiredHeight'
+    })
+
+    panel:AddOptions(options)
+    panel:AddGeneralOptions{ basic = true }
+end
+
+---@param menu table
+function MirrorTimer:AddAppearancePanel(menu)
+    local panel = menu:AddAppearancePanel()
+
+    local function displayOption(part)
+        return {
+            type = 'check',
+            name = L['Display_' .. part],
+            get = function(bar) return bar:Displaying(part) end,
+            set = function(bar, enable) bar:SetDisplay(part, enable) end
+        }
     end
 
-    panel.widthSlider =
-    panel:NewSlider(
-        {
-            name = L.Width,
-            min = 1,
-            max = function()
-                return math.ceil(_G.UIParent:GetWidth() / panel.owner:GetScale())
-            end,
-            get = function()
-                return panel.owner:GetDesiredWidth()
-            end,
-            set = function(_, value)
-                panel.owner:SetDesiredWidth(value)
-            end
-        }
-    )
+    local C = LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')
 
-    panel.heightSlider =
-    panel:NewSlider(
-        {
-            name = L.Height,
-            min = 1,
-            max = function()
-                return math.ceil(_G.UIParent:GetHeight() / panel.owner:GetScale())
-            end,
-            get = function()
-                return panel.owner:GetDesiredHeight()
-            end,
-            set = function(_, value)
-                panel.owner:SetDesiredHeight(value)
-            end
-        }
-    )
+    panel:AddOptions {
+        { type = 'header', name = C.Style },
+        { type = 'texture', name = C.Texture, get = 'GetTextureID', set = 'SetTextureID' },
+        { type = 'font', name = C.Font, get = 'GetFontID', set = 'SetFontID' },
+        displayOption('border'),
 
-    panel:AddBasicLayoutOptions()
-end
-
----@param menu table
-function MirrorTimer:AddFontPanel(menu)
-    local panel = menu:NewPanel(L.Font)
-
-    panel.fontSelector =
-    Dominos.Options.FontSelector:New(
-        {
-            parent = panel,
-            get = function()
-                return panel.owner:GetFontID()
-            end,
-            set = function(_, value)
-                panel.owner:SetFontID(value)
-            end
-        }
-    )
-end
-
----@param menu table
-function MirrorTimer:AddTexturePanel(menu)
-    local panel = menu:NewPanel(L.Texture)
-
-    panel.textureSelector =
-    Dominos.Options.TextureSelector:New(
-        {
-            parent = panel,
-            get = function()
-                return panel.owner:GetTextureID()
-            end,
-            set = function(_, value)
-                panel.owner:SetTextureID(value)
-            end
-        }
-    )
+        { type = 'header', name = C.Content },
+        displayOption('label'),
+        displayOption('time')
+    }
 end
 
 --[[ exports ]]

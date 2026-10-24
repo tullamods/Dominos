@@ -1,77 +1,23 @@
+--------------------------------------------------------------------------------
+--- A Dominos context menu
+--------------------------------------------------------------------------------
+
 local _, Addon = ...
 local L = Addon:GetLocale()
-
-local TITLE_DIVIDER_HEIGHT = 2
-local TITLE_PADDING = 8
-local BORDER_PADDING = 10
-local CONTENT_WIDTH, CONTENT_HEIGHT = 300, 420
-
-local function createMenuButton(parent)
-	local button = CreateFrame('Button', nil, parent)
-	button:SetSize(64, 64)
-	button:SetHitRectInsets(20, 20, 20, 20)
-
-	button.Icon = button:CreateTexture(nil, 'BACKGROUND')
-	button.Icon:SetTexture('Interface/AddOns/Dominos/Dominos')
-	button.Icon:SetSize(23, 23)
-	button.Icon:SetPoint('CENTER')
-
-	button.Ring = button:CreateTexture(nil, 'BORDER')
-	button.Ring:SetTexture('Interface\\Minimap\\MiniMap-TrackingBorder')
-	button.Ring:SetSize(64, 64)
-	button.Ring:SetPoint('CENTER', 12, -13)
-
-	local highlight = button:CreateTexture(nil, 'HIGHLIGHT')
-	highlight:SetTexture('Interface\\Minimap\\UI-Minimap-ZoomButton-Highlight')
-	highlight:SetBlendMode('ADD')
-	highlight:SetSize(46, 46)
-	highlight:SetPoint('CENTER', -1, 1)
-	button:SetHighlightTexture(highlight)
-
-	return button
-end
-
-local function createCloseButton(parent)
-	return CreateFrame('Button', nil, parent, 'UIPanelCloseButton')
-end
-
-local function createTitleBar(parent)
-	local frame = CreateFrame('Frame', nil, parent, 'TitleDragAreaTemplate, ResizeLayoutFrame')
-	frame.ignoreInLayout = true
-
-	local text = frame:CreateFontString(nil, 'ARTWORK', 'GameFontHighlightLarge')
-	text:SetText("MENU_TITLE")
-	text:SetJustifyH('CENTER')
-	text:SetJustifyV('MIDDLE')
-	text:SetPoint('TOPLEFT')
-	text:SetPoint('TOPRIGHT')
-	text:SetHeight(text:GetStringHeight() + TITLE_PADDING)
-	frame.Text = text
-
-	local divider = frame:CreateTexture(nil, 'ARTWORK')
-	divider:SetColorTexture(1, 1, 1, 0.2)
-	divider:SetPoint('TOPLEFT', text, 'BOTTOMLEFT')
-	divider:SetPoint('TOPRIGHT', text, 'BOTTOMRIGHT')
-	divider:SetHeight(TITLE_DIVIDER_HEIGHT)
-	frame.Divider = divider
-
-	local bg =  frame:CreateTexture(nil, 'BACKGROUND')
-	bg:SetColorTexture(1, 1, 1, 0.2)
-	bg:SetAllPoints()
-	bg.ignoreInLayout = true
-
-	-- frame:SetFixedHeight(text:GetStringHeight() + TITLE_PADDING) + TITLE_DIVIDER_HEIGHT)
-
-	return frame
-end
+local CONTENT_WIDTH, CONTENT_HEIGHT = 280, 420
 
 local MenuMixin = {}
 
-MenuMixin.widthPadding = 20
-MenuMixin.heightPadding = 47
+MenuMixin.minimumWidth = 320
+MenuMixin.topPadding = 30
+MenuMixin.bottomPadding = 12
+MenuMixin.leftPadding = 12
+MenuMixin.rightPadding = 12
+MenuMixin.spacing = 0
 
 function MenuMixin:Initialize()
 	self.panels = {}
+
 	self:EnableKeyboard(false)
 	self:EnableMouse(true)
 	self:SetClampedToScreen(true)
@@ -79,47 +25,68 @@ function MenuMixin:Initialize()
 	self:SetMovable(true)
 	self:SetToplevel(true)
 
-	self.TitleBar = createTitleBar(self)
-	self.TitleBar:SetPoint('TOPLEFT', BORDER_PADDING, -BORDER_PADDING)
-	self.TitleBar:SetPoint('TOPRIGHT', -BORDER_PADDING, -BORDER_PADDING)
+	self.TitleBar = CreateFrame('Frame', nil, self, 'DialogHeaderTemplate, TitleDragAreaTemplate')
+	self.TitleBar.ignoreInLayout = true
 
     self.Border = CreateFrame('Frame', nil, self, 'DialogBorderTranslucentTemplate')
 	self.Border:SetFrameLevel(self.TitleBar:GetFrameLevel() + 1)
     self.Border.ignoreInLayout = true
 
-	self.MenuButton = createMenuButton(self)
-	self.MenuButton:SetPoint('TOPLEFT', -20, 20)
-	self.MenuButton:SetFrameLevel(self.TitleBar:GetFrameLevel() + 10)
-	self.MenuButton.ignoreInLayout = true
+    self.CloseButton = CreateFrame('Button', nil, self, 'UIPanelCloseButton')
 
-    self.CloseButton = createCloseButton(self)
-    self.CloseButton:SetPoint('TOPRIGHT')
+	local closeOffset = Addon:IsGameType("vanilla") and 8 or 2
+	self.CloseButton:SetPoint('TOPRIGHT', closeOffset, closeOffset)
+
 	self.CloseButton:SetFrameLevel(self.TitleBar:GetFrameLevel() + 10)
 	self.CloseButton.ignoreInLayout = true
 
 	local selector = Addon:CreatePanelSelector(self)
-	selector:SetPoint('TOPLEFT', self.TitleBar, 'BOTTOMLEFT')
 	selector.OnSelect = function(_, id) self:OnShowPanel(id) end
 	selector:SetFixedHeight(CONTENT_HEIGHT)
+	selector.layoutIndex = 1
 	self.Selector = selector
 
-	local settings = Addon:CreateScrollableContainer(self)
-	settings:SetPoint('TOPLEFT', self.Selector, 'TOPRIGHT')
-	settings:SetFixedSize(CONTENT_WIDTH, CONTENT_HEIGHT)
+    local settings = Addon:CreateScrollableContainer(self)
+    settings:SetFixedSize(CONTENT_WIDTH, CONTENT_HEIGHT)
+	settings.layoutIndex = 2
 	self.Settings = settings
 
 	self:MarkDirty()
 end
 
+local function isDescendantOf(region, ancestor)
+	while region do
+		if region == ancestor then
+			return true
+		end
+
+		region = region:GetParent()
+	end
+
+	return false
+end
+
+-- text inputs apply their value when they lose focus, to whichever frame the
+-- panels are pointed at. so apply anything being typed before that changes
+function MenuMixin:CommitEdits()
+	local focus = GetCurrentKeyBoardFocus()
+
+	if focus and isDescendantOf(focus, self) then
+		focus:ClearFocus()
+	end
+end
+
 -- tells the panel what frame we're pointed to
 function MenuMixin:SetOwner(owner)
+	self:CommitEdits()
+
 	if self.panels then
 		for _, panel in pairs(self.panels) do
 			panel:SetOwner(owner)
 		end
 	end
 
-	self.TitleBar.Text:SetText(owner:GetDisplayName())
+	self.TitleBar:Setup(owner:GetDisplayName())
 	self:Anchor(owner)
 end
 
@@ -138,8 +105,6 @@ function MenuMixin:NewPanel(id)
 	local panel = Addon:CreatePanel(self.Settings)
 
 	panel.fixedWidth = self.Settings.fixedWidth
-
-	Addon:ApplyDebugBackground(panel)
 
 	self.panels[id] = panel
 
@@ -163,34 +128,32 @@ function MenuMixin:OnShowPanel(id)
 	end
 end
 
-function MenuMixin:AddLayoutPanel()
-	local panel = self:NewPanel(L.Layout)
+--- @param flags { basic: boolean? }? basic is for frames that aren't a grid of buttons
+function MenuMixin:AddGeneralPanel(flags)
+	local panel = self:NewPanel(L.General)
 
-	panel:AddLayoutOptions()
-
-	return panel
-end
-
-function MenuMixin:AddBasicLayoutPanel()
-	local panel = self:NewPanel(L.Layout)
-
-	panel:AddBasicLayoutOptions()
+	panel:AddGeneralOptions(flags)
 
 	return panel
 end
 
-function MenuMixin:AddAdvancedPanel(basic)
+function MenuMixin:AddAppearancePanel()
+	return self:NewPanel(L.Appearance)
+end
+
+function MenuMixin:AddVisibilityPanel()
+	local panel = self:NewPanel(L.Visibility)
+
+	panel:AddVisibilityOptions()
+
+	return panel
+end
+
+--- @param flags { basic: boolean?, alwaysShowInSpecialUI: boolean? }?
+function MenuMixin:AddAdvancedPanel(flags)
 	local panel = self:NewPanel(L.Advanced)
 
-	panel:AddAdvancedOptions(basic)
-
-	return panel
-end
-
-function MenuMixin:AddFadingPanel()
-	local panel = self:NewPanel(L.Fading)
-
-	panel:AddFadingOptions()
+	panel:AddAdvancedOptions(flags)
 
 	return panel
 end
@@ -199,8 +162,8 @@ local Menu = {}
 
 --- @params parent Region?
 function Menu:New(parent)
-	local frame = CreateFrame('Frame', nil, parent or UIParent, 'ResizeLayoutFrame')
-
+    local frame = CreateFrame('Frame', nil, parent or UIParent, 'HorizontalLayoutFrame')
+	
 	Mixin(frame, MenuMixin)
 
 	frame:Initialize()

@@ -19,12 +19,12 @@ function HelpDialog:OnLoad(owner)
     self:SetClampedToScreen(true)
     self:SetFrameStrata('FULLSCREEN_DIALOG')
     self:SetMovable(true)
-    self:SetSize(360, 120)
+    self:SetSize(396, 120)
     self:SetPoint('TOP', 0, -24)
     self:SetScript('OnDragStart', self.OnDragStart)
     self:SetScript('OnDragStop', self.OnDragStop)
 
-    self.minimumWidth = 320
+    self.minimumWidth = 360
     self.minimumHeight = 120
     self.topPadding = 36
     self.bottomPadding = 18
@@ -49,35 +49,53 @@ function HelpDialog:OnLoad(owner)
     description:SetJustifyV('TOP')
     description:SetJustifyH('LEFT')
     description:SetText(L.ConfigModeHelp)
-    description:SetWidth(320)
+    description:SetWidth(360)
     description.layoutIndex = 1
     description.expand = true
 
     self.Description = description
 
-    local showGrid = Addon:CreateCheckButton {
-        label = L.ShowAlignmentGrid,
-        parent = self,
-        get = function() return Dominos:GetAlignmentGridEnabled(); end,
-        set = function(_, enable) print("showGrid", enable); Dominos:SetAlignmentGridEnabled(enable); end,
-    }
+    local row = CreateFrame("Frame", nil, self)
+    row:SetSize(360, 32)
+    row.layoutIndex = 2
 
-    showGrid.layoutIndex = 2
-    showGrid.expand = true
+    local checkbox = CreateFrame("CheckButton", nil, row, "UICheckButtonTemplate")
+    checkbox:SetPoint("LEFT", 0, 0)
+    checkbox:SetChecked(Dominos:GetAlignmentGridEnabled())
 
-    local gridDensity = Addon:CreateSlider {
-        label = L.GridDensity,
-        parent = self,
-        min = GRID_SIZE_MINIMUM,
-        max = GRID_SIZE_MAXIMUM,
-        step = GRID_SIZE_STEP,
-        get = function() return Dominos:GetAlignmentGridSize(); end,
-        set = function(value) Dominos:SetAlignmentGridSize(value); end,
-    }
+    local label = row:CreateFontString(nil, "ARTWORK", "GameFontHighlightMedium")
+    label:SetPoint("LEFT", checkbox, "RIGHT", 4, 0)
+    label:SetText(L.ShowAlignmentGrid)
 
-    gridDensity.layoutIndex = 3
-    gridDensity.expand = true
+    local slider = CreateFrame("Frame", nil, row, "MinimalSliderWithSteppersTemplate")
+    slider:SetPoint("RIGHT", row, "RIGHT", -36, 0)
+    slider:SetSize(170, 32)
 
+    local rightLabel = MinimalSliderWithSteppersMixin.Label.Right
+    slider:Init(Dominos:GetAlignmentGridSize(), GRID_SIZE_MINIMUM, GRID_SIZE_MAXIMUM,
+        (GRID_SIZE_MAXIMUM - GRID_SIZE_MINIMUM) / GRID_SIZE_STEP,
+        { [rightLabel] = CreateMinimalSliderFormatter(rightLabel) })
+
+    slider:EnableMouseWheel(true)
+    slider:SetScript("OnMouseWheel", function(self, delta)
+        if self.Slider:IsEnabled() then
+            self.Slider:SetValue(self.Slider:GetValue() + delta * self.Slider:GetValueStep())
+        end
+    end)
+
+    checkbox:SetScript("OnClick", function(c)
+        local enable = c:GetChecked() and true
+
+        slider:SetEnabled(enable)
+        Dominos:SetAlignmentGridEnabled(enable)
+    end)
+
+    slider:RegisterCallback(MinimalSliderWithSteppersMixin.Event.OnValueChanged, function(_, value)
+        Dominos:SetAlignmentGridSize(value)
+    end, slider)
+
+    slider:SetEnabled(checkbox:GetChecked())
+    
     self:Show()
 end
 
