@@ -29,6 +29,7 @@ do
             ['ProfessionMicroButton'] = PROFESSIONS_BUTTON,
             ['PVPMicroButton'] = PLAYER_V_PLAYER,
             ['QuestLogMicroButton'] = QUESTLOG_BUTTON,
+            ['ScribeMicroButton'] = SCRIBE_BUTTON,
             ['SocialsMicroButton'] = SOCIAL_BUTTON,
             ['SpellbookMicroButton'] = SPELLBOOK_ABILITIES_BUTTON,
             ['StoreMicroButton'] = BLIZZARD_STORE,
