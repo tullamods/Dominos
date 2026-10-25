@@ -8,7 +8,6 @@ L.Display_label = "Show Label"
 L.Display_latency = "Show Latency"
 L.Display_spark = "Show Spark"
 L.Display_time = "Show Time"
-L.Latency = "Latency"
 L.LatencyPadding = "Latency Padding (ms)"
 L.MirrorTimerDisplayName = 'Mirror Timer %d'
 L.UseSpellReactionColors = "Contextual Coloring"

@@ -24,33 +24,8 @@ function MirrorTimer:New(id, ...)
     return mirrorTimer
 end
 
-function MirrorTimer:OnCreate()
-    MirrorTimer.proto.OnCreate(self)
-
-    self:SetScript('OnEvent', self.OnEvent)
-
-    self.props = {}
-    self.timer = CreateFrame('Frame', nil, self, 'DominosTimerBarTemplate')
-
-    self.timer.OnUpdate = function(timer)
-        if self.timerName then
-            local value = (GetMirrorTimerProgress(self.timerName) or 0) / 1000
-            timer:SetValue(value)
-        else
-            timer:SetValue(0)
-        end
-    end
-end
-
-function MirrorTimer:OnRelease()
-    MirrorTimer.proto.OnRelease(self)
-
-    LSM.UnregisterAllCallbacks(self)
-end
-
-function MirrorTimer:OnLoadSettings()
-    self:SetProperty('font', self:GetFontID())
-    self:SetProperty('texture', self:GetTextureID())
+function MirrorTimer:GetDisplayName()
+    return L.MirrorTimerDisplayName:format(self.timerID)
 end
 
 ---@return table defaults
@@ -79,8 +54,64 @@ function MirrorTimer:CanSetShowStates()
     return false
 end
 
-function MirrorTimer:GetDisplayName()
-    return L.MirrorTimerDisplayName:format(self.timerID)
+function MirrorTimer:OnCreate()
+    MirrorTimer.proto.OnCreate(self)
+
+    self:SetScript('OnEvent', self.OnEvent)
+
+    self.props = {}
+    self.timer = CreateFrame('Frame', nil, self, 'DominosTimerBarTemplate')
+
+    self.timer.OnUpdate = function(timer)
+        if self.timerName then
+            local value = (GetMirrorTimerProgress(self.timerName) or 0) / 1000
+            timer:SetValue(value)
+        else
+            timer:SetValue(0)
+        end
+    end
+end
+
+function MirrorTimer:OnLoadSettings()
+    self:SetProperty('font', self:GetFontID())
+    self:SetProperty('texture', self:GetTextureID())
+end
+
+function MirrorTimer:OnRelease()
+    MirrorTimer.proto.OnRelease(self)
+
+    LSM.UnregisterAllCallbacks(self)
+end
+
+---@param key string
+---@return any value
+function MirrorTimer:GetProperty(key)
+    return self.props[key]
+end
+
+---@param key string
+---@param value any
+function MirrorTimer:SetProperty(key, value)
+    local prev = self.props[key]
+
+    if prev ~= value then
+        self.props[key] = value
+
+        local func = self[key .. '_update']
+        if func then
+            func(self, value, prev)
+        end
+    end
+end
+
+---@param fontID any
+function MirrorTimer:font_update(fontID)
+    self.timer:SetFont(fontID)
+end
+
+---@param textureID any
+function MirrorTimer:texture_update(textureID)
+    self.timer:SetTexture(textureID)
 end
 
 ---@param event string
@@ -103,35 +134,65 @@ function MirrorTimer:LibSharedMedia_Registered(event, mediaType, key)
     end
 end
 
+---@return number width
+function MirrorTimer:GetDesiredWidth()
+    return self.sets.w or 200
+end
+
+---@param width number
+function MirrorTimer:SetDesiredWidth(width)
+    self.sets.w = tonumber(width)
+    self:Layout()
+end
+
+---@return number height
+function MirrorTimer:GetDesiredHeight()
+    return self.sets.h or 20
+end
+
+---@param height number
+function MirrorTimer:SetDesiredHeight(height)
+    self.sets.h = tonumber(height)
+    self:Layout()
+end
+
+---@return any fontID
+function MirrorTimer:GetFontID()
+    return self.sets.font or LSM:GetDefault(LSM.MediaType.FONT)
+end
+
 ---@param fontID any
-function MirrorTimer:font_update(fontID)
-    self.timer:SetFont(fontID)
+function MirrorTimer:SetFontID(fontID)
+    self.sets.font = fontID
+    self:SetProperty('font', self:GetFontID())
+
+    return self
+end
+
+---@return any textureID
+function MirrorTimer:GetTextureID()
+    return self.sets.texture or LSM:GetDefault(LSM.MediaType.STATUSBAR)
 end
 
 ---@param textureID any
-function MirrorTimer:texture_update(textureID)
-    self.timer:SetTexture(textureID)
+function MirrorTimer:SetTextureID(textureID)
+    self.sets.texture = textureID
+    self:SetProperty('texture', self:GetTextureID())
+
+    return self
 end
 
----@param key string
----@param value any
-function MirrorTimer:SetProperty(key, value)
-    local prev = self.props[key]
-
-    if prev ~= value then
-        self.props[key] = value
-
-        local func = self[key .. '_update']
-        if func then
-            func(self, value, prev)
-        end
-    end
+---@param part string
+---@return boolean enabled
+function MirrorTimer:Displaying(part)
+    return self.sets.display[part]
 end
 
----@param key string
----@return any value
-function MirrorTimer:GetProperty(key)
-    return self.props[key]
+---@param part string
+---@param enable boolean
+function MirrorTimer:SetDisplay(part, enable)
+    self.sets.display[part] = enable
+    self:Layout()
 end
 
 function MirrorTimer:Layout()
@@ -143,67 +204,6 @@ function MirrorTimer:Layout()
     self.timer:SetShowSpark(self:Displaying('spark'))
     self.timer:SetShowLatency(false)
     self.timer:SetShowIcon(false)
-end
-
----@param width number
-function MirrorTimer:SetDesiredWidth(width)
-    self.sets.w = tonumber(width)
-    self:Layout()
-end
-
----@return number width
-function MirrorTimer:GetDesiredWidth()
-    return self.sets.w or 200
-end
-
----@param height number
-function MirrorTimer:SetDesiredHeight(height)
-    self.sets.h = tonumber(height)
-    self:Layout()
-end
-
----@return number height
-function MirrorTimer:GetDesiredHeight()
-    return self.sets.h or 20
-end
-
----@param fontID any
-function MirrorTimer:SetFontID(fontID)
-    self.sets.font = fontID
-    self:SetProperty('font', self:GetFontID())
-
-    return self
-end
-
----@return any fontID
-function MirrorTimer:GetFontID()
-    return self.sets.font or LSM:GetDefault(LSM.MediaType.FONT)
-end
-
----@param textureID any
-function MirrorTimer:SetTextureID(textureID)
-    self.sets.texture = textureID
-    self:SetProperty('texture', self:GetTextureID())
-
-    return self
-end
-
----@return any textureID
-function MirrorTimer:GetTextureID()
-    return self.sets.texture or LSM:GetDefault(LSM.MediaType.STATUSBAR)
-end
-
----@param part string
----@param enable boolean
-function MirrorTimer:SetDisplay(part, enable)
-    self.sets.display[part] = enable
-    self:Layout()
-end
-
----@param part string
----@return boolean enabled
-function MirrorTimer:Displaying(part)
-    return self.sets.display[part]
 end
 
 ---@param timerName string
@@ -300,13 +300,13 @@ MirrorTimer.contextMenu = Dominos.Frame.contextMenu:Extend {
                 get = 'GetFontID',
                 set = 'SetFontID'
             },
-            Dominos:CreateDisplayCheck('border'),
             {
                 type = 'header',
                 name = 'Content'
             },
             Dominos:CreateDisplayCheck('label'),
-            Dominos:CreateDisplayCheck('time')
+            Dominos:CreateDisplayCheck('time'),
+            Dominos:CreateDisplayCheck('border')
         }
     }
 }

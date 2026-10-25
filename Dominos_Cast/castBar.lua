@@ -68,6 +68,10 @@ local function getSpellReaction(spellID)
     return "default"
 end
 
+local function getLatencyColor(r, g, b)
+    return 1 - r, 1 - g, 1 - b, LATENCY_BAR_ALPHA
+end
+
 local CastBar = Dominos:CreateClass("Frame", Dominos.Frame)
 
 function CastBar:New(id, units, ...)
@@ -79,29 +83,6 @@ function CastBar:New(id, units, ...)
 
     return bar
 end
-
-CastBar:Extend("OnCreate", function(self)
-    self:SetScript("OnEvent", self.OnEvent)
-
-    self.props = {}
-
-    self.timer = CreateFrame("Frame", nil, self, "DominosTimerBarTemplate")
-end)
-
-CastBar:Extend("OnRelease", function(self)
-    self:UnregisterAllEvents()
-    LSM.UnregisterAllCallbacks(self)
-end)
-
-CastBar:Extend("OnLoadSettings", function(self)
-    if not self.sets.display then
-        self.sets.display = { icon = false, time = true, border = true, latency = true }
-    end
-
-    self:SetProperty("font", self:GetFontID())
-    self:SetProperty("texture", self:GetTextureID())
-    self:SetProperty("reaction", "neutral")
-end)
 
 function CastBar:GetDisplayName()
     local L = LibStub("AceLocale-3.0"):GetLocale("Dominos-CastBar")
@@ -129,6 +110,51 @@ function CastBar:GetDefaults()
         display = { icon = false, time = true, border = true, latency = true, spark = true }
     }
 end
+
+function CastBar:CanSetShowStates()
+    return false
+end
+
+-- the cast bar always shows with the override and pet battle UIs
+function CastBar:CanShowInOverrideUI()
+    return false
+end
+
+function CastBar:CanShowInPetBattleUI()
+    return false
+end
+
+-- force the casting bar to show with the override ui/pet battle ui
+function CastBar:ShowingInOverrideUI()
+    return true
+end
+
+function CastBar:ShowingInPetBattleUI()
+    return true
+end
+
+CastBar:Extend("OnCreate", function(self)
+    self:SetScript("OnEvent", self.OnEvent)
+
+    self.props = {}
+
+    self.timer = CreateFrame("Frame", nil, self, "DominosTimerBarTemplate")
+end)
+
+CastBar:Extend("OnRelease", function(self)
+    self:UnregisterAllEvents()
+    LSM.UnregisterAllCallbacks(self)
+end)
+
+CastBar:Extend("OnLoadSettings", function(self)
+    if not self.sets.display then
+        self.sets.display = { icon = false, time = true, border = true, latency = true }
+    end
+
+    self:SetProperty("font", self:GetFontID())
+    self:SetProperty("texture", self:GetTextureID())
+    self:SetProperty("reaction", "neutral")
+end)
 
 --------------------------------------------------------------------------------
 -- Game Events
@@ -376,6 +402,44 @@ end
 -- Cast Bar Property Events
 --------------------------------------------------------------------------------
 
+function CastBar:GetProperty(key)
+    return self.props[key]
+end
+
+if type(canaccessvalue) == "function" then
+    function CastBar:SetProperty(key, value)
+        local prev = self.props[key]
+
+        local shouldSet = not (
+            canaccessvalue(value)
+            and canaccessvalue(prev)
+            and prev == value
+        )
+
+        if shouldSet then
+            self.props[key] = value
+
+            local func = self[key .. "_update"]
+            if func then
+                func(self, value, prev)
+            end
+        end
+    end
+else
+    function CastBar:SetProperty(key, value)
+        local prev = self.props[key]
+
+        if prev ~= value then
+            self.props[key] = value
+
+            local func = self[key .. "_update"]
+            if func then
+                func(self, value, prev)
+            end
+        end
+    end
+end
+
 function CastBar:state_update(state)
     if state == "interrupted" or state == "failed" then
         self:UpdateColor()
@@ -430,44 +494,6 @@ end
 --------------------------------------------------------------------------------
 -- Cast Bar Methods
 --------------------------------------------------------------------------------
-
-if type(canaccessvalue) == "function" then
-    function CastBar:SetProperty(key, value)
-        local prev = self.props[key]
-
-        local shouldSet = not (
-            canaccessvalue(value)
-            and canaccessvalue(prev)
-            and prev == value
-        )
-
-        if shouldSet then
-            self.props[key] = value
-
-            local func = self[key .. "_update"]
-            if func then
-                func(self, value, prev)
-            end
-        end
-    end
-else
-    function CastBar:SetProperty(key, value)
-        local prev = self.props[key]
-
-        if prev ~= value then
-            self.props[key] = value
-
-            local func = self[key .. "_update"]
-            if func then
-                func(self, value, prev)
-            end
-        end
-    end
-end
-
-function CastBar:GetProperty(key)
-    return self.props[key]
-end
 
 function CastBar:Layout()
     self:TrySetSize(self:GetDesiredWidth(), self:GetDesiredHeight())
@@ -578,10 +604,6 @@ function CastBar:UpdateEmpowering()
     end
 
     return false
-end
-
-local function getLatencyColor(r, g, b)
-    return 1 - r, 1 - g, 1 - b, LATENCY_BAR_ALPHA
 end
 
 function CastBar:GetColorID()
@@ -749,15 +771,6 @@ function CastBar:UseSpellReactionColors()
     return self.sets.useSpellReactionColors
 end
 
--- force the casting bar to show with the override ui/pet battle ui
-function CastBar:ShowingInOverrideUI()
-    return true
-end
-
-function CastBar:ShowingInPetBattleUI()
-    return true
-end
-
 --------------------------------------------------------------------------------
 -- Cast Bar Right Click Menu
 --------------------------------------------------------------------------------
@@ -781,6 +794,13 @@ CastBar.contextMenu = Dominos.Frame.contextMenu:Extend {
                 name = 'Style'
             },
             {
+                type = 'check',
+                name = 'UseSpellReactionColors',
+                tooltip = 'UseSpellReactionColorsTip',
+                get = 'UseSpellReactionColors',
+                set = 'SetUseSpellReactionColors'
+            },
+            {
                 type = 'texture',
                 name = 'Texture',
                 get = 'GetTextureID',
@@ -793,49 +813,28 @@ CastBar.contextMenu = Dominos.Frame.contextMenu:Extend {
                 set = 'SetFontID'
             },
             {
-                type = 'check',
-                name = 'UseSpellReactionColors',
-                tooltip = 'UseSpellReactionColorsTip',
-                get = 'UseSpellReactionColors',
-                set = 'SetUseSpellReactionColors'
-            },
-            Dominos:CreateDisplayCheck('border'),
-            Dominos:CreateDisplayCheck('spark'),
-            {
                 type = 'header',
                 name = 'Content'
             },
             Dominos:CreateDisplayCheck('icon'),
             Dominos:CreateDisplayCheck('time'),
+            Dominos:CreateDisplayCheck('border'),
+            Dominos:CreateDisplayCheck('spark'),
             {
-                type = 'header',
-                name = 'Latency'
-            },
-            Dominos:CreateDisplayCheck('latency'),
-            {
-                type = 'slider',
-                name = 'LatencyPadding',
+                type = 'sliderWithCheck',
+                name = 'Display_latency',
                 min = 0,
                 max = 500,
                 get = 'GetLatencyPadding',
-                set = 'SetLatencyPadding'
+                set = 'SetLatencyPadding',
+                check = {
+                    get = function(bar) return bar:Displaying('latency') end,
+                    set = function(bar, enable) bar:SetDisplay('latency', enable) end
+                }
             }
         }
     }
 }
-
-function CastBar:CanSetShowStates()
-    return false
-end
-
--- the cast bar always shows with the override and pet battle UIs
-function CastBar:CanShowInOverrideUI()
-    return false
-end
-
-function CastBar:CanShowInPetBattleUI()
-    return false
-end
 
 -- show a cast while the menu is open, so there is something to style
 function CastBar:OnMenuShown()
