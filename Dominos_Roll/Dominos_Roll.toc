@@ -5,4 +5,5 @@
 ## Author: Tuller
 ## Dependencies: Dominos
 ## IconTexture: Interface/AddOns/Dominos/Dominos
+alertsBar.lua
 rollBar.lua
