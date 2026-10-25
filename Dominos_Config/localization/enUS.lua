@@ -1,0 +1,2 @@
+-- English is the default locale and lives in default.lua. This file exists so
+-- that [TextLocale].lua in the toc has something to load for English clients

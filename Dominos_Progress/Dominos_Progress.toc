@@ -6,7 +6,8 @@
 ## Author: Tuller
 ## Dependencies: Dominos
 ## IconTexture: Interface/AddOns/Dominos/Dominos
-localization.xml
+localization\default.lua
+localization\[TextLocale].lua
 config.lua
 data/setup.lua
 data/xp.lua

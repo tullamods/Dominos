@@ -11,7 +11,8 @@
 ## IconTexture: Interface/AddOns/Dominos/Dominos
 # stuff required for the addon to work
 embeds.xml
-localization.xml
+localization\default.lua
+localization\[TextLocale].lua
 Dominos.lua
 core\helpers.lua
 core\contextMenu.lua

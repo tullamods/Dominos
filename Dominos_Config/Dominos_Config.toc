@@ -9,7 +9,8 @@
 ## LoadOnDemand: 1
 ## IconTexture: Interface/AddOns/Dominos/Dominos
 embeds.xml
-localization.xml
+localization\default.lua
+localization\[TextLocale].lua
 main.lua
 contextMenu\registry.lua
 contextMenu\controlPool.lua
