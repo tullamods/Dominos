@@ -45,5 +45,4 @@ function Gold:IsActive()
 end
 
 -- register this as a possible progress bar mode
-Addon.dataProviders = Addon.dataProviders or {}
 Addon.dataProviders["gold"] = Gold

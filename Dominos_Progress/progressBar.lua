@@ -39,6 +39,30 @@ function ProgressBar:New(id, modes, ...)
 	return bar
 end
 
+function ProgressBar:GetDefaults()
+	return {
+		point = 'BOTTOM',
+		x = 0,
+		y = 0,
+		columns = 20,
+		numButtons = 20,
+		padW = 2,
+		padH = 2,
+		spacing = 1,
+		texture = 'blizzard',
+		font = 'Friz Quadrata TT',
+		display = {
+			label = true,
+			value = true,
+			max = true,
+			bonus = true
+		},
+		displayLayer = 'BACKGROUND',
+		alwaysShowText = true,
+		lockMode = true
+	}
+end
+
 function ProgressBar:OnCreate(...)
 	ProgressBar.proto.OnCreate(self, ...)
 
@@ -77,30 +101,6 @@ function ProgressBar:OnRelease(...)
 	self.bonus = nil
 end
 
-function ProgressBar:GetDefaults()
-	return {
-		point = 'BOTTOM',
-		x = 0,
-		y = 0,
-		columns = 20,
-		numButtons = 20,
-		padW = 2,
-		padH = 2,
-		spacing = 1,
-		texture = 'blizzard',
-		font = 'Friz Quadrata TT',
-		display = {
-			label = true,
-			value = true,
-			max = true,
-			bonus = true
-		},
-		displayLayer = 'BACKGROUND',
-		alwaysShowText = true,
-		lockMode = true
-	}
-end
-
 --[[ events ]]--
 
 function ProgressBar:OnEnter()
@@ -114,91 +114,7 @@ function ProgressBar:OnLeave()
 end
 
 function ProgressBar:OnClick()
-	if self:IsModeLocked() then
-		self:NextMode()
-	else
-		self:SetLockMode(false)
-		self:NextMode()
-	end
-end
-
---[[ actions ]]--
-
-function ProgressBar:Update()
-	if not self.provider then return end
-
-	local value, max, bonus = self.provider:GetValues()
-	local label = self.provider:GetLabel()
-
-	self:SetValues(value, max, bonus)
-
-	if self.provider.GetColor then
-		self:SetColor(self.provider:GetColor())
-	end
-
-	if self.provider.GetBonusColor then
-		self:SetBonusColor(self.provider:GetBonusColor())
-	end
-
-	-- Handle special cases for text formatting
-	local bonusText = self.provider.GetBonusText and self.provider:GetBonusText()
-	local capped = self.provider.IsCapped and self.provider:IsCapped()
-
-	if bonusText then
-		self:UpdateText(label, value, max, bonusText, capped)
-	else
-		self:UpdateText(label, value, max, bonus, capped)
-	end
-end
-
-do
-	local buffer = nil
-	local twipe = table.wipe
-	local tinsert = table.insert
-	local tconcat = table.concat
-
-	function ProgressBar:UpdateText(label, value, max, bonus, capped)
-		buffer = buffer or {}
-		twipe(buffer)
-
-		local fn = self:CompressValues() and _G.AbbreviateLargeNumbers or _G.BreakUpLargeNumbers
-
-		if label and self:Displaying('label') then
-			tinsert(buffer, ('%s:'):format(label))
-		end
-
-		if capped then
-			if  bonus ~= nil then
-				tinsert(buffer, bonus)
-			end
-		else
-			if self:Displaying('value') then
-				if self:Displaying('max') then
-					tinsert(buffer, ('%s / %s'):format(fn(value), fn(max)))
-				else
-					tinsert(buffer, fn(value))
-				end
-			end
-
-			if value < max and self:Displaying('remaining') then
-				tinsert(buffer, ('-%s'):format(fn(max - value)))
-			end
-
-			if tonumber(bonus) then
-				if bonus > 0 and self:Displaying('bonus') then
-					tinsert(buffer, ('(+%s)'):format(fn(bonus)))
-				end
-			elseif bonus ~= nil and self:Displaying('label') then
-				tinsert(buffer, ('(%s)'):format(bonus))
-			end
-
-			if self:Displaying('percent') and max ~= 0 then
-				tinsert(buffer, ('%.1f%%'):format(value / max * 100))
-			end
-		end
-
-		self:SetText(tconcat(buffer, ' '))
-	end
+	self:NextMode()
 end
 
 --[[ mode ]]--
@@ -232,7 +148,7 @@ function ProgressBar:GetModeIndex()
 end
 
 function ProgressBar:OnModeChanged(mode)
-	local provider = Addon.dataProviders and Addon.dataProviders[mode]
+	local provider = Addon.dataProviders[mode]
 	if provider then
 		self.provider = provider
 		self:Update()
@@ -323,6 +239,8 @@ function ProgressBar:UpdateLockMode()
 	self:UpdateMode()
 end
 
+--[[ display conditions ]]--
+
 function ProgressBar:SetHideAtMaxLevel(hide)
 	if self:HideAtMaxLevel() ~= hide then
 		self.sets.hideAtMaxLevel = hide
@@ -334,10 +252,6 @@ function ProgressBar:HideAtMaxLevel()
 	return self.sets.hideAtMaxLevel or false
 end
 
-function ProgressBar:CanSetShowStates()
-	return false
-end
-
 function ProgressBar:GetDisplayConditions()
 	if self.sets.hideAtMaxLevel then
 		if UnitLevel("player") == (GetMaxLevelForPlayerExpansion or GetMaxPlayerLevel)() then
@@ -347,6 +261,33 @@ function ProgressBar:GetDisplayConditions()
 end
 
 --[[ value display ]]--
+
+function ProgressBar:Update()
+	if not self.provider then return end
+
+	local value, max, bonus = self.provider:GetValues()
+	local label = self.provider:GetLabel()
+
+	self:SetValues(value, max, bonus)
+
+	if self.provider.GetColor then
+		self:SetColor(self.provider:GetColor())
+	end
+
+	if self.provider.GetBonusColor then
+		self:SetBonusColor(self.provider:GetBonusColor())
+	end
+
+	-- Handle special cases for text formatting
+	local bonusText = self.provider.GetBonusText and self.provider:GetBonusText()
+	local capped = self.provider.IsCapped and self.provider:IsCapped()
+
+	if bonusText then
+		self:UpdateText(label, value, max, bonusText, capped)
+	else
+		self:UpdateText(label, value, max, bonus, capped)
+	end
+end
 
 function ProgressBar:SetValues(value, max, bonus)
 	local valueChanged = false
@@ -427,6 +368,56 @@ end
 
 --[[ text display ]]--
 
+do
+	local buffer = nil
+	local twipe = table.wipe
+	local tinsert = table.insert
+	local tconcat = table.concat
+
+	function ProgressBar:UpdateText(label, value, max, bonus, capped)
+		buffer = buffer or {}
+		twipe(buffer)
+
+		local fn = self:CompressValues() and _G.AbbreviateLargeNumbers or _G.BreakUpLargeNumbers
+
+		if label and self:Displaying('label') then
+			tinsert(buffer, ('%s:'):format(label))
+		end
+
+		if capped then
+			if  bonus ~= nil then
+				tinsert(buffer, bonus)
+			end
+		else
+			if self:Displaying('value') then
+				if self:Displaying('max') then
+					tinsert(buffer, ('%s / %s'):format(fn(value), fn(max)))
+				else
+					tinsert(buffer, fn(value))
+				end
+			end
+
+			if value < max and self:Displaying('remaining') then
+				tinsert(buffer, ('-%s'):format(fn(max - value)))
+			end
+
+			if tonumber(bonus) then
+				if bonus > 0 and self:Displaying('bonus') then
+					tinsert(buffer, ('(+%s)'):format(fn(bonus)))
+				end
+			elseif bonus ~= nil and self:Displaying('label') then
+				tinsert(buffer, ('(%s)'):format(bonus))
+			end
+
+			if self:Displaying('percent') and max ~= 0 then
+				tinsert(buffer, ('%.1f%%'):format(value / max * 100))
+			end
+		end
+
+		self:SetText(tconcat(buffer, ' '))
+	end
+end
+
 function ProgressBar:SetText(text, ...)
 	if select('#', ...) > 0 then
 		self.text:SetFormattedText(text, ...)
@@ -441,6 +432,48 @@ function ProgressBar:GetText()
 	return self.text:GetText()
 end
 
+function ProgressBar:SetDisplay(part, enable)
+	if self.sets.display[part] ~= enable then
+		self.sets.display[part] = enable or nil
+		self:Update()
+	end
+end
+
+function ProgressBar:Displaying(part)
+	return self.sets.display[part]
+end
+
+-- compress values
+function ProgressBar:SetCompressValues(enable)
+	if self.sets.compressValues ~= enable then
+		self.sets.compressValues = enable
+		self:Update()
+	end
+end
+
+function ProgressBar:CompressValues()
+	return self.sets.compressValues
+end
+
+-- always show text
+function ProgressBar:SetAlwaysShowText(enable)
+	if self.sets.alwaysShowText ~= enable then
+		self.sets.alwaysShowText = enable
+		self:UpdateAlwaysShowText()
+	end
+end
+
+function ProgressBar:GetAlwaysShowText()
+	return self.sets.alwaysShowText
+end
+
+function ProgressBar:UpdateAlwaysShowText()
+	if self:IsMouseOver() or self:GetAlwaysShowText() then
+		self.text:Show()
+	else
+		self.text:Hide()
+	end
+end
 
 --[[ coloring ]]--
 
@@ -516,6 +549,58 @@ function ProgressBar:GetBackgroundColor()
 	return r or 0, g or 0, b or 0, a or 1
 end
 
+--[[ status bar texture ]]--
+
+function ProgressBar:SetTextureID(textureID)
+	if self.sets.texture ~= textureID then
+		self.sets.texture = textureID
+		self:UpdateTexture()
+	end
+
+	return self
+end
+
+function ProgressBar:GetTextureID()
+	return self.sets.texture
+end
+
+function ProgressBar:GetSegmentTexture()
+	return LibStub('LibSharedMedia-3.0'):Fetch('statusbar', self:GetTextureID())
+end
+
+function ProgressBar:UpdateTexture()
+	local texture = self:GetSegmentTexture()
+
+	for _, segment in pairs(self.buttons) do
+		segment.bg:SetTexture(texture)
+		segment.value:SetStatusBarTexture(texture)
+		segment.bonus:SetStatusBarTexture(texture)
+	end
+end
+
+--[[ text font ]]--
+
+function ProgressBar:SetFontID(fontID)
+	if self.sets.font ~= fontID then
+		self.sets.font = fontID
+		self:UpdateFont()
+	end
+
+	return self
+end
+
+function ProgressBar:GetFontID()
+	return self.sets.font or 'Friz Quadrata TT'
+end
+
+function ProgressBar:UpdateFont()
+	local newFont = LibStub('LibSharedMedia-3.0'):Fetch('font', self:GetFontID())
+	local oldFont, fontSize, fontFlags = self.text:GetFont()
+
+	if newFont and newFont ~= oldFont then
+		self.text:SetFont(newFont, fontSize, fontFlags)
+	end
+end
 
 --[[ sizing ]]--
 
@@ -536,7 +621,6 @@ end
 function ProgressBar:GetDesiredHeight()
 	return self.sets.height or 12
 end
-
 
 --[[ segments ]]--
 
@@ -581,108 +665,6 @@ function ProgressBar:GetSegmentSize()
 	return width, height
 end
 
-
---[[ status bar texture ]]---
-
-function ProgressBar:SetTextureID(textureID)
-	if self.sets.texture ~= textureID then
-		self.sets.texture = textureID
-		self:UpdateTexture()
-	end
-
-	return self
-end
-
-function ProgressBar:GetTextureID()
-	return self.sets.texture
-end
-
-function ProgressBar:GetSegmentTexture()
-	return LibStub('LibSharedMedia-3.0'):Fetch('statusbar', self:GetTextureID())
-end
-
-function ProgressBar:UpdateTexture()
-	local texture = LibStub('LibSharedMedia-3.0'):Fetch('statusbar', self:GetTextureID())
-
-	for _, segment in pairs(self.buttons) do
-		segment.bg:SetTexture(texture)
-		segment.value:SetStatusBarTexture(texture)
-		segment.bonus:SetStatusBarTexture(texture)
-	end
-end
-
-
---[[ text font ]]--
-
-function ProgressBar:SetFontID(fontID)
-	if self.sets.font ~= fontID then
-		self.sets.font = fontID
-		self:UpdateFont()
-	end
-
-	return self
-end
-
-function ProgressBar:GetFontID()
-	return self.sets.font or 'Friz Quadrata TT'
-end
-
-function ProgressBar:UpdateFont()
-	local newFont = LibStub('LibSharedMedia-3.0'):Fetch('font', self:GetFontID())
-	local oldFont, fontSize, fontFlags = self.text:GetFont()
-
-	if newFont and newFont ~= oldFont then
-		self.text:SetFont(newFont, fontSize, fontFlags)
-	end
-end
-
-
---[[ text display ]]--
-
--- always show text
-function ProgressBar:SetAlwaysShowText(enable)
-	if self.sets.alwaysShowText ~= enable then
-		self.sets.alwaysShowText = enable
-		self:UpdateAlwaysShowText()
-	end
-end
-
-function ProgressBar:GetAlwaysShowText()
-	return self.sets.alwaysShowText
-end
-
-function ProgressBar:UpdateAlwaysShowText()
-	if self:IsMouseOver() or self:GetAlwaysShowText() then
-		self.text:Show()
-	else
-		self.text:Hide()
-	end
-end
-
-function ProgressBar:SetDisplay(part, enable)
-	if self.sets.display[part] ~= enable then
-		self.sets.display[part] = enable or nil
-		self:Update()
-	end
-end
-
-function ProgressBar:Displaying(part)
-	return self.sets.display[part]
-end
-
--- compress values
-function ProgressBar:SetCompressValues(enable)
-	if self.sets.compressValues ~= enable then
-		self.sets.compressValues = enable
-		self:Update()
-	end
-end
-
-function ProgressBar:CompressValues()
-	return self.sets.compressValues
-end
-
-
 --[[ rendering ]]--
 
 function ProgressBar:Layout()
@@ -725,7 +707,7 @@ do
 
 		local r, g, b, a = self:GetColor()
 		segment.bg:SetTexture(self:GetSegmentTexture())
-		segment.bg:SetVertexColor(r / 3, g / 3, b / 3, a)
+		segment.bg:SetVertexColor(r / 2, g / 2, b / 2, a / 2)
 
 		segment.value:SetStatusBarTexture(self:GetSegmentTexture())
 		segment.value:SetStatusBarColor(self:GetColor())
@@ -741,7 +723,6 @@ do
 		segmentPool:Release(button)
 	end
 end
-
 
 --[[ menu ]]--
 
@@ -791,12 +772,6 @@ ProgressBar.contextMenu = Dominos.Frame.contextMenu:Extend {
 			},
 			{
 				type = 'check',
-				name = 'HideAtMaxLevel',
-				get = 'HideAtMaxLevel',
-				set = 'SetHideAtMaxLevel'
-			},
-			{
-				type = 'check',
 				name = 'AutoSwitchModes',
 				-- only bars with more than one mode have anything to switch
 				available = function(bar)
@@ -821,12 +796,18 @@ ProgressBar.contextMenu = Dominos.Frame.contextMenu:Extend {
 				get = 'CompressValues',
 				set = 'SetCompressValues'
 			},
+			{
+				type = 'check',
+				name = 'HideAtMaxLevel',
+				get = 'HideAtMaxLevel',
+				set = 'SetHideAtMaxLevel'
+			},
 
-			-- the parts of the text, in the order they're displayed
 			{
 				type = 'header',
 				name = 'Content'
 			},
+
 			Dominos:CreateDisplayCheck('label'),
 			Dominos:CreateDisplayCheck('value'),
 			Dominos:CreateDisplayCheck('max'),
@@ -838,4 +819,3 @@ ProgressBar.contextMenu = Dominos.Frame.contextMenu:Extend {
 }
 
 Addon.ProgressBar = ProgressBar
-Addon.dataProviders = Addon.dataProviders or {}

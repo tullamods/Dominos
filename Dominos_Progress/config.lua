@@ -9,7 +9,7 @@ function Config:Init()
 	local dbVersion = db.global.version or 1
 
 	if dbVersion ~= ConfigVersion then
-		self:Upgrade(db, dbVersion, ConfigVersion)
+		self:Upgrade(db, dbVersion)
 
 		db.global.version = ConfigVersion
 	end
@@ -17,7 +17,7 @@ function Config:Init()
 	self.db = db
 end
 
-function Config:Upgrade(db, oldVersion, newVersion)
+function Config:Upgrade(db, oldVersion)
 	if oldVersion == 1 then
 		local charTable = db and db.sv and db.sv.char
 		if type(charTable) ~= "table" then
@@ -76,13 +76,7 @@ function Config:SetBarMode(barId, mode)
 end
 
 function Config:GetBarMode(barId)
-	local barSettings = self.db.char.bars[barId]
-
-	if type(barSettings) == "table" then
-		return barSettings.mode
-	else
-		return barSettings
-	end
+	return self.db.char.bars[barId].mode
 end
 
 function Config:SetOneBarMode(enable)

@@ -60,24 +60,24 @@ function ProgressBarModule:OnFirstLoad()
 	end
 
 	-- honor events
-	if Addon.dataProviders and Addon.dataProviders['honor'] then
+	if Addon.dataProviders['honor'] then
 		self:RegisterEvent("HONOR_LEVEL_UPDATE")
 		self:RegisterEvent("HONOR_XP_UPDATE")
 	end
 
 	-- artifact events
-	if Addon.dataProviders and Addon.dataProviders['artifact'] then
+	if Addon.dataProviders['artifact'] then
 		self:RegisterEvent("ARTIFACT_XP_UPDATE")
 		self:RegisterEvent("UNIT_INVENTORY_CHANGED")
 	end
 
 	-- azerite events
-	if Addon.dataProviders and Addon.dataProviders['azerite'] then
+	if Addon.dataProviders['azerite'] then
 		self:RegisterEvent("AZERITE_ITEM_EXPERIENCE_CHANGED")
 	end
 
 	-- gold events
-	if Addon.dataProviders and Addon.dataProviders['gold'] then
+	if Addon.dataProviders['gold'] then
 		self:RegisterEvent("PLAYER_MONEY")
 	end
 
@@ -112,7 +112,7 @@ function ProgressBarModule:PLAYER_XP_UPDATE()
 	self:UpdateAllBars()
 end
 
-function ProgressBarModule:UPDATE_FACTION(event)
+function ProgressBarModule:UPDATE_FACTION()
 	self:UpdateAllBars()
 end
 

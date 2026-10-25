@@ -8,11 +8,12 @@
 ## IconTexture: Interface/AddOns/Dominos/Dominos
 localization.xml
 config.lua
-main.lua
-progressBar.lua
+data/setup.lua
 data/xp.lua
 data/reputation.lua
 data/artifact.lua [AllowLoadGameType mainline]
 data/azerite.lua [AllowLoadGameType mainline]
 data/honor.lua
 data/gold.lua
+progressBar.lua
+main.lua
