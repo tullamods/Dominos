@@ -342,9 +342,9 @@ function MenuBarModule:OnFirstLoad()
         repositionHelpdeskTicketButton()
     end
 
-    -- a consistent bug in classic era, AchievementFrameAchievements_OnEvent
+    -- a consistent bug in classic clients, AchievementFrameAchievements_OnEvent
     -- tries to call a function that does not exist
-    if Addon:IsGameType('cata') and AchievementMicroButton_Update == nil then
+    if AchievementMicroButton_Update == nil and not Addon:IsGameType("standard", "forever") then
         AchievementMicroButton_Update = function() end
     end
 end

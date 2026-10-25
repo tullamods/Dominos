@@ -11,7 +11,8 @@ local framesToHide = {
     "MultiBarRight"
 }
 
-if not Addon:IsGameType('standard', "forever") then
+-- only the classic action bar defines MainMenuBar
+if MainMenuBar then
     framesToHide[#framesToHide + 1] = "MainMenuBar"
     framesToHide[#framesToHide + 1] = "MainMenuBarArtFrame"
 end

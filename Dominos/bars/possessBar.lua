@@ -181,12 +181,10 @@ function PossessBarModule:Load()
     self:RegisterEvent("PLAYER_ENTERING_WORLD", "Update")
     self:RegisterEvent("VEHICLE_UPDATE", "Update")
 
-    if not Addon:IsGameType("vanilla") then
-        self:RegisterEvent("UPDATE_MULTI_CAST_ACTIONBAR", "Update")
-        self:RegisterEvent("UPDATE_OVERRIDE_ACTIONBAR", "Update")
-        self:RegisterEvent("UPDATE_POSSESS_BAR", "Update")
-        self:RegisterEvent("UPDATE_VEHICLE_ACTIONBAR", "Update")
-    end
+    self:RegisterEvent("UPDATE_MULTI_CAST_ACTIONBAR", "Update")
+    self:RegisterEvent("UPDATE_OVERRIDE_ACTIONBAR", "Update")
+    self:RegisterEvent("UPDATE_POSSESS_BAR", "Update")
+    self:RegisterEvent("UPDATE_VEHICLE_ACTIONBAR", "Update")
 end
 
 function PossessBarModule:Unload()
