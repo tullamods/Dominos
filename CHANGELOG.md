@@ -2,7 +2,9 @@
 
 ## 11.5.0
 
-* 
+* Rebuilt and reorganized all bar context menus.
+* Show States now have a presets dropdown.
+* Progress Bar and Cast Bar width/height sliders are now in pixels.
 
 ## 11.4.5
 
