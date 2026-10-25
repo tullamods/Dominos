@@ -8,7 +8,7 @@ local _, Addon = ...
 local ParentAddon = Addon:GetParent()
 local ConfigLocale = Addon:GetLocale()
 
-local CONTENT_WIDTH, CONTENT_HEIGHT = 280, 420
+local CONTENT_WIDTH, CONTENT_HEIGHT = 280, 410
 local SECTION_PADDING = 8
 
 local menus = {} -- bar -> its menu
@@ -143,9 +143,9 @@ function MenuMixin:ScrollIntoView(control)
     local offset = scroll:GetVerticalScroll()
 
     if controlTop > top then
-        scroll:SetVerticalScroll(max(0, offset - (controlTop - top)))
+        scroll:SetVerticalScroll(math.max(0, offset - (controlTop - top)))
     elseif controlBottom < bottom then
-        scroll:SetVerticalScroll(min(scroll:GetVerticalScrollRange(), offset + (bottom - controlBottom)))
+        scroll:SetVerticalScroll(math.min(scroll:GetVerticalScrollRange(), offset + (bottom - controlBottom)))
     end
 end
 
@@ -182,26 +182,32 @@ function MenuMixin:ReleaseControls()
     end
 end
 
+function MenuMixin:GetPanel(id)
+    for _, panel in ipairs(self.contextMenu) do
+        if panel.id == id then
+            return panel
+        end
+    end
+end
+
 function MenuMixin:BuildPanel(id)
     self:CommitEdits()
     self:ReleaseControls()
 
-    for _, panel in ipairs(self.contextMenu) do
-        if panel.id == id then
-            for index, def in ipairs(Addon:GetPanelControls(panel, self)) do
-                local control = Addon:AcquireControl(def, self.Content, self)
+    local panel = self:GetPanel(id)
 
-                control.layoutIndex = index
+    if panel then
+        for index, def in ipairs(Addon:GetPanelControls(panel, self)) do
+            local control = Addon:AcquireControl(def, self.Content, self)
 
-                -- space out sections, but not above the first control
-                if def.type == 'header' and index > 1 then
-                    control.topPadding = SECTION_PADDING
-                end
+            control.layoutIndex = index
 
-                self.controls[index] = control
+            -- space out sections, but not above the first control
+            if def.type == 'header' and index > 1 then
+                control.topPadding = SECTION_PADDING
             end
 
-            break
+            self.controls[index] = control
         end
     end
 
@@ -221,6 +227,32 @@ function MenuMixin:Rebuild()
     if id then
         self:BuildPanel(id)
     end
+end
+
+-- a change to the bar can make controls available or not, such as columns
+-- once a bar has more than one button. true if the panel shown no longer has
+-- the controls it should
+function MenuMixin:NeedsRebuild()
+    local panel = self:GetPanel(self.Selector.currentPanelID)
+
+    if not panel then
+        return false
+    end
+
+    local defs = Addon:GetPanelControls(panel, self)
+    local controls = self.controls
+
+    if #defs ~= #controls then
+        return true
+    end
+
+    for index, def in ipairs(defs) do
+        if controls[index].def.name ~= def.name then
+            return true
+        end
+    end
+
+    return false
 end
 
 --------------------------------------------------------------------------------
@@ -363,6 +395,18 @@ refresher:SetScript('OnUpdate', function(self)
 
     for menu in pairs(open) do
         menu:RefreshControls()
+
+        if menu:NeedsRebuild() then
+            -- rebuilding gives up the control being dragged or typed in, so
+            -- wait until the user is done with it
+            local focus = GetCurrentKeyBoardFocus()
+
+            if IsMouseButtonDown('LeftButton') or (focus and isDescendantOf(focus, menu)) then
+                self:Show()
+            else
+                menu:Rebuild()
+            end
+        end
     end
 end)
 

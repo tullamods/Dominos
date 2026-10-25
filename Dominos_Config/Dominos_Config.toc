@@ -12,10 +12,8 @@ embeds.xml
 localization.xml
 main.lua
 contextMenu\registry.lua
-contextMenu\fonts.lua
 contextMenu\controlPool.lua
 contextMenu\scrollableContainer.lua
-contextMenu\hoverBackground.lua
 contextMenu\panelSelector.lua
 contextMenu\controls\check.lua
 contextMenu\controls\slider.lua

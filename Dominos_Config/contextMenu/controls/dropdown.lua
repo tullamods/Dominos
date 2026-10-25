@@ -1,7 +1,24 @@
 -- a labeled drop down list. the font and texture controls are drop downs whose
 -- items come from LibSharedMedia
 
-local _, Addon = ...
+local AddonName, Addon = ...
+local LSM = LibStub('LibSharedMedia-3.0')
+
+-- font objects for previewing fonts in the menu, made as they are needed
+local fontObjects = setmetatable({}, {
+    __index = function(t, k)
+        local fontPath = LSM:Fetch('font', k, false)
+
+        if fontPath then
+            local font = CreateFont(('%sFonts%s'):format(AddonName, k))
+
+            font:SetFont(fontPath, 12, 'OUTLINE')
+            t[k] = font
+
+            return font
+        end
+    end
+})
 
 local function itemValue(item)
     if type(item) == 'table' then
@@ -79,7 +96,7 @@ local function registerDropdown(name, source)
         dropdown:SetPoint('LEFT', label, 'RIGHT', 5, 0)
         dropdown:SetPoint('RIGHT')
 
-        control:SetFixedHeight(max(dropdown:GetHeight() or -math.huge, label:GetStringHeight()))
+        control:SetFixedHeight(math.max(dropdown:GetHeight(), label:GetStringHeight()))
         control:MarkDirty()
 
         control:SetScript('OnEnter', function()
@@ -89,7 +106,7 @@ local function registerDropdown(name, source)
 
             Addon:ShowControlTooltip(control)
         end)
-        
+
         control:SetScript('OnLeave', function()
             Addon:HideControlTooltip(control)
         end)
@@ -98,6 +115,17 @@ local function registerDropdown(name, source)
     end
 
     local function generateMenu(control)
+        local function isSelected(index)
+            return itemValue(control.items[index]) == getValue(control)
+        end
+
+        local function setSelected(index)
+            local value = itemValue(control.items[index])
+
+            control.value = value
+            control.menu:SetValue(control.def, value)
+        end
+
         return function(_, rootDescription)
             rootDescription:SetGridMode(MenuConstants.VerticalGridDirection)
 
@@ -107,15 +135,7 @@ local function registerDropdown(name, source)
 
             for i, item in ipairs(items) do
                 local radio = rootDescription:CreateRadio(
-                    itemLabel(control, item),
-                    function(index) return itemValue(control.items[index]) == getValue(control) end,
-                    function(index)
-                        local value = itemValue(control.items[index])
-
-                        control.value = value
-                        control.menu:SetValue(control.def, value)
-                    end,
-                    i
+                    itemLabel(control, item), isSelected, setSelected, i
                 )
 
                 if source.initItem then
@@ -180,7 +200,6 @@ registerDropdown('dropdown', {
 -- case, so show that as the selected value
 local function validMedia(mediaType)
     return function(control)
-        local LSM = LibStub('LibSharedMedia-3.0')
         local value = control.menu:GetValue(control.def)
 
         if value and LSM:IsValid(mediaType, value) then
@@ -193,19 +212,19 @@ end
 
 registerDropdown('texture', {
     items = function()
-        return LibStub('LibSharedMedia-3.0'):List('statusbar')
+        return LSM:List('statusbar')
     end,
     getValue = validMedia('statusbar')
 })
 
 registerDropdown('font', {
     items = function()
-        return Addon.Fonts:GetAll()
+        return LSM:List('font')
     end,
     getValue = validMedia('font'),
     -- preview each font in the menu using the font itself
     initItem = function(button, fontID)
-        local font = Addon.Fonts:GetFontObject(fontID)
+        local font = fontObjects[fontID]
 
         if font then
             button.fontString:SetFontObject(font)

@@ -20,7 +20,7 @@ local function controlError(panelId, control)
     end
 
     if type(control) ~= 'table' or type(control.type) ~= 'string' then
-        return ('panel %q has an control that is not a registry key or a table with a type'):format(panelId)
+        return ('panel %q has a control that is not a registry key or a table with a type'):format(panelId)
     end
 
     if not control.name then
@@ -133,11 +133,10 @@ local function applyInsert(panels, op)
     end
 
     local merged = CopyTable(panel.controls, true)
+    local first = before or (op.at == 'start' and 1 or #merged + 1)
 
     for i, control in ipairs(CopyTable(op.controls, true)) do
-        local index = (before or (op.at == 'start' and 1 or #merged + 1)) + i - 1
-
-        table.insert(merged, index, control)
+        table.insert(merged, first + i - 1, control)
     end
 
     panel.controls = merged
