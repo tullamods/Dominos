@@ -112,14 +112,23 @@ function ButtonBar:UpdateNumButtons()
     self:Layout()
 end
 
--- the most buttons the bar can have, which is also the most columns. bars that
--- can have more buttons than they have now override this
+-- the most buttons the bar can have. bars that can have more buttons than they
+-- have now override this
 function ButtonBar:MaxLength()
     return math.max(1, self:NumButtons())
 end
 
+-- the most columns the bar can show right now, which is one per button
+function ButtonBar:MaxColumns()
+    return math.max(1, self:NumButtons())
+end
+
+-- a stored column count can be more than the bar has buttons now, so show no
+-- more than it can use, and keep the stored value for when the bar grows again
 function ButtonBar:NumColumns()
-    return self.sets.columns or self:NumButtons()
+    local numButtons = self:NumButtons()
+
+    return math.min(self.sets.columns or numButtons, numButtons)
 end
 
 function ButtonBar:SetColumns(columns)

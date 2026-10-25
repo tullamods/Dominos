@@ -66,7 +66,7 @@ Controls.ColumnsSlider = {
     name = L.NumColumns,
     available = canHaveMultipleButtons,
     min = 1,
-    max = 'MaxLength',
+    max = 'MaxColumns',
     get = 'NumColumns',
     set = 'SetColumns'
 }

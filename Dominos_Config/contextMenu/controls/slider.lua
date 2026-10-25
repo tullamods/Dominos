@@ -13,8 +13,18 @@ local function readLimits(control)
     return menu:Resolve(def.min) or 0, menu:Resolve(def.max) or 100
 end
 
+-- a slider can't be changed while its check is off, or when its limits leave
+-- nothing to choose between
+local function isEnabled(control)
+    if control.CheckButton and not control.checked then
+        return false
+    end
+
+    return not control.noRange
+end
+
 local function updateEnabled(control)
-    local enabled = control.checked and true or false
+    local enabled = isEnabled(control)
     local alpha = enabled and 1 or 0.5
 
     control.Slider:SetEnabled(enabled)
@@ -58,6 +68,10 @@ local function refresh(control)
     control.value = value
     control.limitMin, control.limitMax = minValue, maxValue
 
+    -- a soft limit can be passed with shift, so there is still a choice
+    control.noRange = not control.def.softLimits and maxValue <= minValue
+    updateEnabled(control)
+
     -- a value past a soft limit was put there on purpose, so show it
     if control.def.softLimits then
         minValue = math.min(minValue, value)
@@ -97,8 +111,7 @@ local function setMinMaxValues(control, minValue, maxValue)
 end
 
 local function trySetValue(control, value)
-    -- the number can't be changed while the check is off
-    if control.CheckButton and not control.checked then
+    if not isEnabled(control) then
         return
     end
 
@@ -365,12 +378,13 @@ local function release(control)
 
     control.synced = false
     control.checked = nil
+    control.noRange = nil
     control.value = nil
 end
 
 local function getEditBox(control)
     -- a disabled number can't take focus
-    if control.CheckButton and not control.checked then
+    if not isEnabled(control) then
         return nil
     end
 
