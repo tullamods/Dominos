@@ -85,8 +85,6 @@ function CastBar:New(id, units, ...)
 end
 
 function CastBar:GetDisplayName()
-    local L = LibStub("AceLocale-3.0"):GetLocale("Dominos-CastBar")
-
     return L.CastBarDisplayName
 end
 

@@ -54,9 +54,7 @@ function MirrorTimer:CanSetShowStates()
     return false
 end
 
-function MirrorTimer:OnCreate()
-    MirrorTimer.proto.OnCreate(self)
-
+MirrorTimer:Extend('OnCreate', function(self)
     self:SetScript('OnEvent', self.OnEvent)
 
     self.props = {}
@@ -70,18 +68,16 @@ function MirrorTimer:OnCreate()
             timer:SetValue(0)
         end
     end
-end
+end)
 
-function MirrorTimer:OnLoadSettings()
+MirrorTimer:Extend('OnLoadSettings', function(self)
     self:SetProperty('font', self:GetFontID())
     self:SetProperty('texture', self:GetTextureID())
-end
+end)
 
-function MirrorTimer:OnRelease()
-    MirrorTimer.proto.OnRelease(self)
-
+MirrorTimer:Extend('OnRelease', function(self)
     LSM.UnregisterAllCallbacks(self)
-end
+end)
 
 ---@param key string
 ---@return any value

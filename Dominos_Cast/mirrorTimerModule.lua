@@ -1,6 +1,3 @@
---[[
-	the main controller of dominos progress
---]]
 local _, Addon = ...
 local Dominos = LibStub("AceAddon-3.0"):GetAddon("Dominos")
 local MIRRORTIMER_NUMTIMERS = MIRRORTIMER_NUMTIMERS or #MirrorTimerContainer.mirrorTimers
@@ -55,9 +52,6 @@ function MirrorTimerModule:OnFirstLoad()
     end
 end
 
----@param event string
----@param isInitialLogin boolean
----@param isReloadingUi boolean
 function MirrorTimerModule:UpdateTimers()
     for _, bar in pairs(self.bars) do
         bar:Update()
