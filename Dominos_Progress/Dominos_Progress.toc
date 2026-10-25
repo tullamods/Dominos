@@ -1,4 +1,4 @@
-## Interface: 120105, 120100, 50504, 20506, 16001, 11509
+## Interface: 120107, 120105, 50504, 20506, 16001, 11509
 ## Title: Dominos Progress
 ## Title-zhCN: Dominos 进度条模块
 ## Notes: Progress bars of all sorts
@@ -9,12 +9,12 @@
 localization\default.lua
 localization\[TextLocale].lua
 config.lua
-data/setup.lua
-data/xp.lua
-data/reputation.lua
-data/artifact.lua [AllowLoadGameType mainline]
-data/azerite.lua [AllowLoadGameType mainline]
-data/honor.lua
-data/gold.lua
+data\setup.lua
+data\xp.lua
+data\reputation.lua
+data\artifact.lua [AllowLoadGameType standard]
+data\azerite.lua [AllowLoadGameType standard]
+data\honor.lua
+data\gold.lua
 progressBar.lua
 main.lua
