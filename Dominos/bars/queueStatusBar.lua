@@ -64,9 +64,11 @@ function QueueStatusBarModule:Unload()
 end
 
 function QueueStatusBarModule:OnFirstLoad()
-    hooksecurefunc(QueueStatusButton, "UpdatePosition", function()
-        if self.frame then
-            self.frame:RepositionButton()
-        end
-    end)
+    if QueueStatusButton.UpdatePosition then
+        hooksecurefunc(QueueStatusButton, "UpdatePosition", function()
+            if self.frame then
+                self.frame:RepositionButton()
+            end
+        end)
+    end
 end
