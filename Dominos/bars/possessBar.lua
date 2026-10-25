@@ -6,9 +6,7 @@
 local AddonName, Addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(AddonName)
 
--- missing APis in classic
-local UnitControllingVehicle = UnitControllingVehicle or function() return false end
-local CanExitVehicle = CanExitVehicle or function() return false end
+-- missing APIs in classic
 local POSSESS_CANCEL_SLOT = POSSESS_CANCEL_SLOT or 2
 
 --------------------------------------------------------------------------------
@@ -90,15 +88,25 @@ function DominosPossessBar:New()
     return DominosPossessBar.proto.New(self, 'possess')
 end
 
-function DominosPossessBar:CanSetShowStates()
-    return false
-end
-
 function DominosPossessBar:GetDisplayName()
     return L.PossessBarDisplayName
 end
 
--- disable UpdateDisplayConditions as we're not using showstates for this
+function DominosPossessBar:GetDefaults()
+    return {
+        point = 'CENTER',
+        x = 244,
+        y = 0,
+        spacing = 4,
+        padW = 2,
+        padH = 2
+    }
+end
+
+function DominosPossessBar:CanSetShowStates()
+    return false
+end
+
 function DominosPossessBar:GetDisplayConditions()
     if Addon:IsGameType("standard") then
         return '[canexitvehicle][possessbar]show;hide'
@@ -113,17 +121,6 @@ function DominosPossessBar:GetDisplayConditions()
     end
 
     return '[canexitvehicle][possessbar][bonusbar:5]show;hide'
-end
-
-function DominosPossessBar:GetDefaults()
-    return {
-        point = 'CENTER',
-        x = 244,
-        y = 0,
-        spacing = 4,
-        padW = 2,
-        padH = 2
-    }
 end
 
 function DominosPossessBar:NumButtons()

@@ -40,18 +40,27 @@ function BagBar:GetDefaults()
     end
 end
 
-function BagBar:SetShowBags(enable)
-    self.sets.oneBag = not enable
-    self:UpdateBagSlots()
-    self:ReloadButtons()
-end
+-- Frame Overrides
+BagBar:Extend(
+    'OnCreate',
+    function(self)
+        self.bagSlots = {}
+    end
+)
+
+BagBar:Extend(
+    'OnLoadSettings',
+    function(self)
+        self:UpdateBagSlots()
+    end
+)
 
 function BagBar:ShowBags()
     return not self.sets.oneBag
 end
 
-function BagBar:SetShowKeyRing(enable)
-    self.sets.keyRing = enable and true
+function BagBar:SetShowBags(enable)
+    self.sets.oneBag = not enable
     self:UpdateBagSlots()
     self:ReloadButtons()
 end
@@ -60,16 +69,92 @@ function BagBar:ShowKeyRing()
     return self.sets.keyRing and not Addon:IsGameType('standard', 'mists', 'cata')
 end
 
+function BagBar:SetShowKeyRing(enable)
+    self.sets.keyRing = enable and true
+    self:UpdateBagSlots()
+    self:ReloadButtons()
+end
+
+do
+    local function maybeAddBagSlot(bagSlots, buttonName)
+        local button = _G[buttonName]
+        if button then
+            bagSlots[#bagSlots + 1] = button
+        end
+    end
+
+    function BagBar:UpdateBagSlots()
+        local slots = self.bagSlots
+
+        table.wipe(slots)
+
+        if self:ShowKeyRing() then
+            local buttonName = Addon:IsGameType("forever") and 'KeyRingButton' or AddonName .. 'KeyRingButton'
+            maybeAddBagSlot(slots, buttonName)
+        end
+
+        if self:ShowBags() then
+            maybeAddBagSlot(slots, 'CharacterReagentBag0Slot')
+
+            for slot = (NUM_BAG_SLOTS - 1), 0, -1 do
+                maybeAddBagSlot(slots, ('CharacterBag%dSlot'):format(slot))
+            end
+        end
+
+        maybeAddBagSlot(slots, 'MainMenuBarBackpackButton')
+    end
+end
+
+-- the most slots the bar can show, not the number shown now
+function BagBar:MaxLength()
+    local count = 1 + NUM_BAG_SLOTS
+
+    if CharacterReagentBag0Slot then
+        count = count + 1
+    end
+
+    if not Addon:IsGameType('standard', 'mists', 'cata') then
+        count = count + 1
+    end
+
+    return count
+end
+
+function BagBar:NumButtons()
+    return #self.bagSlots
+end
+
+function BagBar:AcquireButton(index)
+    return self.bagSlots[index]
+end
+
+function BagBar:OnAttachButton(button)
+    button:Show()
+end
+
+function BagBar:IsHorizontal()
+    local buttonCount = math.min(self:NumButtons(), #self.buttons)
+    if buttonCount == 0 then
+        return false
+    end
+
+    return Clamp(self:NumColumns(), 1, buttonCount) > 1
+end
+
+if Addon:IsGameType("standard") then
+    function BagBar:GetButtonSize()
+        local w, h = MainMenuBarBackpackButton:GetSize()
+        local l, r, t, b = self:GetButtonInsets()
+
+        return w - (l + r), h - (t + b)
+    end
+end
+
 -- the bag bar has variable sized buttons, so use a bit of a more complicated
 -- layout function to better help with this.
 function BagBar:Layout()
     local buttonCount = math.min(self:NumButtons(), #self.buttons)
-    if buttonCount == 0 then
-        ButtonBar.proto.Layout(self)
-        return
-    end
-
-    local columnCount = math.max(1, math.min(self:NumColumns(), buttonCount))
+    local columnCount = Clamp(self:NumColumns(), 1, buttonCount)
     local rowCount = math.ceil(buttonCount / columnCount)
 
     local leftInset, _, topInset = self:GetButtonInsets()
@@ -161,85 +246,10 @@ function BagBar:Layout()
     )
 end
 
--- Frame Overrides
-BagBar:Extend(
-    'OnCreate',
-    function(self)
-        self.bagSlots = {}
-    end
-)
-
-BagBar:Extend(
-    'OnLoadSettings',
-    function(self)
-        self:UpdateBagSlots()
-    end
-)
-
-do
-    local function maybeAddBagSlot(bagSlots, buttonName)
-        local button = _G[buttonName]
-        if button then
-            bagSlots[#bagSlots + 1] = button
-        end
-    end
-
-    function BagBar:UpdateBagSlots()
-        local slots = self.bagSlots
-
-        table.wipe(slots)
-
-        if self:ShowKeyRing() then
-            local buttonName = Addon:IsGameType("forever") and 'KeyRingButton' or AddonName .. 'KeyRingButton'
-            maybeAddBagSlot(slots, buttonName)
-        end
-
-        if self:ShowBags() then
-            maybeAddBagSlot(slots, 'CharacterReagentBag0Slot')
-
-            for slot = (NUM_BAG_SLOTS - 1), 0, -1 do
-                maybeAddBagSlot(slots, ('CharacterBag%dSlot'):format(slot))
-            end
-        end
-
-        maybeAddBagSlot(slots, 'MainMenuBarBackpackButton')
-    end
-end
-
-function BagBar:AcquireButton(index)
-    return self.bagSlots[index]
-end
-
-function BagBar:OnAttachButton(button)
-    button:Show()
-end
-
-function BagBar:NumButtons()
-    return #self.bagSlots
-end
-
-function BagBar:IsHorizontal()
-    local buttonCount = math.min(self:NumButtons(), #self.buttons)
-    if buttonCount == 0 then
-        return false
-    end
-
-    return math.max(1, math.min(self:NumColumns(), buttonCount)) > 1
-end
-
-if Addon:IsGameType("standard") then
-    function BagBar:GetButtonSize()
-        local w, h = MainMenuBarBackpackButton:GetSize()
-        local l, r, t, b = self:GetButtonInsets()
-
-        return w - (l + r), h - (t + b)
-    end
-end
-
 BagBar.contextMenu = Addon.ButtonBar.contextMenu:Extend {
     {
-        addPanel = 'Appearance',
-        after = 'General',
+        insert = 'General',
+        at = 'start',
         controls = {
             {
                 type = 'check',
@@ -287,7 +297,7 @@ function BagBarModule:OnFirstLoad()
     -- use our own handling for the blizzard bag bar
     if MainMenuBarManager then
         EventRegistry:UnregisterCallback("MainMenuBarManager.OnExpandChanged", MainMenuBarManager)
-        EventRegistry:UnegisterFrameEventAndCallback("VARIABLES_LOADED", MainMenuBarManager)
+        EventRegistry:UnregisterFrameEventAndCallback("VARIABLES_LOADED", MainMenuBarManager)
     elseif BagsBar then
         EventRegistry:UnregisterCallback("MainMenuBarManager.OnExpandChanged", BagsBar)
         hooksecurefunc(BagsBar, "Layout", function() self:LayoutBagBar() end)

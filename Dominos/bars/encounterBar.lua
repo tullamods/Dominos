@@ -5,6 +5,12 @@ local L = LibStub('AceLocale-3.0'):GetLocale(AddonName)
 
 local PowerBar = Addon:CreateClass('Frame', Addon.Frame)
 
+local function attach(frame, parent)
+	frame:SetParent(parent)
+	frame:ClearAllPoints()
+	frame:SetPoint('CENTER', parent)
+end
+
 function PowerBar:New()
 	local frame = PowerBar.proto.New(self, 'encounter')
 
@@ -13,56 +19,6 @@ function PowerBar:New()
 	frame:Layout()
 
 	return frame
-end
-
-PowerBar:Extend('OnCreate', function(self)
-	self.frames = {}
-
-	local ppb = PlayerPowerBarAlt
-	if ppb then
-		ppb:ClearAllPoints()
-		ppb:SetParent(self)
-		ppb:SetPoint('CENTER', self)
-
-		if type(ppb.SetupPlayerPowerBarPosition) == "function" then
-			hooksecurefunc(ppb, "SetupPlayerPowerBarPosition", function(bar)
-				if bar:GetParent() ~= self then
-					bar:SetParent(self)
-					bar:ClearAllPoints()
-					bar:SetPoint('CENTER', self)
-				end
-			end)
-		end
-
-		if type(UnitPowerBarAlt_SetUp) == "function" then
-			hooksecurefunc("UnitPowerBarAlt_SetUp", function(bar)
-				if bar.isPlayerBar and bar:GetParent() ~= self then
-					bar:SetParent(self)
-					bar:ClearAllPoints()
-					bar:SetPoint('CENTER', self)
-				end
-			end)
-		end
-
-		ppb:HookScript("OnSizeChanged", function() self:Layout() end)
-
-		self.frames[#self.frames+1] = ppb
-	end
-
-	local uiPowerBar = UIWidgetPowerBarContainerFrame
-	if uiPowerBar then
-		uiPowerBar:ClearAllPoints()
-		uiPowerBar:SetParent(self)
-		uiPowerBar:SetPoint('CENTER', self)
-
-		uiPowerBar:HookScript("OnSizeChanged", function() self:Layout() end)
-
-		self.frames[#self.frames+1] = uiPowerBar
-	end
-end)
-
-function PowerBar:CanSetShowStates()
-	return false
 end
 
 function PowerBar:GetDisplayName()
@@ -74,6 +30,44 @@ function PowerBar:GetDefaults()
 end
 
 -- always reparent + position the bar due to UIParent.lua moving it whenever its shown
+PowerBar:Extend('OnCreate', function(self)
+	self.frames = {}
+
+	local ppb = PlayerPowerBarAlt
+	if ppb then
+		attach(ppb, self)
+
+		if type(ppb.SetupPlayerPowerBarPosition) == "function" then
+			hooksecurefunc(ppb, "SetupPlayerPowerBarPosition", function(bar)
+				if bar:GetParent() ~= self then
+					attach(bar, self)
+				end
+			end)
+		end
+
+		if type(UnitPowerBarAlt_SetUp) == "function" then
+			hooksecurefunc("UnitPowerBarAlt_SetUp", function(bar)
+				if bar.isPlayerBar and bar:GetParent() ~= self then
+					attach(bar, self)
+				end
+			end)
+		end
+
+		ppb:HookScript("OnSizeChanged", function() self:Layout() end)
+
+		self.frames[#self.frames + 1] = ppb
+	end
+
+	local uiPowerBar = UIWidgetPowerBarContainerFrame
+	if uiPowerBar then
+		attach(uiPowerBar, self)
+
+		uiPowerBar:HookScript("OnSizeChanged", function() self:Layout() end)
+
+		self.frames[#self.frames + 1] = uiPowerBar
+	end
+end)
+
 function PowerBar:Layout()
 	local width, height = 0, 0
 
@@ -102,10 +96,10 @@ function PowerBarModule:Load()
 end
 
 function PowerBarModule:Unload()
-    if self.frame then
-        self.frame:Free()
-        self.frame = nil
-    end
+	if self.frame then
+		self.frame:Free()
+		self.frame = nil
+	end
 end
 
 function PowerBarModule:OnFirstLoad()

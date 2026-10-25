@@ -11,48 +11,8 @@ function ExtraAbilityBar:New()
     return ExtraAbilityBar.proto.New(self, BAR_ID)
 end
 
-function ExtraAbilityBar:CanSetShowStates()
-    return false
-end
-
 function ExtraAbilityBar:GetDisplayName()
     return L.ExtraBarDisplayName
-end
-
-ExtraAbilityBar:Extend('OnAcquire',  function(self)
-    self:RepositionExtraAbilityContainer()
-    self:UpdateShowBlizzardTexture()
-    self:Layout()
-end)
-
-function ExtraAbilityBar:ThemeBar(enable)
-    if HasExtraActionBar() then
-        local button = ExtraActionBarFrame and ExtraActionBarFrame.button
-        if button then
-            if enable then
-                Addon:GetModule('ButtonThemer'):Register(button, 'Extra Bar')
-            else
-                Addon:GetModule('ButtonThemer'):Unregister(button, 'Extra Bar')
-            end
-        end
-    end
-
-    local zoneAbilities = C_ZoneAbility and C_ZoneAbility.GetActiveAbilities()
-    if type(zoneAbilities) == "table" and #zoneAbilities > 0 then
-        for button in ZoneAbilityFrame.SpellButtonContainer:EnumerateActive() do
-            if button then
-                if enable then
-                    Addon:GetModule('ButtonThemer'):Register(
-                        button, 'Extra Bar', {Icon = button.Icon}
-                    )
-                else
-                    Addon:GetModule('ButtonThemer'):Unregister(
-                        button, 'Extra Bar'
-                    )
-                end
-            end
-        end
-    end
 end
 
 function ExtraAbilityBar:GetDefaults()
@@ -65,6 +25,12 @@ function ExtraAbilityBar:GetDefaults()
         showInOverrideUI = true
     }
 end
+
+ExtraAbilityBar:Extend('OnAcquire', function(self)
+    self:RepositionExtraAbilityContainer()
+    self:UpdateShowBlizzardTexture()
+    self:Layout()
+end)
 
 function ExtraAbilityBar:Layout()
     local w, h = 256, 120
@@ -89,10 +55,57 @@ function ExtraAbilityBar:RepositionExtraAbilityContainer()
     end
 end
 
+function ExtraAbilityBar:ShowingBlizzardTexture()
+    return not self.sets.hideBlizzardTexture
+end
+
+function ExtraAbilityBar:ShowBlizzardTexture(show)
+    self.sets.hideBlizzardTexture = not show
+    self:UpdateShowBlizzardTexture()
+end
+
+function ExtraAbilityBar:UpdateShowBlizzardTexture()
+    local show = self:ShowingBlizzardTexture()
+
+    ExtraActionBarFrame.button.style:SetShown(show)
+
+    if ZoneAbilityFrame then
+        ZoneAbilityFrame.Style:SetShown(show)
+    end
+
+    self:ThemeBar(not show)
+end
+
+local function themeButton(button, enable, info)
+    local themer = Addon:GetModule('ButtonThemer')
+
+    if enable then
+        themer:Register(button, 'Extra Bar', info)
+    else
+        themer:Unregister(button, 'Extra Bar')
+    end
+end
+
+function ExtraAbilityBar:ThemeBar(enable)
+    if HasExtraActionBar() then
+        local button = ExtraActionBarFrame and ExtraActionBarFrame.button
+        if button then
+            themeButton(button, enable)
+        end
+    end
+
+    local zoneAbilities = C_ZoneAbility and C_ZoneAbility.GetActiveAbilities()
+    if type(zoneAbilities) == "table" and #zoneAbilities > 0 then
+        for button in ZoneAbilityFrame.SpellButtonContainer:EnumerateActive() do
+            themeButton(button, enable, { Icon = button.Icon })
+        end
+    end
+end
+
 ExtraAbilityBar.contextMenu = Addon.Frame.contextMenu:Extend {
     {
-        addPanel = 'Appearance',
-        after = 'General',
+        insert = 'General',
+        at = 'start',
         controls = {
             {
                 type = 'check',
@@ -103,36 +116,6 @@ ExtraAbilityBar.contextMenu = Addon.Frame.contextMenu:Extend {
         }
     }
 }
-
-function ExtraAbilityBar:ShowBlizzardTexture(show)
-    self.sets.hideBlizzardTeture = not show
-
-    self:UpdateShowBlizzardTexture()
-end
-
-function ExtraAbilityBar:ShowingBlizzardTexture()
-    return not self.sets.hideBlizzardTeture
-end
-
-function ExtraAbilityBar:UpdateShowBlizzardTexture()
-    if self:ShowingBlizzardTexture() then
-        ExtraActionBarFrame.button.style:Show()
-
-        if ZoneAbilityFrame then
-            ZoneAbilityFrame.Style:Show()
-        end
-
-        self:ThemeBar(false)
-    else
-        ExtraActionBarFrame.button.style:Hide()
-
-        if ZoneAbilityFrame then
-            ZoneAbilityFrame.Style:Hide()
-        end
-
-        self:ThemeBar(true)
-    end
-end
 
 local ExtraAbilityBarModule = Addon:NewModule('ExtraAbilityBar')
 
@@ -181,16 +164,6 @@ function ExtraAbilityBarModule:OnFirstLoad()
     end
 end
 
-function ExtraAbilityBarModule:RepositionExtraAbilityContainer()
-    if (not self.frame) then return end
-
-    local _, relFrame = ExtraAbilityContainer:GetPoint()
-
-    if self.frame ~= relFrame then
-        self.frame:RepositionExtraAbilityContainer()
-    end
-end
-
 -- Titan panel will attempt to take control of the ExtraActionBarFrame and break
 -- its position and ability to be usable. This is because Titan Panel doesn't
 -- check to see if another addon has taken control of the bar
@@ -207,4 +180,14 @@ function ExtraAbilityBarModule:ApplyTitanPanelWorkarounds()
 
     adjust("ExtraActionBarFrame", true)
     return true
+end
+
+function ExtraAbilityBarModule:RepositionExtraAbilityContainer()
+    if (not self.frame) then return end
+
+    local _, relFrame = ExtraAbilityContainer:GetPoint()
+
+    if self.frame ~= relFrame then
+        self.frame:RepositionExtraAbilityContainer()
+    end
 end

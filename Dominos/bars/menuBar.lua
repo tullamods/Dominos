@@ -120,6 +120,24 @@ function MenuBar:GetDisplayName()
     return L.MenuBarDisplayName
 end
 
+function MenuBar:GetDefaults()
+    if Addon:IsGameType("standard") then
+        return {
+            displayLayer = 'LOW',
+            point = 'BOTTOMRIGHT',
+            x = 0,
+            y = 48
+        }
+    else
+        return {
+            displayLayer = 'LOW',
+            point = 'BOTTOMRIGHT',
+            x = 0,
+            y = 0
+        }
+    end
+end
+
 MenuBar:Extend('OnCreate', function(self)
     self.activeButtons = {}
 end)
@@ -146,24 +164,6 @@ function MenuBar:UpdateClickThrough()
     end
 end
 
-function MenuBar:GetDefaults()
-    if Addon:IsGameType("standard") then
-        return {
-            displayLayer = 'LOW',
-            point = 'BOTTOMRIGHT',
-            x = 0,
-            y = 48
-        }
-    else
-        return {
-            displayLayer = 'LOW',
-            point = 'BOTTOMRIGHT',
-            x = 0,
-            y = 0
-        }
-    end
-end
-
 function MenuBar:AcquireButton(index)
     return self.activeButtons[index]
 end
@@ -182,6 +182,16 @@ function MenuBar:ReloadButtons()
     end
 
     MenuBar.proto.ReloadButtons(self)
+end
+
+function MenuBar:IsMenuButtonEnabled(container)
+    local key = container.button:GetName()
+    local disabledButtons = self.sets.disabled
+    if disabledButtons and disabledButtons[key] then
+        return false
+    end
+
+    return container:ShouldShow()
 end
 
 function MenuBar:SetEnableMenuButton(container, enabled)
@@ -208,19 +218,6 @@ function MenuBar:SetEnableMenuButton(container, enabled)
 
     self:ReloadButtons()
 end
-
-function MenuBar:IsMenuButtonEnabled(container)
-    local key = container.button:GetName()
-    local disabledButtons = self.sets.disabled
-    if disabledButtons and disabledButtons[key] then
-        return false
-    end
-
-    return container:ShouldShow()
-end
-
--- exports
-Addon.MenuBar = MenuBar
 
 --------------------------------------------------------------------------------
 -- context menu
@@ -255,6 +252,9 @@ MenuBar.contextMenu = Addon.ButtonBar.contextMenu:Extend {
         end
     }
 }
+
+-- exports
+Addon.MenuBar = MenuBar
 
 --------------------------------------------------------------------------------
 -- module
@@ -323,10 +323,6 @@ function MenuBarModule:OnFirstLoad()
     -- so reattach based on the event
     if PetBattleFrame then
         self:RegisterEvent('PET_BATTLE_CLOSE', 'AttachButtons')
-    end
-
-    if MicroMenu:GetParent() == MicroMenuContainer then
-        self:AttachButtons()
     end
 
     if MicroMenu.UpdateHelpTicketButtonAnchor then

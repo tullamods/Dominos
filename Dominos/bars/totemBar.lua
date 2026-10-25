@@ -1,4 +1,4 @@
-if not MultiCastActionBarFrame then return end
+if not (MultiCastActionBarFrame and UnitClassBase('player') == 'SHAMAN') then return end
 
 --------------------------------------------------------------------------------
 -- Totem bar
@@ -6,9 +6,6 @@ if not MultiCastActionBarFrame then return end
 --------------------------------------------------------------------------------
 
 local AddonName, Addon = ...
-if not (UnitClassBase('player') == 'SHAMAN' and Addon:IsGameType('cata', 'wrath', 'forever')) then
-    return
-end
 
 --------------------------------------------------------------------------------
 -- Bar setup
@@ -26,18 +23,6 @@ function TotemBar:GetDisplayName()
     return L.TotemBarDisplayName
 end
 
-TotemBar:Extend('OnAcquire', function(self)
-    local container = MultiCastActionBarFrame
-
-    container:ClearAllPoints()
-    container:SetPoint('CENTER', self)
-    container:SetParent(self)
-
-    self.container = container
-
-    self:Layout()
-end)
-
 function TotemBar:GetDefaults()
     return {
         point = 'CENTER',
@@ -45,8 +30,18 @@ function TotemBar:GetDefaults()
     }
 end
 
+TotemBar:Extend('OnAcquire', function(self)
+    if not InCombatLockdown() then
+        MultiCastActionBarFrame:SetParent(self)
+        MultiCastActionBarFrame:ClearAllPoints()
+        MultiCastActionBarFrame:SetPoint('CENTER', self)
+    end
+
+    self:Layout()
+end)
+
 function TotemBar:Layout()
-    local w, h = self.container:GetSize()
+    local w, h = MultiCastActionBarFrame:GetSize()
     local pW, pH = self:GetPadding()
 
     self:SetSize(w + pW, h + pH)
@@ -59,7 +54,7 @@ Addon.TotemBar = TotemBar
 -- Module
 --------------------------------------------------------------------------------
 
-local TotemBarModule = Addon:NewModule('TotemBar', 'AceEvent-3.0')
+local TotemBarModule = Addon:NewModule('TotemBar')
 
 function TotemBarModule:Load()
     self.bar = TotemBar:New()

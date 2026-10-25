@@ -126,6 +126,16 @@ function DominosStanceBar:UpdateActions()
 end
 
 -- binding text
+function DominosStanceBar:ShowingBindingText()
+    local result = self.sets.showBindingText
+
+    if result == nil then
+        result = Addon.db.profile.showBindingText
+    end
+
+    return result
+end
+
 function DominosStanceBar:SetShowBindingText(show)
     show = show and true
 
@@ -140,20 +150,10 @@ function DominosStanceBar:SetShowBindingText(show)
     end
 end
 
-function DominosStanceBar:ShowingBindingText()
-    local result = self.sets.showBindingText
-
-    if result == nil then
-        result = Addon.db.profile.showBindingText
-    end
-
-    return result
-end
-
 DominosStanceBar.contextMenu = Addon.ButtonBar.contextMenu:Extend {
     {
-        addPanel = 'Appearance',
-        after = 'General',
+        insert = 'General',
+        at = 'start',
         controls = {
             {
                 type = 'check',

@@ -36,12 +36,17 @@ function PetBar:New()
     return PetBar.proto.New(self, 'pet')
 end
 
-function PetBar:CanSetShowStates()
-    return false
-end
-
 function PetBar:GetDisplayName()
     return L.PetBarDisplayName
+end
+
+function PetBar:GetDefaults()
+    return {
+        point = 'CENTER',
+        x = 0,
+        y = -32,
+        spacing = 6
+    }
 end
 
 function PetBar:IsOverrideBar()
@@ -67,15 +72,6 @@ else
     end
 end
 
-function PetBar:GetDefaults()
-    return {
-        point = 'CENTER',
-        x = 0,
-        y = -32,
-        spacing = 6
-    }
-end
-
 function PetBar:NumButtons()
     return NUM_PET_ACTION_SLOTS
 end
@@ -97,6 +93,29 @@ function PetBar:OnDetachButton(button)
     Addon:GetModule('Tooltips'):Unregister(button)
 end
 
+PetBar:Extend('OnAcquire', function(self)
+    self:UpdateTransparent(true)
+end)
+
+function PetBar:OnSetAlpha()
+    self:UpdateTransparent()
+end
+
+function PetBar:UpdateTransparent(force)
+    local transparent = self:GetAlpha() == 0
+    if (self.transparent ~= transparent) or force then
+        self.transparent = transparent
+
+        for _, button in pairs(self.buttons) do
+            local parent = transparent and Addon.ShadowUIParent or button
+
+            if button.cooldown:GetParent() ~= parent then
+                button.cooldown:SetParent(parent)
+            end
+        end
+    end
+end
+
 -- keybound events
 function PetBar:KEYBOUND_ENABLED()
     self:ForButtons("Show")
@@ -111,36 +130,17 @@ function PetBar:KEYBOUND_DISABLED()
     end
 end
 
-PetBar:Extend('OnAcquire', function(self)
-    self:UpdateTransparent(true)
-end)
-
-function PetBar:OnSetAlpha()
-    self:UpdateTransparent()
-end
-
-function PetBar:UpdateTransparent(force)
-    local transparent = self:GetAlpha() == 0
-    if (self.transparent ~= transparent) or force then
-        self.transparent = transparent
-
-        if transparent then
-            for _, button in pairs(self.buttons) do
-                if button.cooldown:GetParent() ~= Addon.ShadowUIParent then
-                    button.cooldown:SetParent(Addon.ShadowUIParent)
-                end
-            end
-        else
-            for _, button in pairs(self.buttons) do
-                if button.cooldown:GetParent() ~= button then
-                    button.cooldown:SetParent(button)
-                end
-            end
-        end
-    end
-end
-
 -- binding text
+function PetBar:ShowingBindingText()
+    local result = self.sets.showBindingText
+
+    if result == nil then
+        result = Addon.db.profile.showBindingText
+    end
+
+    return result
+end
+
 function PetBar:SetShowBindingText(show)
     show = show and true
 
@@ -155,20 +155,10 @@ function PetBar:SetShowBindingText(show)
     end
 end
 
-function PetBar:ShowingBindingText()
-    local result = self.sets.showBindingText
-
-    if result == nil then
-        result = Addon.db.profile.showBindingText
-    end
-
-    return result
-end
-
 PetBar.contextMenu = Addon.ButtonBar.contextMenu:Extend {
     {
-        addPanel = 'Appearance',
-        after = 'General',
+        insert = 'General',
+        at = 'start',
         controls = {
             {
                 type = 'check',

@@ -18,11 +18,9 @@ function TalkingHeadBar:New()
     return TalkingHeadBar.proto.New(self, 'talk')
 end
 
-TalkingHeadBar:Extend(
-    'OnAcquire', function(self)
-    self:Layout()
+function TalkingHeadBar:GetDisplayName()
+    return L.TalkingHeadBarDisplayName
 end
-)
 
 function TalkingHeadBar:GetDefaults()
     return {
@@ -35,13 +33,11 @@ function TalkingHeadBar:GetDefaults()
     }
 end
 
-function TalkingHeadBar:CanSetShowStates()
-    return false
+TalkingHeadBar:Extend(
+    'OnAcquire', function(self)
+    self:Layout()
 end
-
-function TalkingHeadBar:GetDisplayName()
-    return L.TalkingHeadBarDisplayName
-end
+)
 
 function TalkingHeadBar:Layout()
     self:RepositionTalkingHeadFrame()
@@ -55,6 +51,20 @@ function TalkingHeadBar:RepositionTalkingHeadFrame()
     TalkingHeadFrame:ClearAllPointsBase()
     TalkingHeadFrame:SetPointBase('CENTER', self)
     TalkingHeadFrame:SetParent(self)
+end
+
+function TalkingHeadBar:MuteSounds()
+    return self.sets.muteSounds and true
+end
+
+function TalkingHeadBar:SetMuteSounds(enable)
+    self.sets.muteSounds = (enable and true) or nil
+
+    -- mute if currently playing
+    if enable and TalkingHeadFrame and TalkingHeadFrame.voHandle then
+        StopSound(TalkingHeadFrame.voHandle, 0)
+        TalkingHeadFrame.voHandle = nil
+    end
 end
 
 TalkingHeadBar.contextMenu = Addon.Frame.contextMenu:Extend {
@@ -71,20 +81,6 @@ TalkingHeadBar.contextMenu = Addon.Frame.contextMenu:Extend {
         }
     }
 }
-
-function TalkingHeadBar:SetMuteSounds(enable)
-    self.sets.muteSounds = (enable and true) or nil
-
-    -- mute if currently playing
-    if enable and TalkingHeadFrame and TalkingHeadFrame.voHandle then
-        StopSound(TalkingHeadFrame.voHandle, 0)
-        TalkingHeadFrame.voHandle = nil
-    end
-end
-
-function TalkingHeadBar:MuteSounds()
-    return self.sets.muteSounds and true
-end
 
 -- module
 local TalkingHeadBarModule = Addon:NewModule('TalkingHeadBar')
@@ -109,7 +105,7 @@ function TalkingHeadBarModule:OnFirstLoad()
     TalkingHeadFrame:SetScript("OnHide", nil)
 
     hooksecurefunc(TalkingHeadFrame, 'PlayCurrent', function()
-        if not self.frame:MuteSounds() then
+        if not (self.frame and self.frame:MuteSounds()) then
             return
         end
 

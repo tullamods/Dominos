@@ -12,18 +12,9 @@ function QueueStatusBar:New()
     return QueueStatusBar.proto.New(self, "queue")
 end
 
-function QueueStatusBar:CanSetShowStates()
-    return false
-end
-
 function QueueStatusBar:GetDisplayName()
     return L.QueueStatusBarDisplayName
 end
-
-QueueStatusBar:Extend('OnAcquire', function(self)
-    self:RepositionButton()
-    self:Layout()
-end)
 
 function QueueStatusBar:GetDefaults()
     return {
@@ -32,6 +23,15 @@ function QueueStatusBar:GetDefaults()
         x = -250
     }
 end
+
+function QueueStatusBar:CanSetShowStates()
+    return false
+end
+
+QueueStatusBar:Extend('OnAcquire', function(self)
+    self:RepositionButton()
+    self:Layout()
+end)
 
 function QueueStatusBar:Layout()
     local w, h = QueueStatusButton:GetSize()
@@ -46,6 +46,8 @@ function QueueStatusBar:RepositionButton()
     QueueStatusButton:SetParent(self)
 end
 
+-- export
+Addon.QueueStatusBar = QueueStatusBar
 
 -- module
 local QueueStatusBarModule = Addon:NewModule('QueueStatusBar', 'AceEvent-3.0')
