@@ -3,12 +3,10 @@ if not (ExtraAbilityContainer or ExtraActionBarFrame) then return end
 local AddonName, Addon = ...
 local L = LibStub("AceLocale-3.0"):GetLocale(AddonName)
 
-local BAR_ID = 'extra'
-
 local ExtraAbilityBar = Addon:CreateClass('Frame', Addon.Frame)
 
 function ExtraAbilityBar:New()
-    return ExtraAbilityBar.proto.New(self, BAR_ID)
+    return ExtraAbilityBar.proto.New(self, 'extra')
 end
 
 function ExtraAbilityBar:GetDisplayName()
@@ -27,7 +25,7 @@ function ExtraAbilityBar:GetDefaults()
 end
 
 ExtraAbilityBar:Extend('OnAcquire', function(self)
-    self:RepositionExtraAbilityContainer()
+    self:AttachChild(ExtraAbilityContainer or ExtraActionBarFrame)
     self:UpdateShowBlizzardTexture()
     self:Layout()
 end)
@@ -37,22 +35,6 @@ function ExtraAbilityBar:Layout()
     local pW, pH = self:GetPadding()
 
     self:SetSize(w + pW, h + pH)
-end
-
-function ExtraAbilityBar:RepositionExtraAbilityContainer()
-    if InCombatLockdown() then return end
-
-    local container = ExtraAbilityContainer or ExtraActionBarFrame
-
-    container:SetParent(self)
-
-    if container.ClearAllPointsBase then
-        container:ClearAllPointsBase()
-        container:SetPointBase('CENTER', self)
-    else
-        container:ClearAllPoints()
-        container:SetPoint('CENTER', self)
-    end
 end
 
 function ExtraAbilityBar:ShowingBlizzardTexture()
@@ -102,7 +84,7 @@ function ExtraAbilityBar:ThemeBar(enable)
     end
 end
 
-ExtraAbilityBar.contextMenu = Addon.Frame.contextMenu:Extend {
+ExtraAbilityBar.contextMenu = Addon.Frame.contextMenu:Extend{
     {
         insert = 'General',
         at = 'start',
@@ -139,11 +121,10 @@ function ExtraAbilityBarModule:OnFirstLoad()
         ExtraActionBarFrame:EnableMouse(false)
     end
 
-    -- onshow/hide call UpdateManagedFramePositions on the blizzard end so
-    -- turn that bit off
     if ExtraAbilityContainer then
-        ExtraAbilityContainer:SetScript("OnShow", nil)
-        ExtraAbilityContainer:SetScript("OnHide", nil)
+        -- OnShow/OnHide stay: OnHide drops the container from the managed
+        -- list if edit mode added it
+        ExtraAbilityContainer.ignoreFramePositionManager = true
 
         -- watch for new frames to be added to the container as we will want to
         -- possibly theme them later (if they're new buttons)
@@ -155,10 +136,23 @@ function ExtraAbilityBarModule:OnFirstLoad()
             end
         )
 
-        -- also reposition whenever edit mode tries to do so
+        -- edit mode clears the flag whenever a layout is applied
         hooksecurefunc(ExtraAbilityContainer, 'ApplySystemAnchor', function()
-            self:RepositionExtraAbilityContainer()
+            if self.frame then
+                ExtraAbilityContainer.ignoreFramePositionManager = true
+                self:AttachContainer()
+            end
         end)
+
+        -- the flag is ignored for frames already listed (UIParent re-shown)
+        local managedContainer = ExtraAbilityContainer.layoutParent
+        if managedContainer and managedContainer.UpdateFrame then
+            hooksecurefunc(managedContainer, 'UpdateFrame', function(_, frame)
+                if frame == ExtraAbilityContainer then
+                    self:AttachContainer()
+                end
+            end)
+        end
     else
         ExtraActionBarFrame.ignoreFramePositionManager = true
     end
@@ -182,12 +176,8 @@ function ExtraAbilityBarModule:ApplyTitanPanelWorkarounds()
     return true
 end
 
-function ExtraAbilityBarModule:RepositionExtraAbilityContainer()
-    if (not self.frame) then return end
-
-    local _, relFrame = ExtraAbilityContainer:GetPoint()
-
-    if self.frame ~= relFrame then
-        self.frame:RepositionExtraAbilityContainer()
+function ExtraAbilityBarModule:AttachContainer()
+    if self.frame then
+        self.frame:AttachChild(ExtraAbilityContainer or ExtraActionBarFrame)
     end
 end

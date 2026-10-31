@@ -588,6 +588,44 @@ function Frame:ShowingInPetBattleUI()
 end
 
 --------------------------------------------------------------------------------
+-- Child Frames
+-- Just a simple helper for attaching a child element to the bar
+--------------------------------------------------------------------------------
+
+do
+    local pendingChildren = {}
+
+    EventRegistry:RegisterFrameEventAndCallback("PLAYER_REGEN_ENABLED", function()
+        for child, bar in pairs(pendingChildren) do
+            pendingChildren[child] = nil
+
+            if active[bar.id] == bar then
+                bar:AttachChild(child)
+            end
+        end
+    end)
+
+    function Frame:AttachChild(child)
+        local _, relativeTo = child:GetPoint()
+        if relativeTo == self and child:GetParent() == self then
+            return
+        end
+
+        if InCombatLockdown() then
+            pendingChildren[child] = self
+            return
+        end
+
+        local clearAllPoints = child.ClearAllPointsBase or child.ClearAllPoints
+        local setPoint = child.SetPointBase or child.SetPoint
+
+        child:SetParent(self)
+        clearAllPoints(child)
+        setPoint(child, 'CENTER', self)
+    end
+end
+
+--------------------------------------------------------------------------------
 -- Display Conditions
 --------------------------------------------------------------------------------
 

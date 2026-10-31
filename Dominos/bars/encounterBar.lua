@@ -5,12 +5,6 @@ local L = LibStub('AceLocale-3.0'):GetLocale(AddonName)
 
 local PowerBar = Addon:CreateClass('Frame', Addon.Frame)
 
-local function attach(frame, parent)
-	frame:SetParent(parent)
-	frame:ClearAllPoints()
-	frame:SetPoint('CENTER', parent)
-end
-
 function PowerBar:New()
 	local frame = PowerBar.proto.New(self, 'encounter')
 
@@ -35,20 +29,18 @@ PowerBar:Extend('OnCreate', function(self)
 
 	local ppb = PlayerPowerBarAlt
 	if ppb then
-		attach(ppb, self)
+		self:AttachChild(ppb)
 
 		if type(ppb.SetupPlayerPowerBarPosition) == "function" then
 			hooksecurefunc(ppb, "SetupPlayerPowerBarPosition", function(bar)
-				if bar:GetParent() ~= self then
-					attach(bar, self)
-				end
+				self:AttachChild(bar)
 			end)
 		end
 
 		if type(UnitPowerBarAlt_SetUp) == "function" then
 			hooksecurefunc("UnitPowerBarAlt_SetUp", function(bar)
-				if bar.isPlayerBar and bar:GetParent() ~= self then
-					attach(bar, self)
+				if bar.isPlayerBar then
+					self:AttachChild(bar)
 				end
 			end)
 		end
@@ -60,7 +52,7 @@ PowerBar:Extend('OnCreate', function(self)
 
 	local uiPowerBar = UIWidgetPowerBarContainerFrame
 	if uiPowerBar then
-		attach(uiPowerBar, self)
+		self:AttachChild(uiPowerBar)
 
 		uiPowerBar:HookScript("OnSizeChanged", function() self:Layout() end)
 

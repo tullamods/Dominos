@@ -1,8 +1,6 @@
-local AddonName, Addon = ...
-if not (QueueStatusButton and Addon:IsGameType("standard")) then
-    return
-end
+if not QueueStatusButton then return end
 
+local AddonName, Addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(AddonName)
 
 -- bar
@@ -29,7 +27,7 @@ function QueueStatusBar:CanSetShowStates()
 end
 
 QueueStatusBar:Extend('OnAcquire', function(self)
-    self:RepositionButton()
+    self:AttachChild(QueueStatusButton)
     self:Layout()
 end)
 
@@ -40,17 +38,11 @@ function QueueStatusBar:Layout()
     self:TrySetSize(w + pW, h + pH)
 end
 
-function QueueStatusBar:RepositionButton()
-    QueueStatusButton:ClearAllPoints()
-    QueueStatusButton:SetPoint('CENTER', self)
-    QueueStatusButton:SetParent(self)
-end
-
 -- export
 Addon.QueueStatusBar = QueueStatusBar
 
 -- module
-local QueueStatusBarModule = Addon:NewModule('QueueStatusBar', 'AceEvent-3.0')
+local QueueStatusBarModule = Addon:NewModule('QueueStatusBar')
 
 function QueueStatusBarModule:Load()
     self.frame = QueueStatusBar:New()
@@ -64,10 +56,13 @@ function QueueStatusBarModule:Unload()
 end
 
 function QueueStatusBarModule:OnFirstLoad()
-    if QueueStatusButton.UpdatePosition then
-        hooksecurefunc(QueueStatusButton, "UpdatePosition", function()
+    local method = (QueueStatusButton.UpdateDefaultAnchor and "UpdateDefaultAnchor")
+        or (QueueStatusButton.UpdatePosition and "UpdatePosition")
+
+    if method then
+        hooksecurefunc(QueueStatusButton, method, function()
             if self.frame then
-                self.frame:RepositionButton()
+                self.frame:AttachChild(QueueStatusButton)
             end
         end)
     end
