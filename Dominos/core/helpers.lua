@@ -77,7 +77,7 @@ do
             class.proto = prototype
             class.Extend = class_Extend
 
-            setmetatable(class, {__index = prototype})
+            setmetatable(class, { __index = prototype })
         end
 
         return class
@@ -87,7 +87,6 @@ end
 -- A functional way to fade a frame from one opacity to another without constantly
 -- creating new animation groups for the frame
 do
-
     local function clouseEnough(value1, value2)
         return _G.Round(value1 * 100) == _G.Round(value2 * 100)
     end
@@ -119,75 +118,71 @@ do
         return sequence, animation
     end
 
-    Addon.Fade =
-        setmetatable(
-        {},
-        {
-            __call = function(self, addon, frame, toAlpha, delay, duration)
-                return self[frame](toAlpha, delay, duration)
-            end,
+    Addon.Fade = setmetatable({}, {
+        __call = function(self, addon, frame, toAlpha, delay, duration)
+            return self[frame](toAlpha, delay, duration)
+        end,
 
-            __index = function(self, frame)
-                local sequence, animation
+        __index = function(self, frame)
+            local sequence, animation
 
-                -- handle animation requests
-                local function func(toAlpha, delay, duration)
-                    -- we're already at target alpha, stop
-                    if clouseEnough(frame:GetAlpha(), toAlpha) then
-                        if sequence and sequence:IsPlaying() then
-                            sequence:Stop()
-                            return
-                        end
+            -- handle animation requests
+            local function func(toAlpha, delay, duration)
+                -- we're already at target alpha, stop
+                if clouseEnough(frame:GetAlpha(), toAlpha) then
+                    if sequence and sequence:IsPlaying() then
+                        sequence:Stop()
+                        return
                     end
-
-                    -- create the animation if we've not yet done so
-                    if not sequence then
-                        sequence, animation = sequence_Create(frame)
-                    end
-
-                    local fromAlpha = frame:GetAlpha()
-
-                    -- animation already started, but is in the delay phase
-                    -- so shorten the delay by however much time has gone by
-                    if animation:IsDelaying() then
-                        delay = math.max(delay - (_G.GetTime() - animation.start), 0)
-                    -- we're already in the middle of a fade animation
-                    elseif animation:IsPlaying() then
-                        -- set delay to zero, as we don't want to pause in the
-                        -- middle of an animation
-                        delay = 0
-
-                        -- figure out what opacity we're currently at
-                        -- by using the animation progress
-                        local delta = animation:GetFromAlpha() - animation:GetToAlpha()
-                        fromAlpha = animation:GetFromAlpha() + (delta * animation:GetSmoothProgress())
-                    end
-
-                    -- check that value against our current one
-                    -- if so, quit early
-                    if clouseEnough(fromAlpha, toAlpha) then
-                        frame:SetAlpha(toAlpha)
-
-                        if sequence:IsPlaying() then
-                            sequence:Stop()
-                            return
-                        end
-                    end
-
-                    sequence.alpha = toAlpha
-                    animation:SetFromAlpha(frame:GetAlpha())
-                    animation:SetToAlpha(toAlpha)
-                    animation:SetStartDelay(delay)
-                    animation:SetDuration(duration)
-
-                    sequence:Restart()
                 end
 
-                self[frame] = func
-                return func
+                -- create the animation if we've not yet done so
+                if not sequence then
+                    sequence, animation = sequence_Create(frame)
+                end
+
+                local fromAlpha = frame:GetAlpha()
+
+                -- animation already started, but is in the delay phase
+                -- so shorten the delay by however much time has gone by
+                if animation:IsDelaying() then
+                    delay = math.max(delay - (_G.GetTime() - animation.start), 0)
+                    -- we're already in the middle of a fade animation
+                elseif animation:IsPlaying() then
+                    -- set delay to zero, as we don't want to pause in the
+                    -- middle of an animation
+                    delay = 0
+
+                    -- figure out what opacity we're currently at
+                    -- by using the animation progress
+                    local delta = animation:GetFromAlpha() - animation:GetToAlpha()
+                    fromAlpha = animation:GetFromAlpha() + (delta * animation:GetSmoothProgress())
+                end
+
+                -- check that value against our current one
+                -- if so, quit early
+                if clouseEnough(fromAlpha, toAlpha) then
+                    frame:SetAlpha(toAlpha)
+
+                    if sequence:IsPlaying() then
+                        sequence:Stop()
+                        return
+                    end
+                end
+
+                sequence.alpha = toAlpha
+                animation:SetFromAlpha(frame:GetAlpha())
+                animation:SetToAlpha(toAlpha)
+                animation:SetStartDelay(delay)
+                animation:SetDuration(duration)
+
+                sequence:Restart()
             end
-        }
-    )
+
+            self[frame] = func
+            return func
+        end
+    })
 end
 
 -- debounce
@@ -214,5 +209,70 @@ function Addon:Debounce(func, delay, ...)
         end
 
         timer = C_Timer.NewTimer(delay, callback)
+    end
+end
+
+-- blizzard anchors toasts to any shown externally anchored subsystem (group
+-- loot, talking head). put them back after the fact: editing the subsystem
+-- priorities would taint UpdateAnchors
+do
+    local redirected = {}
+    local hooked = false
+
+    local function isAnyRedirectedFrameShown()
+        for frame in pairs(redirected) do
+            if frame:IsShown() then
+                return true
+            end
+        end
+        return false
+    end
+
+    local function onUpdateAnchors(container)
+        if not isAnyRedirectedFrameShown() then return end
+
+        -- mirrors UpdateAnchors, skipping redirected frames. the account store
+        -- and trading post move the start of the chain
+        local relative = container.baseAnchorFrame or container
+
+        for _, subSystem in ipairs(container.alertFrameSubSystems) do
+            local pool = subSystem.alertFramePool
+
+            if pool then
+                for alert in pool:EnumerateActive() do
+                    local point, relativeTo, relativePoint, x, y = alert:GetPoint(1)
+
+                    if redirected[relativeTo] then
+                        alert:SetPoint(point, relative, relativePoint, x, y)
+                    end
+
+                    relative = alert
+                end
+            else
+                local anchor = subSystem.anchorFrame
+
+                if anchor and anchor:IsShown() and not redirected[anchor]
+                    and (not anchor.IsInDefaultPosition or anchor:IsInDefaultPosition()) then
+                    relative = anchor
+                end
+            end
+        end
+    end
+
+    function Addon:SetAlertAnchorRedirect(frame, enable)
+        if not (frame and AlertFrame and AlertFrame.alertFrameSubSystems) then
+            return
+        end
+
+        redirected[frame] = enable and true or nil
+
+        if enable and not hooked then
+            hooked = true
+            hooksecurefunc(AlertFrame, 'UpdateAnchors', onUpdateAnchors)
+        end
+
+        if enable then
+            onUpdateAnchors(AlertFrame)
+        end
     end
 end

@@ -1,7 +1,10 @@
-if not (ExtraAbilityContainer or ExtraActionBarFrame) then return end
+if not ExtraActionBarFrame then return end
 
 local AddonName, Addon = ...
 local L = LibStub("AceLocale-3.0"):GetLocale(AddonName)
+local THEME_GROUP = 'Extra Bar'
+
+local bar
 
 local ExtraAbilityBar = Addon:CreateClass('Frame', Addon.Frame)
 
@@ -58,28 +61,18 @@ function ExtraAbilityBar:UpdateShowBlizzardTexture()
     self:ThemeBar(not show)
 end
 
-local function themeButton(button, enable, info)
-    local themer = Addon:GetModule('ButtonThemer')
-
-    if enable then
-        themer:Register(button, 'Extra Bar', info)
-    else
-        themer:Unregister(button, 'Extra Bar')
-    end
-end
-
 function ExtraAbilityBar:ThemeBar(enable)
-    if HasExtraActionBar() then
-        local button = ExtraActionBarFrame and ExtraActionBarFrame.button
-        if button then
-            themeButton(button, enable)
-        end
+    local themer = Addon:GetModule('ButtonThemer')
+    local update = enable and themer.Register or themer.Unregister
+    local hasExtraBar = C_ActionBar and C_ActionBar.HasExtraActionBar or HasExtraActionBar
+
+    if hasExtraBar() then
+        update(themer, ExtraActionBarFrame.button, THEME_GROUP)
     end
 
-    local zoneAbilities = C_ZoneAbility and C_ZoneAbility.GetActiveAbilities()
-    if type(zoneAbilities) == "table" and #zoneAbilities > 0 then
+    if ZoneAbilityFrame then
         for button in ZoneAbilityFrame.SpellButtonContainer:EnumerateActive() do
-            themeButton(button, enable, { Icon = button.Icon })
+            update(themer, button, THEME_GROUP, { Icon = button.Icon })
         end
     end
 end
@@ -102,68 +95,77 @@ ExtraAbilityBar.contextMenu = Addon.Frame.contextMenu:Extend{
 local ExtraAbilityBarModule = Addon:NewModule('ExtraAbilityBar')
 
 function ExtraAbilityBarModule:Load()
-    self.frame = ExtraAbilityBar:New()
+    bar = ExtraAbilityBar:New()
 end
 
 function ExtraAbilityBarModule:Unload()
-    if self.frame then
-        self.frame:Free()
-        self.frame = nil
+    if bar then
+        bar:Free()
+        bar = nil
     end
 end
 
 function ExtraAbilityBarModule:OnFirstLoad()
     self:ApplyTitanPanelWorkarounds()
 
-    -- disable mouse interactions on the extra action bar
-    -- as it can sometimes block the UI from being interactive
-    if ExtraActionBarFrame:IsMouseEnabled() then
-        ExtraActionBarFrame:EnableMouse(false)
+    -- the buttons don't exist until an ability shows up
+    Addon:GetModule('ButtonThemer'):CreateGroup(THEME_GROUP)
+
+    -- it can block the UI from being interactive
+    ExtraActionBarFrame:EnableMouse(false)
+
+    -- leaving quick keybind mode shows the style texture again
+    if ExtraActionBar_CancelForceShow then
+        hooksecurefunc('ExtraActionBar_CancelForceShow', function()
+            if bar then
+                bar:UpdateShowBlizzardTexture()
+            end
+        end)
     end
 
     if ExtraAbilityContainer then
-        -- OnShow/OnHide stay: OnHide drops the container from the managed
-        -- list if edit mode added it
-        ExtraAbilityContainer.ignoreFramePositionManager = true
-
-        -- watch for new frames to be added to the container as we will want to
-        -- possibly theme them later (if they're new buttons)
-        hooksecurefunc(
-            ExtraAbilityContainer, 'AddFrame', function()
-                if self.frame then
-                    self.frame:ThemeBar(not self.frame:ShowingBlizzardTexture())
-                end
-            end
-        )
-
-        -- edit mode clears the flag whenever a layout is applied
-        hooksecurefunc(ExtraAbilityContainer, 'ApplySystemAnchor', function()
-            if self.frame then
-                ExtraAbilityContainer.ignoreFramePositionManager = true
-                self:AttachContainer()
-            end
-        end)
-
-        -- the flag is ignored for frames already listed (UIParent re-shown)
-        local managedContainer = ExtraAbilityContainer.layoutParent
-        if managedContainer and managedContainer.UpdateFrame then
-            hooksecurefunc(managedContainer, 'UpdateFrame', function(_, frame)
-                if frame == ExtraAbilityContainer then
-                    self:AttachContainer()
-                end
-            end)
-        end
+        self:ClaimExtraAbilityContainer()
     else
+        -- cata and wrath have no container
         ExtraActionBarFrame.ignoreFramePositionManager = true
+    end
+
+    if ZoneAbilityFrame then
+        self:ClaimZoneAbilityFrame()
     end
 end
 
--- Titan panel will attempt to take control of the ExtraActionBarFrame and break
--- its position and ability to be usable. This is because Titan Panel doesn't
--- check to see if another addon has taken control of the bar
---
--- To resolve this, we call TitanMovable_AddonAdjust() for the extra ability bar
--- frames to let titan panel know we are handling positions for the extra bar
+function ExtraAbilityBarModule:ClaimExtraAbilityContainer()
+    ExtraAbilityContainer.ignoreFramePositionManager = true
+
+    -- turning theming off is handled by UpdateShowBlizzardTexture
+    hooksecurefunc(ExtraAbilityContainer, 'AddFrame', function()
+        if bar and not bar:ShowingBlizzardTexture() then
+            bar:ThemeBar(true)
+        end
+    end)
+
+    -- edit mode clears the flag and re-lists the container whenever a layout
+    -- is applied
+    hooksecurefunc(ExtraAbilityContainer, 'ApplySystemAnchor', function(frame)
+        if bar then
+            bar:AttachChild(frame)
+        end
+    end)
+end
+
+function ExtraAbilityBarModule:ClaimZoneAbilityFrame()
+    -- its buttons are created after AddFrame
+    if ZoneAbilityFrame.UpdateDisplayedZoneAbilities then
+        hooksecurefunc(ZoneAbilityFrame, 'UpdateDisplayedZoneAbilities', function()
+            if bar and not bar:ShowingBlizzardTexture() then
+                bar:ThemeBar(true)
+            end
+        end)
+    end
+end
+
+-- titan panel moves these frames unless told another addon is positioning them
 function ExtraAbilityBarModule:ApplyTitanPanelWorkarounds()
     local adjust = _G.TitanMovable_AddonAdjust
     if not adjust then return end
@@ -173,11 +175,4 @@ function ExtraAbilityBarModule:ApplyTitanPanelWorkarounds()
     end
 
     adjust("ExtraActionBarFrame", true)
-    return true
-end
-
-function ExtraAbilityBarModule:AttachContainer()
-    if self.frame then
-        self.frame:AttachChild(ExtraAbilityContainer or ExtraActionBarFrame)
-    end
 end

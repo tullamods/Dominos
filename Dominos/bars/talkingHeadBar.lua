@@ -1,13 +1,11 @@
+if not TalkingHeadFrame then return; end
+
 --------------------------------------------------------------------------------
 -- Talking Head Bar
 -- Lets you move around the talking heads display
 --------------------------------------------------------------------------------
 
 local AddonName, Addon = ...
-
-if not (TalkingHeadFrame and Addon:IsGameType("standard")) then
-    return
-end
 
 local L = LibStub("AceLocale-3.0"):GetLocale(AddonName)
 
@@ -33,31 +31,30 @@ function TalkingHeadBar:GetDefaults()
     }
 end
 
-TalkingHeadBar:Extend(
-    'OnAcquire', function(self)
+TalkingHeadBar:Extend('OnAcquire', function(self)
     self:Layout()
-end
-)
+end)
 
 function TalkingHeadBar:Layout()
-    self:RepositionTalkingHeadFrame()
+    self:AttachChild(TalkingHeadFrame)
     local width, height = TalkingHeadFrame:GetSize()
 
     local pW, pH = self:GetPadding()
     self:SetSize(width + pW, height + pH)
 end
 
-function TalkingHeadBar:RepositionTalkingHeadFrame()
-    TalkingHeadFrame:ClearAllPointsBase()
-    TalkingHeadFrame:SetPointBase('CENTER', self)
-    TalkingHeadFrame:SetParent(self)
+function TalkingHeadBar:OnPlay()
+    if self:IsMuted() and TalkingHeadFrame.voHandle then
+        StopSound(TalkingHeadFrame.voHandle, 0)
+        TalkingHeadFrame.voHandle = nil
+    end
 end
 
-function TalkingHeadBar:MuteSounds()
+function TalkingHeadBar:IsMuted()
     return self.sets.muteSounds and true
 end
 
-function TalkingHeadBar:SetMuteSounds(enable)
+function TalkingHeadBar:SetMuted(enable)
     self.sets.muteSounds = (enable and true) or nil
 
     -- mute if currently playing
@@ -75,8 +72,8 @@ TalkingHeadBar.contextMenu = Addon.Frame.contextMenu:Extend {
             {
                 type = 'check',
                 name = _G.MUTE,
-                get = 'MuteSounds',
-                set = 'SetMuteSounds'
+                get = 'IsMuted',
+                set = 'SetMuted'
             }
         }
     }
@@ -84,54 +81,37 @@ TalkingHeadBar.contextMenu = Addon.Frame.contextMenu:Extend {
 
 -- module
 local TalkingHeadBarModule = Addon:NewModule('TalkingHeadBar')
+local bar
 
 function TalkingHeadBarModule:Load()
-    self.frame = TalkingHeadBar:New()
+    bar = TalkingHeadBar:New()
+    Addon:SetAlertAnchorRedirect(TalkingHeadFrame, true)
 end
 
 function TalkingHeadBarModule:Unload()
-    if self.frame then
-        self.frame:Free()
-        self.frame = nil
+    Addon:SetAlertAnchorRedirect(TalkingHeadFrame, false)
+
+    if bar then
+        bar:Free()
+        bar = nil
     end
 end
 
 function TalkingHeadBarModule:OnFirstLoad()
+    -- blizzard's OnHide drops the frame from the managed list if edit mode
+    -- added it
     TalkingHeadFrame.ignoreFramePositionManager = true
 
-    -- OnShow/OnHide call UpdateManagedFramePositions on the blizzard end so
-    -- turn that bit off
-    TalkingHeadFrame:SetScript("OnShow", nil)
-    TalkingHeadFrame:SetScript("OnHide", nil)
-
     hooksecurefunc(TalkingHeadFrame, 'PlayCurrent', function()
-        if not (self.frame and self.frame:MuteSounds()) then
-            return
-        end
-
-        if TalkingHeadFrame.voHandle then
-            StopSound(TalkingHeadFrame.voHandle, 0)
-            TalkingHeadFrame.voHandle = nil
+        if bar then
+            bar:OnPlay()
         end
     end)
 
-    -- position workarounds
-    hooksecurefunc(AlertFrame, 'UpdateAnchors', function()
-        self:OnAlertFrameAnchorsUpdated()
+    -- edit mode clears the flag whenever a layout is applied
+    hooksecurefunc(TalkingHeadFrame, 'ApplySystemAnchor', function(frame)
+        if bar then
+            bar:AttachChild(frame)
+        end
     end)
-
-    hooksecurefunc(TalkingHeadFrame, 'ApplySystemAnchor', function()
-        self:OnAlertFrameAnchorsUpdated()
-    end)
-end
-
--- reposition the talking head frame when it moves
-function TalkingHeadBarModule:OnAlertFrameAnchorsUpdated()
-    if (not self.frame) then return end
-
-    local _, relFrame = TalkingHeadFrame:GetPoint()
-
-    if self.frame ~= relFrame then
-        self.frame:RepositionTalkingHeadFrame()
-    end
 end

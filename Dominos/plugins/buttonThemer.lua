@@ -50,6 +50,11 @@ end
 local Masque, MasqueVersion = LibStub('Masque', true)
 
 if Masque then
+    -- lets a group show up in masque before it has any buttons
+    function ButtonThemer:CreateGroup(groupName)
+        Masque:Group(AddonName, groupName)
+    end
+
     -- masque not installed
     function ButtonThemer:Register(button, groupName, ...)
         local group = Masque:Group(AddonName, groupName)
@@ -80,6 +85,9 @@ if Masque then
         end
     end
 else
+    function ButtonThemer:CreateGroup()
+    end
+
     function ButtonThemer:Register(button)
         theme(button)
     end

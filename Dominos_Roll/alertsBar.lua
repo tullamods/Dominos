@@ -1,3 +1,5 @@
+if not AlertFrame then return end
+
 --------------------------------------------------------------------------------
 -- Alerts
 -- A bar for moving the Alerts frame
@@ -51,28 +53,15 @@ end
 --------------------------------------------------------------------------------
 
 local AlertsBarModule = Dominos:NewModule('Alerts')
+local bar
 
 function AlertsBarModule:Load()
-	if AlertFrame then
-		self.alertsBar = AlertsBar:New()
-	end
+	bar = AlertsBar:New()
 end
 
 function AlertsBarModule:Unload()
-	if self.alertsBar then
-		self.alertsBar:Free()
-		self.alertsBar = nil
-	end
-end
-
-function AlertsBarModule:OnFirstLoad()
-	if AlertFrame then
-		AlertFrame.ignoreFramePositionManager = true
-
-		hooksecurefunc(AlertFrame, "UpdateAnchors", function()
-			if self.alertsBar then
-				self.alertsBar:RepositionChildFrame()
-			end
-		end)
+	if bar then
+		bar:Free()
+		bar = nil
 	end
 end

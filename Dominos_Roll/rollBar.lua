@@ -1,3 +1,5 @@
+if not GroupLootContainer then return end
+
 --------------------------------------------------------------------------------
 -- Roll
 -- A bar for moving the Group Loot frames
@@ -55,28 +57,22 @@ end
 --------------------------------------------------------------------------------
 
 local RollBarModule = Dominos:NewModule('Roll')
+local bar
 
 function RollBarModule:Load()
-	if GroupLootContainer then
-		self.rollBar = RollBar:New()
-	end
+	bar = RollBar:New()
+	Dominos:SetAlertAnchorRedirect(GroupLootContainer, true)
 end
 
 function RollBarModule:Unload()
-	if self.rollBar then
-		self.rollBar:Free()
-		self.rollBar = nil
+	Dominos:SetAlertAnchorRedirect(GroupLootContainer, false)
+
+	if bar then
+		bar:Free()
+		bar = nil
 	end
 end
 
 function RollBarModule:OnFirstLoad()
-	if GroupLootContainer then
-		GroupLootContainer.ignoreFramePositionManager = true
-
-		hooksecurefunc(AlertFrame, "UpdateAnchors", function()
-			if self.rollBar then
-				self.rollBar:RepositionChildFrame()
-			end
-		end)
-	end
+	GroupLootContainer.ignoreFramePositionManager = true
 end

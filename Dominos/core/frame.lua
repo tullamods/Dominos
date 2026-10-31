@@ -199,7 +199,7 @@ end
 function Frame:LoadSettings()
     -- get defaults must be provided by anything implementing the Frame type
     self.sets = Addon:GetFrameSets(self.id)
-             or Addon:SetFrameSets(self.id, self:GetDefaults())
+        or Addon:SetFrameSets(self.id, self:GetDefaults())
 
     self:UpdateDisplayLayer()
     self:RestorePosition()
@@ -375,8 +375,8 @@ end
 
 function Frame:UpdateWatched()
     local watch = self:FrameIsShown()
-              and self:GetFadeMultiplier() < 1
-              and not (Addon:IsLinkedOpacityEnabled() and self:IsAnchored())
+        and self:GetFadeMultiplier() < 1
+        and not (Addon:IsLinkedOpacityEnabled() and self:IsAnchored())
 
     if watch then
         Addon.FadeManager:Add(self)
@@ -592,37 +592,37 @@ end
 -- Just a simple helper for attaching a child element to the bar
 --------------------------------------------------------------------------------
 
-do
-    local pendingChildren = {}
+function Frame:AttachChild(child)
+    -- blizzard managed frames: the ignore flag is only checked when a frame is
+    -- added to the manager, but UpdateManagedFrames (UIParent re-shown)
+    -- reparents everything already listed, so drop the frame from the list.
+    -- (RemoveManagedFrame would run the manager's layout on our stack.)
+    -- Done before the early return, as edit mode can re-list an attached frame.
+    local managed = child.layoutParent and child.layoutParent.showingFrames
+    if managed then
+        child.ignoreFramePositionManager = true
 
-    EventRegistry:RegisterFrameEventAndCallback("PLAYER_REGEN_ENABLED", function()
-        for child, bar in pairs(pendingChildren) do
-            pendingChildren[child] = nil
+        if managed[child] then
+            managed[child] = nil
 
-            if active[bar.id] == bar then
-                bar:AttachChild(child)
-            end
+            -- listed frames are faded out when UIParent hides, and only listed
+            -- frames are faded back in
+            child:SetAlpha(1)
         end
-    end)
-
-    function Frame:AttachChild(child)
-        local _, relativeTo = child:GetPoint()
-        if relativeTo == self and child:GetParent() == self then
-            return
-        end
-
-        if InCombatLockdown() then
-            pendingChildren[child] = self
-            return
-        end
-
-        local clearAllPoints = child.ClearAllPointsBase or child.ClearAllPoints
-        local setPoint = child.SetPointBase or child.SetPoint
-
-        child:SetParent(self)
-        clearAllPoints(child)
-        setPoint(child, 'CENTER', self)
     end
+
+    local _, relativeTo = child:GetPoint()
+    if relativeTo == self and child:GetParent() == self then
+        return
+    end
+
+    -- edit mode systems override SetPoint/ClearAllPoints, so use the base versions
+    local clearAllPoints = child.ClearAllPointsBase or child.ClearAllPoints
+    local setPoint = child.SetPointBase or child.SetPoint
+
+    child:SetParent(self)
+    clearAllPoints(child)
+    setPoint(child, 'CENTER', self)
 end
 
 --------------------------------------------------------------------------------
@@ -1022,7 +1022,7 @@ function Frame:CanShowInPetBattleUI()
     return self:CanShowInOverrideUI() and not Addon:IsGameType('forever')
 end
 
-Frame.contextMenu = Addon.ContextMenu {
+Frame.contextMenu = Addon.ContextMenu{
     {
         id = 'General',
         controls = {
@@ -1046,8 +1046,8 @@ Frame.contextMenu = Addon.ContextMenu {
                 name = 'MouseoverFading'
             },
             'FadedOpacitySlider',
-            'FadeInDelaySlider',
-            'FadeInTimeSlider',
+            'FadeInDelaySlider', z
+        'FadeInTimeSlider',
             'FadeOutDelaySlider',
             'FadeOutTimeSlider'
         }
@@ -1091,13 +1091,13 @@ end
 
 function Frame:SetDisplayLayer(layer)
     self.sets.displayLayer = layer
-	self:UpdateDisplayLayer()
+    self:UpdateDisplayLayer()
 end
 
 function Frame:UpdateDisplayLayer()
     local layer = self:GetDisplayLayer()
 
-	self:SetFrameStrata(layer)
+    self:SetFrameStrata(layer)
 
     fireBarCallback(self, 'BAR_DISPLAY_LAYER_UPDATED', layer)
 end
@@ -1108,13 +1108,13 @@ end
 
 function Frame:SetDisplayLevel(level)
     self.sets.displayLevel = tonumber(level) or 0
-	self:UpdateDisplayLevel()
+    self:UpdateDisplayLevel()
 end
 
 function Frame:UpdateDisplayLevel()
     local level = self:GetDisplayLevel()
 
-	self:SetFrameLevel(level)
+    self:SetFrameLevel(level)
 
     fireBarCallback(self, 'BAR_DISPLAY_LEVEL_UPDATED', level)
 end
