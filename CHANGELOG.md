@@ -1,5 +1,10 @@
 # Dominos Changelog
 
+## 11.5.1
+
+* Fixed positioning issues with various bars.
+* Explicitly disabled Dominos for Plunderstorm and Talebound.
+
 ## 11.5.0
 
 * Rebuilt and reorganized all bar context menus.
