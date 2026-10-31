@@ -8,6 +8,7 @@
 ## SavedVariables: DominosDB
 ## OptionalDeps: Ace3, LibKeyBound-1.0, LibSharedMedia-3.0, Masque, FlyPaper, LibDualSpec-1.0
 ## IconTexture: Interface/AddOns/Dominos/Dominos
+## ExcludeLoadGameType: plunderstorm, wowhack
 # stuff required for the addon to work
 embeds.xml
 localization\default.lua
@@ -28,7 +29,7 @@ core\tooltipController.lua
 core\blizzardHider.lua [ExcludeLoadGameType cata, wrath]
 core\blizzardHider.classic.lua [AllowLoadGameType cata, wrath]
 # builtin bars
-bars\actionBar\bindings.lua [AllowLoadGameType mainline]
+bars\actionBar\bindings.lua [AllowLoadGameType standard, camelot]
 bars\actionBar\flyout.lua [AllowLoadGameType mists]
 bars\actionBar\button.lua [ExcludeLoadGameType cata, wrath]
 bars\actionBar\button.classic.lua [AllowLoadGameType cata, wrath]
@@ -39,13 +40,13 @@ bars\actionBar\menu.lua
 bars\actionBar\bars.lua
 bars\bagBar.lua
 bars\extraAbilityBar.lua [AllowLoadGameType standard, mists, cata, wrath, tbc]
-bars\encounterBar.lua [AllowLoadGameType mainline, mists, cata, wrath]
+bars\encounterBar.lua [AllowLoadGameType standard, mists, cata, wrath]
 bars\menuBar.lua
 bars\petBar.lua
 bars\possessBar.lua
-bars\queueStatusBar.lua [AllowLoadGameType mainline, camelot]
+bars\queueStatusBar.lua [AllowLoadGameType standard, camelot]
 bars\stanceBar.lua
-bars\talkingHeadBar.lua [AllowLoadGameType mainline]
+bars\talkingHeadBar.lua [AllowLoadGameType standard]
 bars\totemBar.lua [AllowLoadGameType cata, wrath, camelot]
 # stuff you should be able to comment out and still have Dominos work
 plugins\slashCommands.lua
