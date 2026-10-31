@@ -295,10 +295,7 @@ function BagBarModule:OnFirstLoad()
     end
 
     -- use our own handling for the blizzard bag bar
-    if MainMenuBarManager then
-        EventRegistry:UnregisterCallback("MainMenuBarManager.OnExpandChanged", MainMenuBarManager)
-        EventRegistry:UnregisterFrameEventAndCallback("VARIABLES_LOADED", MainMenuBarManager)
-    elseif BagsBar then
+    if BagsBar then
         EventRegistry:UnregisterCallback("MainMenuBarManager.OnExpandChanged", BagsBar)
         hooksecurefunc(BagsBar, "Layout", function() self:LayoutBagBar() end)
     end
