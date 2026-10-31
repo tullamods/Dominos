@@ -1,3 +1,5 @@
+if not PossessActionBar then return end
+
 --------------------------------------------------------------------------------
 -- Possess bar
 -- Handles the exit button for vehicles and taxis
@@ -200,19 +202,14 @@ function PossessBarModule:OnFirstLoad()
     self.Update = Addon:Debounce(self.Update, 0.01, self)
 
     -- disable the possess bar
-    if PossessActionBar then
-        (PossessActionBar.HideBase or PossessActionBar.Hide)(PossessActionBar)
-        PossessActionBar:SetParent(Addon.ShadowUIParent)
-        PossessActionBar:UnregisterAllEvents()
+    (PossessActionBar.HideBase or PossessActionBar.Hide)(PossessActionBar)
+    PossessActionBar:SetParent(Addon.ShadowUIParent)
+    PossessActionBar:UnregisterAllEvents()
 
-        for _, button in pairs(PossessActionBar.actionButtons) do
-            button:UnregisterAllEvents()
-            button:SetAttributeNoHandler("statehidden", true)
-            button:Hide()
-        end
-    elseif PossessBar then
-        PossessBar:SetParent(Addon.ShadowUIParent)
-        PossessBar:UnregisterAllEvents()
+    for _, button in pairs(PossessActionBar.actionButtons) do
+        button:UnregisterAllEvents()
+        button:SetAttributeNoHandler("statehidden", true)
+        button:Hide()
     end
 
     -- and the leave button (our bar handles both)
