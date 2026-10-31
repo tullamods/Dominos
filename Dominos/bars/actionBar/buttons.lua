@@ -292,10 +292,6 @@ function ActionButtons:GetOrCreateActionButton(id, parent)
         button:SetParent(parent)
         button:SetID(0)
 
-        -- drop the reference to the bar's original parent, which would otherwise
-        -- call thing we do not want
-        button.Bar = nil
-
         -- initialize the button
         button:OnCreate(id)
         created = true
