@@ -1022,7 +1022,7 @@ function Frame:CanShowInPetBattleUI()
     return self:CanShowInOverrideUI() and not Addon:IsGameType('forever')
 end
 
-Frame.contextMenu = Addon.ContextMenu{
+Frame.contextMenu = Addon.ContextMenu {
     {
         id = 'General',
         controls = {
@@ -1046,8 +1046,8 @@ Frame.contextMenu = Addon.ContextMenu{
                 name = 'MouseoverFading'
             },
             'FadedOpacitySlider',
-            'FadeInDelaySlider', z
-        'FadeInTimeSlider',
+            'FadeInDelaySlider',
+            'FadeInTimeSlider',
             'FadeOutDelaySlider',
             'FadeOutTimeSlider'
         }
