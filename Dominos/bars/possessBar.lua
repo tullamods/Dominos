@@ -198,21 +198,23 @@ function PossessBarModule:Unload()
     end
 end
 
+-- disable the possess bar and the leave button
 function PossessBarModule:OnFirstLoad()
     self.Update = Addon:Debounce(self.Update, 0.01, self)
 
-    -- disable the possess bar
-    (PossessActionBar.HideBase or PossessActionBar.Hide)(PossessActionBar)
-    PossessActionBar:SetParent(Addon.ShadowUIParent)
-    PossessActionBar:UnregisterAllEvents()
+    local possessBar = PossessActionBar
+    if possessBar then
+        (possessBar.HideBase or possessBar.Hide)(possessBar)
+        possessBar:SetParent(Addon.ShadowUIParent)
+        possessBar:UnregisterAllEvents()
 
-    for _, button in pairs(PossessActionBar.actionButtons) do
-        button:UnregisterAllEvents()
-        button:SetAttributeNoHandler("statehidden", true)
-        button:Hide()
+        for _, button in pairs(possessBar.actionButtons) do
+            button:UnregisterAllEvents()
+            button:SetAttributeNoHandler("statehidden", true)
+            button:Hide()
+        end
     end
 
-    -- and the leave button (our bar handles both)
     local leaveButton = MainMenuBarVehicleLeaveButton
     if leaveButton then
         (leaveButton.HideBase or leaveButton.Hide)(leaveButton)
