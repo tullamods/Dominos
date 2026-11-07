@@ -1,5 +1,5 @@
--- a labeled slider with a number box. holding shift while changing the number
--- goes past the limits of controls that have softLimits.
+-- a labeled slider with a number box. typing a number, or holding shift while
+-- stepping it, goes past the limits of controls that have softLimits.
 --
 -- sliderWithCheck is the same control with a check box in place of the label's
 -- left edge. the check has its own get and set under def.check. while it is off
@@ -110,12 +110,12 @@ local function setMinMaxValues(control, minValue, maxValue)
     control.Slider:SetValue(Clamp(control.Slider:GetValue(), minValue, maxValue))
 end
 
-local function trySetValue(control, value)
+local function trySetValue(control, value, limitBreak)
     if not isEnabled(control) then
         return
     end
 
-    if control.def.softLimits and IsShiftKeyDown() then
+    if control.def.softLimits and limitBreak then
         if value < control.minValue then
             setMinMaxValues(control, value, control.maxValue)
         elseif value > control.maxValue then
@@ -128,7 +128,10 @@ end
 
 local function step(control, direction)
     if control.def then
-        trySetValue(control, control.value + direction * (control.def.step or 1))
+        -- round off the error that adding fractional steps builds up
+        local value = control.value + direction * (control.def.step or 1)
+
+        trySetValue(control, tonumber(format('%.4f', value)), IsShiftKeyDown())
     end
 end
 
@@ -228,7 +231,7 @@ local function input_OnTextChanged(input, isUserInput)
         local value = tonumber(input:GetText())
 
         if value ~= nil then
-            trySetValue(control, value)
+            trySetValue(control, value, true)
         end
     end
 end
