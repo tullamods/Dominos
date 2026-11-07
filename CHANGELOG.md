@@ -1,5 +1,10 @@
 # Dominos Changelog
 
+## 11.5.3
+
+* Fixed an issue causing input boxes on sliders to not automatically break soft limits
+* Reverted fade sliders back to displaying values in seconds, and increased soft limit to 5s
+
 ## 11.5.2
 
 * Fixed totem bar positioning in Forever
