@@ -200,49 +200,48 @@ Controls.FadedOpacitySlider = {
     set = function(bar, value) bar:SetFadeMultiplier(value / 100) end
 }
 
--- fade times are stored in seconds but shown in milliseconds
 Controls.FadeInDelaySlider = {
     type = 'slider',
     name = L.FadeInDelay,
     min = 0,
-    max = 2000,
+    max = 5,
     softLimits = true,
-    step = 50,
-    get = function(bar) return Round(bar:GetFadeInDelay() * 1000) end,
-    set = function(bar, value) bar:SetFadeInDelay(value / 1000) end
+    step = 0.1,
+    get = function(bar) return Round(bar:GetFadeInDelay() * 10) / 10 end,
+    set = function(bar, value) bar:SetFadeInDelay(value) end
 }
 
 Controls.FadeInTimeSlider = {
     type = 'slider',
     name = L.FadeInTime,
-    min = 100,
-    max = 2000,
+    min = 0.1,
+    max = 5,
     softLimits = true,
-    step = 50,
-    get = function(bar) return Round(bar:GetFadeInDuration() * 1000) end,
-    set = function(bar, value) bar:SetFadeInDuration(value / 1000) end
+    step = 0.1,
+    get = function(bar) return Round(bar:GetFadeInDuration() * 10) / 10 end,
+    set = function(bar, value) bar:SetFadeInDuration(value) end
 }
 
 Controls.FadeOutDelaySlider = {
     type = 'slider',
     name = L.FadeOutDelay,
     min = 0,
-    max = 2000,
+    max = 5,
     softLimits = true,
-    step = 50,
-    get = function(bar) return Round(bar:GetFadeOutDelay() * 1000) end,
-    set = function(bar, value) bar:SetFadeOutDelay(value / 1000) end
+    step = 0.1,
+    get = function(bar) return Round(bar:GetFadeOutDelay() * 10) / 10 end,
+    set = function(bar, value) bar:SetFadeOutDelay(value) end
 }
 
 Controls.FadeOutTimeSlider = {
     type = 'slider',
     name = L.FadeOutTime,
-    min = 100,
-    max = 2000,
+    min = 0.1,
+    max = 5,
     softLimits = true,
-    step = 50,
-    get = function(bar) return Round(bar:GetFadeOutDuration() * 1000) end,
-    set = function(bar, value) bar:SetFadeOutDuration(value / 1000) end
+    step = 0.1,
+    get = function(bar) return Round(bar:GetFadeOutDuration() * 10) / 10 end,
+    set = function(bar, value) bar:SetFadeOutDuration(value) end
 }
 
 -- the Advanced panel
