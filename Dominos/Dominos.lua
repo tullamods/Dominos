@@ -39,7 +39,11 @@ end
 -- Events
 --------------------------------------------------------------------------------
 
-function Addon:OnInitialize()    
+function Addon:OnInitialize()
+    if C_InputInterfaceStyle and C_InputInterfaceStyle.GetCurrentStyle() == Enum.InputDeviceInterfaceType.Gamepad then
+        return
+    end
+
     -- setup db
     self:CreateDatabase()
     self:UpgradeDatabase()
@@ -72,7 +76,6 @@ function Addon:OnUpgradeDatabase(oldVersion, newVersion)
 
             if mainBar then
                 for _, pages in pairs(mainBar.pages) do
-
                     if pages.dragonriding == nil then
                         pages.dragonriding = 10
                     end

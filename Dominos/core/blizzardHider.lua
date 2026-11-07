@@ -1,4 +1,9 @@
+if C_InputInterfaceStyle and C_InputInterfaceStyle.GetCurrentStyle() == Enum.InputDeviceInterfaceType.Gamepad then
+    return        
+end
+
 local _, Addon = ...
+
 
 local framesToHide = {
     "MainActionBar",
