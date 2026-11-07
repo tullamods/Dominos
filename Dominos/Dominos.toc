@@ -26,15 +26,12 @@ core\bindableButton.lua
 core\fadeManager.lua
 core\overrideController.lua [ExcludeLoadGameType vanilla]
 core\tooltipController.lua
-core\blizzardHider.lua [ExcludeLoadGameType cata, wrath]
-core\blizzardHider.classic.lua [AllowLoadGameType cata, wrath]
+core\blizzardHider.lua
 # builtin bars
 bars\actionBar\bindings.lua [AllowLoadGameType standard, camelot]
 bars\actionBar\flyout.lua [AllowLoadGameType mists]
-bars\actionBar\button.lua [ExcludeLoadGameType cata, wrath]
-bars\actionBar\button.classic.lua [AllowLoadGameType cata, wrath]
-bars\actionBar\buttons.lua [ExcludeLoadGameType cata, wrath]
-bars\actionBar\buttons.classic.lua [AllowLoadGameType cata, wrath]
+bars\actionBar\button.lua
+bars\actionBar\buttons.lua
 bars\actionBar\bar.lua
 bars\actionBar\menu.lua
 bars\actionBar\bars.lua
