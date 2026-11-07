@@ -8,7 +8,7 @@ if not (MultiCastActionBarFrame and UnitClassBase('player') == 'SHAMAN') then re
 local AddonName, Addon = ...
 
 --------------------------------------------------------------------------------
--- Bar setup
+-- Bar
 --------------------------------------------------------------------------------
 
 local L = LibStub('AceLocale-3.0'):GetLocale(AddonName)
@@ -50,15 +50,16 @@ Addon.TotemBar = TotemBar
 --------------------------------------------------------------------------------
 
 local TotemBarModule = Addon:NewModule('TotemBar')
+local bar
 
 function TotemBarModule:Load()
-    self.bar = TotemBar:New()
+    bar = TotemBar:New()
 end
 
 function TotemBarModule:Unload()
-    if self.bar then
-        self.bar:Free()
-        self.bar = nil
+    if bar then
+        bar:Free()
+        bar = nil
     end
 end
 
@@ -72,4 +73,21 @@ function TotemBarModule:OnFirstLoad()
 
     -- also, it is repositioned on every frame? that seems silly
     MultiCastActionBarFrame:SetScript("OnUpdate", nil)
+
+    -- edit mode clears the flag whenever a layout is applied
+    if MultiCastActionBarFrame.ApplySystemAnchor then
+        hooksecurefunc(MultiCastActionBarFrame, 'ApplySystemAnchor', function(frame)
+            if bar then
+                bar:AttachChild(frame)
+            end
+        end)
+    end
+
+    if EditModeManagerFrame.UpdateBottomActionBarPositions then
+        hooksecurefunc(EditModeManagerFrame, 'UpdateBottomActionBarPositions', function()
+            if bar then
+                bar:AttachChild(MultiCastActionBarFrame)
+            end
+        end)
+    end
 end
