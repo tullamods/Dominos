@@ -17,6 +17,7 @@ localization\default.lua
 localization\[TextLocale].lua
 Dominos.lua
 core\migrations.lua
+core\addressMap.lua
 core\helpers.lua
 core\contextMenu.lua
 core\barStates\module.lua

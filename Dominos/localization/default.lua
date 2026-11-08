@@ -74,6 +74,23 @@ L.TipRollBar = 'Displays frames for rolling on items when in a group.'
 L.TipVehicleBar = [[Displays controls to aim and exit a vehicle.\nAll other vehicle actions are displayed on the possess bar.]]
 L.ToggleFramesDesc = 'Toggles the given <frameList>'
 L.TotemBarDisplayName = HUD_EDIT_MODE_TOTEM_ACTION_BAR_LABEL
+
+-- action slot regions
+L.ActionPageRegion = 'Action Page %d'
+L.BonusBarRegion = 'Bonus Bar %d'
+L.SkyridingRegion = _G.GENERIC_TRAIT_FRAME_DRAGONRIDING_TITLE
+L.TotemsRegion = 'Totems'
+L.TotemSetRegion = 'Totems %d'
+L.GamepadPageRegion = 'Gamepad Page %d'
+L.GamepadModifiersRegion = '%s + %s'
+L.GamepadDpadRegion = 'D-Pad'
+L.GamepadFaceRegion = 'Button'
+-- "Gamepad Page 1 - LT + Button"
+L.GamepadRegionName = '%s - %s'
+L.GamepadStanceBarRegion = 'Gamepad Stance Bar %d'
+L.UnusedRegion = 'Unused'
+L.SlotName = 'Slot %d'
+L.RegionSlotName = '%s, Slot %d'
 L.Updated = 'Updated to v%s'
 L.ActionBarsDesc = 'Sets the number of action bars and buttons per bar, like 8x12 (up to 168 buttons in all)'
 L.NumBarsDesc = 'Sets the number of action bars'
