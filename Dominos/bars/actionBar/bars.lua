@@ -1,6 +1,55 @@
 local _, Addon = ...
 local ActionBarsModule = Addon:NewModule('ActionBars', 'AceEvent-3.0')
 
+-- hide Blizzard's action bars
+function ActionBarsModule:OnFirstLoad()
+    -- the main bar keeps its events and buttons
+    local bars = {
+        'MainActionBar',
+        'MultiBarBottomLeft',
+        'MultiBarBottomRight',
+        'MultiBarLeft',
+        'MultiBarRight',
+        'MultiBar5',
+        'MultiBar6',
+        'MultiBar7',
+    }
+
+    -- classic
+    if MainMenuBar then
+        tinsert(bars, 'MainMenuBar')
+        tinsert(bars, 'MainMenuBarArtFrame')
+    end
+
+    for _, name in ipairs(bars) do
+        local bar = _G[name]
+        local isMainBar = name == 'MainActionBar'
+
+        if bar then
+            if not isMainBar then
+                bar:UnregisterAllEvents()
+            end
+
+            (bar.HideBase or bar.Hide)(bar)
+            bar:SetParent(Addon.ShadowUIParent)
+
+            if type(bar.actionButtons) == 'table' then
+                for _, button in pairs(bar.actionButtons) do
+                    button:UnregisterAllEvents()
+                    button:SetAttributeNoHandler('statehidden', true)
+                    button:Hide()
+                end
+
+                if not isMainBar then
+                    wipe(bar.actionButtons)
+                end
+            end
+        else
+            Addon:Printf('Could not find frame %q', name)
+        end
+    end
+end
+
 function ActionBarsModule:Load()
     self:SetBarCount(Addon:NumBars())
 
