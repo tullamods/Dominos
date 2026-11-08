@@ -144,10 +144,10 @@ function ActionButtons:PLAYER_ENTERING_WORLD()
 end
 
 -- reset grid state at login. This covers waiting for the game to apply the
--- always show buttons state to the main bar
+-- always show buttons state to the main bar. Settings are applied on
+-- LAYOUT_LOADED, which only fires when Dominos loads
 function ActionButtons:PLAYER_LOGIN()
     ActionButton1:SetAttribute("showgrid", 0)
-    self:LAYOUT_LOADED()
 end
 
 -- force a visibility updates when spells changed (typically called when

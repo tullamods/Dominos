@@ -50,13 +50,13 @@ Binder:SetAttributeNoHandler("SetBindings", [[
     end
 ]])
 
--- initialize state
+-- initialize state. Settings are applied on LAYOUT_LOADED, which only fires
+-- when Dominos loads
 Binder:SetScript("OnEvent", function(self, event)
     self:SetScript("OnEvent", nil)
     self:UnregisterEvent(event)
 
     self:SetAttribute("overrideui", OverrideActionBarButton1:IsVisible() and 1 or 0)
-    self:SetAttribute("useoverrideui", Addon:UsingOverrideUI() and 1 or 0)
     RegisterAttributeDriver(self, "petbattleui", "[petbattle]1;0")
 end)
 
