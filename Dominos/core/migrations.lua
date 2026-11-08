@@ -1,7 +1,7 @@
 -- Saved variable migrations. These run when this file loads
 local AddonName, Addon = ...
 
-local SCHEMA_VERSION = 2
+local SCHEMA_VERSION = 3
 
 -- iterates over every profile in the saved variables
 local function profiles(sv)
@@ -24,6 +24,19 @@ Migrations[2] = function(sv)
                 end
             end
         end
+    end
+end
+
+-- 3: bar count and length are saved separately. Until now, bars split 168
+-- buttons evenly, with 14 bars by default
+Migrations[3] = function(sv)
+    for _, profile in profiles(sv) do
+        local ab = profile.ab or {}
+        local count = ab.count or 14
+
+        ab.count = count
+        ab.length = ab.length or math.floor(168 / count)
+        profile.ab = ab
     end
 end
 

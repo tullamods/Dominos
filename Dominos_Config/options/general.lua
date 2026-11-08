@@ -4,6 +4,76 @@ local _, Addon = ...
 local ParentAddon = Addon:GetParent()
 local L = Addon:GetLocale()
 
+-- bar lengths to pick from: ones that line up with Blizzard's 12 button pages
+local ACTION_BAR_LENGTHS = { 1, 2, 3, 4, 6, 12, 24 }
+
+local function getMaxNumBars()
+    return floor(ParentAddon.ACTION_BUTTON_COUNT / ParentAddon:GetActionBarLength())
+end
+
+-- AceConfig needs a number for a slider's max, so it's updated on changes
+local numBarsOption = {
+    type = "range",
+    name = L.NumActionBars,
+    min = 1,
+    max = getMaxNumBars(),
+    step = 1,
+    get = function()
+        return ParentAddon:NumBars()
+    end,
+    set = function(_, value)
+        ParentAddon:SetNumBars(value)
+    end
+}
+
+local actionBarLengthOption = {
+    type = "select",
+    name = L.ActionBarLength,
+    desc = L.ActionBarLengthDesc,
+    values = function()
+        local values = {}
+
+        for _, length in ipairs(ACTION_BAR_LENGTHS) do
+            values[length] = L.ActionBarLengthValue:format(length, floor(ParentAddon.ACTION_BUTTON_COUNT / length))
+        end
+
+        -- one set elsewhere, like with a slash command
+        local length = ParentAddon:GetActionBarLength()
+        if not values[length] then
+            values[length] = L.ActionBarLengthCustom:format(length)
+        end
+
+        return values
+    end,
+    sorting = function()
+        local sorting = CopyTable(ACTION_BAR_LENGTHS)
+        local length = ParentAddon:GetActionBarLength()
+
+        if not tContains(sorting, length) then
+            tinsert(sorting, length)
+            table.sort(sorting)
+        end
+
+        return sorting
+    end,
+    get = function()
+        return ParentAddon:GetActionBarLength()
+    end,
+    set = function(_, value)
+        -- a longer length lowers the count, if needed
+        ParentAddon:SetActionBarSize(ParentAddon:NumBars(), value)
+    end
+}
+
+-- covers every change: these options, slash commands, and profile changes
+local function onActionBarSizeChanged()
+    numBarsOption.max = getMaxNumBars()
+    LibStub('AceConfigRegistry-3.0'):NotifyChange(ParentAddon:GetName())
+end
+
+ParentAddon.RegisterCallback(numBarsOption, 'ACTIONBAR_COUNT_UPDATED', onActionBarSizeChanged)
+ParentAddon.RegisterCallback(numBarsOption, 'LAYOUT_LOADED', onActionBarSizeChanged)
+
 local function dict(entries)
     for i = #entries, 1, -1 do
         local e = entries[i]
@@ -92,6 +162,9 @@ Addon:AddOptionsPanelOptions("general", {
         },
 
         { type = "header", name = L.ActionBarBehavior },
+
+        numBarsOption,
+        actionBarLengthOption,
 
         {
             type = "select",

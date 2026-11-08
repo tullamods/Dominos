@@ -61,11 +61,15 @@ function ActionBarsModule:Unload()
     self:UnregisterAllEvents()
     self:ForActive('Free')
     self.active = nil
+    self.length = nil
 end
 
 -- events
 function ActionBarsModule:ACTIONBAR_COUNT_UPDATED(_, count)
     self:SetBarCount(count)
+
+    -- bars were added, removed or recreated
+    Addon.callbacks:Fire('ACTIONBARS_UPDATED')
 end
 
 function ActionBarsModule:UPDATE_SHAPESHIFT_FORMS()
@@ -76,18 +80,32 @@ function ActionBarsModule:UPDATE_SHAPESHIFT_FORMS()
     self:ForActive('UpdateStateDriver')
 end
 
+-- only adds or removes bars, unless the length changed, which changes every
+-- bar's buttons
 function ActionBarsModule:SetBarCount(count)
-    self:ForActive('Free')
+    local length = Addon:GetActionBarLength()
 
-    if count > 0 then
-        self.active = {}
-
-        for i = 1, count do
-            self.active[i] = Addon.ActionBar:New(i)
-        end
-    else
+    if length ~= self.length then
+        self:ForActive('Free')
         self.active = nil
+        self.length = length
     end
+
+    local active = self.active or {}
+
+    for i = #active, count + 1, -1 do
+        active[i]:Free()
+        active[i] = nil
+    end
+
+    for i = #active + 1, count do
+        active[i] = Addon.ActionBar:New(i)
+    end
+
+    self.active = active
+
+    -- paging wraps around the bar count
+    self:ForActive('UpdateStateDriver')
 end
 
 function ActionBarsModule:ForActive(method, ...)

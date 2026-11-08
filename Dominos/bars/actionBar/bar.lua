@@ -6,8 +6,6 @@ local AddonName, Addon = ...
 
 local L = LibStub('AceLocale-3.0'):GetLocale(AddonName)
 
-local ACTION_BUTTON_COUNT = Addon.ACTION_BUTTON_COUNT
-
 local ActionBar = Addon:CreateClass('Frame', Addon.ButtonBar)
 
 ActionBar.ButtonProps = {
@@ -132,7 +130,7 @@ end
 
 -- returns the maximum possible size for a given bar
 function ActionBar:MaxLength()
-    return floor(ACTION_BUTTON_COUNT / Addon:NumBars())
+    return Addon:GetActionBarLength()
 end
 
 function ActionBar:AcquireButton(index)

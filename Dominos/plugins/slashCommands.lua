@@ -12,6 +12,18 @@ local function printCommand(cmd, desc)
     print((' - |cFF33FF99%s|r: %s'):format(cmd, desc))
 end
 
+-- "8x12", "8 x 12", "8×12" or "8 12": returns the bar count and length
+local function parseBarSize(text)
+    text = (text or ''):gsub('×', 'x')
+
+    local count, length = text:match('^%s*(%d+)%s*[xX%*]%s*(%d+)%s*$')
+    if not count then
+        count, length = text:match('^%s*(%d+)%s+(%d+)%s*$')
+    end
+
+    return tonumber(count), tonumber(length)
+end
+
 function SlashCommands:OnEnable()
     self:RegisterChatCommand('dominos', 'OnCmd')
     self:RegisterChatCommand('dom', 'OnCmd')
@@ -43,9 +55,35 @@ function SlashCommands:OnCmd(args)
     elseif cmd == 'toggle' then
         Addon:ToggleFrames(select(2, string.split(' ', args)))
     elseif cmd == 'numbars' then
-        Addon:SetNumBars(tonumber(select(2, string.split(' ', args))))
+        local count = tonumber((select(2, string.split(' ', args))))
+        if count then
+            Addon:SetNumBars(count)
+
+            if floor(count) > Addon:NumBars() then
+                Addon:Printf(L.NumBarsLimited, Addon:NumBars(), Addon:GetActionBarLength())
+            end
+        end
+    elseif cmd == 'abs' then
+        local count, length = parseBarSize(args:match('^%S+%s+(.*)$'))
+
+        if count then
+            Addon:SetActionBarSize(count, length)
+
+            if count > Addon:NumBars() then
+                Addon:Printf(L.NumBarsLimited, Addon:NumBars(), Addon:GetActionBarLength())
+            end
+        else
+            printCommand('abs <bars>x<buttons>', L.ActionBarsDesc)
+        end
     elseif cmd == 'numbuttons' then
-        Addon:SetNumButtons(tonumber(select(2, string.split(' ', args))))
+        local length = tonumber((select(2, string.split(' ', args))))
+        if length then
+            Addon:SetActionBarLength(length)
+
+            if floor(length) > Addon:GetActionBarLength() then
+                Addon:Printf(L.NumButtonsLimited, Addon:GetActionBarLength(), Addon:NumBars())
+            end
+        end
     elseif cmd == 'save' then
         local profileName = string.join(' ', select(2, string.split(' ', args)))
         Addon:SaveProfile(profileName)
@@ -86,6 +124,9 @@ function SlashCommands:PrintHelp(cmd)
     printCommand('show <frameList>', L.ShowFramesDesc)
     printCommand('hide <frameList>', L.HideFramesDesc)
     printCommand('toggle <frameList>', L.ToggleFramesDesc)
+    printCommand('abs <bars>x<buttons>', L.ActionBarsDesc)
+    printCommand('numbars <bars>', L.NumBarsDesc)
+    printCommand('numbuttons <buttons>', L.NumButtonsDesc)
     printCommand('save <profile>', L.SaveDesc)
     printCommand('set <profile>', L.SetDesc)
     printCommand('copy <profile>', L.CopyDesc)

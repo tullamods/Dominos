@@ -7,6 +7,11 @@ local L = LibStub("AceLocale-3.0"):NewLocale("Dominos-Config", "enUS", true)
 
 L.ActionBarBehavior = "Action Bar Behavior"
 L.ActionBarNumber = _G.HUD_EDIT_MODE_ACTION_BAR_LABEL
+L.NumActionBars = "Number of Action Bars"
+L.ActionBarLength = "Buttons per Bar"
+L.ActionBarLengthDesc = "Up to 168 buttons are shared between all action bars, so longer bars mean fewer of them."
+L.ActionBarLengthValue = "%d (up to %d bars)"
+L.ActionBarLengthCustom = "Custom (%d)"
 L.ActionButtonLookAndFeel = "Action Button Look & Feel"
 L.ActionButtonColoring = "Action Button Coloring"
 L.ActionStates_oom = "Out of Mana"

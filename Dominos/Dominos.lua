@@ -5,6 +5,7 @@ local L = LibStub('AceLocale-3.0'):GetLocale(AddonName)
 local KeyBound = LibStub('LibKeyBound-1.0')
 
 local ADDON_VERSION = C_AddOns.GetAddOnMetadata(AddonName, 'Version')
+local ADDON_WEBSITE = C_AddOns.GetAddOnMetadata(AddonName, 'X-Website') or AddonName
 local CONFIG_ADDON_NAME = AddonName .. '_Config'
 local BINDINGS_VERSION = 3
 
@@ -213,7 +214,7 @@ end
 
 function Addon:GetSavedVariablesProblem()
     if not self.savedVariablesMigrated then
-        return L.SavedVariablesNotMigrated
+        return L.SavedVariablesNotMigrated:format(ADDON_WEBSITE)
     end
 
     -- also catches LoadSavedVariablesFirst not applying
@@ -223,7 +224,7 @@ function Addon:GetSavedVariablesProblem()
     if type(version) ~= 'number' then
         return
     elseif version < self.DB_SCHEMA_VERSION then
-        return L.SavedVariablesNotMigrated
+        return L.SavedVariablesNotMigrated:format(ADDON_WEBSITE)
     elseif version > self.DB_SCHEMA_VERSION then
         return L.SavedVariablesTooNew
     end
@@ -232,7 +233,10 @@ end
 -- leaves the saved variables untouched
 function Addon:DisableForSession(message)
     self:SetEnabledState(false)
-    self:SetDefaultModuleState(false)
+
+    -- for modules created later (Dominos_Cast, etc). SetDefaultModuleState
+    -- can't be used once modules exist, but NewModule reads this field
+    self.defaultModuleState = false
 
     for _, module in self:IterateModules() do
         module:SetEnabledState(false)
@@ -287,7 +291,8 @@ function Addon:GetDatabaseDefaults()
             useOverrideUI = not self:IsGameType('vanilla'),
 
             ab = {
-                count = self.ACTION_BUTTON_COUNT / NUM_ACTIONBAR_BUTTONS,
+                count = 14,
+                length = NUM_ACTIONBAR_BUTTONS,
                 rightClickUnit = "player"
             },
 
@@ -515,22 +520,39 @@ end
 -- frame commands
 --------------------------------------------------------------------------------
 
--- sizing
-function Addon:SetNumBars(count)
-    count = Clamp(count, 1, self.ACTION_BUTTON_COUNT)
+-- sizing. Bars share ACTION_BUTTON_COUNT buttons: count * length can't be more
+function Addon:SetActionBarSize(count, length)
+    length = Clamp(floor(length), 1, self.ACTION_BUTTON_COUNT)
+    count = Clamp(floor(count), 1, floor(self.ACTION_BUTTON_COUNT / length))
 
-    if count ~= self:NumBars() then
-        self.db.profile.ab.count = count
+    local ab = self.db.profile.ab
+    if count ~= ab.count or length ~= ab.length then
+        ab.count = count
+        ab.length = length
         self.callbacks:Fire('ACTIONBAR_COUNT_UPDATED', count)
     end
 end
 
-function Addon:SetNumButtons(count)
-    self:SetNumBars(self.ACTION_BUTTON_COUNT / count)
+-- sets only the bar count, up to what fits with the current length
+function Addon:SetNumBars(count)
+    local length = self:GetActionBarLength()
+
+    self:SetActionBarSize(Clamp(floor(count), 1, floor(self.ACTION_BUTTON_COUNT / length)), length)
 end
 
 function Addon:NumBars()
     return self.db.profile.ab.count
+end
+
+-- sets only the bar length, up to what fits with the current count
+function Addon:SetActionBarLength(length)
+    local count = self:NumBars()
+
+    self:SetActionBarSize(count, Clamp(floor(length), 1, floor(self.ACTION_BUTTON_COUNT / count)))
+end
+
+function Addon:GetActionBarLength()
+    return self.db.profile.ab.length
 end
 
 -- scale
