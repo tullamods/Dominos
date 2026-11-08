@@ -6,7 +6,6 @@ local KeyBound = LibStub('LibKeyBound-1.0')
 
 local ADDON_VERSION = C_AddOns.GetAddOnMetadata(AddonName, 'Version')
 local CONFIG_ADDON_NAME = AddonName .. '_Config'
-local DB_SCHEMA_VERSION = 2
 local BINDINGS_VERSION = 3
 
 -- setup custom callbacks
@@ -41,6 +40,13 @@ end
 
 function Addon:OnInitialize()
     if C_InputInterfaceStyle and C_InputInterfaceStyle.GetCurrentStyle() == Enum.InputDeviceInterfaceType.Gamepad then
+        self:DisableForSession()
+        return
+    end
+
+    local problem = self:GetSavedVariablesProblem()
+    if problem then
+        self:DisableForSession(problem)
         return
     end
 
@@ -69,22 +75,6 @@ function Addon:OnEnable()
 end
 
 -- configuration events
-function Addon:OnUpgradeDatabase(oldVersion, newVersion)
-    if oldVersion and oldVersion < 2 then
-        for _, profile in pairs(self.db.profiles) do
-            local mainBar = profile.frames and profile.frames[1]
-
-            if mainBar then
-                for _, pages in pairs(mainBar.pages) do
-                    if pages.dragonriding == nil then
-                        pages.dragonriding = 10
-                    end
-                end
-            end
-        end
-    end
-end
-
 function Addon:OnUpgradeAddon(oldVersion, newVersion)
     self:Printf(L.Updated, ADDON_VERSION, GAME_TYPE)
 end
@@ -144,8 +134,6 @@ end
 -- Layout Lifecycle
 --------------------------------------------------------------------------------
 
-local initializedModules = {}
-
 -- Load is called when the addon is first enabled, and also whenever a profile
 -- is loaded
 function Addon:Load()
@@ -162,17 +150,14 @@ function Addon:Load()
             return
         end
 
-        -- try calling OnFirstLoad if we've not loaded this module first
-        if not initializedModules[module] then
-            local f = module.OnFirstLoad
-            if type(f) == 'function' then
-                f(module)
-            end
-
-            initializedModules[module] = true
+        -- once
+        local f = module.OnFirstLoad
+        if type(f) == 'function' then
+            f(module)
+            module.OnFirstLoad = nil
         end
 
-        local f = module.Load
+        f = module.Load
         if type(f) == 'function' then
             f(module)
         end
@@ -225,6 +210,38 @@ end
 --------------------------------------------------------------------------------
 -- Database Setup
 --------------------------------------------------------------------------------
+
+function Addon:GetSavedVariablesProblem()
+    if not self.savedVariablesMigrated then
+        return L.SavedVariablesNotMigrated
+    end
+
+    -- also catches LoadSavedVariablesFirst not applying
+    local sv = _G[AddonName .. 'DB']
+    local version = type(sv) == 'table' and type(sv.global) == 'table' and sv.global.configVersion
+
+    if type(version) ~= 'number' then
+        return
+    elseif version < self.DB_SCHEMA_VERSION then
+        return L.SavedVariablesNotMigrated
+    elseif version > self.DB_SCHEMA_VERSION then
+        return L.SavedVariablesTooNew
+    end
+end
+
+-- leaves the saved variables untouched
+function Addon:DisableForSession(message)
+    self:SetEnabledState(false)
+    self:SetDefaultModuleState(false)
+
+    for _, module in self:IterateModules() do
+        module:SetEnabledState(false)
+    end
+
+    if message then
+        print(('|cffff2020%s:|r %s'):format(AddonName, message))
+    end
+end
 
 -- db actions
 function Addon:CreateDatabase()
@@ -294,10 +311,9 @@ function Addon:GetDatabaseDefaults()
 end
 
 function Addon:UpgradeDatabase()
-    local configVersion = self.db.global.configVersion
-    if configVersion ~= DB_SCHEMA_VERSION then
-        self:OnUpgradeDatabase(configVersion, DB_SCHEMA_VERSION)
-        self.db.global.configVersion = DB_SCHEMA_VERSION
+    -- new databases
+    if self.db.global.configVersion == nil then
+        self.db.global.configVersion = self.DB_SCHEMA_VERSION
     end
 
     local addonVersion = self.db.global.addonVersion

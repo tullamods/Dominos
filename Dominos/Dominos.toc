@@ -6,6 +6,7 @@
 ## Category: Action Bars
 ## Version: @project-version@
 ## SavedVariables: DominosDB
+## LoadSavedVariablesFirst: 1
 ## OptionalDeps: Ace3, LibKeyBound-1.0, LibSharedMedia-3.0, Masque, FlyPaper, LibDualSpec-1.0
 ## IconTexture: Interface/AddOns/Dominos/Dominos
 ## ExcludeLoadGameType: plunderstorm, wowhack
@@ -14,6 +15,7 @@ embeds.xml
 localization\default.lua
 localization\[TextLocale].lua
 Dominos.lua
+core\migrations.lua
 core\helpers.lua
 core\contextMenu.lua
 core\barStates\module.lua
@@ -26,7 +28,6 @@ core\bindableButton.lua
 core\fadeManager.lua
 core\overrideController.lua [ExcludeLoadGameType vanilla]
 core\tooltipController.lua
-core\blizzardHider.lua
 # builtin bars
 bars\actionBar\bindings.lua [AllowLoadGameType standard, camelot]
 bars\actionBar\flyout.lua [AllowLoadGameType mists]

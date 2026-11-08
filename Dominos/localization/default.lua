@@ -75,5 +75,7 @@ L.TipVehicleBar = [[Displays controls to aim and exit a vehicle.\nAll other vehi
 L.ToggleFramesDesc = 'Toggles the given <frameList>'
 L.TotemBarDisplayName = HUD_EDIT_MODE_TOTEM_ACTION_BAR_LABEL
 L.Updated = 'Updated to v%s'
+L.SavedVariablesNotMigrated = "Couldn't update your saved settings, so Dominos is turned off for this session. Your settings haven't been changed. Please report the error."
+L.SavedVariablesTooNew = "Your saved settings are from a newer version of Dominos, so it's turned off for this session to keep them safe. Please update Dominos."
 L.VehicleBarDisplayName = HUD_EDIT_MODE_VEHICLE_LEAVE_BUTTON_LABEL
 L.WrongBuildWarning = "You're running a %s version for %s on a %s server. Things may not work"
