@@ -147,7 +147,6 @@ function ActionButton:SetFlyoutDirectionInsecure(direction)
     if InCombatLockdown() then return end
 
     self:SetAttribute("flyoutDirection", direction)
-    self:UpdateFlyout()
 end
 
 -- the stock UI shows and hides hotkeys based on if there's a binding or not
