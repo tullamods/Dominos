@@ -36,7 +36,7 @@ bars\actionBar\button.lua
 bars\actionBar\buttons.lua
 bars\actionBar\bar.lua
 bars\actionBar\menu.lua
-bars\actionBar\bars.lua
+bars\actionBar\module.lua
 bars\bagBar.lua
 bars\extraAbilityBar.lua [AllowLoadGameType standard, mists, cata, wrath, tbc]
 bars\encounterBar.lua [AllowLoadGameType standard, mists, cata, wrath]
