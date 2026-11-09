@@ -21,7 +21,6 @@ L.ConfigMode = '设置模式'
 L.ConfigModeHelp = '<拖动> 移动技能条(按住Alt键可以不粘附)。\n<右键> 进入设置。\n<中键> 或 <Shift+右键> 设置是否显示。'
 L.CopyDesc = '从 <profile> 复制设置'
 L.DeleteDesc = '删除 <profile>'
-L.Hidden = "隐藏"
 L.HideBar = '<中键或者Shift+右键> 隐藏'
 L.HideFramesDesc = '隐藏 <frameList>'
 L.InvalidProfile = '无效的配置 "%s"'

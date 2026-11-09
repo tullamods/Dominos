@@ -28,6 +28,7 @@ L.RollBarDisplayName = "Rolls"
 L.TalkingHeadBarDisplayName = HUD_EDIT_MODE_TALKING_HEAD_FRAME_LABEL
 L.TipRollBar = 'Displays frames for rolling on items when in a group.'
 L.TotemBarDisplayName = HUD_EDIT_MODE_TOTEM_ACTION_BAR_LABEL
+L.TotemSetHint = 'Right click to change totem set'
 
 -- config and binding modes
 L.AlignmentGridSize = "Grid Density"
@@ -38,7 +39,7 @@ L.ConfigEnterTip = 'Left Click to enter configuration mode'
 L.ConfigExitTip = 'Left Click to exit configuration mode'
 L.ConfigMode = 'Configuration Mode'
 L.ConfigModeHelp = 'Drag any bar to move it. Right Click to configure. Middle Click or Shift-Right Click to toggle visibility.'
-L.Hidden = "Hidden"
+L.Hidden = _G.HUD_EDIT_MODE_SETTING_ACTION_BAR_VISIBLE_SETTING_HIDDEN
 L.HideBar = 'Middle Click or Shift-Right Click to hide'
 L.KeyboardMovementTip = "Use movement keys to adjust position."
 L.SetAlpha = 'Mousewheel to set opacity (|cffffffff%d|r)'
@@ -102,4 +103,4 @@ L.SkyridingRegion = _G.GENERIC_TRAIT_FRAME_DRAGONRIDING_TITLE
 L.SlotName = 'Slot %d'
 L.TotemSetRegion = 'Totems %d'
 L.TotemsRegion = 'Totems'
-L.UnusedRegion = 'Unused'
+L.UnusedRegion = _G.UNUSED

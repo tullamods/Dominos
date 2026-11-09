@@ -26,7 +26,6 @@ L.ConfigMode = '快捷列配置模式'
 L.ConfigModeHelp = '<拖曳> 任何條列移動位置  <右鍵> 進行設定。  <中鍵> 或 <Shift+右鍵> 切換顯示/隱藏'
 L.CopyDesc = '複製設定，從 <profile>'
 L.DeleteDesc = '刪除 <profile>'
-L.Hidden = "隱藏"
 L.HideBar = '<中鍵 或 Shift+右鍵> 隱藏'
 L.HideFramesDesc = '隱藏 <frameList>'
 L.InvalidProfile = '無效的設定檔 "%s"'
