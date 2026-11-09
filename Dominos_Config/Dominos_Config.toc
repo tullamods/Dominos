@@ -24,7 +24,6 @@ contextMenu\controls\header.lua
 contextMenu\controls\pagePicker.lua
 contextMenu\panelControls.lua
 contextMenu\menu.lua
-slots\usage.lua
 slots\grid.lua
 slots\pagePicker.lua
 slots\actionBook.lua

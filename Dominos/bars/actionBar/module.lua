@@ -1,5 +1,14 @@
-local _, Addon = ...
+-- The action bars module: hides Blizzard's bars, keeps a pool of Dominos
+-- action bars sized to the profile, answers what's at an address, and names
+-- their key bindings
+
+local AddonName, Addon = ...
+local L = LibStub('AceLocale-3.0'):GetLocale(AddonName)
 local ActionBarsModule = Addon:NewModule('ActionBars', 'AceEvent-3.0')
+
+--------------------------------------------------------------------------------
+-- Setup
+--------------------------------------------------------------------------------
 
 local function hideBlizzardActionBars()
     -- the main bar keeps its events and buttons
@@ -110,6 +119,34 @@ local function setUpOverrideBindings()
     Addon.RegisterCallback(Binder, "LAYOUT_LOADED")
 end
 
+-- the buttons in Bindings.xml. their slots are their ids
+local BOUND_BUTTON_IDS = { { 13, 24 }, { 73, 132 } }
+
+-- names those buttons in the key bindings UI, by where they are now
+local function updateBindingNames()
+    for _, ids in ipairs(BOUND_BUTTON_IDS) do
+        for id = ids[1], ids[2] do
+            local name = Addon:GetButtonName(Addon.AddressMap:GetAddress(id))
+
+            _G[('BINDING_NAME_CLICK %sActionButton%d:HOTKEY'):format(AddonName, id)] = name
+        end
+    end
+end
+
+--------------------------------------------------------------------------------
+-- Lifecycle
+--------------------------------------------------------------------------------
+
+-- once per profile, for bars the migration couldn't renumber
+local function showMigrationNotice()
+    local ab = Addon.db.profile.ab
+
+    if ab.migrationNotice then
+        Addon:Print(L.ActionBarsMigrated)
+        ab.migrationNotice = nil
+    end
+end
+
 function ActionBarsModule:OnFirstLoad()
     hideBlizzardActionBars()
 
@@ -122,6 +159,8 @@ end
 
 function ActionBarsModule:Load()
     self:SetBarCount(Addon:NumBars())
+    updateBindingNames()
+    showMigrationNotice()
 
     self:RegisterEvent('UPDATE_SHAPESHIFT_FORMS')
     self:RegisterEvent('PLAYER_REGEN_ENABLED')
@@ -135,9 +174,13 @@ function ActionBarsModule:Unload()
     self.length = nil
 end
 
--- events
+--------------------------------------------------------------------------------
+-- Events
+--------------------------------------------------------------------------------
+
 function ActionBarsModule:ACTIONBAR_COUNT_UPDATED(_, count)
     self:SetBarCount(count)
+    updateBindingNames()
 
     -- bars were added, removed or recreated
     Addon.callbacks:Fire('ACTIONBARS_UPDATED')
@@ -158,6 +201,10 @@ function ActionBarsModule:PLAYER_REGEN_ENABLED()
         end
     end
 end
+
+--------------------------------------------------------------------------------
+-- Bars
+--------------------------------------------------------------------------------
 
 -- only adds or removes bars, unless the length changed, which changes every
 -- bar's buttons
@@ -190,4 +237,50 @@ function ActionBarsModule:ForActive(method, ...)
             bar:CallMethod(method, ...)
         end
     end
+end
+
+--------------------------------------------------------------------------------
+-- Address Lookups
+--------------------------------------------------------------------------------
+
+-- the bar whose base covers an address, and the button's place in it
+function Addon:GetBarAt(address)
+    for _, bar in ipairs(ActionBarsModule.active or {}) do
+        local index = address - bar:GetBaseOffset()
+
+        if index >= 1 and index <= bar:MaxLength() then
+            return bar, index
+        end
+    end
+end
+
+-- { bar, state } for each loaded state that pages a bar here, or nil
+function Addon:GetPagingBars(address)
+    local paging
+
+    for _, bar in ipairs(ActionBarsModule.active or {}) do
+        for _, stateType in ipairs(self.ActionBar.statePrecedence) do
+            for _, state in self.BarStates:GetAll(stateType) do
+                local offset = bar.paging[state.id]
+
+                if offset and address > offset and address <= offset + bar:NumButtons() then
+                    paging = paging or {}
+                    tinsert(paging, { bar = bar, state = state })
+                end
+            end
+        end
+    end
+
+    return paging
+end
+
+-- "Action Bar 9 Button 1", or "Bonus Bar 1 Slot 1" when no bar is there
+function Addon:GetButtonName(address)
+    local bar, index = self:GetBarAt(address)
+
+    if bar then
+        return L.BarButton:format(bar:GetDisplayName(), index)
+    end
+
+    return self.AddressMap:GetAddressName(address)
 end

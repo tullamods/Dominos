@@ -44,6 +44,7 @@ end
 local actionBarSizeOption = {
     type = "select",
     name = L.ActionBarSize,
+    desc = L.ActionBarSizeDesc,
     width = 1.5,
     values = function()
         return (getSizeChoices())

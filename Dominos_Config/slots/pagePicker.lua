@@ -16,13 +16,8 @@ local COLORS = {
     bar = { 0.3, 0.6, 1, 0.25 }
 }
 
-local PADDING = 12
-local SCROLLBAR_WIDTH = 16
-local TITLE_HEIGHT = 20
 local HEIGHT = 480
 local MIN_HEIGHT = 200
-local DEFAULT_COLUMNS = 12
-local MIN_COLUMNS = 6
 
 local Picker
 
@@ -61,10 +56,14 @@ local function getStartStatus(address)
     return 'valid'
 end
 
+local function clearHover()
+    Picker.hoverAddress = nil
+    Picker.hoverStatus = nil
+end
+
 local function setOffset(offset)
     Picker.row.menu:SetValue(Picker.row.def, offset)
     Addon:RefreshControl(Picker.row)
-    Picker.usage = Addon:GetActionSlotUsage()
     Picker.Grid:UpdateColors()
 end
 
@@ -90,7 +89,7 @@ local function grid_GetCellColor(_, cell)
         return COLORS.selected
     end
 
-    if Picker.usage.base[address] then
+    if ParentAddon:GetBarAt(address) then
         return COLORS.bar
     end
 end
@@ -102,8 +101,7 @@ local function grid_OnCellEnter(grid, cell)
 end
 
 local function grid_OnCellLeave(grid)
-    Picker.hoverAddress = nil
-    Picker.hoverStatus = nil
+    clearHover()
     grid:UpdateColors()
 end
 
@@ -113,82 +111,35 @@ local function grid_OnCellClick(_, cell)
     end
 end
 
-local function grid_OnCellTooltip(_, cell, tooltip)
-    Addon:AddActionSlotUsageToTooltip(tooltip, Picker.usage, cell.address)
-end
-
 --------------------------------------------------------------------------------
 -- Dialog
 --------------------------------------------------------------------------------
 
 local function createPicker()
-    local frame = CreateFrame('Frame', 'DominosPagePicker', UIParent, 'DefaultPanelFlatTemplate')
-    frame:SetFrameStrata('DIALOG')
-    frame:SetToplevel(true)
-    frame:SetClampedToScreen(true)
-    frame:EnableMouse(true)
-    frame:SetMovable(true)
-    frame:RegisterForDrag('LeftButton')
-    frame:SetScript('OnDragStart', frame.StartMoving)
-    frame:SetScript('OnDragStop', frame.StopMovingOrSizing)
-    frame:Hide()
+    local frame = Addon:CreateActionSlotDialog('DominosPagePicker', nil, HEIGHT, MIN_HEIGHT)
 
     -- parented to a context menu, which lays out its children
     frame.ignoreInLayout = true
 
-    frame.CloseButton = CreateFrame('Button', nil, frame, 'UIPanelCloseButtonDefaultAnchors')
-
-    local grid = Addon:CreateActionSlotGrid(frame)
-    grid:SetPoint('TOPLEFT', PADDING, -(TITLE_HEIGHT + PADDING))
-    grid:SetPoint('BOTTOMRIGHT', -(PADDING + SCROLLBAR_WIDTH), 40)
+    local grid = frame.Grid
     grid.OnCellEnter = grid_OnCellEnter
     grid.OnCellLeave = grid_OnCellLeave
     grid.OnCellClick = grid_OnCellClick
-    grid.OnCellTooltip = grid_OnCellTooltip
     grid.GetCellColor = grid_GetCellColor
-    frame.Grid = grid
-
-    -- resizable from the bottom right corner
-    local chromeWidth = PADDING * 2 + SCROLLBAR_WIDTH
-    frame:SetSize(grid:GetColumnsWidth(DEFAULT_COLUMNS) + chromeWidth, HEIGHT)
-    frame:SetResizable(true)
-
-    local resize = CreateFrame('Button', nil, frame, 'PanelResizeButtonTemplate')
-    resize:SetPoint('BOTTOMRIGHT', -4, 4)
-    resize:Init(frame, grid:GetColumnsWidth(MIN_COLUMNS) + chromeWidth, MIN_HEIGHT)
-    frame.ResizeButton = resize
 
     local clear = CreateFrame('Button', nil, frame, 'UIPanelButtonTemplate')
     clear:SetSize(120, 22)
-    clear:SetPoint('BOTTOMLEFT', PADDING, 10)
+    clear:SetPoint('BOTTOMLEFT', 12, 10)
     clear:SetText(L.PagingClear)
     clear:SetScript('OnClick', function()
         setOffset(nil)
     end)
     frame.ClearButton = clear
 
-    frame:SetScript('OnShow', function(self)
-        self:RegisterEvent('ACTIONBAR_SLOT_CHANGED')
-        self:RegisterEvent('PLAYER_REGEN_DISABLED')
-    end)
-
-    frame:SetScript('OnHide', function(self)
-        self:UnregisterAllEvents()
+    frame:HookScript('OnHide', function(self)
         self.row = nil
-        self.hoverAddress = nil
-        self.hoverStatus = nil
+        clearHover()
     end)
-
-    -- paging can't change in combat
-    frame:SetScript('OnEvent', function(self, event)
-        if event == 'PLAYER_REGEN_DISABLED' then
-            self:Hide()
-        else
-            self.Grid:UpdateIcons()
-        end
-    end)
-
-    tinsert(UISpecialFrames, frame:GetName())
 
     return frame
 end
@@ -201,9 +152,7 @@ function Addon:ShowPagePicker(row)
 
     Picker = Picker or createPicker()
     Picker.row = row
-    Picker.hoverAddress = nil
-    Picker.hoverStatus = nil
-    Picker.usage = Addon:GetActionSlotUsage()
+    clearHover()
 
     -- "Action Bar 1: Cat Form"
     Picker:SetTitle(L.BarState:format(row.menu.owner:GetDisplayName(), row.Label:GetText()))

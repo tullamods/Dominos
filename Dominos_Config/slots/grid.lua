@@ -1,21 +1,23 @@
 -- A scrollable grid of action slots, laid out from the address map's regions,
--- in address order. It only shows slots: whoever uses it decides what hovering,
--- clicking and dragging a cell does, and how cells are colored.
+-- in address order. It shows slots and their tooltips: whoever uses it decides
+-- what hovering, clicking and dragging a cell does, and how cells are colored.
 --
 -- Hooks, set on the grid:
 --   grid.OnCellEnter(grid, cell)            the mouse entered a cell
 --   grid.OnCellLeave(grid, cell)            the mouse left a cell
 --   grid.OnCellClick(grid, cell, button)    a cell was clicked
---   grid.OnCellTooltip(grid, cell, tooltip) add lines to a cell's tooltip
 --   grid.OnCellDragStart(grid, cell)        a cell started being dragged
 --   grid.OnCellReceiveDrag(grid, cell)      something was dropped on a cell
 --   grid.GetCellColor(grid, cell)           a cell's overlay color, or nil
 --
--- cell.slot is the cell's action slot, cell.address its address. tooltips
--- already have the address's name as their title, before OnCellTooltip
+-- Tooltips show the slot's button name and the states that page bars to it.
+-- grid.showActions also shows its action in GameTooltip, below
+--
+-- cell.slot is the cell's action slot, cell.address its address
 
 local _, Addon = ...
 local ParentAddon = Addon:GetParent()
+local L = Addon:GetLocale()
 
 local DEFAULT_CELL_SIZE = 24
 local CELL_SPACING = 2
@@ -75,13 +77,17 @@ local function buildElements()
         end
     end
 
+    local function addGroup(region)
+        add { cells = cellsOf(region.address, region.size) }
+    end
+
     -- a row is its label, then its cells, or its children's cells as groups
     local function addRow(region)
         addLabel(region.label)
 
         if region.children then
             for _, child in ipairs(region.children) do
-                add { cells = cellsOf(child.address, child.size) }
+                addGroup(child)
             end
         else
             addCells(region.address, region.size)
@@ -101,7 +107,7 @@ local function buildElements()
                         if region.section or child.children then
                             addRow(child)
                         else
-                            add { cells = cellsOf(child.address, child.size) }
+                            addGroup(child)
                         end
                     end
                 end
@@ -122,17 +128,50 @@ end
 -- Cells
 --------------------------------------------------------------------------------
 
+local function getStateName(state)
+    return state.text or rawget(L, 'State_' .. state.id:upper()) or state.id
+end
+
+-- "Action Bar 1 in Cat Form", for each state that pages a bar to an address.
+-- read on hover, so paging changes need no refresh
+local function addPagingLines(tooltip, address)
+    local paging = ParentAddon:GetPagingBars(address)
+    if not paging then
+        return
+    end
+
+    local lines = {}
+    for i, page in ipairs(paging) do
+        lines[i] = L.BarInState:format(page.bar:GetDisplayName(), getStateName(page.state))
+    end
+
+    table.sort(lines)
+
+    for _, line in ipairs(lines) do
+        tooltip:AddLine(line, 0.8, 0.8, 0.8)
+    end
+end
+
+-- ours, so the slot's lines can sit above GameTooltip's action
+local tooltip = CreateFrame('GameTooltip', 'DominosSlotTooltip', UIParent, 'GameTooltipTemplate')
+tooltip:SetFrameStrata('TOOLTIP')
+
 local function cell_OnEnter(cell)
     local grid = cell.grid
 
-    GameTooltip:SetOwner(cell, 'ANCHOR_RIGHT')
-    GameTooltip:SetText(ParentAddon.AddressMap:GetAddressName(cell.address))
+    tooltip:SetOwner(cell, 'ANCHOR_RIGHT')
+    tooltip:SetText(ParentAddon:GetButtonName(cell.address))
 
-    if grid.OnCellTooltip then
-        grid:OnCellTooltip(cell, GameTooltip)
+    addPagingLines(tooltip, cell.address)
+
+    tooltip:Show()
+
+    if grid.showActions and HasAction(cell.slot) then
+        GameTooltip:SetOwner(tooltip, 'ANCHOR_NONE')
+        GameTooltip:SetPoint('TOPLEFT', tooltip, 'BOTTOMLEFT')
+        GameTooltip:SetAction(cell.slot)
+        GameTooltip:Show()
     end
-
-    GameTooltip:Show()
 
     if grid.OnCellEnter then
         grid:OnCellEnter(cell)
@@ -142,7 +181,11 @@ end
 local function cell_OnLeave(cell)
     local grid = cell.grid
 
-    GameTooltip:Hide()
+    tooltip:Hide()
+
+    if GameTooltip:IsOwned(tooltip) then
+        GameTooltip:Hide()
+    end
 
     if grid.OnCellLeave then
         grid:OnCellLeave(cell)
@@ -381,4 +424,64 @@ function Addon:CreateActionSlotGrid(parent, cellSize)
     ScrollUtil.AddManagedScrollBarVisibilityBehavior(grid, scrollBar)
 
     return grid
+end
+
+--------------------------------------------------------------------------------
+-- Dialog
+--------------------------------------------------------------------------------
+
+local PADDING = 12
+local SCROLLBAR_WIDTH = 16
+local TITLE_HEIGHT = 20
+local FOOTER_HEIGHT = 40
+local DEFAULT_COLUMNS = 12
+local MIN_COLUMNS = 6
+
+-- a movable, resizable panel around a grid, with room for a footer. closes on
+-- escape and when combat starts, since actions and paging can't change then
+function Addon:CreateActionSlotDialog(name, cellSize, height, minHeight)
+    local frame = CreateFrame('Frame', name, UIParent, 'DefaultPanelFlatTemplate')
+    frame:SetToplevel(true)
+    frame:SetClampedToScreen(true)
+    frame:EnableMouse(true)
+    frame:SetMovable(true)
+    frame:RegisterForDrag('LeftButton')
+    frame:SetScript('OnDragStart', frame.StartMoving)
+    frame:SetScript('OnDragStop', frame.StopMovingOrSizing)
+    frame:Hide()
+
+    frame.CloseButton = CreateFrame('Button', nil, frame, 'UIPanelCloseButtonDefaultAnchors')
+
+    local grid = self:CreateActionSlotGrid(frame, cellSize)
+    grid:SetPoint('TOPLEFT', PADDING, -(TITLE_HEIGHT + PADDING))
+    grid:SetPoint('BOTTOMRIGHT', -(PADDING + SCROLLBAR_WIDTH), FOOTER_HEIGHT)
+    frame.Grid = grid
+
+    local chromeWidth = PADDING * 2 + SCROLLBAR_WIDTH
+    frame:SetSize(grid:GetColumnsWidth(DEFAULT_COLUMNS) + chromeWidth, height)
+    frame:SetResizable(true)
+
+    local resize = CreateFrame('Button', nil, frame, 'PanelResizeButtonTemplate')
+    resize:SetPoint('BOTTOMRIGHT', -4, 4)
+    resize:Init(frame, grid:GetColumnsWidth(MIN_COLUMNS) + chromeWidth, minHeight)
+    frame.ResizeButton = resize
+
+    frame:SetScript('OnShow', function(self)
+        self:RegisterEvent('ACTIONBAR_SLOT_CHANGED')
+        self:RegisterEvent('PLAYER_REGEN_DISABLED')
+    end)
+
+    frame:SetScript('OnHide', frame.UnregisterAllEvents)
+
+    frame:SetScript('OnEvent', function(self, event)
+        if event == 'PLAYER_REGEN_DISABLED' then
+            self:Hide()
+        else
+            self.Grid:UpdateIcons()
+        end
+    end)
+
+    tinsert(UISpecialFrames, name)
+
+    return frame
 end

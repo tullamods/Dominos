@@ -168,13 +168,6 @@ function Addon:Load()
     self.Frame:ForEach('RestoreAnchor')
     self:GetModule('ButtonThemer'):Reskin()
 
-    -- once per profile, for bars the migration couldn't renumber
-    local ab = self.db.profile.ab
-    if ab.migrationNotice then
-        self:Print(L.ActionBarsMigrated)
-        ab.migrationNotice = nil
-    end
-
     self.callbacks:Fire('LAYOUT_LOADED')
 end
 

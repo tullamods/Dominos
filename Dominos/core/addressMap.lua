@@ -87,7 +87,6 @@ local regionStartingAt = {}
 --   children   contained regions, in address order. set here
 local function addRegion(region)
     region.name = region.name or region.label
-    region.slot = getSlot(region.address)
     region.available = region.available ~= false
 
     regions[#regions + 1] = region
@@ -225,7 +224,7 @@ local function addGamepadRegions()
 
     -- "Gamepad Page 1 - LT + Button", or "Gamepad Page 1 - LT + X"
     local function getName(owner, modifier, label)
-        return L.GamepadRegionName:format(owner, modifier and L.GamepadModifiersRegion:format(modifier, label) or label)
+        return L.GamepadBarKeys:format(owner, modifier and L.GamepadModifiersRegion:format(modifier, label) or label)
     end
 
     local function addGroup(parent, owner, modifier, label, keys)
@@ -301,7 +300,7 @@ addGamepadRegions()
 local maxSlot = 0
 for _, region in ipairs(regions) do
     if region.available and not region.section then
-        maxSlot = math.max(maxSlot, region.slot + region.size - 1)
+        maxSlot = math.max(maxSlot, getSlot(region.address) + region.size - 1)
     end
 end
 

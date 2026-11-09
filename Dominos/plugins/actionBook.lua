@@ -5,7 +5,7 @@ if C_InputInterfaceStyle and C_InputInterfaceStyle.GetCurrentStyle() == Enum.Inp
 end
 
 local _, Addon = ...
-local ActionBook = Addon:NewModule('ActionBook', 'AceEvent-3.0')
+local ActionBook = Addon:NewModule('ActionBook')
 
 -- frame: what it sits beside. tab: what shows and hides with the spellbook,
 -- when it's one tab of frame. each client has one or the other
@@ -35,32 +35,16 @@ local function hook(spellbook)
     end)
 end
 
--- load on demand spellbooks, by addon. only ones this client has
-local pending = {}
-
 function ActionBook:OnEnable()
     for _, spellbook in ipairs(SPELLBOOKS) do
         local addon = spellbook.addon
 
-        if not addon or C_AddOns.IsAddOnLoaded(addon) then
+        if not addon then
             hook(spellbook)
         elseif C_AddOns.DoesAddOnExist(addon) then
-            pending[addon] = spellbook
-            self:RegisterEvent('ADDON_LOADED')
+            EventUtil.ContinueOnAddOnLoaded(addon, function()
+                hook(spellbook)
+            end)
         end
-    end
-end
-
-function ActionBook:ADDON_LOADED(_, addonName)
-    local spellbook = pending[addonName]
-    if not spellbook then
-        return
-    end
-
-    hook(spellbook)
-    pending[addonName] = nil
-
-    if not next(pending) then
-        self:UnregisterEvent('ADDON_LOADED')
     end
 end
