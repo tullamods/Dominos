@@ -14,6 +14,7 @@
 * Decoupled action bar counts from sizes. You can now have 8 bars of 14 instead of only being able to have 8 bars of 21 buttons each.
 * Added a new Action Bar Size dropdown to the main options menu to let you pick different action bar counts and sizes.
 * Replaced the `/dom numbuttons` and `/dom numbars` commands `/dom abs <bars>x<buttons>`. Ex, `/dom abs 10x12` will give you 10 bars with 12 buttons each.
+* The totem bar is now a fully custom implementation (again)
 
 ### Action Bar Paging
 
