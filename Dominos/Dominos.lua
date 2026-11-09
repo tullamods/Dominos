@@ -560,22 +560,8 @@ function Addon:SetActionBarSize(count, length)
     end
 end
 
--- sets only the bar count, up to what fits with the current length
-function Addon:SetNumBars(count)
-    local length = self:GetActionBarLength()
-
-    self:SetActionBarSize(Clamp(floor(count), 1, floor(self.ACTION_BUTTON_COUNT / length)), length)
-end
-
 function Addon:NumBars()
     return self.db.profile.ab.count
-end
-
--- sets only the bar length, up to what fits with the current count
-function Addon:SetActionBarLength(length)
-    local count = self:NumBars()
-
-    self:SetActionBarSize(count, Clamp(floor(length), 1, floor(self.ACTION_BUTTON_COUNT / count)))
 end
 
 function Addon:GetActionBarLength()

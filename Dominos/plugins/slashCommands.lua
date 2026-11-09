@@ -56,15 +56,6 @@ function SlashCommands:OnCmd(args)
         Addon:HideFrames(select(2, string.split(' ', args)))
     elseif cmd == 'toggle' then
         Addon:ToggleFrames(select(2, string.split(' ', args)))
-    elseif cmd == 'numbars' then
-        local count = tonumber((select(2, string.split(' ', args))))
-        if count then
-            Addon:SetNumBars(count)
-
-            if floor(count) > Addon:NumBars() then
-                Addon:Printf(L.NumBarsLimited, Addon:NumBars(), Addon:GetActionBarLength())
-            end
-        end
     elseif cmd == 'abs' then
         local count, length = parseBarSize(args:match('^%S+%s+(.*)$'))
 
@@ -76,15 +67,6 @@ function SlashCommands:OnCmd(args)
             end
         else
             printCommand('abs <bars>x<buttons>', L.ActionBarsDesc)
-        end
-    elseif cmd == 'numbuttons' then
-        local length = tonumber((select(2, string.split(' ', args))))
-        if length then
-            Addon:SetActionBarLength(length)
-
-            if floor(length) > Addon:GetActionBarLength() then
-                Addon:Printf(L.NumButtonsLimited, Addon:GetActionBarLength(), Addon:NumBars())
-            end
         end
     elseif cmd == 'save' then
         local profileName = string.join(' ', select(2, string.split(' ', args)))
@@ -128,8 +110,6 @@ function SlashCommands:PrintHelp(cmd)
     printCommand('hide <frameList>', L.HideFramesDesc)
     printCommand('toggle <frameList>', L.ToggleFramesDesc)
     printCommand('abs <bars>x<buttons>', L.ActionBarsDesc)
-    printCommand('numbars <bars>', L.NumBarsDesc)
-    printCommand('numbuttons <buttons>', L.NumButtonsDesc)
     printCommand('save <profile>', L.SaveDesc)
     printCommand('set <profile>', L.SetDesc)
     printCommand('copy <profile>', L.CopyDesc)
