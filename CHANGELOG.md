@@ -10,18 +10,19 @@
 ### Action Bars
 
 * **Action bar numbering now follows Blizzard's**. Your action bar numbers will change to reflect this. Standard 12 button per bar layouts should retain overall positions.
-* Decoupled action bar counts from sizes. You can now have, for example, 8 bars instead of 14 instead of only being able to have 8 bars of 21 buttons each.
 * New profiles now default to 8 bars of 12 buttons each to be a bit more consistent with the standard interface. Existing profiles retain the 14 bar count.
+* Decoupled action bar counts from sizes. You can now have 8 bars of 14 instead of only being able to have 8 bars of 21 buttons each.
 * Added a new Action Bar Size dropdown to the main options menu to let you pick different action bar counts and sizes.
-* Replaced the `/dom numbuttons` and `/dom numbars` command with a single `/dom abs <bars>x<buttons>` command. For example, `/dom abs 10x12` will give you 10 bars with 12 buttons each.
+* Replaced the `/dom numbuttons` and `/dom numbars` commands `/dom abs <bars>x<buttons>`. Ex, `/dom abs 10x12` will give you 10 bars with 12 buttons each.
 
 ### Action Bar Paging
 
 * Rewrote how paging works to use a new address-based system. Instead of 
-  using a dropdown to specific action bar to page to, you'll now use a new 
-  dialog to pick an action slot address range.
-* In Forever and the 12.1.7 PTR, you can set bars to page into the GamePad UI 
-  range. This gives you a total of 360 action slots to work with (effectively standard 29 action bars worth)
+  the old action bar dropdown interface, you'll now use a new  dialog to pick a 
+  range of action slots.
+* In Forever and the 12.1.7 PTR, you can set bars to page into the gamepad UI 
+  range. This gives you a total of 360 action slots to work with (effectively 30 
+  action bars worth)
 
 ### Action Book
 
@@ -29,7 +30,8 @@
   that  lets you drag and drop actions across all possible action slots (not 
   just the ones on your action bars). For example, you can drag and drop spells 
   onto the gamepad slots, even when in keyboard mode.
-* The action book will automatically open with your spell book by default.
+* The action book will automatically open with your spellbook by default. You 
+  can turn this off.
 
 ### Misc
 
