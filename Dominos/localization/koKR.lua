@@ -7,7 +7,6 @@ local L = LibStub('AceLocale-3.0'):NewLocale('Dominos', 'koKR')
 if not L then return end
 
 --system messages
-L.NewPlayer = '%s에 대해 새 프로필이 생성되었습니다.'
 L.Updated = 'v%s|1으로;로; 갱신되었습니다.'
 
 --profiles
@@ -20,7 +19,6 @@ L.CantDeleteCurrentProfile = '현재 프로필을 삭제할 수 없습니다.'
 L.InvalidProfile = '잘못된 프로필 "%s"'
 
 --slash command help
-L.ShowOptionsDesc = '옵션 메뉴를 표시합니다.'
 L.ConfigDesc = '설정 모드를 전환합니다.'
 
 L.SetScaleDesc = '<frameList>의 비율을 설정합니다.'
@@ -60,13 +58,9 @@ L.ShowOptionsTip = '<오른쪽-클릭> 옵션 메뉴 표시'
 
 --helper dialog stuff
 L.ConfigMode = '설정 모드'
-L.ConfigModeExit = '설정 모드 종료'
 L.ConfigModeHelp = '<끌기> 바 이동.  <오른쪽-클릭> 설정.  <가운데-클릭> 또는 <Shift-오른쪽-클릭> 표시 전환'
 
 --bar tooltips
 L.TipRollBar = '파티 및 공격대시 아이템 주사위 프레임을 표시합니다.'
-L.TipVehicleBar = [[
-차량 내리기 버튼을 표시합니다.
-모든 다른 탈것의 행동을 추가바에 표시합니다.]]
 
 L.BarDisplayName = "%s 바" 
