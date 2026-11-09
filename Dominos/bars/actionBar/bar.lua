@@ -249,8 +249,10 @@ function ActionBar:UpdateButtonActions(button)
 
     button:SetAttributeNoHandler('action-base', AddressMap:GetSlot(self:GetBaseOffset() + index))
 
-    for stateId, offset in pairs(self.stateOffsets or {}) do
-        button:SetAttributeNoHandler('action-' .. stateId, AddressMap:GetSlot(offset + index))
+    if self.stateOffsets then
+        for stateId, offset in pairs(self.stateOffsets) do
+            button:SetAttributeNoHandler('action-' .. stateId, AddressMap:GetSlot(offset + index))
+        end
     end
 
     -- normally written by secure code when the override page changes
