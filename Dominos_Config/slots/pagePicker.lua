@@ -215,7 +215,7 @@ function Addon:ShowPagePicker(row)
     Picker:SetPoint('TOPLEFT', row.menu, 'TOPRIGHT', 8, 0)
     Picker:Show()
 
-    -- colors and icons are applied as cells are initialized
+    -- cells pick up their colors and icons as they're set up
     Picker.Grid:Refresh()
 
     -- the selection, else where the bar rests

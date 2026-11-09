@@ -24,7 +24,7 @@ local LABEL_HEIGHT = 14
 local ROW_SPACING = 6
 local SECTION_SPACING = 12
 
--- extra space after each group of a row that has them
+-- extra space after each group of cells
 local GROUP_SPACING = 8
 
 local HasAction = C_ActionBar and C_ActionBar.HasAction or HasAction
@@ -240,7 +240,7 @@ end
 -- Text and groups
 --------------------------------------------------------------------------------
 
--- pooled frames are either text or a group of cells, so they can be both
+-- pooled frames get reused for both text and groups
 local function initFrame(grid, frame, data)
     local text = frame.Text
     if data.text and not text then

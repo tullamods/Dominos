@@ -231,9 +231,8 @@ function Addon:GetSavedVariablesProblem()
     end
 end
 
--- leaves the saved variables untouched. Code that runs when a file loads
--- still runs, so it must not read settings (self.db): read them in a module's
--- Load or OnFirstLoad, or on LAYOUT_LOADED, which only happen when Dominos runs
+-- leaves the saved variables untouched. code at file load still runs, so it
+-- can't read self.db. read settings in Load, OnFirstLoad, or on LAYOUT_LOADED
 function Addon:DisableForSession(message)
     self:SetEnabledState(false)
 

@@ -353,7 +353,7 @@ function AddressMap:GetName(address)
     return getSlotName(address)
 end
 
--- one address, as its button if it has one: "Gamepad Page 1 - LT + PAD3",
+-- one address, as its button if it has one: "Gamepad Page 1 - LT + X",
 -- else "Action Bar 2 Slot 3"
 function AddressMap:GetAddressName(address)
     local region = regionAt[address]
