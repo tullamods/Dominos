@@ -101,5 +101,6 @@ L.NumBarsLimited = 'Set to %d bars, the most that fit with %d buttons per bar'
 L.NumButtonsLimited = 'Set to %d buttons per bar, the most that fit with %d bars'
 L.SavedVariablesNotMigrated = "Failed to update your settings, disabling for this session. Please report this error at %s"
 L.SavedVariablesTooNew = "Your settings are from a newer version, disabling for this session. Please update to the latest version."
+L.ActionBarsMigrated = "Action bars now follow Blizzard's ordering. Check your bars and move any actions or keybinds that ended up in the wrong place."
 L.VehicleBarDisplayName = HUD_EDIT_MODE_VEHICLE_LEAVE_BUTTON_LABEL
 L.WrongBuildWarning = "You're running a %s version for %s on a %s server. Things may not work"
