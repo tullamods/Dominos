@@ -107,6 +107,14 @@ Addon:AddOptionsPanelOptions("general", {
         },
 
         {
+            type = "execute",
+            name = L.ManageActions,
+            func = function()
+                Addon:ToggleActionBook()
+            end,
+        },
+
+        {
             type = "toggle",
             name = L.ShowMinimapButton,
 

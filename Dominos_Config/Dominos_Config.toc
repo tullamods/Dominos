@@ -27,6 +27,7 @@ contextMenu\menu.lua
 slots\usage.lua
 slots\grid.lua
 slots\pagePicker.lua
+slots\actionBook.lua
 options\general.lua
 options\profiles.lua
 overlay\ui.lua

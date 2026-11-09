@@ -315,6 +315,10 @@ function Addon:GetDatabaseDefaults()
             -- what modules are enabled
             -- module[id] = enabled
             modules = { ['**'] = true }
+        },
+
+        global = {
+            showActionBookWithSpellbook = true
         }
     }
 end
@@ -467,6 +471,26 @@ end
 function Addon:ShowContextMenu(bar)
     if self:IsConfigAddonEnabled() and self:LoadConfigAddon() then
         self.Options.ContextMenus:Open(bar)
+    end
+end
+
+-- the action book, beside anchor if given
+function Addon:ShowActionBook(anchor)
+    if self:IsConfigAddonEnabled() and self:LoadConfigAddon() then
+        self.Options:ShowActionBook(anchor)
+    end
+end
+
+-- closes it, if it's beside anchor
+function Addon:HideActionBook(anchor)
+    if self.Options then
+        self.Options:HideActionBook(anchor)
+    end
+end
+
+function Addon:ToggleActionBook()
+    if self:IsConfigAddonEnabled() and self:LoadConfigAddon() then
+        self.Options:ToggleActionBook()
     end
 end
 
@@ -865,6 +889,15 @@ end
 
 function Addon:ShowingMinimap()
     return not self.db.profile.minimap.hide
+end
+
+-- global, not per profile. saved as false, since nil reads as the default
+function Addon:SetShowActionBookWithSpellbook(enable)
+    self.db.global.showActionBookWithSpellbook = enable and true or false
+end
+
+function Addon:ShowingActionBookWithSpellbook()
+    return self.db.global.showActionBookWithSpellbook
 end
 
 -- linked opacity

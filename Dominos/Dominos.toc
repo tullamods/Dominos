@@ -51,3 +51,4 @@ bars\totemBar.lua [AllowLoadGameType cata, wrath, camelot]
 plugins\slashCommands.lua
 plugins\launcher.lua
 plugins\buttonThemer.lua
+plugins\actionBook.lua

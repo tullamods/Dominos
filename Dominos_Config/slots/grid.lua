@@ -12,7 +12,7 @@
 --   grid.GetCellColor(grid, cell)           a cell's overlay color, or nil
 --
 -- cell.slot is the cell's action slot, cell.address its address. tooltips
--- already have the address's name as their title
+-- already have the address's name as their title, before OnCellTooltip
 
 local _, Addon = ...
 local ParentAddon = Addon:GetParent()

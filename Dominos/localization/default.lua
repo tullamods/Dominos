@@ -21,6 +21,7 @@ L.BindingExitTip = 'Shift-Left Click to exit binding mode'
 L.CantDeleteCurrentProfile = 'Cannot delete the current profile'
 L.ClassBarDisplayName = HUD_EDIT_MODE_STANCE_BAR_LABEL
 L.ConfigDesc = 'Toggles configuration mode'
+L.ActionsDesc = 'Opens the action book'
 L.ConfigEnterTip = 'Left Click to enter configuration mode'
 L.ConfigExitTip = 'Left Click to exit configuration mode'
 L.ConfigMode = 'Configuration Mode'
