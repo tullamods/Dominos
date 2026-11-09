@@ -1,5 +1,47 @@
 # Dominos Changelog
 
+## 12.0.0-beta1
+
+> **Dominos 12 is a one way settings upgrade.**
+>
+> While I've tested the settings migration, you may still want to back up your
+> settings before upgrading just in case.
+
+### Action Bars
+
+* **Action bar numbering now follows Blizzard's**. Your action bar numbers will change to reflect this. Standard 12 button per bar layouts should retain overall positions.
+* New profiles now default to 8 bars of 12 buttons each to be a bit more consistent with the standard interface. Existing profiles retain the 14 bar count.
+* Decoupled action bar counts from sizes. You can now have 8 bars of 14 instead of only being able to have 8 bars of 21 buttons each.
+* Added a new Action Bar Size dropdown to the main options menu to let you pick different action bar counts and sizes.
+* Replaced the `/dom numbuttons` and `/dom numbars` commands `/dom abs <bars>x<buttons>`. Ex, `/dom abs 10x12` will give you 10 bars with 12 buttons each.
+
+### Action Bar Paging
+
+* Rewrote how paging works to use a new address-based system. Instead of 
+  the old action bar dropdown interface, you'll now use a new  dialog to pick a 
+  range of action slots.
+* In Forever and the 12.1.7 PTR, you can set bars to page into the gamepad UI 
+  range. This gives you a total of 360 action slots to work with (effectively 30 
+  action bars worth)
+
+### Action Book
+
+* Added a new Action Book interface (`/dom actions`). This is a single window 
+  that  lets you drag and drop actions across all possible action slots (not 
+  just the ones on your action bars). For example, you can drag and drop spells 
+  onto the gamepad slots, even when in keyboard mode.
+* The action book will automatically open with your spellbook by default. You 
+  can turn this off.
+
+### Misc
+
+* Settings migrations are now transactional (that is, a failed migration 
+  shouldn't break your old settings). 
+* To prevent data loss, Dominos will disable itself in the event your saved 
+  settings aren't able to be migrated.
+
+---
+
 ## 11.5.3
 
 * Fixed an issue causing input boxes on sliders to not automatically break soft limits

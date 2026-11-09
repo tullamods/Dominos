@@ -4,7 +4,7 @@ local Launcher = Addon:NewModule('Launcher')
 local L = LibStub('AceLocale-3.0'):GetLocale(AddonName)
 local DBIcon = LibStub('LibDBIcon-1.0')
 
-function Launcher:OnInitialize()
+function Launcher:OnFirstLoad()
     DBIcon:Register(AddonName, self:CreateDataBrokerObject(), self:GetSettings())
 
     if AddonCompartmentFrame and AddonCompartmentFrame.RegisterAddon then

@@ -8,7 +8,6 @@
 local L = LibStub('AceLocale-3.0'):NewLocale('Dominos', 'esES')
 if not L then return end
 --system messages
-L.NewPlayer = 'Creado nuevo perfil para %s'
 L.Updated = 'Actualizado a v%s'
 
 --profiles
@@ -21,7 +20,6 @@ L.CantDeleteCurrentProfile = 'No se puede borrar el perfil actual'
 L.InvalidProfile = 'Perfil inválido "%s"'
 
 --slash command help
-L.ShowOptionsDesc = 'Muestra el menu de configuración'
 L.ConfigDesc = 'Activa el modo de configuración'
 
 L.SetScaleDesc = 'Establece la escala para <frameList>'
@@ -61,11 +59,7 @@ L.ShowOptionsTip = '<Click Derecho> para mostrar el menú de opciones'
 
 --helper dialog stuff
 L.ConfigMode = 'Modo configuración'
-L.ConfigModeExit = 'Salir del modo configuración'
 L.ConfigModeHelp = '<Arrastra> cualquier barra para moverla.  <Click Derecho> para configurar.  <Click Central> o <Shift-Click Derecho> para activar o desactivar la visibilidad'
 
 --bar tooltips
 L.TipRollBar = 'Muestra los objetos para tirar dados cuando se esta en grupo o raid'
-L.TipVehicleBar = [[
-Muestra los controlas para entrar y salir de los vehículos.
-Las otras acciones del vehículo son visibles en la barra de acciones.]]

@@ -4,6 +4,71 @@ local _, Addon = ...
 local ParentAddon = Addon:GetParent()
 local L = Addon:GetLocale()
 
+-- bar count x length. all line up with Blizzard's 12 button pages, except
+-- 8: a controller layer (d-pad and face buttons). other sizes come from
+-- /dom abs
+local ACTION_BAR_SIZES = {
+    { 8, 12 },
+    { 10, 12 },
+    { 14, 12 },
+    { 16, 6 },
+    { 28, 6 },
+    { 21, 8 },
+    { 4, 24 }
+}
+
+local function sizeKey(count, length)
+    return count .. 'x' .. length
+end
+
+-- the presets, then the current size if it isn't one: values, and their order
+local function getSizeChoices()
+    local values, order = {}, {}
+
+    for _, size in ipairs(ACTION_BAR_SIZES) do
+        local key = sizeKey(size[1], size[2])
+        values[key] = L.ActionBarSizeValue:format(size[1], size[2])
+        order[#order + 1] = key
+    end
+
+    local count, length = ParentAddon:NumBars(), ParentAddon:GetActionBarLength()
+    local key = sizeKey(count, length)
+    if not values[key] then
+        values[key] = L.ActionBarSizeCustom:format(count, length)
+        order[#order + 1] = key
+    end
+
+    return values, order
+end
+
+local actionBarSizeOption = {
+    type = "select",
+    name = L.ActionBarSize,
+    desc = L.ActionBarSizeDesc,
+    width = 1.5,
+    values = function()
+        return (getSizeChoices())
+    end,
+    sorting = function()
+        return select(2, getSizeChoices())
+    end,
+    get = function()
+        return sizeKey(ParentAddon:NumBars(), ParentAddon:GetActionBarLength())
+    end,
+    set = function(_, key)
+        local count, length = key:match('^(%d+)x(%d+)$')
+        ParentAddon:SetActionBarSize(tonumber(count), tonumber(length))
+    end
+}
+
+-- covers slash commands and profile changes
+local function onActionBarSizeChanged()
+    LibStub('AceConfigRegistry-3.0'):NotifyChange(ParentAddon:GetName())
+end
+
+ParentAddon.RegisterCallback(actionBarSizeOption, 'ACTIONBAR_COUNT_UPDATED', onActionBarSizeChanged)
+ParentAddon.RegisterCallback(actionBarSizeOption, 'LAYOUT_LOADED', onActionBarSizeChanged)
+
 local function dict(entries)
     for i = #entries, 1, -1 do
         local e = entries[i]
@@ -37,18 +102,11 @@ Addon:AddOptionsPanelOptions("general", {
         },
 
         {
-            type = "toggle",
-            name = L.ShowMinimapButton,
-
-            get = function()
-                return ParentAddon:ShowingMinimap()
+            type = "execute",
+            name = L.ManageActions,
+            func = function()
+                Addon:ToggleActionBook()
             end,
-
-            set = function(_, enable)
-                ParentAddon:SetShowMinimap(enable)
-            end,
-
-            width = "full",
         },
 
         {
@@ -93,6 +151,8 @@ Addon:AddOptionsPanelOptions("general", {
 
         { type = "header", name = L.ActionBarBehavior },
 
+        actionBarSizeOption,
+
         {
             type = "select",
             name = L.RightClickUnit,
@@ -107,7 +167,8 @@ Addon:AddOptionsPanelOptions("general", {
             end,
             set = function(_, value)
                 ParentAddon:SetRightClickUnit(value)
-            end
+            end,
+            width = 1.5,
         },
 
         {
@@ -152,7 +213,8 @@ Addon:AddOptionsPanelOptions("general", {
             end,
             set = function(_, value)
                 ParentAddon:SetOverrideBar(value)
-            end
+            end,
+            width = 1.5,
         },
 
         { type = "header", name = L.ActionButtonLookAndFeel },

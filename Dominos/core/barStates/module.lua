@@ -25,6 +25,11 @@ end
 
 function BarStates:Load(config)
     local function addState(state)
+        -- reserved for action bar paging (base) and override bars
+        if state.id == 'base' or state.id == 'override' then
+            error(('Bar state id %q is reserved'):format(state.id), 2)
+        end
+
         local states = statesByType[state.type]
         states[#states + 1] = state
     end

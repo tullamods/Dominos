@@ -9,7 +9,6 @@ local L = LibStub('AceLocale-3.0'):NewLocale('Dominos', 'ruRU')
 if not L then return end
 
 --system messages
-L.NewPlayer = 'Создан новый профиль для %s'
 L.Updated = 'Обновлено до v%s'
 
 --profiles
@@ -22,7 +21,6 @@ L.CantDeleteCurrentProfile = 'Невозможно удалить текущий
 L.InvalidProfile = 'Некорректный профиль "%s"'
 
 --slash command help
-L.ShowOptionsDesc = 'Показывает меню опций'
 L.ConfigDesc = 'Устанавливает режим конфигурирования'
 
 L.SetScaleDesc = 'Установливает масштаб <frameList>'
@@ -62,5 +60,4 @@ L.ShowOptionsTip = '<ПКМ> для открытия опций'
 
 --helper dialog stuff
 L.ConfigMode = 'Режим конфигурирования'
-L.ConfigModeExit = 'Выход из режима конфигурирования'
 L.ConfigModeHelp = '<Схватите> любую панель для перемещения.  <ПКМ> для настройки.  <СКМ> или <Shift-ЛКМ> для изменения видимости'

@@ -78,6 +78,7 @@ function OverlayUI:OnEnable()
     ParentAddon.RegisterCallback(self, 'CONFIG_MODE_DISABLED')
     ParentAddon.RegisterCallback(self, 'LAYOUT_UNLOADED')
     ParentAddon.RegisterCallback(self, 'LAYOUT_LOADED')
+    ParentAddon.RegisterCallback(self, 'ACTIONBARS_UPDATED')
     ParentAddon.RegisterCallback(self, 'BAR_DISPLAY_LAYER_UPDATED', 'OnBarDisplayLevelChanged')
     ParentAddon.RegisterCallback(self, 'BAR_DISPLAY_LEVEL_UPDATED', 'OnBarDisplayLevelChanged')
 
@@ -150,6 +151,14 @@ end
 
 function OverlayUI:LAYOUT_UNLOADED()
     self.frame:Hide()
+end
+
+-- action bars were recreated, so drag frames need new owners
+function OverlayUI:ACTIONBARS_UPDATED()
+    if self.frame:IsShown() then
+        self:HideDragFrames()
+        self:ShowDragFrames()
+    end
 end
 
 function OverlayUI:OnVisibilityChanged(visible)

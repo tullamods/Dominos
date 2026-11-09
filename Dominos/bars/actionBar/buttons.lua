@@ -27,6 +27,7 @@ ActionButtons:Execute([[ ActionButtons = table.new() ]])
 -- Event and Callback Handling
 --------------------------------------------------------------------------------
 
+-- once, when the action bars first load (usually login)
 function ActionButtons:Initialize()
     -- register game events
     self:SetScript("OnEvent", function(f, event, ...) f[event](f, ...); end)
@@ -35,7 +36,6 @@ function ActionButtons:Initialize()
     self:RegisterEvent("PET_BAR_HIDEGRID")
     self:RegisterEvent("ACTIONBAR_SLOT_CHANGED")
     self:RegisterEvent("PLAYER_ENTERING_WORLD")
-    self:RegisterEvent("PLAYER_LOGIN")
     self:RegisterEvent("SPELLS_CHANGED")
 
     -- addon callbacks
@@ -116,6 +116,9 @@ function ActionButtons:Initialize()
         end)
     end
 
+    -- clear the main bar's always show buttons state, applied at login
+    ActionButton1:SetAttribute("showgrid", 0)
+
     self.Initialize = nil
 end
 
@@ -141,13 +144,6 @@ end
 
 function ActionButtons:PLAYER_ENTERING_WORLD()
     self:ForAll("UpdateShown")
-end
-
--- reset grid state at login. This covers waiting for the game to apply the
--- always show buttons state to the main bar
-function ActionButtons:PLAYER_LOGIN()
-    ActionButton1:SetAttribute("showgrid", 0)
-    self:LAYOUT_LOADED()
 end
 
 -- force a visibility updates when spells changed (typically called when
@@ -470,8 +466,5 @@ end
 function ActionButtons:GetAll()
     return pairs(self.buttons)
 end
-
--- startup and export
-ActionButtons:Initialize()
 
 Addon.ActionButtons = ActionButtons

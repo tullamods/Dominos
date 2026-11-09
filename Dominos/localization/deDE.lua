@@ -9,7 +9,6 @@ local L = LibStub('AceLocale-3.0'):NewLocale('Dominos', 'deDE')
 if not L then return end
 
 --system messages
-L.NewPlayer = 'Neues Profil f\195\188r %s erstellt'
 L.Updated = 'Aktualisiert auf v%s'
 
 --profiles
@@ -22,7 +21,6 @@ L.CantDeleteCurrentProfile = 'Das aktuelle Profil kann nicht gel\195\182scht wer
 L.InvalidProfile = 'Ung\195\188ltiges Profil "%s"'
 
 --slash command help
-L.ShowOptionsDesc = 'Zeige das Einstellungsmen\195\188'
 L.ConfigDesc = 'Konfigurations-Modus an- oder ausschalten'
 
 L.SetScaleDesc = 'Die Skalierung von <frameList> festlegen'
@@ -62,11 +60,7 @@ L.ShowOptionsTip = '<Rechtsklick> um das Einstellungsmen\195\188 anzuzeigen'
 
 --helper dialog stuff
 L.ConfigMode = 'Konfigurations-Modus'
-L.ConfigModeExit = 'Konfig-Modus verlassen'
 L.ConfigModeHelp = '<Ziehe> irgendeine Leiste um sie zu verschieben.  <Rechtsklick> zum Konfigurieren.  <Mausrad-Klick> oder <Umschalt-Rechtsklick> zum Anzeigen/Verstecken.'
 
 --bar tooltips
 L.TipRollBar = 'Zeigt innerhalb einer Gruppe die Fenster zum W\195\188rfeln auf Gegenst\195\164nde.'
-L.TipVehicleBar = [[
-Zeigt Tasten um mit einem Fahrzeuge zu zielen und es zu verlassen.
-Alle weiteren Fahrzeug Aktionen werden in der Spielerleiste angezeigt.]]

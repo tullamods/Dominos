@@ -5,8 +5,8 @@ local L = LibStub('AceLocale-3.0'):GetLocale(AddonName)
 local KeyBound = LibStub('LibKeyBound-1.0')
 
 local ADDON_VERSION = C_AddOns.GetAddOnMetadata(AddonName, 'Version')
+local ADDON_WEBSITE = C_AddOns.GetAddOnMetadata(AddonName, 'X-Website') or AddonName
 local CONFIG_ADDON_NAME = AddonName .. '_Config'
-local DB_SCHEMA_VERSION = 2
 local BINDINGS_VERSION = 3
 
 -- setup custom callbacks
@@ -41,6 +41,13 @@ end
 
 function Addon:OnInitialize()
     if C_InputInterfaceStyle and C_InputInterfaceStyle.GetCurrentStyle() == Enum.InputDeviceInterfaceType.Gamepad then
+        self:DisableForSession()
+        return
+    end
+
+    local problem = self:GetSavedVariablesProblem()
+    if problem then
+        self:DisableForSession(problem)
         return
     end
 
@@ -69,22 +76,6 @@ function Addon:OnEnable()
 end
 
 -- configuration events
-function Addon:OnUpgradeDatabase(oldVersion, newVersion)
-    if oldVersion and oldVersion < 2 then
-        for _, profile in pairs(self.db.profiles) do
-            local mainBar = profile.frames and profile.frames[1]
-
-            if mainBar then
-                for _, pages in pairs(mainBar.pages) do
-                    if pages.dragonriding == nil then
-                        pages.dragonriding = 10
-                    end
-                end
-            end
-        end
-    end
-end
-
 function Addon:OnUpgradeAddon(oldVersion, newVersion)
     self:Printf(L.Updated, ADDON_VERSION, GAME_TYPE)
 end
@@ -144,17 +135,9 @@ end
 -- Layout Lifecycle
 --------------------------------------------------------------------------------
 
-local initializedModules = {}
-
 -- Load is called when the addon is first enabled, and also whenever a profile
 -- is loaded
 function Addon:Load()
-    -- migrate from showgrid to showEmptyButtons
-    if self.db.profile.showgrid ~= nil then
-        self.db.profile.showEmptyButtons = self.db.profile.showgrid
-        self.db.profile.showgrid = nil
-    end
-
     self.callbacks:Fire('LAYOUT_LOADING')
 
     local function module_load(module, id)
@@ -162,17 +145,14 @@ function Addon:Load()
             return
         end
 
-        -- try calling OnFirstLoad if we've not loaded this module first
-        if not initializedModules[module] then
-            local f = module.OnFirstLoad
-            if type(f) == 'function' then
-                f(module)
-            end
-
-            initializedModules[module] = true
+        -- once
+        local f = module.OnFirstLoad
+        if type(f) == 'function' then
+            f(module)
+            module.OnFirstLoad = nil
         end
 
-        local f = module.Load
+        f = module.Load
         if type(f) == 'function' then
             f(module)
         end
@@ -226,6 +206,42 @@ end
 -- Database Setup
 --------------------------------------------------------------------------------
 
+function Addon:GetSavedVariablesProblem()
+    if not self.savedVariablesMigrated then
+        return L.SavedVariablesNotMigrated:format(ADDON_WEBSITE)
+    end
+
+    -- also catches LoadSavedVariablesFirst not applying
+    local sv = _G[AddonName .. 'DB']
+    local version = type(sv) == 'table' and type(sv.global) == 'table' and sv.global.configVersion
+
+    if type(version) ~= 'number' then
+        return
+    elseif version < self.DB_SCHEMA_VERSION then
+        return L.SavedVariablesNotMigrated:format(ADDON_WEBSITE)
+    elseif version > self.DB_SCHEMA_VERSION then
+        return L.SavedVariablesTooNew
+    end
+end
+
+-- leaves the saved variables untouched. code at file load still runs, so it
+-- can't read self.db. read settings in Load, OnFirstLoad, or on LAYOUT_LOADED
+function Addon:DisableForSession(message)
+    self:SetEnabledState(false)
+
+    -- for modules created later (Dominos_Cast, etc). SetDefaultModuleState
+    -- can't be used once modules exist, but NewModule reads this field
+    self.defaultModuleState = false
+
+    for _, module in self:IterateModules() do
+        module:SetEnabledState(false)
+    end
+
+    if message then
+        print(('|cffff2020%s:|r %s'):format(AddonName, message))
+    end
+end
+
 -- db actions
 function Addon:CreateDatabase()
     local dbName = AddonName .. 'DB'
@@ -270,7 +286,9 @@ function Addon:GetDatabaseDefaults()
             useOverrideUI = not self:IsGameType('vanilla'),
 
             ab = {
-                count = self.ACTION_BUTTON_COUNT / NUM_ACTIONBAR_BUTTONS,
+                -- Blizzard's action bars 1-8
+                count = 8,
+                length = NUM_ACTIONBAR_BUTTONS,
                 rightClickUnit = "player"
             },
 
@@ -289,15 +307,18 @@ function Addon:GetDatabaseDefaults()
             -- what modules are enabled
             -- module[id] = enabled
             modules = { ['**'] = true }
+        },
+
+        global = {
+            showActionBookWithSpellbook = true
         }
     }
 end
 
 function Addon:UpgradeDatabase()
-    local configVersion = self.db.global.configVersion
-    if configVersion ~= DB_SCHEMA_VERSION then
-        self:OnUpgradeDatabase(configVersion, DB_SCHEMA_VERSION)
-        self.db.global.configVersion = DB_SCHEMA_VERSION
+    -- new databases
+    if self.db.global.configVersion == nil then
+        self.db.global.configVersion = self.DB_SCHEMA_VERSION
     end
 
     local addonVersion = self.db.global.addonVersion
@@ -445,6 +466,26 @@ function Addon:ShowContextMenu(bar)
     end
 end
 
+-- the action book, beside anchor if given
+function Addon:ShowActionBook(anchor)
+    if self:IsConfigAddonEnabled() and self:LoadConfigAddon() then
+        self.Options:ShowActionBook(anchor)
+    end
+end
+
+-- closes it, if it's beside anchor
+function Addon:HideActionBook(anchor)
+    if self.Options then
+        self.Options:HideActionBook(anchor)
+    end
+end
+
+function Addon:ToggleActionBook()
+    if self:IsConfigAddonEnabled() and self:LoadConfigAddon() then
+        self.Options:ToggleActionBook()
+    end
+end
+
 function Addon:IsConfigAddonEnabled()
     local player = UnitName('player')
 
@@ -499,22 +540,25 @@ end
 -- frame commands
 --------------------------------------------------------------------------------
 
--- sizing
-function Addon:SetNumBars(count)
-    count = Clamp(count, 1, self.ACTION_BUTTON_COUNT)
+-- sizing. Bars share ACTION_BUTTON_COUNT buttons: count * length can't be more
+function Addon:SetActionBarSize(count, length)
+    length = Clamp(floor(length), 1, self.ACTION_BUTTON_COUNT)
+    count = Clamp(floor(count), 1, floor(self.ACTION_BUTTON_COUNT / length))
 
-    if count ~= self:NumBars() then
-        self.db.profile.ab.count = count
+    local ab = self.db.profile.ab
+    if count ~= ab.count or length ~= ab.length then
+        ab.count = count
+        ab.length = length
         self.callbacks:Fire('ACTIONBAR_COUNT_UPDATED', count)
     end
 end
 
-function Addon:SetNumButtons(count)
-    self:SetNumBars(self.ACTION_BUTTON_COUNT / count)
-end
-
 function Addon:NumBars()
     return self.db.profile.ab.count
+end
+
+function Addon:GetActionBarLength()
+    return self.db.profile.ab.length
 end
 
 -- scale
@@ -823,6 +867,15 @@ end
 
 function Addon:ShowingMinimap()
     return not self.db.profile.minimap.hide
+end
+
+-- global, not per profile. saved as false, since nil reads as the default
+function Addon:SetShowActionBookWithSpellbook(enable)
+    self.db.global.showActionBookWithSpellbook = enable and true or false
+end
+
+function Addon:ShowingActionBookWithSpellbook()
+    return self.db.global.showActionBookWithSpellbook
 end
 
 -- linked opacity

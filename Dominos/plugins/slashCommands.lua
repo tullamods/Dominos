@@ -1,7 +1,4 @@
 -- slash commands
-if C_InputInterfaceStyle and C_InputInterfaceStyle.GetCurrentStyle() == Enum.InputDeviceInterfaceType.Gamepad then
-    return
-end
 
 local AddonName, Addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(AddonName)
@@ -10,6 +7,18 @@ local SlashCommands = Addon:NewModule('SlashCommands', 'AceConsole-3.0')
 
 local function printCommand(cmd, desc)
     print((' - |cFF33FF99%s|r: %s'):format(cmd, desc))
+end
+
+-- "8x12", "8 x 12" or "8 12": returns the bar count and length
+local function parseBarSize(text)
+    text = text or ''
+
+    local count, length = text:match('^%s*(%d+)%s*[xX%*]%s*(%d+)%s*$')
+    if not count then
+        count, length = text:match('^%s*(%d+)%s+(%d+)%s*$')
+    end
+
+    return tonumber(count), tonumber(length)
 end
 
 function SlashCommands:OnEnable()
@@ -24,6 +33,8 @@ function SlashCommands:OnCmd(args)
         Addon:ToggleLockedFrames()
     elseif cmd == 'bind' then
         Addon:ToggleBindingMode()
+    elseif cmd == 'actions' then
+        Addon:ToggleActionBook()
     elseif cmd == 'scale' then
         Addon:ScaleFrames(select(2, string.split(' ', args)))
     elseif cmd == 'setalpha' then
@@ -42,10 +53,18 @@ function SlashCommands:OnCmd(args)
         Addon:HideFrames(select(2, string.split(' ', args)))
     elseif cmd == 'toggle' then
         Addon:ToggleFrames(select(2, string.split(' ', args)))
-    elseif cmd == 'numbars' then
-        Addon:SetNumBars(tonumber(select(2, string.split(' ', args))))
-    elseif cmd == 'numbuttons' then
-        Addon:SetNumButtons(tonumber(select(2, string.split(' ', args))))
+    elseif cmd == 'abs' then
+        local count, length = parseBarSize(args:match('^%S+%s+(.*)$'))
+
+        if count then
+            Addon:SetActionBarSize(count, length)
+
+            if count > Addon:NumBars() then
+                Addon:Printf(L.NumBarsLimited, Addon:NumBars(), Addon:GetActionBarLength())
+            end
+        else
+            printCommand('abs <bars>x<buttons>', L.ActionBarsDesc)
+        end
     elseif cmd == 'save' then
         local profileName = string.join(' ', select(2, string.split(' ', args)))
         Addon:SaveProfile(profileName)
@@ -77,6 +96,7 @@ function SlashCommands:PrintHelp(cmd)
     Addon:Print('Commands (/dom, /dominos)')
 
     printCommand('config', L.ConfigDesc)
+    printCommand('actions', L.ActionsDesc)
     printCommand('scale <frameList> <scale>', L.SetScaleDesc)
     printCommand('setalpha <frameList> <opacity>', L.SetAlphaDesc)
     printCommand('fade <frameList> <opacity>', L.SetFadeDesc)
@@ -86,6 +106,7 @@ function SlashCommands:PrintHelp(cmd)
     printCommand('show <frameList>', L.ShowFramesDesc)
     printCommand('hide <frameList>', L.HideFramesDesc)
     printCommand('toggle <frameList>', L.ToggleFramesDesc)
+    printCommand('abs <bars>x<buttons>', L.ActionBarsDesc)
     printCommand('save <profile>', L.SaveDesc)
     printCommand('set <profile>', L.SetDesc)
     printCommand('copy <profile>', L.CopyDesc)
