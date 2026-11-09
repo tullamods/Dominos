@@ -138,12 +138,6 @@ end
 -- Load is called when the addon is first enabled, and also whenever a profile
 -- is loaded
 function Addon:Load()
-    -- migrate from showgrid to showEmptyButtons
-    if self.db.profile.showgrid ~= nil then
-        self.db.profile.showEmptyButtons = self.db.profile.showgrid
-        self.db.profile.showgrid = nil
-    end
-
     self.callbacks:Fire('LAYOUT_LOADING')
 
     local function module_load(module, id)
@@ -293,7 +287,8 @@ function Addon:GetDatabaseDefaults()
             useOverrideUI = not self:IsGameType('vanilla'),
 
             ab = {
-                count = 14,
+                -- Blizzard's action bars 1-8
+                count = 8,
                 length = NUM_ACTIONBAR_BUTTONS,
                 rightClickUnit = "player"
             },

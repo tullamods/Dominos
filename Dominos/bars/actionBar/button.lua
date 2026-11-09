@@ -51,10 +51,9 @@ function ActionButton:OnCreate(id)
     self:EnableMouseWheel()
     self:RegisterForClicks("AnyUp", "AnyDown")
 
-    -- handle action id updates
-    self:SetAttributeNoHandler('_childupdate-offset', [[
-        local offset = message or 0
-        local id = self:GetAttribute('index') + offset
+    -- the bar's state changed: show that state's action (bar.lua)
+    self:SetAttributeNoHandler('_childupdate-state', [[
+        local id = self:GetAttribute('action-' .. message) or self:GetAttribute('action-base')
 
         if self:GetAttribute('action') ~= id then
             self:SetAttribute('action', id)
@@ -68,6 +67,18 @@ function ActionButton:OnCreate(id)
                 self:Hide(true)
             end
         end
+    ]])
+
+    -- the override page changed. buttons past its length show nothing
+    self:SetAttributeNoHandler('_childupdate-overrideoffset', [[
+        local index = self:GetAttribute('index')
+        local id = 0
+
+        if index <= PageLength then
+            id = index + message
+        end
+
+        self:SetAttribute('action-override', id)
     ]])
 
     -- showgrid tracking

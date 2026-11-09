@@ -1,37 +1,6 @@
 -- the context menu for an action bar in config mode
 local _, Addon = ...
 
--- the paging dropdowns offer every bar, so the list is made again only when the
--- number of bars changes
-local pagingItems = {}
-local pagingItemsNumBars = -1
-
-local function getPagingItems()
-    local numBars = Addon:NumBars()
-
-    if pagingItemsNumBars ~= numBars then
-        local L = LibStub('AceLocale-3.0'):GetLocale('Dominos-Config')
-
-        pagingItems = {
-            {
-                value = -1,
-                text = L.PagingDefault
-            }
-        }
-
-        for i = 1, numBars do
-            pagingItems[i + 1] = {
-                value = i,
-                text = L.ActionBarNumber:format(i)
-            }
-        end
-
-        pagingItemsNumBars = numBars
-    end
-
-    return pagingItems
-end
-
 -- which parts of a button to show
 local function getAppearanceControls(bar)
     local controls = {}
@@ -63,30 +32,13 @@ local function addStateGroup(controls, categoryName, stateType)
         local id = state.id
 
         tinsert(controls, {
-            type = 'dropdown',
+            type = 'pagePicker',
             name = state.text or ('State_' .. id:upper()),
-            items = getPagingItems,
             get = function(bar)
-                local offset = bar:GetOffset(id) or -1
-
-                if offset > -1 then
-                    return (bar.id + offset - 1) % Addon:NumBars() + 1
-                end
-
-                return offset
+                return bar:GetPageOffset(id)
             end,
             set = function(bar, value)
-                local offset
-
-                if value == -1 then
-                    offset = nil
-                elseif value < bar.id then
-                    offset = (Addon:NumBars() - bar.id) + value
-                else
-                    offset = value - bar.id
-                end
-
-                bar:SetOffset(id, offset)
+                bar:SetPageOffset(id, value)
             end
         })
     end

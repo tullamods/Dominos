@@ -21,8 +21,12 @@ contextMenu\controls\slider.lua
 contextMenu\controls\dropdown.lua
 contextMenu\controls\text.lua
 contextMenu\controls\header.lua
+contextMenu\controls\pagePicker.lua
 contextMenu\panelControls.lua
 contextMenu\menu.lua
+slots\usage.lua
+slots\grid.lua
+slots\pagePicker.lua
 options\general.lua
 options\profiles.lua
 overlay\ui.lua

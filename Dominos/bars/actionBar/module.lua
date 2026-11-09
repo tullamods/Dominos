@@ -124,6 +124,7 @@ function ActionBarsModule:Load()
     self:SetBarCount(Addon:NumBars())
 
     self:RegisterEvent('UPDATE_SHAPESHIFT_FORMS')
+    self:RegisterEvent('PLAYER_REGEN_ENABLED')
     Addon.RegisterCallback(self, "ACTIONBAR_COUNT_UPDATED")
 end
 
@@ -142,12 +143,20 @@ function ActionBarsModule:ACTIONBAR_COUNT_UPDATED(_, count)
     Addon.callbacks:Fire('ACTIONBARS_UPDATED')
 end
 
+-- form macro conditions depend on form order. in combat, bars wait
 function ActionBarsModule:UPDATE_SHAPESHIFT_FORMS()
-    if InCombatLockdown() then
-        return
-    end
-
     self:ForActive('UpdateStateDriver')
+end
+
+-- rebuild bars that changed in combat
+function ActionBarsModule:PLAYER_REGEN_ENABLED()
+    if self.active then
+        for _, bar in pairs(self.active) do
+            if bar.stateDriverPending then
+                bar:UpdateStateDriver()
+            end
+        end
+    end
 end
 
 -- only adds or removes bars, unless the length changed, which changes every
@@ -173,9 +182,6 @@ function ActionBarsModule:SetBarCount(count)
     end
 
     self.active = active
-
-    -- paging wraps around the bar count
-    self:ForActive('UpdateStateDriver')
 end
 
 function ActionBarsModule:ForActive(method, ...)
