@@ -357,7 +357,10 @@ function ActionButtons:AddCastOnKeyPressSupport(button)
     bind:SetAttributeNoHandler("useparent-flyoutDirection", true)
     bind:SetAttributeNoHandler("useparent-pressAndHoldAction", true)
     bind:SetAttributeNoHandler("useparent-unit", true)
-    SecureHandlerSetFrameRef(bind, "owner", button)
+
+    -- needs the real frame. secure code can only store a handle, which the
+    -- click action can't use
+    bind:SetAttributeNoHandler("clickbutton", button)
 
     bind:EnableMouseWheel()
     bind:RegisterForClicks("AnyUp", "AnyDown")
@@ -366,20 +369,23 @@ function ActionButtons:AddCastOnKeyPressSupport(button)
 
     bind.SetOverrideBindings = bindButton_SetOverrideBindings
 
-    if Addon.SpellFlyout then
-        Addon.SpellFlyout:Register(bind)
-    else
-        -- translate HOTKEY button "clicks" into LeftButton
-        self:WrapScript(bind, "OnClick", [[
-            if button == "HOTKEY" then
-                if GetActionInfo(self:GetEffectiveAttribute("action")) == "flyout" then
-                    return false
-                end
+    -- HOTKEY -> LeftButton. flyouts need their own button to open, so those
+    -- click the owner instead (type click + clickbutton)
+    self:WrapScript(bind, "OnClick", [[
+        if button == "HOTKEY" then
+            if GetActionInfo(self:GetEffectiveAttribute("action")) == "flyout" then
+                self:SetAttribute("type", "click")
 
-                return "LeftButton"
+                return "LeftButton", "flyout"
             end
-        ]])
-    end
+
+            return "LeftButton"
+        end
+    ]], [[
+        if message == "flyout" then
+            self:SetAttribute("type", "action")
+        end
+    ]])
 
     button.bind = bind
     button:UpdateOverrideBindings()

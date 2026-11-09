@@ -466,10 +466,6 @@ local function isFocus(frame)
             if isFlyoutFocus(_G.SpellFlyout, frame) then
                 return true
             end
-
-            if isFlyoutFocus(Addon.SpellFlyout, frame) then
-                return true
-            end
         end
 
         if isDescendant(focus, frame) then

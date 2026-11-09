@@ -111,10 +111,6 @@ function ActionButton:OnCreate(id)
 
     -- ...and the rest
     Addon.BindableButton:AddQuickBindingSupport(self)
-
-    if Addon.SpellFlyout then
-        Addon.SpellFlyout:Register(self)
-    end
 end
 
 function ActionButton:OnSlotChanged()

@@ -31,7 +31,6 @@ core\fadeManager.lua
 core\overrideController.lua [ExcludeLoadGameType vanilla]
 core\tooltipController.lua
 # builtin bars
-bars\actionBar\flyout.lua [AllowLoadGameType mists]
 bars\actionBar\button.lua
 bars\actionBar\buttons.lua
 bars\actionBar\bar.lua
