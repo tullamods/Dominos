@@ -1,6 +1,26 @@
 local AddonName, Addon = ...
 local ButtonThemer = Addon:NewModule('ButtonThemer')
 
+local function getIcon(button)
+    local icon = button.icon
+    if icon and icon.SetTexCoord then
+        return icon
+    end
+
+    icon = button.Icon
+    if icon and icon.SetTexCoord then
+        return icon
+    end
+end
+
+-- crop icon edges to remove borders drawn into the icon
+local function cropIcon(button)
+    local icon = getIcon(button)
+    if icon then
+        icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
+    end
+end
+
 local theme
 -- modern theming
 if Addon:IsGameType('standard', "forever") then
@@ -10,29 +30,18 @@ if Addon:IsGameType('standard', "forever") then
             button.SlotArt:Hide()
             button.SlotBackground:Show()
         end
+
+        -- plain buttons don't mask their icon like the blizzard templates do
+        if not button.IconMask then
+            cropIcon(button)
+        end
     end
 -- classic, post edit mode
 else
     local NORMAL_TEXTURE_RATIO = Round(ActionButton1.NormalTexture:GetWidth()) / Round(ActionButton1:GetWidth())
 
-    local function getIcon(button)
-        local icon = button.icon
-        if icon and icon.SetTexCoord then
-            return icon
-        end
-
-        icon = button.Icon
-        if icon and icon.SetTexCoord then
-            return icon
-        end
-    end
-
     theme = function(button)
-        -- crop icon edges to remove borders drawn into the icon
-        local icon = getIcon(button)
-        if icon then
-            icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
-        end
+        cropIcon(button)
 
         -- resize the normal texture to fit (mostly for stance buttons)
         local nt = button.NormalTexture

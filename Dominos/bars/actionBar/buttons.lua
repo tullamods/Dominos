@@ -259,10 +259,16 @@ local function SafeMixin(button, trait)
     end
 end
 
-function ActionButtons:GetOrCreateActionButton(id, parent)
-    local name = GetActionButtonName(id)
+--- @param id number
+--- @param parent Frame
+--- @param name string? defaults to the standard name for the id
+function ActionButtons:GetOrCreateActionButton(id, parent, name)
     if name == nil then
-        error(("Invalid Action ID %q"):format(id))
+        name = GetActionButtonName(id)
+
+        if name == nil then
+            error(("Invalid Action ID %q"):format(id))
+        end
     end
 
     local button = _G[name]

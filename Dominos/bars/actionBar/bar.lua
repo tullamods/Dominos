@@ -444,24 +444,6 @@ function ActionBar:GetFlyoutDirection()
     return direction
 end
 
-function ActionBar:GetCalculatedFlyoutDirection()
-    local width, height = self:GetSize()
-    local _, relPoint = self:GetRelativePosition()
-
-    if width < height then
-        if relPoint:match('RIGHT') then
-            return 'LEFT'
-        end
-
-        return 'RIGHT'
-    end
-
-    if relPoint and relPoint:match('TOP') then
-        return 'DOWN'
-    end
-    return 'UP'
-end
-
 function ActionBar:UpdateFlyoutDirection()
     self:ForButtons('SetFlyoutDirectionInsecure', self:GetFlyoutDirection())
 end

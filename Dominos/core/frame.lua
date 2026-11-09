@@ -748,6 +748,26 @@ function Frame:GetRelativePosition()
     return point, relPoint, x, y
 end
 
+-- sideways for tall bars, otherwise away from the nearest screen edge
+function Frame:GetCalculatedFlyoutDirection()
+    local width, height = self:GetSize()
+    local _, relPoint = self:GetRelativePosition()
+
+    if width < height then
+        if relPoint and relPoint:match('RIGHT') then
+            return 'LEFT'
+        end
+
+        return 'RIGHT'
+    end
+
+    if relPoint and relPoint:match('TOP') then
+        return 'DOWN'
+    end
+
+    return 'UP'
+end
+
 function Frame:RestorePosition()
     local point, relPoint, x, y = self:GetSavedPosition()
     local scale = self:GetFrameScale()

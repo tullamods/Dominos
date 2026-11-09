@@ -45,7 +45,10 @@ bars\possessBar.lua
 bars\queueStatusBar.lua [AllowLoadGameType standard, camelot]
 bars\stanceBar.lua
 bars\talkingHeadBar.lua [AllowLoadGameType standard]
-bars\totemBar.lua [AllowLoadGameType cata, wrath, camelot]
+bars\totemBar\picker.lua [AllowLoadGameType cata, wrath, camelot]
+bars\totemBar\spellButton.lua [AllowLoadGameType cata, wrath, camelot]
+bars\totemBar\bar.lua [AllowLoadGameType cata, wrath, camelot]
+bars\totemBar\module.lua [AllowLoadGameType cata, wrath, camelot]
 # stuff you should be able to comment out and still have Dominos work
 plugins\slashCommands.lua
 plugins\launcher.lua
