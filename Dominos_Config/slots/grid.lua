@@ -10,6 +10,12 @@
 --   grid.OnCellReceiveDrag(grid, cell)      something was dropped on a cell
 --   grid.GetCellColor(grid, cell)           a cell's overlay color, or nil
 --
+-- Methods:
+--   grid:Refresh()              fills in the grid, or rereads it. call on show
+--   grid:UpdateIcons([slot])    rereads actions, for one slot or all
+--   grid:UpdateColors()         rereads GetCellColor
+--   grid:ScrollToAddress(address)
+--
 -- Tooltips show the slot's button name and the states that page bars to it.
 -- grid.showActions also shows its action in GameTooltip, below
 --
@@ -52,9 +58,8 @@ local function cellsOf(address, size)
     return cells
 end
 
-local function buildElements()
+local function buildElements(rowLength)
     local regions = ParentAddon.AddressMap:GetRegions()
-    local rowLength = ParentAddon:GetActionBarLength()
     local elements = {}
 
     local function add(element)
@@ -122,6 +127,21 @@ local function buildElements()
     end
 
     return elements
+end
+
+-- the regions are fixed at load, so the elements only change with bar length.
+-- shared by every grid: don't modify
+local elementsCache, elementsLength
+
+local function getElements()
+    local rowLength = ParentAddon:GetActionBarLength()
+
+    if rowLength ~= elementsLength then
+        elementsCache = buildElements(rowLength)
+        elementsLength = rowLength
+    end
+
+    return elementsCache
 end
 
 --------------------------------------------------------------------------------
@@ -269,14 +289,18 @@ local function updateColor(cell)
     end
 end
 
+local function updateCell(cell)
+    updateIcon(cell)
+    updateColor(cell)
+end
+
 local function initCell(grid, cell, data)
     setUpCell(grid, cell)
 
     cell.address = data.address
     cell.slot = data.slot
 
-    updateIcon(cell)
-    updateColor(cell)
+    updateCell(cell)
 end
 
 --------------------------------------------------------------------------------
@@ -345,9 +369,35 @@ end
 
 local GridMixin = {}
 
--- rebuilds from the regions, for the current bar length
+-- lays out the regions for the current bar length, and rereads every cell.
+-- only rebuilds the layout when the length changed
 function GridMixin:Refresh()
-    self:SetDataProvider(CreateDataProvider(buildElements()), ScrollBoxConstants.RetainScrollPosition)
+    local elements = getElements()
+
+    if elements == self.elements then
+        self:ForEachCell(updateCell)
+    else
+        self.elements = elements
+        self:SetDataProvider(CreateDataProvider(elements), ScrollBoxConstants.RetainScrollPosition)
+    end
+end
+
+-- re-reads GetCellColor
+function GridMixin:UpdateColors()
+    self:ForEachCell(updateColor)
+end
+
+-- shows a slot's current action, or every cell's for slot 0 or nil
+function GridMixin:UpdateIcons(slot)
+    if not slot or slot == 0 then
+        self:ForEachCell(updateIcon)
+    else
+        self:ForEachCell(function(cell)
+            if cell.slot == slot then
+                updateIcon(cell)
+            end
+        end)
+    end
 end
 
 -- centers the cell, or group, holding an address
@@ -378,16 +428,6 @@ function GridMixin:ForEachCell(func)
             end
         end
     end)
-end
-
--- re-reads GetCellColor
-function GridMixin:UpdateColors()
-    self:ForEachCell(updateColor)
-end
-
--- shows each cell's current action
-function GridMixin:UpdateIcons()
-    self:ForEachCell(updateIcon)
 end
 
 -- cellSize is optional, and defaults to a compact size. the scroll bar sits
@@ -473,11 +513,11 @@ function Addon:CreateActionSlotDialog(name, cellSize, height, minHeight)
 
     frame:SetScript('OnHide', frame.UnregisterAllEvents)
 
-    frame:SetScript('OnEvent', function(self, event)
+    frame:SetScript('OnEvent', function(self, event, slot)
         if event == 'PLAYER_REGEN_DISABLED' then
             self:Hide()
         else
-            self.Grid:UpdateIcons()
+            self.Grid:UpdateIcons(slot)
         end
     end)
 
