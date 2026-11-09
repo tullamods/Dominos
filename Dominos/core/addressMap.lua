@@ -79,7 +79,12 @@ local regionStartingAt = {}
 --   address    first address
 --   size       number of addresses
 --   available  can its slots hold actions? default: true
+--   unnamed    names its addresses by slot ("Slot 305"), not by region
+--   addressNames  a name for each address, if they have their own (gamepad
+--                 buttons)
+--   section    only groups other regions, so never names an address
 --   parent     containing region, if any
+--   children   contained regions, in address order. set here
 local function addRegion(region)
     region.name = region.name or region.label
     region.slot = getSlot(region.address)
@@ -87,8 +92,16 @@ local function addRegion(region)
 
     regions[#regions + 1] = region
 
+    local parent = region.parent
+    if parent then
+        parent.children = parent.children or {}
+        parent.children[#parent.children + 1] = region
+    end
+
     -- parents come first
-    regionStartingAt[region.address] = regionStartingAt[region.address] or region
+    if not region.section then
+        regionStartingAt[region.address] = regionStartingAt[region.address] or region
+    end
 
     for address = region.address, region.address + region.size - 1 do
         regionAt[address] = region
@@ -160,12 +173,20 @@ local function addActionPages()
     -- same for every character
     local hasTotems = Addon:IsGameType('cata', 'wrath', 'forever')
 
+    local section = addRegion {
+        label = L.ActionPagesRegion,
+        address = 1,
+        size = LAST_ORDERED,
+        section = true
+    }
+
     for addressPage, page in ipairs(PAGE_ORDER) do
         local region = addRegion {
             label = PAGE_LABELS[page],
             address = (addressPage - 1) * PAGE_SIZE + 1,
             size = PAGE_SIZE,
-            available = page ~= TOTEM_PAGE or hasTotems
+            available = page ~= TOTEM_PAGE or hasTotems,
+            parent = section
         }
 
         if page == TOTEM_PAGE and region.available then
@@ -187,30 +208,52 @@ local function addGamepadRegions()
     local GROUP_SIZE = K.NUM_SLOTS_PER_GAMEPAD_ACTION_BAR_GROUP
     local BAR_SIZE = GROUP_SIZE * 2
 
-    local lt = _G.KEY_ABBR_PADLTRIGGER or 'LT'
-    local rt = _G.KEY_ABBR_PADRTRIGGER or 'RT'
+    -- as action buttons show them, in the player's controller style (A, Cross)
+    local function keyName(key)
+        return GetBindingText(key, true)
+    end
+
+    local lt = keyName('PADLTRIGGER')
+    local rt = keyName('PADRTRIGGER')
+
+    -- each group's buttons, in slot order: left, top, right, bottom
+    local DPAD_KEYS = { 'PADDLEFT', 'PADDUP', 'PADDRIGHT', 'PADDDOWN' }
+    local FACE_KEYS = { 'PAD3', 'PAD4', 'PAD2', 'PAD1' }
 
     -- past the action pages, address == slot
     local address = C_GamepadUI.GetFirstGamepadActionStorageSlotIndex()
 
-    -- "Gamepad Page 1 - LT + Button"
-    local function addGroup(parent, owner, modifier, label)
-        local keys = modifier and L.GamepadModifiersRegion:format(modifier, label) or label
+    -- "Gamepad Page 1 - LT + Button", or "Gamepad Page 1 - LT + X"
+    local function getName(owner, modifier, label)
+        return L.GamepadRegionName:format(owner, modifier and L.GamepadModifiersRegion:format(modifier, label) or label)
+    end
+
+    local function addGroup(parent, owner, modifier, label, keys)
+        local addressNames
+
+        if #keys == GROUP_SIZE then
+            addressNames = {}
+
+            for i, key in ipairs(keys) do
+                addressNames[i] = getName(owner, modifier, keyName(key))
+            end
+        end
 
         addRegion {
             label = label,
-            name = L.GamepadRegionName:format(owner, keys),
+            name = getName(owner, modifier, label),
             address = address,
             size = GROUP_SIZE,
-            parent = parent
+            parent = parent,
+            addressNames = addressNames
         }
 
         address = address + GROUP_SIZE
     end
 
     local function addBar(parent, owner, modifier)
-        addGroup(parent, owner, modifier, L.GamepadDpadRegion)
-        addGroup(parent, owner, modifier, L.GamepadFaceRegion)
+        addGroup(parent, owner, modifier, L.GamepadDpadRegion, DPAD_KEYS)
+        addGroup(parent, owner, modifier, L.GamepadFaceRegion, FACE_KEYS)
     end
 
     -- a bar per modifier. no modifier is D-pad only: its face buttons are
@@ -219,12 +262,12 @@ local function addGamepadRegions()
         local owner = L.GamepadPageRegion:format(i)
         local page = addRegion { label = owner, address = address, size = GROUP_SIZE + 3 * BAR_SIZE }
 
-        addGroup(page, owner, nil, L.GamepadDpadRegion)
+        addGroup(page, owner, nil, L.GamepadDpadRegion, DPAD_KEYS)
 
         for _, modifier in ipairs { lt, rt, L.GamepadModifiersRegion:format(lt, rt) } do
             local layer = addRegion {
                 label = modifier,
-                name = L.GamepadRegionName:format(owner, modifier),
+                name = getName(owner, nil, modifier),
                 address = address,
                 size = BAR_SIZE,
                 parent = page
@@ -234,14 +277,21 @@ local function addGamepadRegions()
         end
     end
 
+    local stanceBars = addRegion {
+        label = L.GamepadStanceBarsRegion,
+        address = address,
+        size = K.NUM_GAMEPAD_STANCE_ACTION_BARS * BAR_SIZE,
+        section = true
+    }
+
     for i = 1, K.NUM_GAMEPAD_STANCE_ACTION_BARS do
         local owner = L.GamepadStanceBarRegion:format(i)
 
-        addBar(addRegion { label = owner, address = address, size = BAR_SIZE }, owner)
+        addBar(addRegion { label = owner, address = address, size = BAR_SIZE, parent = stanceBars }, owner)
     end
 
     if address <= NUM_ADDRESSES then
-        addRegion { label = L.UnusedRegion, address = address, size = NUM_ADDRESSES - address + 1 }
+        addRegion { label = L.UnusedRegion, address = address, size = NUM_ADDRESSES - address + 1, unnamed = true }
     end
 end
 
@@ -250,7 +300,7 @@ addGamepadRegions()
 
 local maxSlot = 0
 for _, region in ipairs(regions) do
-    if region.available then
+    if region.available and not region.section then
         maxSlot = math.max(maxSlot, region.slot + region.size - 1)
     end
 end
@@ -282,20 +332,38 @@ function AddressMap:GetRegion(address)
     return regionAt[address]
 end
 
--- what starts here: "Gamepad Page 1", else "Gamepad Page 1 - D-Pad, Slot 2",
--- else "Slot 361"
+-- "Gamepad Page 1 - D-Pad Slot 2", or "Slot 305"
+local function getSlotName(address)
+    local region = regionAt[address]
+    if not region or region.unnamed then
+        return L.SlotName:format(address)
+    end
+
+    return L.RegionSlotName:format(region.name, address - region.address + 1)
+end
+
+-- what starts here, for runs of addresses: "Gamepad Page 1", else
+-- "Gamepad Page 1 - D-Pad Slot 2", else "Slot 305"
 function AddressMap:GetName(address)
     local region = regionStartingAt[address]
-    if region then
+    if region and not region.unnamed then
         return region.name
     end
 
-    region = regionAt[address]
-    if region then
-        return L.RegionSlotName:format(region.name, address - region.address + 1)
-    end
+    return getSlotName(address)
+end
 
-    return L.SlotName:format(address)
+-- one address, as its button if it has one: "Gamepad Page 1 - LT + PAD3",
+-- else "Action Bar 2 Slot 3"
+function AddressMap:GetAddressName(address)
+    local region = regionAt[address]
+    local names = region and region.addressNames
+
+    return names and names[address - region.address + 1] or getSlotName(address)
+end
+
+function AddressMap:GetNumAddresses()
+    return NUM_ADDRESSES
 end
 
 -- last slot that can hold an action
