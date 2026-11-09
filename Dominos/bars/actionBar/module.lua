@@ -196,7 +196,7 @@ function ActionBarsModule:PLAYER_REGEN_ENABLED()
     if self.active then
         for _, bar in pairs(self.active) do
             if bar.stateDriverPending then
-                bar:UpdateStateDriver()
+                bar:ApplyPaging()
             end
         end
     end

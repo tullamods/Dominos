@@ -108,6 +108,10 @@ ActionBar:Extend('OnAcquire', function(self)
     self:UpdateFlyoutDirection()
 end)
 
+ActionBar:Extend('OnRelease', function(self)
+    UnregisterStateDriver(self, 'page')
+end)
+
 -- TODO: change the position code to be based more on the number of action bars
 function ActionBar:GetDefaults()
     return {
@@ -212,7 +216,7 @@ end
 -- paging
 function ActionBar:SetPageOffset(stateId, offset)
     self.paging[stateId] = offset
-    self:UpdateStateDriver()
+    self:ApplyPaging()
 end
 
 function ActionBar:GetPageOffset(stateId)
@@ -249,10 +253,8 @@ function ActionBar:UpdateButtonActions(button)
 
     button:SetAttributeNoHandler('action-base', AddressMap:GetSlot(self:GetBaseOffset() + index))
 
-    if self.stateOffsets then
-        for stateId, offset in pairs(self.stateOffsets) do
-            button:SetAttributeNoHandler('action-' .. stateId, AddressMap:GetSlot(offset + index))
-        end
+    for stateId, offset in pairs(self.paging) do
+        button:SetAttributeNoHandler('action-' .. stateId, AddressMap:GetSlot(offset + index))
     end
 
     -- normally written by secure code when the override page changes
@@ -263,31 +265,32 @@ function ActionBar:UpdateButtonActions(button)
     end
 end
 
--- the states this bar pages: the driver's parts ("[bonusbar:1]", "cat", ";"),
--- in precedence order, and the offset each pages to. parts, not joined
--- strings, so rebuilding makes no new ones
-function ActionBar:GetPagedStates()
-    local conditions, offsets = {}, {}
+-- returns the macro conditional for the state-page driver, or nil if no paged
+-- state applies
+function ActionBar:GetStateDriverConditional()
+    local parts = {}
 
     for _, stateType in ipairs(self.statePrecedence) do
         for _, state in Addon.BarStates:GetAll(stateType) do
-            local offset = self.paging[state.id]
-            local condition = offset and getMacroCondition(state)
+            local condition = self.paging[state.id] and getMacroCondition(state)
 
             if condition then
-                tinsert(conditions, condition)
-                tinsert(conditions, state.id)
-                tinsert(conditions, ';')
-                offsets[state.id] = offset
+                tinsert(parts, condition)
+                tinsert(parts, state.id)
+                tinsert(parts, ';')
             end
         end
     end
 
-    return conditions, offsets
+    if #parts > 0 then
+        tinsert(parts, 'base')
+        return table.concat(parts)
+    end
 end
 
--- builds the paging driver, and every button's actions to go with it. secure,
--- so waits for combat to end
+-- builds the paging driver. its conditions follow things like the form list, so
+-- this is all that changes when those do. buttons' actions are ApplyPaging's.
+-- secure, so waits for combat to end
 function ActionBar:UpdateStateDriver()
     if InCombatLockdown() then
         self.stateDriverPending = true
@@ -296,25 +299,33 @@ function ActionBar:UpdateStateDriver()
 
     self.stateDriverPending = nil
 
-    local conditions, offsets = self:GetPagedStates()
+    local conditional = self:GetStateDriverConditional()
 
-    self.stateOffsets = offsets
-    for _, button in pairs(self.buttons) do
-        self:UpdateButtonActions(button)
-    end
-
-    if #conditions > 0 then
-        tinsert(conditions, 'base')
-        RegisterStateDriver(self, 'page', table.concat(conditions))
-
-        -- the state may not change, but the actions did
-        self:Execute([[ self:RunAttribute('UpdateState') ]])
+    if conditional then
+        RegisterStateDriver(self, 'page', conditional)
     else
         UnregisterStateDriver(self, 'page')
 
         -- fires _onstate-page, which applies it
         self:SetAttribute('state-page', 'base')
     end
+end
+
+-- after the paging settings change: every button's actions, then the driver
+function ActionBar:ApplyPaging()
+    if InCombatLockdown() then
+        self.stateDriverPending = true
+        return
+    end
+
+    for _, button in pairs(self.buttons) do
+        self:UpdateButtonActions(button)
+    end
+
+    self:UpdateStateDriver()
+
+    -- the state may not change, but the actions did
+    self:Execute([[ self:RunAttribute('UpdateState') ]])
 end
 
 function ActionBar:LoadStateController()
