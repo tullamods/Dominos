@@ -1,8 +1,5 @@
 -- Opens the action book beside the spellbook, so spells can be dragged
--- straight onto any slot. Not on the gamepad interface, whose spellbook differs
-if C_InputInterfaceStyle and C_InputInterfaceStyle.GetCurrentStyle() == Enum.InputDeviceInterfaceType.Gamepad then
-    return
-end
+-- straight onto any slot
 
 local _, Addon = ...
 local ActionBook = Addon:NewModule('ActionBook')

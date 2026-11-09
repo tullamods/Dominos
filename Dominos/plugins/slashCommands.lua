@@ -1,7 +1,4 @@
 -- slash commands
-if C_InputInterfaceStyle and C_InputInterfaceStyle.GetCurrentStyle() == Enum.InputDeviceInterfaceType.Gamepad then
-    return
-end
 
 local AddonName, Addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(AddonName)
@@ -12,9 +9,9 @@ local function printCommand(cmd, desc)
     print((' - |cFF33FF99%s|r: %s'):format(cmd, desc))
 end
 
--- "8x12", "8 x 12", "8×12" or "8 12": returns the bar count and length
+-- "8x12", "8 x 12" or "8 12": returns the bar count and length
 local function parseBarSize(text)
-    text = (text or ''):gsub('×', 'x')
+    text = text or ''
 
     local count, length = text:match('^%s*(%d+)%s*[xX%*]%s*(%d+)%s*$')
     if not count then
