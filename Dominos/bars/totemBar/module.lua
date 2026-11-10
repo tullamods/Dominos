@@ -1,10 +1,6 @@
 if not (MultiCastActionBarFrame and UnitClassBase('player') == 'SHAMAN') then return end
 
--- The totem bar module: hides Blizzard's totem bar and keeps our bar's spell
--- buttons up to date
-
 local _, Addon = ...
-
 local TotemBarModule = Addon:NewModule('TotemBar', 'AceEvent-3.0')
 local bar
 

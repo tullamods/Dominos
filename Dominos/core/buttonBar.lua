@@ -311,6 +311,36 @@ function ButtonBar:ForButtons(methodOrFunc, ...)
     end
 end
 
+--- adds ShowingX and SetShowX, a per bar override of the profile's showX. the
+--- setter forwards to the buttons' SetShowX
+--- @param prop string the name after Show, like 'BindingText'
+function ButtonBar:DefineButtonProp(prop)
+    local setterName = 'SetShow' .. prop
+    local settingKey = 'show' .. prop
+
+    self[setterName] = function(bar, show)
+        show = show and true
+
+        if show == Addon.db.profile[settingKey] then
+            bar.sets[settingKey] = nil
+        else
+            bar.sets[settingKey] = show
+        end
+
+        bar:ForButtons(setterName, show)
+    end
+
+    self['Showing' .. prop] = function(bar)
+        local result = bar.sets[settingKey]
+
+        if result == nil then
+            result = Addon.db.profile[settingKey]
+        end
+
+        return result
+    end
+end
+
 ButtonBar.contextMenu = Addon.Frame.contextMenu:Extend {
     {
         insert = 'General',

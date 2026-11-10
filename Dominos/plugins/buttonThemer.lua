@@ -32,7 +32,7 @@ if Addon:IsGameType('standard', "forever") then
         end
 
         -- plain buttons don't mask their icon like the blizzard templates do
-        if not button.IconMask then
+        if button.cropIcon then
             cropIcon(button)
         end
     end

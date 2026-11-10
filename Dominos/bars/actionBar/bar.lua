@@ -453,29 +453,7 @@ ActionBar:Extend("Stick", ActionBar.UpdateFlyoutDirection)
 
 -- button property visibility toggles
 for _, prop in pairs(ActionBar.ButtonProps) do
-    local setterName = 'SetShow' .. prop
-    local getterName = 'Showing' .. prop
-    local settingKey = 'show' .. prop
-
-    ActionBar[setterName] = function(self, show, ...)
-        show = show and true
-
-        if show == Addon.db.profile[settingKey] then
-            self.sets[settingKey] = nil
-        else
-            self.sets[settingKey] = show
-        end
-
-        self:ForButtons(setterName, show, ...)
-    end
-
-    ActionBar[getterName] = function(self)
-        local result = self.sets[settingKey]
-        if result == nil then
-            result = Addon.db.profile[settingKey]
-        end
-        return result
-    end
+    ActionBar:DefineButtonProp(prop)
 end
 
 -- exports

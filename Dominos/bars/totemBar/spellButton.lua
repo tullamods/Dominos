@@ -2,58 +2,41 @@ if not (MultiCastActionBarFrame and UnitClassBase('player') == 'SHAMAN') then re
 
 --------------------------------------------------------------------------------
 -- Totem spell buttons
--- Summon ("Call of ...") and recall. Plain secure spell buttons, and right
--- clicking summon cycles the totem set (bar.lua wraps the right click)
+-- summon (Call of ...) and recall. right click on summon cycles the totem set
 --------------------------------------------------------------------------------
 
 local AddonName, Addon = ...
 local L = LibStub('AceLocale-3.0'):GetLocale(AddonName)
+local TotemArt = Addon.TotemArt
 
 local SpellButton = {
     SUMMON = 'Summon',
     RECALL = 'Recall',
-
-    -- same as blizzard's totem bar
     SIZE = 30,
 }
 
-function SpellButton.IsButton(frame)
-    return frame.kind ~= nil
-end
-
-function SpellButton.IsSpellKnown(spellId)
-    return spellId ~= nil
-        and C_SpellBook.IsSpellInSpellBook(spellId, Enum.SpellBookSpellBank.Player, false)
-end
-
 --------------------------------------------------------------------------------
--- Button mixin
+-- Button
 --------------------------------------------------------------------------------
 
 local SpellButtonMixin = {}
 
-function SpellButtonMixin:UpdateSpell(totemSet)
-    local spellId
-    if self.kind == SpellButton.SUMMON then
-        spellId = TOTEM_MULTI_CAST_SUMMON_SPELLS[totemSet]
-    else
-        spellId = TOTEM_MULTI_CAST_RECALL_SPELLS[1]
-    end
-
-    local known = SpellButton.IsSpellKnown(spellId)
+-- the spell attribute is owned by secure code, this just reflects it
+function SpellButtonMixin:UpdateSpell()
+    local spellId = self:GetAttribute('spell')
 
     self.spellId = spellId
-    self.icon:SetTexture(known and C_Spell.GetSpellTexture(spellId) or nil)
+    self.icon:SetTexture(C_Spell.GetSpellTexture(spellId))
     self:UpdateCooldown()
 
-    -- protected, so not in combat
+    -- the name quick binding shows. out of combat, like any insecure attribute write
     if not InCombatLockdown() then
-        self:SetAttribute('spell', spellId)
-        self:SetShown(known)
-
-        -- the name quick binding shows
-        self:SetAttributeNoHandler('displayName', known and C_Spell.GetSpellName(spellId) or nil)
+        self:SetAttributeNoHandler('displayName', C_Spell.GetSpellName(spellId))
     end
+end
+
+function SpellButtonMixin:SetShowBindingText(show)
+    self.HotKey:SetShown(show)
 end
 
 function SpellButtonMixin:UpdateCooldown()
@@ -86,24 +69,38 @@ local function button_OnLeave()
     GameTooltip:Hide()
 end
 
---------------------------------------------------------------------------------
--- Construction
---------------------------------------------------------------------------------
-
-local function create(kind, name)
+local function button_Create(kind, name)
     local button = CreateFrame('Button', name, nil, 'SecureActionButtonTemplate')
     Mixin(button, SpellButtonMixin)
 
     button.kind = kind
+    button.cropIcon = true
 
     button:SetSize(SpellButton.SIZE, SpellButton.SIZE)
 
-    -- down too, for cast on key down
     button:RegisterForClicks('AnyUp', 'AnyDown')
     button:SetAttribute('type', 'spell')
 
     button.icon = button:CreateTexture(nil, 'ARTWORK')
     button.icon:SetAllPoints()
+
+    TotemArt:AddRing(button)
+
+    if kind == SpellButton.SUMMON then
+        for totemSet, spellId in ipairs(TOTEM_MULTI_CAST_SUMMON_SPELLS) do
+            button:SetAttributeNoHandler('spell-totemset' .. totemSet, spellId)
+        end
+
+        -- pages with the bar's totem set
+        button:SetAttributeNoHandler('_childupdate-state', [[
+            local spell = self:GetAttribute('spell-' .. message)
+            if spell then
+                self:SetAttribute('spell', spell)
+            end
+        ]])
+    else
+        button:SetAttributeNoHandler('spell', TOTEM_MULTI_CAST_RECALL_SPELLS[1])
+    end
 
     button.cooldown = CreateFrame('Cooldown', nil, button, 'CooldownFrameTemplate')
     button.cooldown:SetAllPoints()
@@ -111,23 +108,46 @@ local function create(kind, name)
     button.HotKey = button:CreateFontString(nil, 'OVERLAY', 'NumberFontNormalSmallGray')
     button.HotKey:SetPoint('TOPRIGHT', -2, -2)
 
-    button:SetPushedTexture('Interface\\Buttons\\UI-Quickslot-Depress')
+    if C_Texture.GetAtlasInfo('UI-HUD-ActionBar-IconFrame-Down') then
+        button:SetPushedAtlas('UI-HUD-ActionBar-IconFrame-Down')
+
+        -- blizzard's small button size
+        local pushed = button:GetPushedTexture()
+        pushed:ClearAllPoints()
+        pushed:SetPoint('CENTER')
+        pushed:SetSize(35, 35)
+    else
+        button:SetPushedTexture('Interface\\Buttons\\UI-Quickslot-Depress')
+    end
+
     button:SetHighlightTexture('Interface\\Buttons\\ButtonHilight-Square', 'ADD')
 
     button:SetScript('OnEnter', button_OnEnter)
     button:SetScript('OnLeave', button_OnLeave)
 
-    -- the game clicks the button when the key is pressed, no override bindings needed
     button:SetAttributeNoHandler('commandName', ('CLICK %s:LeftButton'):format(name))
     Addon.BindableButton:AddQuickBindingSupport(button)
 
     return button
 end
 
+--------------------------------------------------------------------------------
+-- API
+--------------------------------------------------------------------------------
+
 function SpellButton:Acquire(kind)
     local name = ('%sTotem%sButton'):format(AddonName, kind)
 
-    return _G[name] or create(kind, name)
+    return _G[name] or button_Create(kind, name)
+end
+
+function SpellButton:IsButton(frame)
+    return frame.kind ~= nil
+end
+
+function SpellButton:IsSpellKnown(spellId)
+    return spellId ~= nil
+        and C_SpellBook.IsSpellInSpellBook(spellId, Enum.SpellBookSpellBank.Player, false)
 end
 
 -- export
