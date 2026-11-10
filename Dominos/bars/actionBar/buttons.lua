@@ -182,10 +182,11 @@ function ActionButtons:OnActionChanged(buttonName, action)
 end
 
 --------------------------------------------------------------------------------
--- Action Button Constrution
+-- Action Button Construction
 --------------------------------------------------------------------------------
 
--- keep track of the current action associated with a button
+-- keep track of the current action associated with a button. also clears bit 1
+-- of showgrid (Blizzard's always show buttons), since Dominos has its own
 local ActionButton_AttributeChanged = [[
     if name == "action" then
         local prevValue = ActionButtons[self]
@@ -193,6 +194,8 @@ local ActionButton_AttributeChanged = [[
             ActionButtons[self] = value
             control:CallMethod("OnActionChanged", self:GetName(), value, prevValue)
         end
+    elseif name == "showgrid" and type(value) == "number" and value % 2 == 1 then
+        self:SetAttribute("showgrid", value - 1)
     end
 ]]
 
@@ -219,7 +222,13 @@ local ActionButton_ReceiveDragAfter = [[
 local function GetActionButtonName(id)
     if id <= 0 then
         return
-    -- 1, 2
+    -- 1
+    elseif id <= 12  then
+        if Addon:UsingBlizzardKeybindHandlers()  then
+            return ('ActionButton%d'):format(id)
+        end
+        return ACTION_BUTTON_NAME_TEMPLATE:format(id)
+    -- 2
     elseif id <= 24 then
         return ACTION_BUTTON_NAME_TEMPLATE:format(id)
     -- 3
@@ -277,6 +286,7 @@ function ActionButtons:GetOrCreateActionButton(id, parent, name)
     -- button not found, create a new one
     if button == nil then
         button = CreateFrame("CheckButton", name, parent, "ActionBarButtonTemplate")
+        button.isDominosButton = true
 
         -- add custom methods
         SafeMixin(button, Addon.ActionButton)
@@ -293,6 +303,8 @@ function ActionButtons:GetOrCreateActionButton(id, parent, name)
         -- logic of the standard UI
         button:SetParent(parent)
         button:SetID(0)
+
+        -- secure code reads .bar before the parent for useparent- attributes
         button.bar = nil
 
         -- initialize the button
@@ -305,7 +317,10 @@ function ActionButtons:GetOrCreateActionButton(id, parent, name)
         self:WrapScript(button, "OnAttributeChanged", ActionButton_AttributeChanged)
         self:WrapScript(button, "PostClick", ActionButton_PostClick)
         self:WrapScript(button, "OnReceiveDrag", ActionButton_ReceiveDragBefore, ActionButton_ReceiveDragAfter)
-        self:AddCastOnKeyPressSupport(button)
+
+        if not button:UsesBlizzardBindings() then
+            self:AddCastOnKeyPressSupport(button)
+        end
 
         -- register the button with the controller
         self:SetFrameRef("add", button)

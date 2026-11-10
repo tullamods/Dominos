@@ -67,9 +67,10 @@ function Addon:OnEnable()
     self:MigrateBindings()
     self:RegisterEvent('UPDATE_BINDINGS')
     self:RegisterEvent("GAME_PAD_ACTIVE_CHANGED", "UPDATE_BINDINGS")
+    self:RegisterEvent('PLAYER_REGEN_ENABLED')
 
     if C_HouseEditor then
-        self:RegisterEvent('HOUSE_EDITOR_MODE_CHANGED')
+        self:RegisterEvent('HOUSE_EDITOR_MODE_CHANGED', 'UpdateOverrideBindings')
     end
 
     self:Load()
@@ -83,15 +84,21 @@ end
 -- binding events
 function Addon:UPDATE_BINDINGS()
     self.Frame:ForEach('ForButtons', 'UpdateHotkeys')
+    self:UpdateOverrideBindings()
+end
 
-    if not InCombatLockdown() then
+function Addon:UpdateOverrideBindings()
+    if InCombatLockdown() then
+        self.overrideBindingsPending = true
+    else
+        self.overrideBindingsPending = nil
         self.Frame:ForEach('ForButtons', 'UpdateOverrideBindings')
     end
 end
 
-function Addon:HOUSE_EDITOR_MODE_CHANGED()
-    if not InCombatLockdown() then
-        self.Frame:ForEach('ForButtons', 'UpdateOverrideBindings')
+function Addon:PLAYER_REGEN_ENABLED()
+    if self.overrideBindingsPending then
+        self:UpdateOverrideBindings()
     end
 end
 
@@ -310,7 +317,13 @@ function Addon:GetDatabaseDefaults()
         },
 
         global = {
-            showActionBookWithSpellbook = true
+            showActionBookWithSpellbook = true,
+
+            -- feature flag: whether or not to directly use Blizzard's
+            -- keybinding handlers. these are needed for Press and Hold casting
+            -- support, but historically have made the codepath much more
+            -- subject to taint.
+            useBlizzardKeybindHandlers = true
         }
     }
 end
@@ -869,13 +882,16 @@ function Addon:ShowingMinimap()
     return not self.db.profile.minimap.hide
 end
 
--- global, not per profile. saved as false, since nil reads as the default
 function Addon:SetShowActionBookWithSpellbook(enable)
     self.db.global.showActionBookWithSpellbook = enable and true or false
 end
 
 function Addon:ShowingActionBookWithSpellbook()
     return self.db.global.showActionBookWithSpellbook
+end
+
+function Addon:UsingBlizzardKeybindHandlers()
+    return self.db.global.useBlizzardKeybindHandlers
 end
 
 -- linked opacity

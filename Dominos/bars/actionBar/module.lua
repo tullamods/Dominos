@@ -11,6 +11,9 @@ local ActionBarsModule = Addon:NewModule('ActionBars', 'AceEvent-3.0')
 --------------------------------------------------------------------------------
 
 local function hideBlizzardActionBars()
+    -- Blizzard's key bindings look buttons up in these
+    local keepButtonTables = Addon:UsingBlizzardKeybindHandlers()
+
     -- the main bar keeps its events and buttons
     local bars = {
         'MainActionBar',
@@ -48,7 +51,7 @@ local function hideBlizzardActionBars()
                     button:Hide()
                 end
 
-                if not isMainBar then
+                if not isMainBar and not keepButtonTables then
                     wipe(bar.actionButtons)
                 end
             end

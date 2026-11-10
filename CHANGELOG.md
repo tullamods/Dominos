@@ -1,11 +1,17 @@
 # Dominos Changelog
 
-## 12.0.0-beta1
-
 > **Dominos 12 is a one way settings upgrade.**
 >
 > While I've tested the settings migration, you may still want to back up your
 > settings before upgrading just in case.
+
+## 12.0.0-beta2
+
+* Added Press and Hold Casting support to Action Bars 1-8. If action buttons 
+  stop working, you can use `/run Dominos.db.global.useBlizzardKeybindHandlers = false` 
+  to disable the setting.
+
+## 12.0.0-beta1
 
 ### Action Bars
 

@@ -127,8 +127,12 @@ function ActionButton:OnSlotChanged()
     self:UpdateShown()
 end
 
+function ActionButton:UsesBlizzardBindings()
+    return Addon:UsingBlizzardKeybindHandlers() and not self.isDominosButton
+end
+
 function ActionButton:UpdateOverrideBindings()
-    if InCombatLockdown() then return end
+    if InCombatLockdown() or self:UsesBlizzardBindings() then return end
 
     if C_HouseEditor and C_HouseEditor.IsHouseEditorActive() then
         ClearOverrideBindings(self.bind)
