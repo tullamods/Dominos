@@ -65,6 +65,7 @@ function FadeManager:Remove(frame)
     if watched[frame] then
         watched[frame] = nil
 
+        frame:StopFade()
         frame.focused = nil
         frame:UpdateAlpha()
     end

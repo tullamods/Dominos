@@ -310,6 +310,7 @@ function DragFrame:OnMovingChanged(isMoving)
     else
         owner:StopMovingOrSizing()
         owner:Stick()
+        owner:UpdateWatched()
     end
 end
 

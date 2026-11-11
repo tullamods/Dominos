@@ -160,6 +160,7 @@ end
 
 function ActionBar:OnAttachButton(button)
     self:UpdateButtonActions(button)
+
     button:SetAttribute('action', button:GetAttribute('action-' .. self:GetState()) or button:GetAttribute('action-base'))
     button:SetFlyoutDirectionInsecure(self:GetFlyoutDirection())
 

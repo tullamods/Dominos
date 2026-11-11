@@ -500,6 +500,14 @@ function Frame:Fade(targetAlpha, delay, duration)
     end
 end
 
+function Frame:StopFade()
+    Addon:StopFade(self)
+
+    if Addon:IsLinkedOpacityEnabled() then
+        self:ForAnchored('StopFade')
+    end
+end
+
 --------------------------------------------------------------------------------
 -- Frame Visibility
 --------------------------------------------------------------------------------
