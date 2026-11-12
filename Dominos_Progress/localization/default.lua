@@ -47,9 +47,10 @@ L.ShowTooltip = 'Show Tooltip'
 
 -- advanced
 L.AutoHide = 'Auto Hide'
-L.AutoHideTip = "Hide the bar when there's nothing to show"
+L.AutoHideTip = "Hides the bar when there's nothing to show"
 L.AutoSwitchModes = 'Auto Switch Modes'
 L.SmoothFill = 'Smooth Fill'
+L.SmoothFillTip = 'Animates progress bar changes'
 
 -- modes
 L.Azerite = 'Azerite Power'

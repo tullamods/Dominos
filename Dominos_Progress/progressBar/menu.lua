@@ -65,25 +65,20 @@ ProgressBar.contextMenu = Dominos.Frame.contextMenu:Extend {
 			},
 			{
 				type = 'check',
-				name = 'SmoothFill',
-				locale = 'Dominos-Progress',
-				get = 'UsesSmoothFill',
-				set = 'SetSmoothFill'
-			}
-		}
-	},
-	{
-		insert = 'Advanced',
-		after = 'ShowInPetBattleUICheck',
-		controls = {
-			{
-				type = 'check',
 				name = 'AutoHide',
 				tooltip = 'AutoHideTip',
 				locale = 'Dominos-Progress',
 				get = 'UsesAutoHide',
 				set = 'SetAutoHide'
 			},
+			{
+				type = 'check',
+                name = 'SmoothFill',
+				tooltip = 'SmoothFillTip',
+				locale = 'Dominos-Progress',
+				get = 'UsesSmoothFill',
+				set = 'SetSmoothFill'
+			}
 		}
 	},
 	{
@@ -140,9 +135,9 @@ ProgressBar.contextMenu = Dominos.Frame.contextMenu:Extend {
 			{ type = 'header', name = 'Content' },
 			{
 				type = 'check',
-				name = 'ShowTooltip',
-				get = 'ShowingTooltip',
-				set = 'SetShowTooltip'
+				name = 'AbbreviateNumbers',
+				get = 'AbbreviatesNumbers',
+				set = 'SetAbbreviateNumbers'
 			},
 			{
 				type = 'check',
@@ -158,10 +153,10 @@ ProgressBar.contextMenu = Dominos.Frame.contextMenu:Extend {
 			},
 			{
 				type = 'check',
-				name = 'AbbreviateNumbers',
-				get = 'AbbreviatesNumbers',
-				set = 'SetAbbreviateNumbers'
-			}
+				name = 'ShowTooltip',
+				get = 'ShowingTooltip',
+				set = 'SetShowTooltip'
+			},
 		}
 	}
 }
