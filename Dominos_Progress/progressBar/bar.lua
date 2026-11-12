@@ -39,8 +39,7 @@ local NATIVE_FONT = 'TextStatusBarText'
 -- the stock look for modes without fill art, and clients without the atlases
 local PLAIN_TEXTURE = [[Interface\TargetingFrame\UI-StatusBar]]
 
--- the stock container is 6 bigger than its bar, so 3 per side
-local BORDER_OUTSET = 3
+local BORDER_OUTSET = 2
 
 -- same as the stock divider
 local DIVIDER_WIDTH = 3
