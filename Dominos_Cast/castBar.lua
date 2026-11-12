@@ -278,7 +278,7 @@ function CastBar:UNIT_SPELLCAST_EMPOWER_UPDATE(event, unitTarget, castGUID, spel
     self:UpdateEmpowering()
 end
 
-function CastBar:UNIT_SPELLCAST_EMPOWER_STOP(event, unitTarget, castGUID, spellID, castBarID)
+function CastBar:UNIT_SPELLCAST_EMPOWER_STOP(event, unitTarget, castGUID, spellID, complete, interruptedBy, castBarID)
     local castID
     if castBarID then
         castID = castBarID
@@ -349,7 +349,7 @@ end
 
 CastBar.UNIT_SPELLCAST_FAILED_QUIET = CastBar.UNIT_SPELLCAST_FAILED
 
-function CastBar:UNIT_SPELLCAST_INTERRUPTED(event, unitTarget, castGUID, spellID, castBarID)
+function CastBar:UNIT_SPELLCAST_INTERRUPTED(event, unitTarget, castGUID, spellID, interruptedBy, castBarID)
     local castID
     if castBarID then
         castID = castBarID
@@ -582,16 +582,8 @@ function CastBar:UpdateEmpowering()
         local startTime = startTimeMs / 1000
         local endTime
 
-        -- HACK: use hardcoded values in Midnight because the return of
-        -- GetUnitEmpowerHoldAtMaxTime is currently a secret
         if numEmpowerStages > 0 then
-            local holdTimeMs = GetUnitEmpowerHoldAtMaxTime(unit)
-            if (issecretvalue and issecretvalue(holdTimeMs)) then
-                local fakeHoldTimeMs = unit == "player" and 1000 or 0
-                endTime = (endTimeMs + fakeHoldTimeMs) / 1000
-            else
-                endTime = (endTimeMs + holdTimeMs) / 1000;
-            end
+            endTime = (endTimeMs + GetUnitEmpowerHoldAtMaxTime(unit)) / 1000
         else
             endTime = endTimeMs / 1000
         end
