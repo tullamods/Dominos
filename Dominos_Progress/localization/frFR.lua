@@ -17,5 +17,3 @@
 
 local L = LibStub('AceLocale-3.0'):NewLocale('Dominos-Progress', 'frFR')
 if not L then return end
-
-L.AlwaysShowText = 'Toujours afficher le texte'

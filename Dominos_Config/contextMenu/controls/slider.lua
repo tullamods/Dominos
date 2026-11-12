@@ -37,19 +37,9 @@ local function updateEnabled(control)
     end
 end
 
-local function refreshChecked(control)
-    local checked = not not control.menu:GetValue(control.def.check)
-
-    if control.checked ~= checked then
-        control.checked = checked
-        control.CheckButton:SetChecked(checked)
-        updateEnabled(control)
-    end
-end
-
 local function refresh(control)
     if control.CheckButton then
-        refreshChecked(control)
+        Addon:RefreshControlCheck(control)
     end
 
     -- never rewrite the number while it is being typed
@@ -152,33 +142,6 @@ end
 
 local function onLeave(region)
     Addon:HideControlTooltip(region.control)
-end
-
-local function checkbox_OnClick(checkbox)
-    local control = checkbox.control
-
-    if control.def then
-        local checked = not not checkbox:GetChecked()
-
-        control.checked = checked
-        updateEnabled(control)
-        control.menu:SetValue(control.def.check, checked)
-    end
-end
-
-local function hitbox_OnClick(hitbox)
-    hitbox.control.CheckButton:Click()
-end
-
--- the hitbox covers the check box, so highlight it by hand
-local function hitbox_OnEnter(hitbox)
-    hitbox.control.CheckButton:LockHighlight()
-    onEnter(hitbox)
-end
-
-local function hitbox_OnLeave(hitbox)
-    hitbox.control.CheckButton:UnlockHighlight()
-    onLeave(hitbox)
 end
 
 local function slider_OnValueChanged(slider, value, isUserInput)
@@ -305,15 +268,8 @@ local function createHeader(control, withCheck)
         return
     end
 
-    local checkbox = CreateFrame('CheckButton', nil, control, 'MinimalCheckboxTemplate')
+    local checkbox = Addon:AddControlCheck(control, label, updateEnabled)
     checkbox:SetPoint('TOPLEFT')
-    checkbox:SetScript('OnClick', checkbox_OnClick)
-    checkbox.control = control
-    control.CheckButton = checkbox
-
-    label:SetJustifyV('MIDDLE')
-    label:SetHeight(checkbox:GetHeight())
-    label:SetPoint('LEFT', checkbox, 'RIGHT', 3, 0)
 
     control.ValueInput = createInput(control)
     -- centered on the check box, which is taller than the number
@@ -321,19 +277,6 @@ local function createHeader(control, withCheck)
 
     -- the label ends where the number starts
     label:SetPoint('RIGHT', control.ValueInput, 'LEFT', -4, 0)
-
-    -- an invisible button over the check box and label, so the label is
-    -- clickable too
-    local hitbox = CreateFrame('Button', nil, control)
-    hitbox:SetPoint('TOPLEFT', checkbox)
-    hitbox:SetPoint('BOTTOM', checkbox)
-    hitbox:SetPoint('RIGHT', control.ValueInput, 'LEFT')
-    hitbox:SetFrameLevel(checkbox:GetFrameLevel() + 1)
-    hitbox:SetScript('OnClick', hitbox_OnClick)
-    hitbox:SetScript('OnEnter', hitbox_OnEnter)
-    hitbox:SetScript('OnLeave', hitbox_OnLeave)
-    hitbox.control = control
-    control.Hitbox = hitbox
 end
 
 local function create(parent, withCheck)

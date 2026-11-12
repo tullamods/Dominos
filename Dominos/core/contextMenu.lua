@@ -112,14 +112,24 @@ local function applyInsert(panels, op)
         return ('cannot insert into panel %q, whose controls are a function'):format(op.insert)
     end
 
-    local before = op.before and tIndexOf(panel.controls, op.before)
-
-    if op.before and not before then
-        return ('cannot insert before control %q in panel %q, which does not have it'):format(tostring(op.before), op.insert)
+    if op.before and op.after then
+        return ('insert into panel %q takes before or after, not both'):format(op.insert)
     end
 
-    if not before and op.at ~= 'start' and op.at ~= 'end' then
-        return ('insert into panel %q needs at = "start" or "end", or before = a control'):format(op.insert)
+    if op.at and (op.before or op.after) then
+        return ('insert into panel %q takes at or before/after, not both'):format(op.insert)
+    end
+
+    local placement = op.before and 'before' or 'after'
+    local anchor = op.before or op.after
+    local anchorIndex = anchor and tIndexOf(panel.controls, anchor)
+
+    if anchor and not anchorIndex then
+        return ('cannot insert %s control %q in panel %q, which does not have it'):format(placement, tostring(anchor), op.insert)
+    end
+
+    if not anchor and op.at ~= 'start' and op.at ~= 'end' then
+        return ('insert into panel %q needs at = "start" or "end", or before or after = a control'):format(op.insert)
     end
 
     if type(op.controls) ~= 'table' then
@@ -133,7 +143,15 @@ local function applyInsert(panels, op)
     end
 
     local merged = CopyTable(panel.controls, true)
-    local first = before or (op.at == 'start' and 1 or #merged + 1)
+    local first
+
+    if op.before then
+        first = anchorIndex
+    elseif op.after then
+        first = anchorIndex + 1
+    else
+        first = op.at == 'start' and 1 or #merged + 1
+    end
 
     for i, control in ipairs(CopyTable(op.controls, true)) do
         table.insert(merged, first + i - 1, control)
@@ -143,7 +161,7 @@ local function applyInsert(panels, op)
 end
 
 --- @param ops table[] each is { addPanel = id, after = id, name, controls, locale? }
----     or { insert = panelId, at = 'start' | 'end', or before = registry key, controls }
+---     or { insert = panelId, at = 'start' | 'end', or before | after = registry key, controls }
 function ContextMenu:Extend(ops)
     local panels = {}
 

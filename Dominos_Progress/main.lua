@@ -3,6 +3,10 @@ local Dominos = LibStub("AceAddon-3.0"):GetAddon("Dominos")
 local ProgressBarModule = Dominos:NewModule("ProgressBars", "AceEvent-3.0")
 local L = LibStub("AceLocale-3.0"):GetLocale("Dominos-Progress")
 
+--------------------------------------------------------------------------------
+-- Lifecycle
+--------------------------------------------------------------------------------
+
 function ProgressBarModule:Load()
 	if not Dominos:IsGameType("standard") then
 		self.bars = {
@@ -38,124 +42,79 @@ function ProgressBarModule:OnFirstLoad()
 		StatusTrackingBarManager:Hide()
 	end
 
-	-- initialize configuration settings
 	Addon.Config:Init()
 
-	-- register events
-	-- common events
+	-- register events. anything that changes what a bar shows just refreshes it
 	self:RegisterEvent("PLAYER_ENTERING_WORLD")
-	self:RegisterEvent("PLAYER_UPDATE_RESTING")
-	self:RegisterEvent("UPDATE_EXHAUSTION")
-
-	-- xp bar events
-	self:RegisterEvent("PLAYER_XP_UPDATE")
 	self:RegisterEvent("PLAYER_LEVEL_UP")
 
-	-- reputation events
-	self:RegisterEvent("UPDATE_FACTION")
+	self:RegisterEvent("PLAYER_UPDATE_RESTING", "RefreshAllBars")
+	self:RegisterEvent("UPDATE_EXHAUSTION", "RefreshAllBars")
+	self:RegisterEvent("PLAYER_XP_UPDATE", "RefreshAllBars")
+	self:RegisterEvent("UPDATE_FACTION", "RefreshAllBars")
 
 	if C_Reputation and C_Reputation.GetMajorFactionData then
-		self:RegisterEvent("MAJOR_FACTION_RENOWN_LEVEL_CHANGED", "UpdateAllBars")
-		self:RegisterEvent("MAJOR_FACTION_UNLOCKED", "UpdateAllBars")
+		self:RegisterEvent("MAJOR_FACTION_RENOWN_LEVEL_CHANGED", "RefreshAllBars")
+		self:RegisterEvent("MAJOR_FACTION_UNLOCKED", "RefreshAllBars")
 	end
 
-	-- honor events
 	if Addon.dataProviders['honor'] then
-		self:RegisterEvent("HONOR_LEVEL_UPDATE")
-		self:RegisterEvent("HONOR_XP_UPDATE")
+		self:RegisterEvent("HONOR_LEVEL_UPDATE", "RefreshAllBars")
+		self:RegisterEvent("HONOR_XP_UPDATE", "RefreshAllBars")
 	end
 
-	-- artifact events
 	if Addon.dataProviders['artifact'] then
-		self:RegisterEvent("ARTIFACT_XP_UPDATE")
+		self:RegisterEvent("ARTIFACT_XP_UPDATE", "RefreshAllBars")
 		self:RegisterEvent("UNIT_INVENTORY_CHANGED")
 	end
 
-	-- azerite events
 	if Addon.dataProviders['azerite'] then
-		self:RegisterEvent("AZERITE_ITEM_EXPERIENCE_CHANGED")
+		self:RegisterEvent("AZERITE_ITEM_EXPERIENCE_CHANGED", "RefreshAllBars")
 	end
 
-	-- gold events
 	if Addon.dataProviders['gold'] then
-		self:RegisterEvent("PLAYER_MONEY")
+		self:RegisterEvent("PLAYER_MONEY", "RefreshAllBars")
 	end
 
-	-- addon and library callbacks
 	Dominos.RegisterCallback(self, "OPTIONS_MENU_LOADING")
 	LibStub("LibSharedMedia-3.0").RegisterCallback(self, 'LibSharedMedia_Registered')
 end
 
--- events
+--------------------------------------------------------------------------------
+-- Events
+--------------------------------------------------------------------------------
+
 function ProgressBarModule:OPTIONS_MENU_LOADING()
 	self:AddOptionsPanel()
 end
 
 function ProgressBarModule:PLAYER_ENTERING_WORLD()
-	self:UpdateAllBars()
+	self:RefreshAllBars()
 	self:ForAllBars("UpdateDisplayConditions")
 end
 
-function ProgressBarModule:PLAYER_UPDATE_RESTING()
-	self:UpdateAllBars()
-end
-
-function ProgressBarModule:UPDATE_EXHAUSTION()
-	self:UpdateAllBars()
-end
-
-function ProgressBarModule:PLAYER_LEVEL_UP()
-	self:ForAllBars("UpdateDisplayConditions")
-end
-
-function ProgressBarModule:PLAYER_XP_UPDATE()
-	self:UpdateAllBars()
-end
-
-function ProgressBarModule:UPDATE_FACTION()
-	self:UpdateAllBars()
-end
-
-function ProgressBarModule:ARTIFACT_XP_UPDATE()
-	self:UpdateAllBars()
-end
-
-function ProgressBarModule:AZERITE_ITEM_EXPERIENCE_CHANGED()
-	self:UpdateAllBars()
+-- UnitLevel lags behind this event, so bars get the new level from it
+function ProgressBarModule:PLAYER_LEVEL_UP(event, level)
+	self:ForAllBars("SetPlayerLevel", level)
 end
 
 function ProgressBarModule:UNIT_INVENTORY_CHANGED(event, unit)
-	if unit ~= "player" then
-		return
+	if unit == "player" then
+		self:RefreshAllBars()
 	end
-
-	self:UpdateAllBars()
 end
 
-function ProgressBarModule:HONOR_LEVEL_UPDATE()
-	self:UpdateAllBars()
+-- only bars using the media that just showed up need to restyle
+function ProgressBarModule:LibSharedMedia_Registered(event, mediaType, key)
+	self:ForAllBars("OnMediaRegistered", mediaType, key)
 end
 
-function ProgressBarModule:HONOR_XP_UPDATE()
-	self:UpdateAllBars()
-end
+--------------------------------------------------------------------------------
+-- Bars
+--------------------------------------------------------------------------------
 
-function ProgressBarModule:PLAYER_MONEY()
-	self:UpdateAllBars()
-end
-
-function ProgressBarModule:LibSharedMedia_Registered()
-	self:UpdateAllBars()
-end
-
-function ProgressBarModule:UpdateAllBars()
-	local bars = self.bars
-	if not bars then return end
-
-	for _, bar in pairs(self.bars) do
-		bar:UpdateMode()
-		bar:Update()
-	end
+function ProgressBarModule:RefreshAllBars()
+	self:ForAllBars("Refresh")
 end
 
 function ProgressBarModule:ForAllBars(method, ...)
@@ -167,9 +126,13 @@ function ProgressBarModule:ForAllBars(method, ...)
 	end
 end
 
+--------------------------------------------------------------------------------
+-- Options
+--------------------------------------------------------------------------------
+
 function ProgressBarModule:AddOptionsPanel()
 	local colors = { }
-	for i, key in pairs{ "xp", "xp_bonus", "honor", "artifact", "azerite", "gold", "gold_realm" } do
+	for i, key in ipairs(Addon.Config.COLOR_KEYS) do
 		colors[key] = {
 			type = "color",
 			name = L["Color_" .. key],
@@ -177,18 +140,35 @@ function ProgressBarModule:AddOptionsPanel()
 			hasAlpha = true,
 
 			get = function()
-				return Addon.Config:GetColor(key)
+				return Addon.Config:GetColor(key):GetRGBA()
 			end,
 
 			set = function(_, ...)
 				Addon.Config:SetColor(key, ...)
 
 				for _, bar in pairs(self.bars) do
-					bar:Update()
+					bar:UpdateTextures()
 				end
 			end
 		}
 	end
+
+	colors.reset = {
+		type = "execute",
+		name = L.ResetColors,
+		order = #Addon.Config.COLOR_KEYS + 1,
+		confirm = true,
+
+		func = function()
+			Addon.Config:ResetColors()
+
+			for _, bar in pairs(self.bars) do
+				bar:UpdateTextures()
+			end
+
+			LibStub("AceConfigRegistry-3.0"):NotifyChange(Dominos:GetName())
+		end
+	}
 
 	Dominos.Options:AddOptionsPanelOptions("progress", {
 		type = "group",
@@ -255,7 +235,7 @@ function ProgressBarModule:AddOptionsPanel()
 
 				set = function(_, value)
 					Addon.Config:SetGoldGoal(value)
-					self:UpdateAllBars()
+					self:RefreshAllBars()
 				end,
 			},
 		}

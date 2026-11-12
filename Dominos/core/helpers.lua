@@ -26,6 +26,60 @@ function Addon:CreateDisplayCheck(part)
     }
 end
 
+-- colors are saved as RRGGBB or RRGGBBAA hex strings. the same string gives
+-- back the same shared color object while anything holds it, so don't modify it
+do
+    local RGB_LENGTH = 6
+    local RGBA_LENGTH = 8
+    local colorsByHex = setmetatable({}, { __mode = 'v' })
+
+    ---@param hex string RRGGBB or RRGGBBAA
+    ---@return ColorMixin? color nil if it isn't a hex color
+    function Addon:GetColorFromHex(hex)
+        -- saved hex is already uppercase, so this mostly hits straight away
+        local color = colorsByHex[hex]
+        if color then
+            return color
+        end
+
+        if type(hex) ~= 'string' or not hex:match('^%x+$') then
+            return
+        end
+
+        hex = hex:upper()
+
+        color = colorsByHex[hex]
+        if color then
+            return color
+        end
+
+        if #hex == RGBA_LENGTH then
+            color = CreateColorFromRGBAHexString(hex)
+        elseif #hex == RGB_LENGTH then
+            color = CreateColorFromRGBHexString(hex)
+        end
+
+        colorsByHex[hex] = color
+
+        return color
+    end
+
+    -- always RRGGBBAA, which is what GetColorFromHex reads back
+    ---@param r number 0 to 1
+    ---@param g number
+    ---@param b number
+    ---@param a number? defaults to 1
+    ---@return string hex
+    function Addon:GetHexFromColor(r, g, b, a)
+        return ('%02X%02X%02X%02X'):format(
+            Round(r * 255),
+            Round(g * 255),
+            Round(b * 255),
+            Round((a or 1) * 255)
+        )
+    end
+end
+
 -- A utility function for extending blizzard widget types (Frames, Buttons, etc)
 do
     -- extend basically just does a post hook of an existing object method

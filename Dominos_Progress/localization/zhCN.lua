@@ -8,27 +8,27 @@
 local L = LibStub('AceLocale-3.0'):NewLocale('Dominos-Progress', 'zhCN')
 if not L then return end
 
+-- options panel
+L.GoldGoal = "金额目标数量"
 L.OneBarMode = '只使用一条进度条'
 L.Progress = '进度条'
-L.AlwaysShowText = '总显示文本'
-L.AutoSwitchModes = '自动切换模式'
-L.Display_label = '显示标签'
-L.Display_value = '显示当前数值'
-L.Display_max = '显示最大数值'
-L.Display_bonus = '显示休息/额外经验值'
-L.Display_percent = '显示百分比'
-L.Display_remaining = '显示剩余经验值'
-L.CompressValues = '显示简短的数值'
+L.SkipInactiveModes = "忽略未激活进度条"
 
-L.Color_xp = '经验条颜色'
-L.Color_xp_bonus = '额外经验条颜色'
-L.Color_honor = '荣誉条颜色'
-L.Color_honor_bonus = '额外荣誉条颜色'
+-- colors
 L.Color_artifact = '神器能量条颜色'
 L.Color_azerite = '艾泽里特条颜色'
 L.Color_gold = '金额颜色'
 L.Color_gold_realm = '服务器金额颜色'
+L.Color_honor = '荣誉条颜色'
+L.Color_xp = '经验条颜色'
+L.Color_xp_bonus = '额外经验条颜色'
 
+-- appearance
+L.ShowBonus = '显示休息/额外经验值'
+L.ShowLabel = '显示标签'
+
+-- advanced
+L.AutoSwitchModes = '自动切换模式'
+
+-- modes
 L.Azerite = '艾泽里特能量'
-L.SkipInactiveModes = "忽略未激活进度条"
-L.GoldGoal = "金额目标数量"

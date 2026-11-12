@@ -5,6 +5,14 @@
 > While I've tested the settings migration, you may still want to back up your
 > settings before upgrading just in case.
 
+## 12.0.0-beta3
+
+### Progress Bars
+
+* Rewrote the Progress Bar's codebase a good bit. By default, the bar should 
+  look much closer to the Blizzard one, and I've reorganized the context menu.
+* Added Font Size, Font Outline, Border, and Tooltip options.
+
 ## 12.0.0-beta2
 
 * Added Press and Hold Casting support to Action Bars 1-8. If action buttons 

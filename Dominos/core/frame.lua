@@ -1079,10 +1079,7 @@ Frame.contextMenu = Addon.ContextMenu {
     {
         id = 'Advanced',
         controls = {
-            {
-                type = 'header',
-                name = 'Behavior'
-            },
+            'BehaviorHeader',
             'ClickThroughCheck',
             'ShowInOverrideUICheck',
             'ShowInPetBattleUICheck',

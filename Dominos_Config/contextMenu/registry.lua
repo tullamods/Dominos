@@ -295,7 +295,12 @@ Controls.ShowInPetBattleUICheck = {
     set = 'ShowInPetBattleUI'
 }
 
--- a header in the Advanced panel that other menus insert controls before
+-- headers in the Advanced panel that other menus insert controls next to
+Controls.BehaviorHeader = {
+    type = 'header',
+    name = 'Behavior'
+}
+
 Controls.DrawOrderHeader = {
     type = 'header',
     name = 'DrawOrder'
