@@ -46,7 +46,6 @@ function ProgressBarModule:OnFirstLoad()
 
 	-- register events. anything that changes what a bar shows just refreshes it
 	self:RegisterEvent("PLAYER_ENTERING_WORLD")
-	self:RegisterEvent("PLAYER_LEVEL_UP")
 
 	self:RegisterEvent("PLAYER_UPDATE_RESTING", "RefreshAllBars")
 	self:RegisterEvent("UPDATE_EXHAUSTION", "RefreshAllBars")
@@ -91,11 +90,6 @@ end
 function ProgressBarModule:PLAYER_ENTERING_WORLD()
 	self:RefreshAllBars()
 	self:ForAllBars("UpdateDisplayConditions")
-end
-
--- UnitLevel lags behind this event, so bars get the new level from it
-function ProgressBarModule:PLAYER_LEVEL_UP(event, level)
-	self:ForAllBars("SetPlayerLevel", level)
 end
 
 function ProgressBarModule:UNIT_INVENTORY_CHANGED(event, unit)

@@ -10,8 +10,8 @@ local LSM = LibStub('LibSharedMedia-3.0')
 ---@field mode string? the one showing
 ---@field autoMode string? the last one auto switch picked
 ---@field provider DataProvider? for the mode showing
----@field playerLevel number? from PLAYER_LEVEL_UP, until UnitLevel catches up
 ---@field lastShowText true|'mouseover'|nil what showText was before it was turned off
+---@field displayConditions string? what the last UpdateDisplayConditions applied
 ---@field shownMax number? the max the fill last showed, so a new one snaps
 ---@field tipValue number? what the open tooltip was built from
 ---@field tipMax number?
@@ -105,8 +105,8 @@ function ProgressBar:New(id, modes)
 	bar.mode = nil
 	bar.provider = nil
 	bar.autoMode = nil
-	bar.playerLevel = nil
 	bar.lastShowText = nil
+	bar.displayConditions = nil
 	bar.tipValue, bar.tipMax, bar.tipBonus = nil, nil, nil
 	bar:Refresh()
 
@@ -236,6 +236,11 @@ end
 
 -- what game events call: let auto switch pick, restyle if the mode changed, update
 function ProgressBar:Refresh()
+	-- modes go active and inactive, and hiding has to follow
+	if self:UsesAutoHide() and self:GetDisplayConditions() ~= self.displayConditions then
+		self:UpdateDisplayConditions()
+	end
+
 	-- auto switch only acts when its own pick changes, so manual clicks stick
 	if not self:IsModeLocked() then
 		local autoMode = self:GetAutoMode()
@@ -293,6 +298,21 @@ function ProgressBar:GetAutoMode()
 	return modes[1]
 end
 
+function ProgressBar:HasActiveMode()
+	-- the core asks for display conditions before New hands over the modes
+	if not self.modes then
+		return false
+	end
+
+	for _, mode in ipairs(self.modes) do
+		if Addon.dataProviders[mode]:IsActive() then
+			return true
+		end
+	end
+
+	return false
+end
+
 function ProgressBar:NextMode()
 	local modes = self.modes
 	local current = tIndexOf(modes, self:GetMode())
@@ -331,37 +351,27 @@ end
 -- Display conditions
 --------------------------------------------------------------------------------
 
--- UnitLevel still has the old level during PLAYER_LEVEL_UP, so take it from the event
----@param level number
-function ProgressBar:SetPlayerLevel(level)
-	self.playerLevel = level
-	self:UpdateDisplayConditions()
-end
-
+-- a bar with any active mode stays, so there's always something to click to.
+-- xp is inactive at max level, which is what hides a bar that only has xp
 function ProgressBar:GetDisplayConditions()
-	if not self:HidesAtMaxLevel() then
-		return
-	end
-
-	local level = UnitLevel('player')
-
-	-- the event's level only matters until UnitLevel catches up
-	if self.playerLevel and level >= self.playerLevel then
-		self.playerLevel = nil
-	end
-
-	if math.max(self.playerLevel or 0, level) >= Addon.GetMaxPlayerLevel() then
+	if self:UsesAutoHide() and not self:HasActiveMode() then
 		return 'hide'
 	end
 end
 
-function ProgressBar:SetHideAtMaxLevel(hide)
-	self.sets.hideAtMaxLevel = hide and true or false
+-- remembers what was applied, so Refresh only acts when it changes
+function ProgressBar:UpdateDisplayConditions()
+	ProgressBar.proto.UpdateDisplayConditions(self)
+	self.displayConditions = self:GetDisplayConditions()
+end
+
+function ProgressBar:SetAutoHide(hide)
+	self.sets.autoHide = hide and true or false
 	self:UpdateDisplayConditions()
 end
 
-function ProgressBar:HidesAtMaxLevel()
-	return self.sets.hideAtMaxLevel or false
+function ProgressBar:UsesAutoHide()
+	return self.sets.autoHide or false
 end
 
 --------------------------------------------------------------------------------

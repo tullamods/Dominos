@@ -78,10 +78,11 @@ ProgressBar.contextMenu = Dominos.Frame.contextMenu:Extend {
 		controls = {
 			{
 				type = 'check',
-				name = 'HideAtMaxLevel',
+				name = 'AutoHide',
+				tooltip = 'AutoHideTip',
 				locale = 'Dominos-Progress',
-				get = 'HidesAtMaxLevel',
-				set = 'SetHideAtMaxLevel'
+				get = 'UsesAutoHide',
+				set = 'SetAutoHide'
 			},
 		}
 	},

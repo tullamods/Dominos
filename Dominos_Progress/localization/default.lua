@@ -46,8 +46,9 @@ L.ShowLabel = 'Show Label'
 L.ShowTooltip = 'Show Tooltip'
 
 -- advanced
+L.AutoHide = 'Auto Hide'
+L.AutoHideTip = "Hide the bar when there's nothing to show"
 L.AutoSwitchModes = 'Auto Switch Modes'
-L.HideAtMaxLevel = 'Hide at Max Level'
 L.SmoothFill = 'Smooth Fill'
 
 -- modes

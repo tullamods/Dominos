@@ -54,6 +54,12 @@ function ProgressBar:UpgradeSettings()
 
 	upgradeText(sets)
 
+	-- hide at max level grew into auto hide
+	if sets.hideAtMaxLevel ~= nil then
+		sets.autoHide = sets.hideAtMaxLevel
+		sets.hideAtMaxLevel = nil
+	end
+
 	-- the old defaults were saved as if picked. they mean the stock look now
 	if sets.texture == OLD_NATIVE_TEXTURE then
 		sets.texture = nil
