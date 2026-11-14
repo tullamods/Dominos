@@ -151,7 +151,6 @@ function ProgressBarModule:AddOptionsPanel()
 		type = "execute",
 		name = L.ResetColors,
 		order = #Addon.Config.COLOR_KEYS + 1,
-		confirm = true,
 
 		func = function()
 			Addon.Config:ResetColors()

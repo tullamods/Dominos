@@ -1,4 +1,4 @@
--- a labeled drop down list. the font and texture controls are drop downs whose
+-- a labeled drop down list. the border, font, and texture controls are drop downs whose
 -- items come from LibSharedMedia. their def.default is the text of an entry
 -- that goes first and stands for no media, which the bar reads as false
 
@@ -293,6 +293,11 @@ end
 registerDropdown('texture', {
     items = mediaItems('statusbar'),
     getValue = validMedia('statusbar')
+})
+
+registerDropdown('border', {
+    items = mediaItems('border'),
+    getValue = validMedia('border')
 })
 
 registerDropdown('font', {
