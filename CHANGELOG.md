@@ -5,21 +5,7 @@
 > While I've tested the settings migration, you may still want to back up your
 > settings before upgrading just in case.
 
-## 12.0.0-beta3
-
-### Progress Bars
-
-* Rewrote the Progress Bar's codebase a good bit. By default, the bar should 
-  look much closer to the Blizzard one, and I've reorganized the context menu.
-* Added Font Size, Font Outline, Border, and Tooltip options.
-
-## 12.0.0-beta2
-
-* Added Press and Hold Casting support to Action Bars 1-8. If action buttons 
-  stop working, you can use `/run Dominos.db.global.useBlizzardKeybindHandlers = false` 
-  to disable the setting.
-
-## 12.0.0-beta1
+## 12.0.0
 
 ### Action Bars
 
@@ -29,6 +15,9 @@
 * Added a new Action Bar Size dropdown to the main options menu to let you pick different action bar counts and sizes.
 * Replaced the `/dom numbuttons` and `/dom numbars` commands `/dom abs <bars>x<buttons>`. Ex, `/dom abs 10x12` will give you 10 bars with 12 buttons each.
 * The totem bar is now a fully custom implementation (again)
+* Added Press and Hold Casting support to Action Bars 1-8. If action buttons 
+  stop working in combat please report and use use `/run Dominos.db.global.useBlizzardKeybindHandlers = false` 
+  to disable the setting.
 
 ### Action Bar Paging
 
@@ -47,6 +36,14 @@
   onto the gamepad slots, even when in keyboard mode.
 * The action book will automatically open with your spellbook by default. You 
   can turn this off.
+
+### Progress Bars
+
+* Rewrote the Progress Bar's codebase a good bit. By default, the bar should 
+  look much closer to the Blizzard one, and I've reorganized the context menu.
+* Added Font Size, Font Outline, Border, and Tooltip options.
+* Replaced Hide at Max Level with an Auto Hide option to better represent what
+  the toggle actually does
 
 ### Misc
 
