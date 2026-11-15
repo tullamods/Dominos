@@ -196,6 +196,9 @@ do
                 ab.count = count
                 ab.length = length
                 ab.addresses = true
+            elseif ab.count == nil then
+                -- the older release dropped the count we saved, as 14 was its default
+                ab.count = 14
             end
         end
     end
