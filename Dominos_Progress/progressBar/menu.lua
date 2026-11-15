@@ -37,7 +37,6 @@ ProgressBar.contextMenu = Dominos.Frame.contextMenu:Extend {
 				get = 'GetTextFormat',
 				set = 'SetTextFormat'
 			},
-			{ type = 'header', name = 'Layout' },
 			'WidthSlider',
 			'HeightSlider',
 			{
@@ -48,6 +47,14 @@ ProgressBar.contextMenu = Dominos.Frame.contextMenu:Extend {
 				max = 100,
 				get = 'GetSegmentCount',
 				set = 'SetSegmentCount'
+            },
+			{
+				type = 'slider',
+				name = 'Spacing',
+				min = 0,
+				max = 32,
+				get = 'GetDividerWidth',
+				set = 'SetDividerWidth'
 			}
 		}
 	},

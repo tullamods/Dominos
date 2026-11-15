@@ -2,10 +2,21 @@ local _, Addon = ...
 local Dominos = LibStub("AceAddon-3.0"):GetAddon("Dominos")
 local ConfigVersion = 3
 
--- the options panel lists them in this order
-local COLOR_KEYS = { 'xp', 'xp_bonus', 'honor', 'artifact', 'azerite', 'gold', 'gold_realm' }
+---@class ProgressConfig
+---@field db table
+local Config = {}
 
-local DEFAULT_COLORS = {
+Config.COLOR_KEYS = {
+	'xp',
+	'xp_bonus',
+	'honor',
+	'artifact',
+	'azerite',
+	'gold',
+	'gold_realm',
+}
+
+Config.DEFAULT_COLORS = {
 	xp = '94008CFF',
 	xp_bonus = '0063E0FF',
 	honor = 'FF3D00FF',
@@ -13,14 +24,6 @@ local DEFAULT_COLORS = {
 	azerite = '99CCE6FF',
 	gold = 'FFD700FF',
 	gold_realm = 'FFF1BAFF'
-}
-
----@alias ColorKey 'xp'|'xp_bonus'|'honor'|'artifact'|'azerite'|'gold'|'gold_realm'
-
----@class ProgressConfig
----@field db table
-local Config = {
-	COLOR_KEYS = COLOR_KEYS
 }
 
 --------------------------------------------------------------------------------
@@ -33,7 +36,6 @@ function Config:Init()
 
 	if dbVersion ~= ConfigVersion then
 		self:Upgrade(db, dbVersion)
-
 		db.global.version = ConfigVersion
 	end
 
@@ -57,10 +59,24 @@ function Config:UpgradeColors(db)
 		return
 	end
 
+	local oldDefaultColors = {
+		xp = { 0.58, 0, 0.55, 1 },
+		xp_bonus = { 0, 0.39, 0.88 },
+		honor = { 1.0, 0.24, 0, 1 },
+		artifact = { 1, 0.75, 0.45, 0.81 },
+		azerite = { 0.601, 0.8, 0.901, 1 },
+		gold = { 1, .8431, 0, 1 },
+		gold_realm = { 1, .9451, .7294, 1 }
+	}
+
 	for _, profile in pairs(profiles) do
-		for key, color in pairs(profile.colors or {}) do
-			if type(color) == "table" then
-				profile.colors[key] = Dominos:GetHexFromColor(color[1], color[2], color[3], color[4])
+		if next(profile.colors) then
+			for key, color in pairs(profile.colors) do
+				if type(color) == "table" then
+					local c = MergeTable(color, oldDefaultColors[key])
+
+					profile.colors[key] = Dominos:GetHexFromColor(c[1], c[2], c[3], c[4])
+				end
 			end
 		end
 	end
@@ -76,7 +92,7 @@ function Config:GetDefaults()
 			one_bar = true,
 			skip_inactive_modes = false,
 			gold_goal = 0,
-			colors = DEFAULT_COLORS
+			colors = CopyTable(self.DEFAULT_COLORS)
 		},
 
 		char = {
@@ -158,10 +174,8 @@ function Config:SetColor(key, r, g, b, a)
 	self.db.profile.colors[key] = Dominos:GetHexFromColor(r, g, b, a)
 end
 
--- the stock art is already colored, so a changed color has to leave it
--- back to the defaults, which brings the stock art back
 function Config:ResetColors()
-	for _, key in ipairs(COLOR_KEYS) do
+	for _, key in pairs(self.COLOR_KEYS) do
 		self.db.profile.colors[key] = nil
 	end
 end
@@ -169,13 +183,16 @@ end
 ---@param key ColorKey
 ---@return boolean
 function Config:HasCustomColor(key)
-	return self.db.profile.colors[key] ~= DEFAULT_COLORS[key]
+	return self.db.profile.colors[key] ~= self.DEFAULT_COLORS[key]
 end
 
 ---@param key ColorKey
 ---@return ColorMixin
 function Config:GetColor(key)
-	return Dominos:GetColorFromHex(self.db.profile.colors[key]) or Dominos:GetColorFromHex(DEFAULT_COLORS[key])
+	return (
+		Dominos:GetColorFromHex(self.db.profile.colors[key])
+		or Dominos:GetColorFromHex(self.DEFAULT_COLORS[key])
+	)
 end
 
 --------------------------------------------------------------------------------

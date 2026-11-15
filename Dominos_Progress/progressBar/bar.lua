@@ -4,31 +4,6 @@ local LSM = LibStub('LibSharedMedia-3.0')
 
 ---@alias FontOutline '' | 'OUTLINE' | 'THICKOUTLINE'
 
----@class ProgressBar : Frame
----@field sets table saved settings
----@field modes string[] what this bar can show, the first is the fallback
----@field mode string? the one showing
----@field autoMode string? the last one auto switch picked
----@field provider DataProvider? for the mode showing
----@field lastShowText true|'mouseover'|nil what showText was before it was turned off
----@field displayConditions string? what the last UpdateDisplayConditions applied
----@field shownMax number? the max the fill last showed, so a new one snaps
----@field tipValue number? what the open tooltip was built from
----@field tipMax number?
----@field tipBonus number?
----@field tinted boolean? false while the stock art is on
----@field valueColor ColorMixin?
----@field bonusColor ColorMixin?
----@field borderCapWidth number? nil without the border art
----@field textOptions TextOptions
----@field refreshTooltip fun()
----@field valueBar StatusBar
----@field bonusBar StatusBar under the value bar, so bonus shows past it
----@field background Texture
----@field overlay Button clicks, dividers, border and text live on it
----@field dividers table texture pool
----@field border Texture
----@field text FontString
 local ProgressBar = Dominos:CreateClass('Frame', Dominos.Frame)
 
 -- stock status bar art
@@ -36,6 +11,7 @@ local NATIVE_BORDER_ATLAS = 'UI-HUD-ExperienceBar-Frame'
 local NATIVE_BACKGROUND_ATLAS = 'UI-HUD-ExperienceBar-Background'
 local NATIVE_DIVIDER_ATLAS = 'ui-hud-experiencebar-divider'
 local NATIVE_FONT = 'TextStatusBarText'
+
 -- the stock look for modes without fill art, and clients without the atlases
 local PLAIN_TEXTURE = [[Interface\TargetingFrame\UI-StatusBar]]
 
@@ -47,15 +23,41 @@ local DIVIDER_WIDTH = 3
 -- painted gaps between segments, when not using the stock divider
 local GAP_ALPHA = 0.5
 
-local NO_BONUS_COLOR = CreateColor(0, 0, 0, 0)
+local TRANSPARENT_COLOR = CreateColor(0, 0, 0, 0)
 
 local SMOOTH_FILL = Enum.StatusBarInterpolation.ExponentialEaseOut
 local INSTANT_FILL = Enum.StatusBarInterpolation.Immediate
 
-local DEFAULT_DISPLAY = { border = true }
-
 local function atlasExists(atlas)
-	return atlas ~= nil and C_Texture.GetAtlasInfo(atlas) ~= nil
+	return atlas and C_Texture.GetAtlasInfo(atlas)
+end
+
+local function createSegment(parent)
+	local segment = CreateFrame('Frame', nil, parent)
+
+	local bg = segment:CreateTexture(nil, 'ARTWORK')
+	bg:SetAllPoints(segment)
+	segment.bg = bg
+
+	local bonus = CreateFrame('StatusBar', nil, segment)
+	bonus:SetMinMaxValues(0, 100)
+	bonus:SetValue(0)
+	bonus:EnableMouse(false)
+	bonus:SetAllPoints(segment)
+	segment.bonus = bonus
+
+	local value = CreateFrame('StatusBar', nil, bonus)
+	value:SetMinMaxValues(0, 100)
+	value:SetValue(0)
+	value:EnableMouse(false)
+	value:SetAllPoints(bonus)
+	segment.value = value
+
+	return segment
+end
+
+local function createDivider(parent)
+	return parent:CreateTexture(nil, 'ARTWORK')
 end
 
 --------------------------------------------------------------------------------
@@ -71,7 +73,7 @@ function ProgressBar:GetDefaults()
 		numButtons = 20,
 		padW = 2,
 		padH = 2,
-		display = CopyTable(DEFAULT_DISPLAY),
+		display = { border = true },
 		displayLayer = 'BACKGROUND',
 		textFormat = 'valueMaxPercent',
 		showLabel = true,
@@ -107,6 +109,7 @@ function ProgressBar:New(id, modes)
 	bar.lastShowText = nil
 	bar.displayConditions = nil
 	bar.tipValue, bar.tipMax, bar.tipBonus = nil, nil, nil
+	bar:Layout()
 	bar:Refresh()
 
 	return bar
@@ -116,49 +119,46 @@ function ProgressBar:OnCreate()
 	ProgressBar.proto.OnCreate(self)
 
 	self.textOptions = {}
+	self.segments = {}
+	self.dividers = {}
+	self.refreshTooltip = function() self:RefreshTooltip(); end
 
-	-- made once, so providers can hand it to late loading data
-	self.refreshTooltip = function()
-		self:RefreshTooltip()
-	end
 
-	-- bonus sits under value, so rested xp shows past the current xp
-	local bonusBar = CreateFrame('StatusBar', nil, self)
-	bonusBar:SetFillStyle(Enum.StatusBarFillStyle.StandardNoRangeFill)
-	self.bonusBar = bonusBar
-
-	local valueBar = CreateFrame('StatusBar', nil, self)
-	valueBar:SetFillStyle(Enum.StatusBarFillStyle.StandardNoRangeFill)
-	valueBar:SetAllPoints(bonusBar)
-	self.valueBar = valueBar
-
-	local background = self:CreateTexture(nil, 'BACKGROUND')
-	background:SetAllPoints(bonusBar)
-	self.background = background
+	local bg = self:CreateTexture(nil, 'BACKGROUND')
+	bg:SetColorTexture(0, 0, 0, 1)
+	bg:SetAllPoints(self)
+	self.bg = bg
 
 	-- clicks, dividers, border and text all live on one frame over the fill
 	local overlay = CreateFrame('Button', nil, self)
 	overlay:SetAllPoints(self)
 	overlay:RegisterForClicks('AnyUp')
-	overlay:SetScript('OnClick', function()
-		self:NextMode()
-	end)
+
+	overlay:SetScript('OnClick', function() self:NextMode(); end)
+
 	overlay:SetScript('OnEnter', function()
 		self:UpdateTextShown(true)
 		if self:ShowingTooltip() then
 			self:ShowTooltip()
 		end
 	end)
+
 	overlay:SetScript('OnLeave', function()
 		self:UpdateTextShown(false)
 		self:HideTooltip()
 	end)
+
+	overlay:SetFrameLevel(7)
 	self.overlay = overlay
 
-	self.dividers = CreateTexturePool(overlay, 'ARTWORK')
+	local text = overlay:CreateFontString(nil, 'OVERLAY', NATIVE_FONT)
+	text:SetDrawLayer('OVERLAY', 1)
+	text:SetPoint('CENTER')
+	self.text = text
 
 	local border = overlay:CreateTexture(nil, 'OVERLAY')
 	local borderInfo = C_Texture.GetAtlasInfo(NATIVE_BORDER_ATLAS)
+
 	if borderInfo then
 		-- caps as wide as the art is tall, and a middle row left for the sides
 		local capWidth = borderInfo.height
@@ -169,12 +169,8 @@ function ProgressBar:OnCreate()
 		border:SetTextureSliceMode(Enum.UITextureSliceMode.Stretched)
 		self.borderCapWidth = capWidth
 	end
-	self.border = border
 
-	local text = overlay:CreateFontString(nil, 'OVERLAY', NATIVE_FONT)
-	text:SetDrawLayer('OVERLAY', 1)
-	text:SetPoint('CENTER', 0, 1)
-	self.text = text
+	self.border = border
 end
 
 -- runs before New hands over the modes, so nothing here can touch the provider
@@ -190,16 +186,6 @@ end
 -- the border depends on whether the bar spans the screen
 function ProgressBar:OnSetScale()
 	self:UpdateBorder()
-end
-
--- keep the fill and overlay above the bar, wherever its level is set
-function ProgressBar:UpdateDisplayLevel()
-	ProgressBar.proto.UpdateDisplayLevel(self)
-
-	local level = self:GetFrameLevel()
-	self.bonusBar:SetFrameLevel(level + 1)
-	self.valueBar:SetFrameLevel(level + 2)
-	self.overlay:SetFrameLevel(level + 3)
 end
 
 function ProgressBar:CanClickThrough()
@@ -223,7 +209,6 @@ end
 function ProgressBar:OnMediaRegistered(mediaType, key)
 	if mediaType == LSM.MediaType.STATUSBAR and key == self.sets.texture then
 		self:UpdateTextures()
-		self:UpdateDividers()
 	elseif mediaType == LSM.MediaType.FONT and key == self.sets.font then
 		self:UpdateFont()
 	end
@@ -386,13 +371,14 @@ function ProgressBar:Update()
 	local value, max, bonus = self.provider:GetValues()
 	value, max, bonus = tonumber(value) or 0, tonumber(max) or 0, tonumber(bonus) or 0
 
-	self:UpdateFill(value, max, bonus)
-	self:UpdateColors()
+	self:UpdateValues(value, max, bonus)
 	self:UpdateText(value, max, bonus)
+	self:UpdateColors()
 
-	-- a tooltip that's open only needs redoing when its numbers moved
 	if value ~= self.tipValue or max ~= self.tipMax or bonus ~= self.tipBonus then
-		self.tipValue, self.tipMax, self.tipBonus = value, max, bonus
+		self.tipValue = value
+		self.tipMax = max
+		self.tipBonus = bonus
 		self:RefreshTooltip()
 	end
 end
@@ -400,16 +386,25 @@ end
 ---@param value number
 ---@param max number
 ---@param bonus number
-function ProgressBar:UpdateFill(value, max, bonus)
-	-- a new max (level up, new mode) snaps, so the bar doesn't drain backwards
-	local interpolation = (self:UsesSmoothFill() and max == self.shownMax) and SMOOTH_FILL or INSTANT_FILL
-	self.shownMax = max
+function ProgressBar:UpdateValues(value, max, bonus)
+	value = math.min(value, max)
+	bonus = bonus > 0 and math.min(value + bonus, max) or bonus
 
-	self.valueBar:SetMinMaxValues(0, max)
-	self.valueBar:SetValue(value, interpolation)
+	local segmentValue = max / self:GetSegmentCount()
+    for i = 1, self:GetSegmentCount() do
+        local segment = self.segments[i]
+        if not segment then
+            segment = createSegment(self)
+            self.segments[i] = segment
+        end
 
-	self.bonusBar:SetMinMaxValues(0, max)
-	self.bonusBar:SetValue(bonus > 0 and math.min(value + bonus, max) or 0, interpolation)
+		local start = (i - 1) * segmentValue
+		local valuePercent = Round(100 * Clamp(value - start, 0, segmentValue) / segmentValue)
+		local bonusPercent = Round(100 * Clamp(bonus - start, 0, segmentValue) / segmentValue)
+
+		segment.value:SetValue(valuePercent)
+		segment.bonus:SetValue(bonusPercent)
+	end
 end
 
 function ProgressBar:SetSmoothFill(enable)
@@ -431,6 +426,7 @@ function ProgressBar:GetTooltipAnchor()
 	if y and y * self:GetEffectiveScale() > UIParent:GetHeight() * UIParent:GetEffectiveScale() / 2 then
 		return 'ANCHOR_BOTTOM'
 	end
+
 	return 'ANCHOR_TOP'
 end
 
@@ -471,21 +467,65 @@ end
 --------------------------------------------------------------------------------
 
 function ProgressBar:Layout()
+	local width, height = self:GetDesiredWidth(), self:GetDesiredHeight()
 	local padW, padH = self:GetPadding()
-	local width = self:GetDesiredWidth()
+	local segCount = math.max(self:GetSegmentCount(), 1)
+	local divCount = math.max(segCount - 1, 0)
 
-	self:TrySetSize(width + 2 * padW, self:GetDesiredHeight() + 2 * padH)
+	local divW = self:GetDividerWidth()
+	local divH = height
 
-	self.bonusBar:ClearAllPoints()
-	self.bonusBar:SetPoint('TOPLEFT', padW, -padH)
-	self.bonusBar:SetPoint('BOTTOMRIGHT', -padW, padH)
+	local segW = (width - (divCount * divW)) / segCount
+	local segH = height
 
-	-- long text is cut off instead of spilling out of short bars
-	self.text:SetWidth(width)
-	self.text:SetWordWrap(false)
+	local created = false
 
-	self:UpdateDividers()
+	for i = 1, segCount do
+		local segment = self.segments[i]
+		if not segment then
+			segment = createSegment(self)
+			self.segments[i] = segment
+			created = true
+		end
+
+		segment:SetSize(segW, segH)
+		segment:SetPoint('LEFT', (i - 1) * (segW + divW) + padW, 0)
+		segment:Show()
+	end
+
+	for i = segCount + 1, #self.segments do
+		self.segments[i]:Hide()
+	end
+
+	for i = 1, divCount do
+		local divider = self.dividers[i]
+		if not divider then
+			divider = createDivider(self)
+			self.dividers[i] = divider
+			created = true
+		end
+
+		divider:SetSize(divW, divH)
+		divider:SetPoint('LEFT', i * segW + (i - 1) * divW + padW, 0)
+		divider:Show()
+	end
+
+	for i = divCount + 1, #self.dividers do
+		self.dividers[i]:Hide()
+	end
+
+	local text = self.text
+	text:SetWidth(width)
+	text:SetWordWrap(false)
+
 	self:UpdateBorder()
+
+	self:TrySetSize(width + padW * 2, height + padH * 2)
+
+	if created then
+		self:UpdateTextures()
+		self:UpdateColors()
+	end
 end
 
 function ProgressBar:SetDesiredWidth(width)
@@ -506,38 +546,24 @@ function ProgressBar:GetDesiredHeight()
 	return self.sets.height
 end
 
--- segments are only dividers painted over the one fill
-function ProgressBar:UpdateDividers()
-	self.dividers:ReleaseAll()
-
-	local count = self:GetSegmentCount()
-	local segmentWidth = self:GetDesiredWidth() / count
-	local useAtlas = not self:HasTexture() and atlasExists(NATIVE_DIVIDER_ATLAS)
-
-	for i = 1, count - 1 do
-		local divider = self.dividers:Acquire()
-
-		if useAtlas then
-			divider:SetAtlas(NATIVE_DIVIDER_ATLAS)
-		else
-			divider:SetColorTexture(0, 0, 0, GAP_ALPHA)
-		end
-
-		divider:SetWidth(DIVIDER_WIDTH)
-		divider:SetPoint('TOP', self.bonusBar, 'TOPLEFT', i * segmentWidth, 0)
-		divider:SetPoint('BOTTOM', self.bonusBar, 'BOTTOMLEFT', i * segmentWidth, 0)
-		divider:Show()
-	end
-end
-
 -- numButtons is the old ButtonBar key, kept so settings carry over
 function ProgressBar:SetSegmentCount(count)
 	self.sets.numButtons = count
-	self:UpdateDividers()
+	self:Layout()
+	self:Update()
 end
 
 function ProgressBar:GetSegmentCount()
 	return math.max(1, self.sets.numButtons)
+end
+
+function ProgressBar:SetDividerWidth(width)
+    self.sets.spacing = math.max(tonumber(width) or 0, 0)
+    self:Layout()
+end
+
+function ProgressBar:GetDividerWidth()
+    return math.max(self.sets.spacing or 0, 0)
 end
 
 function ProgressBar:HasBorderArt()
@@ -555,12 +581,12 @@ function ProgressBar:UpdateBorder()
 	-- a bar as wide as the screen pushes the caps offscreen, so only the edges show
 	local edge = BORDER_OUTSET
 	if self:GetWidth() * self:GetEffectiveScale() >= UIParent:GetWidth() * UIParent:GetEffectiveScale() then
-		edge = self:GetPadding() + capWidth + BORDER_OUTSET
+		edge = capWidth + BORDER_OUTSET
 	end
 
 	border:ClearAllPoints()
-	border:SetPoint('TOPLEFT', self.bonusBar, -edge, BORDER_OUTSET)
-	border:SetPoint('BOTTOMRIGHT', self.bonusBar, edge, -BORDER_OUTSET)
+	border:SetPoint('TOPLEFT', -edge, BORDER_OUTSET)
+	border:SetPoint('BOTTOMRIGHT', edge, -BORDER_OUTSET)
 	border:Show()
 end
 
@@ -583,6 +609,9 @@ end
 ---@return string? bonusAtlas
 function ProgressBar:GetNativeAtlases()
 	local provider = self.provider
+	if not provider then
+		return
+	end
 
 	if self:HasTexture() or not provider.GetNativeTextures or provider:IsRecolored() then
 		return
@@ -598,60 +627,69 @@ end
 
 -- mode and texture changes only. per event coloring is UpdateColors
 function ProgressBar:UpdateTextures()
-	if not self.provider then
+	local provider = self.provider
+	if not provider then
 		return
 	end
 
 	local valueAtlas, bonusAtlas = self:GetNativeAtlases()
 
-	self.valueColor = nil
-	self.bonusColor = nil
-
-	-- the stock art is already colored
-	self.tinted = not valueAtlas
-
 	if valueAtlas then
-		self.valueBar:SetStatusBarTexture(valueAtlas)
-		self.valueBar:SetStatusBarColor(1, 1, 1, 1)
-		self.bonusBar:SetStatusBarTexture(bonusAtlas)
-		self.bonusBar:SetStatusBarColor(1, 1, 1, 1)
-		self.background:SetAtlas(NATIVE_BACKGROUND_ATLAS)
-		self.background:SetVertexColor(1, 1, 1, 1)
-		return
+		for _, segment in pairs(self.segments) do
+			segment.value:SetStatusBarTexture(valueAtlas)
+			segment.value:SetStatusBarColor(1, 1, 1, 1)
+
+			segment.bonus:SetStatusBarTexture(bonusAtlas)
+			segment.bonus:SetStatusBarColor(1, 1, 1, 1)
+
+			segment.bg:SetAtlas(NATIVE_BACKGROUND_ATLAS)
+			segment.bg:SetVertexColor(1, 1, 1, 1)
+		end
+
+		for _, divider in pairs(self.dividers) do
+			divider:SetAtlas(NATIVE_DIVIDER_ATLAS)
+		end
+	else
+		local texture = self:HasTexture() and LSM:Fetch('statusbar', self:GetTextureID()) or PLAIN_TEXTURE
+
+		for _, segment in pairs(self.segments) do
+			segment.value:SetStatusBarTexture(texture)
+			segment.bonus:SetStatusBarTexture(texture)
+			segment.bg:SetTexture(texture)
+		end
+
+		for _, divider in pairs(self.dividers) do
+			divider:SetColorTexture(0, 0, 0, 0)
+		end
+
+		self:UpdateColors()
 	end
-
-	local texture = self:HasTexture() and LSM:Fetch('statusbar', self:GetTextureID()) or PLAIN_TEXTURE
-
-	self.valueBar:SetStatusBarTexture(texture)
-	self.bonusBar:SetStatusBarTexture(texture)
-	self.background:SetTexture(texture)
-	-- the atlas leaves its own coords behind
-	self.background:SetTexCoord(0, 1, 0, 1)
-	self:UpdateColors()
 end
 
--- providers hand out colors on every update, but they almost never change
 function ProgressBar:UpdateColors()
-	if not self.tinted then
+	local provider = self.provider
+	if not provider then
 		return
 	end
 
-	local provider = self.provider
+	if not self:GetNativeAtlases() then
+		local valueColor = provider:GetColor()
 
-	local valueColor = provider:GetColor()
-	if valueColor ~= self.valueColor then
-		self.valueColor = valueColor
+		local bonusColor
+		if provider and provider.GetBonusColor then
+			bonusColor = provider:GetBonusColor()
+		else
+			bonusColor = TRANSPARENT_COLOR
+		end
 
 		local r, g, b, a = valueColor:GetRGBA()
-		self.valueBar:SetStatusBarColor(r, g, b, a)
-		self.background:SetVertexColor(r / 2, g / 2, b / 2, a / 2)
-	end
+		local br, bg, bb, ba = bonusColor:GetRGBA()
 
-	-- no bonus color, no visible bonus
-	local bonusColor = provider.GetBonusColor and provider:GetBonusColor() or NO_BONUS_COLOR
-	if bonusColor ~= self.bonusColor then
-		self.bonusColor = bonusColor
-		self.bonusBar:SetStatusBarColor(bonusColor:GetRGBA())
+		for _, segment in pairs(self.segments) do
+			segment.value:SetStatusBarColor(r, g, b, a)
+			segment.bonus:SetStatusBarColor(br, bg, bb, ba)
+			segment.bg:SetVertexColor(r / 2, g / 2, b / 2, a / 2)
+		end
 	end
 end
 
@@ -660,7 +698,6 @@ end
 function ProgressBar:SetTextureID(textureID)
 	self.sets.texture = textureID or nil
 	self:UpdateTextures()
-	self:UpdateDividers()
 end
 
 function ProgressBar:GetTextureID()
