@@ -172,7 +172,6 @@ function Addon:Load()
         end
     end
 
-    self.Frame:ForEach('RestoreAnchor')
     self:GetModule('ButtonThemer'):Reskin()
 
     self.callbacks:Fire('LAYOUT_LOADED')

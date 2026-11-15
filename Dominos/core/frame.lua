@@ -86,6 +86,9 @@ function Frame:New(id)
     FlyPaper.AddFrame(AddonName, id, frame)
     active[id] = frame
 
+    -- bars saved as anchored to this one, that loaded before it
+    frame:ReattachAnchored()
+
     return frame
 end
 
@@ -145,6 +148,9 @@ function Frame:Free(deleteSettings)
     end
 
     FlyPaper.RemoveFrame(AddonName, self.id, self)
+
+    -- bars anchored to this one would follow a frame with no position
+    self:DetachAnchored()
 
     self:ClearAllPoints()
     self:SetUserPlaced(false)
@@ -906,6 +912,25 @@ function Frame:IfAnchored(method, ...)
     end
 
     return false
+end
+
+-- keeps them where they are on screen. their saved anchor stays, so they
+-- reattach if this frame comes back
+function Frame:DetachAnchored()
+    for _, frame in pairs(active) do
+        if frame:IsAnchoredToFrame(self) then
+            frame:SaveRelativePosition()
+            frame:RestorePosition()
+        end
+    end
+end
+
+function Frame:ReattachAnchored()
+    for _, frame in pairs(active) do
+        if frame ~= self and frame:GetSavedAnchor() == self and not frame:IsAnchoredToFrame(self) then
+            frame:RestoreAnchor()
+        end
+    end
 end
 
 function Frame:IsAnchored()
