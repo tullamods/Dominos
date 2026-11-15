@@ -49,6 +49,7 @@ local TEXT_FORMAT_PARTS = {
 ---@field GetBonusColor? fun(self: DataProvider): ColorMixin
 ---@field GetNativeTextures? fun(self: DataProvider): string, string?  value and bonus atlas
 ---@field colorKeys? ColorKey[]
+---@field tintsStockArt? boolean desaturate the stock art and tint it with GetColor
 local DataProvider = {}
 local inheritDataProvider = { __index = DataProvider }
 

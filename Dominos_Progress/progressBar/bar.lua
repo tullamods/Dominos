@@ -669,7 +669,7 @@ function ProgressBar:UpdateTextures()
 
 	-- stock art in other colors is desaturated, then tinted like the plain bar
 	local provider = self.provider
-	self.tintsFill = not valueAtlas or provider:IsRecolored()
+	self.tintsFill = not valueAtlas or provider:IsRecolored() or provider.tintsStockArt
 	self:InvalidateShownColors()
 
 	if valueAtlas then

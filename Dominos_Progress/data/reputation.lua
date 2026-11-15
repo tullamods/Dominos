@@ -1,4 +1,5 @@
 local _, Addon = ...
+local Dominos = LibStub("AceAddon-3.0"):GetAddon("Dominos")
 local TextTemplates = Addon.TextTemplates
 
 --------------------------------------------------------------------------------
@@ -58,7 +59,10 @@ if not GetWatchedFactionInfo then
 end
 
 ---@class ReputationProvider : DataProvider
-local Reputation = {}
+local Reputation = {
+	-- the faction art is too bright on Forever, so it's tinted by standing there
+	tintsStockArt = Dominos:IsGameType("forever")
+}
 
 --------------------------------------------------------------------------------
 -- Values
