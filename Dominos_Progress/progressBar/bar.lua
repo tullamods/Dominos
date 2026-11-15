@@ -153,7 +153,7 @@ function ProgressBar:OnCreate()
 
 	local text = overlay:CreateFontString(nil, 'OVERLAY', NATIVE_FONT)
 	text:SetDrawLayer('OVERLAY', 1)
-	text:SetPoint('CENTER')
+	text:SetPoint('CENTER', 0, 1)
 	self.text = text
 
 	local border = overlay:CreateTexture(nil, 'OVERLAY')
