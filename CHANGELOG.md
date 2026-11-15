@@ -6,6 +6,20 @@
 > settings before upgrading just in case. You also need to restart WoW, 
 > otherwise you'll see a Bindings_Mainline.xml not found error.
 
+## 12.0.2
+
+### Progress Bars
+
+* Fixed issues with settings not persisting, and fixed a typo in the migration code that would have applied the wrong texture.
+* Dropped the progress bar border option from non Forever clients (it only renders well in Forever).
+* Added more text format options
+* Adjusted divider rendering to snap to pixels
+
+### Other
+
+* Fixed a typo in the totem bar that would have prevented Show Totemic Recall from appearing
+* Resolved some bugs when swapping between bar counts with sticky bars enabled.
+
 ## 12.0.1
 
 * Reverted the Progress Bar design to use a multi status bar approach, instead 
