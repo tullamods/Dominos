@@ -78,14 +78,14 @@ ProgressBar.contextMenu = Dominos.Frame.contextMenu:Extend {
 				get = 'UsesAutoHide',
 				set = 'SetAutoHide'
 			},
-			{
-				type = 'check',
-                name = 'SmoothFill',
-				tooltip = 'SmoothFillTip',
-				locale = 'Dominos-Progress',
-				get = 'UsesSmoothFill',
-				set = 'SetSmoothFill'
-			}
+			-- {
+			-- 	type = 'check',
+            --     name = 'SmoothFill',
+			-- 	tooltip = 'SmoothFillTip',
+			-- 	locale = 'Dominos-Progress',
+			-- 	get = 'UsesSmoothFill',
+			-- 	set = 'SetSmoothFill'
+			-- }
 		}
 	},
 	{

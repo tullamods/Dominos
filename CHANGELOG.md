@@ -3,7 +3,13 @@
 > **Dominos 12 is a one way settings upgrade.**
 >
 > While I've tested the settings migration, you may still want to back up your
-> settings before upgrading just in case.
+> settings before upgrading just in case. You also need to restart WoW, 
+> otherwise you'll see a Bindings_Mainline.xml not found error.
+
+## 12.0.1
+
+* Reverted the Progress Bar design to use a multi status bar approach, instead 
+  of one big bar.
 
 ## 12.0.0
 
