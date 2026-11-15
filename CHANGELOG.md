@@ -6,6 +6,11 @@
 > settings before upgrading just in case. You also need to restart WoW, 
 > otherwise you'll see a Bindings_Mainline.xml not found error.
 
+## 12.0.3
+
+* Fixed some minor consistency issues with empty button displays on action bars
+  where we're reusing Blizzard action slots.
+
 ## 12.0.2
 
 ### Progress Bars
