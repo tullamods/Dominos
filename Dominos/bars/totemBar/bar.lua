@@ -105,12 +105,12 @@ end
 function TotemBar:GetTotemSet()
     local totemSet = self.sets.totemSet or 1
 
-    if SpellButton.IsSpellKnown(TOTEM_MULTI_CAST_SUMMON_SPELLS[totemSet]) then
+    if SpellButton:IsSpellKnown(TOTEM_MULTI_CAST_SUMMON_SPELLS[totemSet]) then
         return totemSet
     end
 
     for i, spellId in ipairs(TOTEM_MULTI_CAST_SUMMON_SPELLS) do
-        if SpellButton.IsSpellKnown(spellId) then
+        if SpellButton:IsSpellKnown(spellId) then
             return i
         end
     end
@@ -174,7 +174,7 @@ end
 -- newly attached buttons and updates the spell buttons
 function TotemBar:PushTotemSetState()
     for index, spellId in ipairs(TOTEM_MULTI_CAST_SUMMON_SPELLS) do
-        self:SetAttribute('totemsetknown' .. index, SpellButton.IsSpellKnown(spellId) or false)
+        self:SetAttribute('totemsetknown' .. index, SpellButton:IsSpellKnown(spellId) or false)
     end
 
     self:SetAttribute('state-totemset', self:GetTotemSet())
@@ -232,8 +232,8 @@ end
 
 -- returns true if the order changed
 function TotemBar:UpdateButtonOrder()
-    local hasSummon = SpellButton.IsSpellKnown(TOTEM_MULTI_CAST_SUMMON_SPELLS[self:GetTotemSet()])
-    local hasRecall = self:ShowingRecall() and SpellButton.IsSpellKnown(TOTEM_MULTI_CAST_RECALL_SPELLS[1])
+    local hasSummon = SpellButton:IsSpellKnown(TOTEM_MULTI_CAST_SUMMON_SPELLS[self:GetTotemSet()])
+    local hasRecall = self:ShowingRecall() and SpellButton:IsSpellKnown(TOTEM_MULTI_CAST_RECALL_SPELLS[1])
 
     if self.buttonOrder and hasSummon == self.hasSummon and hasRecall == self.hasRecall then
         return false
