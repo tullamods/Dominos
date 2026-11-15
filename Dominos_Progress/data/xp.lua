@@ -1,5 +1,7 @@
 local _, Addon = ...
 
+local getMaxPlayerLevel = GetMaxLevelForPlayerExpansion or GetMaxPlayerLevel
+
 ---@class XPProvider : DataProvider
 local Experience = {
 	colorKeys = { "xp", "xp_bonus" }
@@ -67,7 +69,6 @@ function Experience:GetBonusColor()
 	return Addon.Config:GetColor("xp_bonus")
 end
 
--- stock art for the value and rested bonus bars
 function Experience:GetNativeTextures()
 	return "UI-HUD-ExperienceBar-Fill-Experience", "UI-HUD-ExperienceBar-Fill-Rested"
 end
@@ -77,7 +78,7 @@ function Experience:IsActive()
 	if IsPlayerAtEffectiveMaxLevel and IsPlayerAtEffectiveMaxLevel() then
 		return false
 	end
-	if UnitLevel("player") >= Addon.GetMaxPlayerLevel() then
+	if UnitLevel("player") >= getMaxPlayerLevel() then
 		return false
 	end
 	return not IsXPUserDisabled()

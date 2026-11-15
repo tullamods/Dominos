@@ -7,6 +7,21 @@ local TextTemplates = Addon.TextTemplates
 
 local PARAGON_FACTION_COLOR_INDEX = #FACTION_BAR_COLORS
 
+local FRIENDSHIP_REACTION = 5
+
+local RENOWN_ATLAS = "UI-HUD-ExperienceBar-Fill-Reputation-Faction-Blue"
+
+local REACTION_ATLASES = {
+	"UI-HUD-ExperienceBar-Fill-Reputation-Faction-Red",
+	"UI-HUD-ExperienceBar-Fill-Reputation-Faction-Red",
+	"UI-HUD-ExperienceBar-Fill-Reputation-Faction-Orange",
+	"UI-HUD-ExperienceBar-Fill-Reputation-Faction-Yellow",
+	"UI-HUD-ExperienceBar-Fill-Reputation-Faction-Green",
+	"UI-HUD-ExperienceBar-Fill-Reputation-Faction-Green",
+	"UI-HUD-ExperienceBar-Fill-Reputation-Faction-Green",
+	"UI-HUD-ExperienceBar-Fill-Reputation-Faction-Green",
+}
+
 local IsFactionParagon = C_Reputation and (
 	C_Reputation.IsFactionParagonForCurrentPlayer
 	or C_Reputation.IsFactionParagon
@@ -118,11 +133,17 @@ function Reputation:GetValues()
 
 	-- paragon first, same order as the color and tooltip. data can still be loading
 	if IsFactionParagon(factionID) then
-		local currentValue, threshold = C_Reputation.GetFactionParagonInfo(factionID)
+		local currentValue, threshold, _, hasRewardPending = C_Reputation.GetFactionParagonInfo(factionID)
 		if not (currentValue and threshold and threshold > 0) then
 			return 0, 1
 		end
-		return currentValue % threshold, threshold
+
+		-- a reward waiting shows a full bar, like the stock one
+		local value = currentValue % threshold
+		if hasRewardPending then
+			value = value + threshold
+		end
+		return value, threshold
 	elseif IsMajorFaction(factionID) then
 		local info = C_MajorFactions.GetMajorFactionData(factionID)
 		if not info then
@@ -143,6 +164,20 @@ function Reputation:GetValues()
 	end
 
 	return value - min, max - min
+end
+
+function Reputation:GetNativeTextures()
+	local name, reaction, _, _, _, factionID = GetWatchedFactionInfo()
+
+	if not name then
+		return REACTION_ATLASES[1]
+	elseif IsMajorFaction(factionID) then
+		return RENOWN_ATLAS
+	elseif getFriendship(factionID) then
+		return REACTION_ATLASES[FRIENDSHIP_REACTION]
+	end
+
+	return REACTION_ATLASES[reaction] or REACTION_ATLASES[1]
 end
 
 function Reputation:GetColor()

@@ -1,6 +1,6 @@
 local _, Addon = ...
 local Dominos = LibStub("AceAddon-3.0"):GetAddon("Dominos")
-local ConfigVersion = 3
+local ConfigVersion = 4
 
 ---@class ProgressConfig
 ---@field db table
@@ -40,46 +40,6 @@ function Config:Init()
 	end
 
 	self.db = db
-end
-
---------------------------------------------------------------------------------
--- Upgrades
---------------------------------------------------------------------------------
-
-function Config:Upgrade(db, oldVersion)
-	if oldVersion < 3 then
-		self:UpgradeColors(db)
-	end
-end
-
--- colors used to be saved as {r, g, b, a}
-function Config:UpgradeColors(db)
-	local profiles = db and db.sv and db.sv.profiles
-	if type(profiles) ~= "table" then
-		return
-	end
-
-	local oldDefaultColors = {
-		xp = { 0.58, 0, 0.55, 1 },
-		xp_bonus = { 0, 0.39, 0.88 },
-		honor = { 1.0, 0.24, 0, 1 },
-		artifact = { 1, 0.75, 0.45, 0.81 },
-		azerite = { 0.601, 0.8, 0.901, 1 },
-		gold = { 1, .8431, 0, 1 },
-		gold_realm = { 1, .9451, .7294, 1 }
-	}
-
-	for _, profile in pairs(profiles) do
-		if next(profile.colors) then
-			for key, color in pairs(profile.colors) do
-				if type(color) == "table" then
-					local c = MergeTable(color, oldDefaultColors[key])
-
-					profile.colors[key] = Dominos:GetHexFromColor(c[1], c[2], c[3], c[4])
-				end
-			end
-		end
-	end
 end
 
 --------------------------------------------------------------------------------

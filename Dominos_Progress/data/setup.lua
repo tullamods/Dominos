@@ -1,10 +1,35 @@
 local _, Addon = ...
 
----@alias TextFormat 'value'|'valueMax'|'valueMaxPercent'|'valueMaxRemaining'|'percent'|'remaining'
+---@alias TextFormat 'value'|'valueRemaining'|'valuePercent'|'valueRemainingPercent'|'valueMax'|'valueMaxRemaining'|'valueMaxPercent'|'valueMaxRemainingPercent'|'percent'|'remaining'|'remainingPercent'
 
--- the menu lists them in this order
 ---@type TextFormat[]
-local TEXT_FORMATS = { 'value', 'valueMax', 'valueMaxPercent', 'valueMaxRemaining', 'percent', 'remaining' }
+local TEXT_FORMATS = {
+	'value',
+	'valueRemaining',
+	'valuePercent',
+	'valueRemainingPercent',
+	'valueMax',
+	'valueMaxRemaining',
+	'valueMaxPercent',
+	'valueMaxRemainingPercent',
+	'percent',
+	'remaining',
+	'remainingPercent',
+}
+
+local TEXT_FORMAT_PARTS = {
+	value = { value = true },
+	valueRemaining = { value = true, remaining = true },
+	valuePercent = { value = true, percent = true },
+	valueRemainingPercent = { value = true, remaining = true, percent = true },
+	valueMax = { value = true, max = true },
+	valueMaxRemaining = { value = true, max = true, remaining = true },
+	valueMaxPercent = { value = true, max = true, percent = true },
+	valueMaxRemainingPercent = { value = true, max = true, remaining = true, percent = true },
+	percent = { percent = true },
+	remaining = { remaining = true },
+	remainingPercent = { remaining = true, percent = true },
+}
 
 ---@alias NumberFormatter fun(number: number): string
 
@@ -27,7 +52,7 @@ local TEXT_FORMATS = { 'value', 'valueMax', 'valueMaxPercent', 'valueMaxRemainin
 local DataProvider = {}
 local inheritDataProvider = { __index = DataProvider }
 
--- a custom color means plain tinted art. providers with GetNativeTextures list
+-- a custom color means desaturated, tinted art. providers with GetNativeTextures list
 -- the colors the stock art would use in colorKeys
 ---@return boolean
 function DataProvider:IsRecolored()
@@ -56,6 +81,7 @@ local TextTemplates = {
 	label = '%s: %s',
 	progress = '%s / %s',
 	detail = '%s (%s)',
+	separator = ', ',
 	remaining = '-%s',
 	bonus = '(+%s)',
 	suffix = '(%s)'
@@ -101,22 +127,45 @@ end
 ---@param formatNumber NumberFormatter
 ---@return string?
 function DataProvider:FormatProgress(textFormat, value, max, formatNumber)
-	if textFormat == 'percent' then
-		return self:FormatPercent(value, max)
-	elseif textFormat == 'remaining' then
-		return self:FormatRemaining(max - value, formatNumber)
+	local parts = TEXT_FORMAT_PARTS[textFormat] or TEXT_FORMAT_PARTS.valueMax
+	local text
+
+	if parts.value then
+		text = self:FormatValue(value, formatNumber)
+
+		if parts.max and max > 0 then
+			text = TextTemplates.progress:format(text, self:FormatValue(max, formatNumber))
+		end
 	end
 
-	local text = self:FormatValue(value, formatNumber)
-	if textFormat == 'value' or max <= 0 then
-		return text
+	-- 1 / 5 (-4, 20.0%)
+	local detail
+
+	-- nothing left once it's full
+	if parts.remaining and value < max then
+		local remaining = self:FormatRemaining(max - value, formatNumber)
+
+		if text then
+			detail = remaining
+		else
+			text = remaining
+		end
 	end
 
-	text = TextTemplates.progress:format(text, self:FormatValue(max, formatNumber))
-	if textFormat == 'valueMaxPercent' then
-		return TextTemplates.detail:format(text, self:FormatPercent(value, max))
-	elseif textFormat == 'valueMaxRemaining' and value < max then
-		return join(text, self:FormatRemaining(max - value, formatNumber))
+	local percent = parts.percent and self:FormatPercent(value, max)
+
+	if percent then
+		if not text then
+			text = percent
+		elseif detail then
+			detail = detail .. TextTemplates.separator .. percent
+		else
+			detail = percent
+		end
+	end
+
+	if detail then
+		return TextTemplates.detail:format(text, detail)
 	end
 	return text
 end
@@ -196,12 +245,6 @@ end
 Addon.TextTemplates = TextTemplates
 
 Addon.textFormats = TEXT_FORMATS
-
--- the retail name for it came later than the classic one
----@return number
-function Addon.GetMaxPlayerLevel()
-	return (GetMaxLevelForPlayerExpansion or GetMaxPlayerLevel)()
-end
 
 -- so providers can call the base methods
 Addon.DataProvider = DataProvider
