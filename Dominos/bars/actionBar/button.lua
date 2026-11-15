@@ -57,15 +57,7 @@ function ActionButton:OnCreate(id)
 
         if self:GetAttribute('action') ~= id then
             self:SetAttribute('action', id)
-
-            local show = (self:GetAttribute("showgrid") > 0 or HasAction(id))
-                and not self:GetAttribute("statehidden")
-
-            if show then
-                self:Show(true)
-            else
-                self:Hide(true)
-            end
+            self:RunAttribute("UpdateShown")
         end
     ]])
 
@@ -97,15 +89,19 @@ function ActionButton:OnCreate(id)
 
         if (prevValue ~= value) or force then
             self:SetAttribute("showgrid", value)
+            self:RunAttribute("UpdateShown")
+        end
+    ]])
 
-            local show = (value > 0 or HasAction(self:GetAttribute("action")))
-                and not self:GetAttribute("statehidden")
+    -- show if there's an action or the grid is up
+    self:SetAttributeNoHandler("UpdateShown", [[
+        local show = (self:GetAttribute("showgrid") > 0 or HasAction(self:GetAttribute("action")))
+            and not self:GetAttribute("statehidden")
 
-            if show then
-                self:Show(true)
-            else
-                self:Hide(true)
-            end
+        if show then
+            self:Show(true)
+        else
+            self:Hide(true)
         end
     ]])
 

@@ -8,11 +8,9 @@ local ACTION_BUTTON_NAME_TEMPLATE = AddonName .. "ActionButton%d"
 -- State
 --------------------------------------------------------------------------------
 
--- global showgrid event reasons
+-- global showgrid event reasons. Blizzard's 1 and 4 get filtered out
 ActionButtons.ShowGridReasons = {
-    -- CVAR = 1,
     GAME_EVENT = 2,
-    SPELLBOOK_SHOWN = 4,
 
     KEYBOUND_EVENT = 16,
     SHOW_EMPTY_BUTTONS_PER_BAR = 32
@@ -76,18 +74,14 @@ function ActionButtons:Initialize()
 
     -- showgrid hack:
     -- monitor ActionButton1's attribute changes to its showgrid attribute.
-    -- When it changes, update the controller's show grid attribute for any of
-    -- of the reasons only triggered by game events (like ACTIONBAR_SHOWGRID).
+    -- When it changes, update the controller's GAME_EVENT reason.
     -- Propagate those changes to all the buttons managed by the controller.
     -- This allows us to properly show and hide action buttons in combat
     -- when the player is attempting to drag and drop abilities
     self:WrapScript(ActionButton1, "OnAttributeChanged", [[
         if name ~= "showgrid" then return end
 
-        for reason = 2, 4, 2 do
-            local show = value % (reason * 2) >= reason
-            control:RunAttribute("SetShowGrid", show, reason)
-        end
+        control:RunAttribute("SetShowGrid", value % 4 >= 2, 2)
     ]])
 
     -- overlay glow hiding
@@ -185,8 +179,8 @@ end
 -- Action Button Construction
 --------------------------------------------------------------------------------
 
--- keep track of the current action associated with a button. also clears bit 1
--- of showgrid (Blizzard's always show buttons), since Dominos has its own
+-- keep track of the current action associated with a button. also drops
+-- showgrid reasons that aren't ours (2, 16, 32)
 local ActionButton_AttributeChanged = [[
     if name == "action" then
         local prevValue = ActionButtons[self]
@@ -194,9 +188,24 @@ local ActionButton_AttributeChanged = [[
             ActionButtons[self] = value
             control:CallMethod("OnActionChanged", self:GetName(), value, prevValue)
         end
-    elseif name == "showgrid" and type(value) == "number" and value % 2 == 1 then
-        self:SetAttribute("showgrid", value - 1)
+    elseif name == "showgrid" and type(value) == "number" then
+        local filtered = (value % 4 - value % 2) + (value % 64 - value % 16)
+
+        if filtered ~= value then
+            self:SetAttribute("showgrid", filtered)
+        end
     end
+]]
+
+-- Blizzard's bars hide buttons past their Edit Mode button count. undo that
+local ActionButton_PreHide = [[
+    if not self:IsShown() then
+        return nil, "hidden"
+    end
+]]
+
+local ActionButton_PostHide = [[
+    self:RunAttribute("UpdateShown")
 ]]
 
 -- update vis after potentially placing an action on the button
@@ -318,7 +327,11 @@ function ActionButtons:GetOrCreateActionButton(id, parent, name)
         self:WrapScript(button, "PostClick", ActionButton_PostClick)
         self:WrapScript(button, "OnReceiveDrag", ActionButton_ReceiveDragBefore, ActionButton_ReceiveDragAfter)
 
-        if not button:UsesBlizzardBindings() then
+        -- blizzard buttons need some overrides for showgrid handling
+        -- and our custom buttons need some overrides for cast on keydown handling
+        if button:UsesBlizzardBindings() then
+            self:WrapScript(button, "OnHide", ActionButton_PreHide, ActionButton_PostHide)
+        else
             self:AddCastOnKeyPressSupport(button)
         end
 
