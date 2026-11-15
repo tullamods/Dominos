@@ -51,7 +51,7 @@ ProgressBar.contextMenu = Dominos.Frame.contextMenu:Extend {
 			{
 				type = 'slider',
 				name = 'Spacing',
-				min = 0,
+				min = 1,
 				max = 32,
 				get = 'GetDividerWidth',
 				set = 'SetDividerWidth'
