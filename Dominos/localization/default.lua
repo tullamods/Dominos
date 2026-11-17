@@ -28,7 +28,7 @@ L.RollBarDisplayName = "Rolls"
 L.TalkingHeadBarDisplayName = HUD_EDIT_MODE_TALKING_HEAD_FRAME_LABEL
 L.TipRollBar = 'Displays frames for rolling on items when in a group.'
 L.TotemBarDisplayName = HUD_EDIT_MODE_TOTEM_ACTION_BAR_LABEL
-L.TotemSetHint = 'Right click to change totem set'
+L.TotemSetHint = 'Right click or scroll to change totem set'
 
 -- config and binding modes
 L.AlignmentGridSize = "Grid Density"

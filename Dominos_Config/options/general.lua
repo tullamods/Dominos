@@ -217,6 +217,19 @@ Addon:AddOptionsPanelOptions("general", {
             width = 1.5,
         },
 
+        {
+            type = "toggle",
+            name = L.SplitTotemBars,
+            hidden = not ParentAddon:GetModule('TotemBar', true),
+            get = function()
+                return ParentAddon:SplittingTotemBars()
+            end,
+            set = function(_, enable)
+                ParentAddon:SetSplitTotemBars(enable)
+            end,
+            width = 1.5,
+        },
+
         { type = "header", name = L.ActionButtonLookAndFeel },
 
         {

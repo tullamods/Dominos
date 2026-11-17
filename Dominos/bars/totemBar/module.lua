@@ -2,7 +2,7 @@ if not (MultiCastActionBarFrame and UnitClassBase('player') == 'SHAMAN') then re
 
 local _, Addon = ...
 local TotemBarModule = Addon:NewModule('TotemBar', 'AceEvent-3.0')
-local bar
+local bars = {}
 
 function TotemBarModule:OnFirstLoad()
     local frame = MultiCastActionBarFrame
@@ -16,7 +16,7 @@ function TotemBarModule:OnFirstLoad()
     frame:SetParent(Addon.ShadowUIParent)
     frame:EnableMouse(false)
 
-    -- its own events at least, shared button event frames still drive its buttons
+    -- shared button event frames still drive its buttons
     frame:UnregisterAllEvents()
 
     for i = 1, NUM_MULTI_CAST_PAGES * NUM_MULTI_CAST_BUTTONS_PER_PAGE do
@@ -32,32 +32,94 @@ function TotemBarModule:OnFirstLoad()
 end
 
 function TotemBarModule:Load()
-    bar = Addon.TotemBar:New()
+    self:LoadBars()
 
     self:RegisterEvent('SPELLS_CHANGED', 'Update')
     self:RegisterEvent('UPDATE_MULTI_CAST_ACTIONBAR', 'Update')
-    self:RegisterEvent('PLAYER_REGEN_ENABLED', 'Update')
-    self:RegisterEvent('SPELL_UPDATE_COOLDOWN', 'UpdateSpellCooldowns')
+    self:RegisterEvent('PLAYER_REGEN_ENABLED')
+    self:RegisterEvent('SPELL_UPDATE_COOLDOWN')
+    self:RegisterEvent('SPELL_UPDATE_USABLE')
+    Addon.RegisterCallback(self, 'SPLIT_TOTEM_BARS_CHANGED')
 end
 
 function TotemBarModule:Unload()
     self:UnregisterAllEvents()
+    Addon.UnregisterCallback(self, 'SPLIT_TOTEM_BARS_CHANGED')
 
-    if bar then
-        bar:Free()
-        bar = nil
+    self:FreeBars()
+    self.reloadBarsAfterCombat = nil
+end
+
+--------------------------------------------------------------------------------
+-- Events
+--------------------------------------------------------------------------------
+
+function TotemBarModule:SPLIT_TOTEM_BARS_CHANGED()
+    if InCombatLockdown() then
+        self.reloadBarsAfterCombat = true
+        return
     end
+
+    self:ReloadBars()
+end
+
+function TotemBarModule:PLAYER_REGEN_ENABLED()
+    if self.reloadBarsAfterCombat then
+        self.reloadBarsAfterCombat = nil
+        self:ReloadBars()
+    else
+        self:Update()
+    end
+end
+
+function TotemBarModule:SPELL_UPDATE_COOLDOWN()
+    self:ForSpellButtons('UpdateCooldown')
+end
+
+function TotemBarModule:SPELL_UPDATE_USABLE()
+    self:ForSpellButtons('UpdateUsable')
+end
+
+--------------------------------------------------------------------------------
+-- Bars
+--------------------------------------------------------------------------------
+
+function TotemBarModule:LoadBars()
+    if not Addon:SplittingTotemBars() then
+        bars[1] = Addon.TotemBar:New()
+        return
+    end
+
+    for totemSet = 1, NUM_MULTI_CAST_PAGES do
+        bars[totemSet] = Addon.TotemBar:New(totemSet)
+    end
+end
+
+function TotemBarModule:FreeBars()
+    for i = #bars, 1, -1 do
+        bars[i]:Free()
+        bars[i] = nil
+    end
+end
+
+function TotemBarModule:ReloadBars()
+    self:FreeBars()
+    self:LoadBars()
+
+    -- config mode's drag frames need new owners
+    Addon.callbacks:Fire('ACTIONBARS_UPDATED')
+end
+
+function TotemBarModule:ForBars(method, ...)
+    for _, bar in ipairs(bars) do
+        bar[method](bar, ...)
+    end
+end
+
+function TotemBarModule:ForSpellButtons(method)
+    self:ForBars('ForSpellButtons', method)
 end
 
 function TotemBarModule:Update()
-    if bar then
-        bar:Update()
-    end
+    self:ForBars('Update')
 end
-
-function TotemBarModule:UpdateSpellCooldowns()
-    if bar then
-        bar:UpdateSpellCooldowns()
-    end
-end
-

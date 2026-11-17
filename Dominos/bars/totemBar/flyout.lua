@@ -2,12 +2,11 @@ if not (MultiCastActionBarFrame and UnitClassBase('player') == 'SHAMAN') then re
 
 --------------------------------------------------------------------------------
 -- Totem flyout
--- hover arrow on each totem button that opens the slot's totem list, close
--- button at the far end. the arrow is the secure header for the list, close
--- button and entries
+-- an arrow over the hovered totem button opens a flyout of the slot's totems.
+-- the arrow is the secure header for the flyout, its entries and close button
 --------------------------------------------------------------------------------
 
-local AddonName, Addon = ...
+local _, Addon = ...
 
 local TotemArt = Addon.TotemArt
 local TotemFlyout = {}
@@ -17,13 +16,13 @@ local ENTRY_SIZE = 24
 local PADDING = 4
 local SPACING = 2
 
--- seconds before the flyout hides after the mouse leaves it
+-- seconds
 local HIDE_DELAY = 0.25
 
 -- close button plus blizzard's gap
-local ENDCAP = 2 + TotemArt.ARROW_HEIGHT
+local ENDCAP_SIZE = 2 + TotemArt.ARROW_HEIGHT
 
--- point anchors to the button's relPoint, far is the list's other end, x y is
+-- point anchors to the button's relPoint, far is the flyout's far end, x y is
 -- the way it grows
 local DIRECTIONS = {
     UP = { point = 'BOTTOM', relPoint = 'TOP', far = 'TOP', x = 0, y = 1 },
@@ -33,33 +32,29 @@ local DIRECTIONS = {
 }
 
 --------------------------------------------------------------------------------
--- Secure snippets
--- run in the arrow's environment, see Create for the globals and SetDirection
--- for the flyout* attributes
+-- Secure Handlers
 --------------------------------------------------------------------------------
 
--- autohide has to be registered while the mouse is over it, and the hovered
--- button is included so crossing to the arrow or list doesn't count as leaving
 local arrow_Show = [[
     arrow:Show()
     arrow:RegisterAutoHide(HideDelay)
     arrow:AddToAutoHide(hovered)
 ]]
 
--- an empty slot has nothing to cast, so clicking toggles the list
+-- clicking an empty slot toggles the flyout
 local totemButton_OnClick = [[
     if button == 'LeftButton' then
         if not HasAction(self:GetAttribute('action')) then
             if not down then
-                arrow:RunAttribute('ToggleList')
+                arrow:RunAttribute('ToggleFlyout')
             end
 
             return false
         end
 
-        -- casting closes the list
-        if list:IsShown() then
-            list:Hide()
+        -- casting closes the flyout
+        if flyout:IsShown() then
+            flyout:Hide()
             arrow:RunAttribute('ShowArrow')
         end
     end
@@ -67,26 +62,25 @@ local totemButton_OnClick = [[
 
 local totemButton_OnEnter = [[
     if hovered ~= self then
-        list:Hide()
+        flyout:Hide()
     end
 
     hovered = self
-    arrow:CallMethod('SetSlot', self:GetAttribute('totemSlot'))
+    arrow:CallMethod('SetHoveredSlot', self:GetAttribute('totemSlot'))
 
     arrow:ClearAllPoints()
     arrow:SetPoint(arrow:GetAttribute('flyoutPoint'), self, arrow:GetAttribute('flyoutRelPoint'))
 
-    -- the list takes the arrow's place while it's open
-    if not list:IsShown() then
+    -- the flyout replaces the arrow while open
+    if not flyout:IsShown() then
         arrow:RunAttribute('ShowArrow')
     end
 ]]
 
--- clear, then every totem for the slot
-local arrow_ToggleList = [[
-    -- the arrow is hidden while the list is open, so this is a button click
-    if list:IsShown() then
-        list:Hide()
+-- no totem, then every totem for the slot
+local arrow_ToggleFlyout = [[
+    if flyout:IsShown() then
+        flyout:Hide()
         self:RunAttribute('ShowArrow')
         return
     end
@@ -109,38 +103,37 @@ local arrow_ToggleList = [[
         local entry = entries[i]
 
         if i <= numEntries then
-            local offset = ListPadding + (i - 1) * EntryStep
+            local offset = FlyoutPadding + (i - 1) * EntryStep
 
             entry:SetAttribute('action', action)
             entry:SetAttribute('spell', i == 1 and 0 or spells[i - 1])
             entry:ClearAllPoints()
-            entry:SetPoint(point, list, point, x * offset, y * offset)
+            entry:SetPoint(point, flyout, point, x * offset, y * offset)
             entry:Show()
         else
             entry:Hide()
         end
     end
 
-    local length = numEntries * EntryStep - ListSpacing + ListPadding + ListEndcap
+    local length = numEntries * EntryStep - FlyoutSpacing + FlyoutPadding + FlyoutEndcap
 
     if x == 0 then
-        list:SetWidth(ListThickness)
-        list:SetHeight(length)
+        flyout:SetWidth(FlyoutThickness)
+        flyout:SetHeight(length)
     else
-        list:SetWidth(length)
-        list:SetHeight(ListThickness)
+        flyout:SetWidth(length)
+        flyout:SetHeight(FlyoutThickness)
     end
 
-    -- on the button's edge, where the arrow was
-    list:ClearAllPoints()
-    list:SetPoint(point, hovered, self:GetAttribute('flyoutRelPoint'))
+    flyout:ClearAllPoints()
+    flyout:SetPoint(point, hovered, self:GetAttribute('flyoutRelPoint'))
 
-    list:Show()
-    list:RegisterAutoHide(HideDelay)
-    list:AddToAutoHide(hovered)
+    flyout:Show()
+    flyout:RegisterAutoHide(HideDelay)
+    flyout:AddToAutoHide(hovered)
     arrow:Hide()
 
-    self:CallMethod('UpdateListArt', slot)
+    self:CallMethod('UpdateFlyoutArt', slot)
 ]]
 
 --------------------------------------------------------------------------------
@@ -165,22 +158,23 @@ end
 
 local FlyoutMixin = {}
 
--- for what the snippet just laid out, textures are fine in combat
-function FlyoutMixin:UpdateListArt(slot)
+-- textures are fine in combat
+function FlyoutMixin:UpdateFlyoutArt(slot)
     local direction = self:GetAttribute('flyoutDirection')
 
-    TotemArt:SetFlyout(self.list.cap, self.list.body, slot, direction)
-    TotemArt:SetClose(self.close, slot, direction)
+    TotemArt:SetFlyoutArt(self.flyout.cap, self.flyout.body, slot, direction)
+    TotemArt:SetCloseArt(self.close, slot, direction)
 
     for _, entry in ipairs(self.entries) do
         if entry:IsShown() then
             local spellId = entry:GetAttribute('spell')
 
             if spellId and spellId > 0 then
-                entry.icon:SetTexture(C_Spell.GetSpellTexture(spellId))
+                local icon = C_Spell.GetSpellTexture(spellId)
+                entry.icon:SetTexture(icon)
                 entry.icon:SetTexCoord(0, 1, 0, 1)
             else
-                TotemArt:SetEmptySlot(entry.icon, slot)
+                TotemArt:SetEmptySlotArt(entry.icon, slot)
             end
         end
     end
@@ -193,8 +187,10 @@ function FlyoutMixin:SetDirection(direction)
     end
 
     local d = DIRECTIONS[direction]
-    local list, close = self.list, self.close
-    local thickness, capLength = TotemArt.FLYOUT_THICKNESS, TotemArt.FLYOUT_CAP_LENGTH
+    local flyout = self.flyout
+    local close = self.close
+    local thickness = TotemArt.FLYOUT_THICKNESS
+    local capLength = TotemArt.FLYOUT_CAP_LENGTH
 
     self:SetAttribute('flyoutDirection', direction)
     self:SetAttribute('flyoutPoint', d.point)
@@ -202,41 +198,38 @@ function FlyoutMixin:SetDirection(direction)
     self:SetAttribute('flyoutX', d.x)
     self:SetAttribute('flyoutY', d.y)
 
-    list:Hide()
+    flyout:Hide()
     self:Hide()
     self:SetSize(TotemArt:GetArrowSize(direction))
 
     close:ClearAllPoints()
-    close:SetPoint(d.far, list, d.far)
+    close:SetPoint(d.far, flyout, d.far)
     close:SetSize(TotemArt:GetArrowSize(direction))
 
-    -- the cap sits inside the far edge
-    list.cap:ClearAllPoints()
-    list.cap:SetPoint(d.far, list, d.far, -d.x * TotemArt.FLYOUT_CAP_INSET, -d.y * TotemArt.FLYOUT_CAP_INSET)
+    flyout.cap:ClearAllPoints()
+    flyout.cap:SetPoint(d.far, flyout, d.far, -d.x * TotemArt.FLYOUT_CAP_INSET, -d.y * TotemArt.FLYOUT_CAP_INSET)
 
-    list.body:ClearAllPoints()
-    list.body:SetPoint(d.far, list.cap, d.point)
-    list.body:SetPoint(d.point, list, d.point)
+    flyout.body:ClearAllPoints()
+    flyout.body:SetPoint(d.far, flyout.cap, d.point)
+    flyout.body:SetPoint(d.point, flyout, d.point)
 
     if TotemArt:IsSideways(direction) then
-        list.cap:SetSize(capLength, thickness)
-        list.body:SetHeight(thickness)
+        flyout.cap:SetSize(capLength, thickness)
+        flyout.body:SetHeight(thickness)
     else
-        list.cap:SetSize(thickness, capLength)
-        list.body:SetWidth(thickness)
+        flyout.cap:SetSize(thickness, capLength)
+        flyout.body:SetWidth(thickness)
     end
 
-    TotemArt:SetArrow(self, self.slot, direction)
+    TotemArt:SetArrowArt(self, self.hoveredSlot, direction)
 end
 
--- from the hover snippet, textures are fine in combat
-function FlyoutMixin:SetSlot(slot)
-    self.slot = slot
-    TotemArt:SetArrow(self, slot, self:GetAttribute('flyoutDirection'))
+function FlyoutMixin:SetHoveredSlot(slot)
+    self.hoveredSlot = slot
+    TotemArt:SetArrowArt(self, slot, self:GetAttribute('flyoutDirection'))
 end
 
--- Tooltips first so ours is outermost, its wrap can cancel OnEnter. unwrap pops
--- the outermost, so UnhookButton is the reverse
+-- after Tooltips, so ours is the outer wrap. its wrap can cancel OnEnter
 function FlyoutMixin:HookButton(button)
     Addon:GetModule('Tooltips'):Register(button)
 
@@ -260,18 +253,18 @@ function FlyoutMixin:UnhookButton(button)
     Addon:GetModule('Tooltips'):Unregister(button)
 end
 
--- the post body only runs if the pre body returns a message
+-- the post body only runs when the pre body returns a message
 local function wrapCloseOnClick(frame, arrow)
-    arrow:WrapScript(frame, 'OnClick', [[ return nil, 'close' ]], [[ list:Hide() ]])
+    arrow:WrapScript(frame, 'OnClick', [[ return nil, 'close' ]], [[ flyout:Hide() ]])
 end
 
-local function createEntry(list, arrow, index)
-    local entry = CreateFrame('Button', ('%sTotemFlyoutEntry%d'):format(AddonName, index), list, 'SecureActionButtonTemplate')
+local function createEntry(flyout, arrow)
+    local entry = CreateFrame('Button', nil, flyout, 'SecureActionButtonTemplate')
     entry:SetSize(ENTRY_SIZE, ENTRY_SIZE)
     entry:RegisterForClicks('LeftButtonUp')
     entry:SetAttribute('type', 'multispell')
 
-    -- ActionButtonUseKeyDown makes secure buttons skip up clicks
+    -- ActionButtonUseKeyDown would skip up clicks
     entry:SetAttribute('useOnKeyDown', false)
     entry:SetHighlightTexture('Interface\\Buttons\\ButtonHilight-Square', 'ADD')
     entry:SetScript('OnEnter', entry_OnEnter)
@@ -291,8 +284,8 @@ local function createEntry(list, arrow, index)
     return entry
 end
 
-local function createClose(list, arrow)
-    local close = CreateFrame('Button', AddonName .. 'TotemFlyoutClose', list, 'SecureActionButtonTemplate')
+local function createClose(flyout, arrow)
+    local close = CreateFrame('Button', nil, flyout, 'SecureActionButtonTemplate')
     close:RegisterForClicks('LeftButtonUp')
     close:SetAttribute('useOnKeyDown', false)
     close:SetNormalTexture(TotemArt.TEXTURE_FILE)
@@ -304,7 +297,7 @@ local function createClose(list, arrow)
 end
 
 function TotemFlyout:Create(bar)
-    local arrow = CreateFrame('Button', AddonName .. 'TotemFlyout', bar, 'SecureHandlerClickTemplate')
+    local arrow = CreateFrame('Button', nil, bar, 'SecureHandlerClickTemplate')
     arrow:SetFrameStrata('HIGH')
     arrow:SetNormalTexture(TotemArt.TEXTURE_FILE)
     arrow:SetHighlightTexture(TotemArt.TEXTURE_FILE, 'ADD')
@@ -313,43 +306,42 @@ function TotemFlyout:Create(bar)
     Mixin(arrow, FlyoutMixin)
     arrow.entries = {}
 
-    -- not the arrow's child, the arrow hides while the list is open
-    local list = CreateFrame('Frame', AddonName .. 'TotemFlyoutList', bar, 'SecureHandlerBaseTemplate')
-    list:SetFrameStrata('DIALOG')
-    list:SetSize(TotemArt.FLYOUT_THICKNESS, TotemArt.FLYOUT_THICKNESS)
-    list:EnableMouse(true)
-    list:Hide()
+    -- not the arrow's child, the arrow hides while the flyout is open
+    local flyout = CreateFrame('Frame', nil, bar, 'SecureHandlerBaseTemplate')
+    flyout:SetFrameStrata('DIALOG')
+    flyout:SetSize(TotemArt.FLYOUT_THICKNESS, TotemArt.FLYOUT_THICKNESS)
+    flyout:EnableMouse(true)
+    flyout:Hide()
 
-    list.cap = list:CreateTexture(nil, 'BACKGROUND')
-    list.body = list:CreateTexture(nil, 'BACKGROUND')
+    flyout.cap = flyout:CreateTexture(nil, 'BACKGROUND')
+    flyout.body = flyout:CreateTexture(nil, 'BACKGROUND')
 
-    arrow.list = list
-    arrow.close = createClose(list, arrow)
+    arrow.flyout = flyout
+    arrow.close = createClose(flyout, arrow)
 
-    arrow:SetFrameRef('list', list)
+    arrow:SetFrameRef('flyout', flyout)
 
-    -- restricted code can't read globals
     arrow:Execute(([[
         arrow = self
-        list = self:GetFrameRef('list')
+        flyout = self:GetFrameRef('flyout')
         entries = table.new()
         hovered = nil
 
         HideDelay = %g
         EntryStep = %d
-        ListPadding = %d
-        ListSpacing = %d
-        ListThickness = %d
-        ListEndcap = %d
-    ]]):format(HIDE_DELAY, ENTRY_SIZE + SPACING, PADDING, SPACING, TotemArt.FLYOUT_THICKNESS, ENDCAP))
+        FlyoutPadding = %d
+        FlyoutSpacing = %d
+        FlyoutThickness = %d
+        FlyoutEndcap = %d
+    ]]):format(HIDE_DELAY, ENTRY_SIZE + SPACING, PADDING, SPACING, TotemArt.FLYOUT_THICKNESS, ENDCAP_SIZE))
 
     for i = 1, MAX_ENTRIES do
-        arrow.entries[i] = createEntry(list, arrow, i)
+        arrow.entries[i] = createEntry(flyout, arrow)
     end
 
     arrow:SetAttribute('ShowArrow', arrow_Show)
-    arrow:SetAttribute('ToggleList', arrow_ToggleList)
-    arrow:SetAttribute('_onclick', [[ self:RunAttribute('ToggleList') ]])
+    arrow:SetAttribute('ToggleFlyout', arrow_ToggleFlyout)
+    arrow:SetAttribute('_onclick', [[ self:RunAttribute('ToggleFlyout') ]])
 
     arrow:SetDirection('UP')
 

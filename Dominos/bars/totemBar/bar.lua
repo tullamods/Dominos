@@ -22,78 +22,91 @@ local TOTEM_ACTION_OFFSET = (C_ActionBar.GetMultiCastBarIndex() - 1) * NUM_ACTIO
 local NUM_TOTEMS = NUM_MULTI_CAST_BUTTONS_PER_PAGE
 local NUM_TOTEM_SETS = NUM_MULTI_CAST_PAGES
 
+-- button order kind, next to SpellButton.SUMMON and RECALL
+local TOTEM = 'Totem'
+
+local BAR_IDS = { 'totem', 'totem2', 'totem3' }
+local DEFAULT_BAR_OFFSET = 40
+
 --------------------------------------------------------------------------------
--- Button setup
+-- Totem button setup
 --------------------------------------------------------------------------------
 
-local function shrinkTotemButton(button)
-    button:SetSize(SpellButton.SIZE, SpellButton.SIZE)
-
-    -- blizzard's small sizes, pushed is drawn bigger than highlight. normal is
-    -- hidden by addSlotArt
-    button.PushedTexture:SetSize(35, 35)
-    button.HighlightTexture:SetSize(31.6, 30.9)
-    button.CheckedTexture:SetSize(31.6, 30.9)
-
-    -- the rest, depends on the game
-    MultiCastButton_ApplyOverrides(button)
+-- also blizzard's MULTICASTACTIONBUTTON number
+local function getTotemButtonNumber(buttonInfo)
+    return (buttonInfo.totemSet - 1) * NUM_TOTEMS + buttonInfo.totemIndex
 end
 
 -- the ring replaces the template's normal texture
-local function addSlotArt(button, totemIndex)
-    if button.hasSlotArt then
+local function addTotemSlotArt(button, totemIndex)
+    if button.hasTotemSlotArt then
         return
     end
 
-    button.hasSlotArt = true
+    button.hasTotemSlotArt = true
 
     button.NormalTexture:SetAlpha(0)
 
-    -- only the camelot template has it
+    -- only Forever's template has it
     if button.SlotArt then
         button.SlotArt:Hide()
     end
 
     local slot = SHAMAN_TOTEM_PRIORITIES[totemIndex]
 
-    -- reuse the template's background, classic's is offset and faded
     local background = button.SlotBackground
-
     background:ClearAllPoints()
     background:SetAllPoints()
     background:SetAlpha(1)
     background:Show()
-    TotemArt:SetEmptySlot(background, slot)
+    TotemArt:SetEmptySlotArt(background, slot)
 
-    TotemArt:AddRing(button, slot)
+    TotemArt:AddSlotRing(button, slot)
 
-    -- SetShowBindingText(false) reparents HotKey out of the template's text
-    -- container, under the ring
+    -- SetShowBindingText(false) reparents HotKey under the ring
     button.HotKey:SetDrawLayer('OVERLAY', 7)
 end
 
 --------------------------------------------------------------------------------
--- Bar setup
+-- Bar
 --------------------------------------------------------------------------------
 
 local TotemBar = Addon:CreateClass('Frame', Addon.ButtonBar)
 
-function TotemBar:New()
-    return TotemBar.proto.New(self, 'totem')
+-- no fixedTotemSet is the paged bar
+function TotemBar:New(fixedTotemSet)
+    local bar = TotemBar.proto.New(self, BAR_IDS[fixedTotemSet or 1])
+
+    bar.fixedTotemSet = fixedTotemSet
+    bar:Update()
+
+    return bar
+end
+
+function TotemBar:IsPaged()
+    return self.fixedTotemSet == nil
 end
 
 function TotemBar:GetDisplayName()
-    return L.TotemBarDisplayName
+    if self:IsPaged() then
+        return L.TotemBarDisplayName
+    end
+
+    return C_Spell.GetSpellName(TOTEM_MULTI_CAST_SUMMON_SPELLS[self.fixedTotemSet])
+        or L.TotemSetRegion:format(self.fixedTotemSet)
 end
 
+-- runs before New sets fixedTotemSet, so this goes by id
 function TotemBar:GetDefaults()
+    local barIndex = tIndexOf(BAR_IDS, self.id)
+
     return {
         point = 'CENTER',
+        y = (1 - barIndex) * DEFAULT_BAR_OFFSET,
         spacing = 2
     }
 end
 
--- from buttonOrder so this and AcquireButton agree mid reload
 function TotemBar:NumButtons()
     return self.buttonOrder and #self.buttonOrder or 0
 end
@@ -102,53 +115,48 @@ end
 -- Totem sets
 --------------------------------------------------------------------------------
 
+-- the set the bar is showing
 function TotemBar:GetTotemSet()
-    local totemSet = self.sets.totemSet or 1
-
-    if SpellButton:IsSpellKnown(TOTEM_MULTI_CAST_SUMMON_SPELLS[totemSet]) then
-        return totemSet
+    if self.fixedTotemSet then
+        return self.fixedTotemSet
     end
 
-    for i, spellId in ipairs(TOTEM_MULTI_CAST_SUMMON_SPELLS) do
-        if SpellButton:IsSpellKnown(spellId) then
-            return i
-        end
-    end
-
-    return totemSet
+    return Clamp(self.sets.totemSet or 1, 1, NUM_TOTEM_SETS)
 end
 
-function TotemBar:GetAction(totemIndex, totemSet)
+function TotemBar:GetTotemAction(totemIndex, totemSet)
     local totemSlot = SHAMAN_TOTEM_PRIORITIES[totemIndex]
 
     return TOTEM_ACTION_OFFSET + (totemSet - 1) * NUM_TOTEMS + totemSlot
 end
 
--- totem buttons page via ActionButton's _childupdate-state (action-totemsetN),
--- summon via spell-totemsetN, so it works in combat
-local bar_OnStateTotemSet = [[
-    control:ChildUpdate('state', 'totemset' .. newstate)
-    self:CallMethod('OnTotemSetChanged', newstate)
+local bar_SetTotemSet = [[
+    local totemSet = ...
+
+    self:SetAttribute('totemset', totemSet)
+    self:ChildUpdate('state', TotemSetStates[totemSet])
+    self:CallMethod('OnTotemSetChanged', totemSet)
 ]]
 
 local bar_CycleTotemSet = [[
-    local current = self:GetAttribute('state-totemset') or 1
+    local step = ... or 1
+    local current = self:GetAttribute('totemset') or 1
 
-    for offset = 1, TotemSetCount - 1 do
-        local totemSet = (current - 1 + offset) % TotemSetCount + 1
+    self:RunAttribute('SetTotemSet', (current - 1 + step) % TotemSetCount + 1)
+]]
 
-        if self:GetAttribute('totemsetknown' .. totemSet) then
-            self:SetAttribute('state-totemset', totemSet)
-            return
-        end
+-- the wheel can't reach the bar, so it sets cycletotemset for us to pick up
+local summonButton_OnAttributeChanged = [[
+    if name == 'cycletotemset' and value then
+        self:SetAttribute('cycletotemset', nil)
+        control:RunAttribute('CycleTotemSet', value)
     end
 ]]
 
--- on up so it fires once, false skips the click
 local summonButton_OnClick = [[
     if button == 'RightButton' then
         if not down then
-            control:RunAttribute('CycleTotemSet')
+            control:RunAttribute('CycleTotemSet', 1)
         end
 
         return false
@@ -157,69 +165,33 @@ local summonButton_OnClick = [[
 
 TotemBar:Extend('OnCreate', function(self)
     self:Execute(('TotemSetCount = %d'):format(NUM_TOTEM_SETS))
-    self:SetAttribute('_onstate-totemset', bar_OnStateTotemSet)
+    self:Execute(('TotemSetStates = newtable(%q, %q, %q)'):format(unpack(SpellButton.GetTotemSetStates())))
+    self:SetAttribute('SetTotemSet', bar_SetTotemSet)
     self:SetAttribute('CycleTotemSet', bar_CycleTotemSet)
+
+    self.flyout = TotemFlyout:Create(self)
 end)
 
--- persist the user's totem set selection, and update buttons
 function TotemBar:OnTotemSetChanged(totemSet)
-    if totemSet ~= self:GetTotemSet() then
-        self.sets.totemSet = totemSet
-    end
-
-    self:UpdateSpellButtons()
-end
-
--- setting the state runs the handler even for the state we're in, which syncs
--- newly attached buttons and updates the spell buttons
-function TotemBar:PushTotemSetState()
-    for index, spellId in ipairs(TOTEM_MULTI_CAST_SUMMON_SPELLS) do
-        self:SetAttribute('totemsetknown' .. index, SpellButton:IsSpellKnown(spellId) or false)
-    end
-
-    self:SetAttribute('state-totemset', self:GetTotemSet())
-end
-
--- camelot doesn't have them, and there's no lookup by name
-local multicastBindings
-
-local function hasMulticastBindings()
-    if multicastBindings == nil then
-        multicastBindings = false
-
-        for i = 1, GetNumBindings() do
-            if (GetBinding(i)) == 'MULTICASTACTIONBUTTON1' then
-                multicastBindings = true
-                break
-            end
-        end
-    end
-
-    return multicastBindings
-end
-
-function TotemBar:SetupTotemButton(button, totemIndex)
-    for totemSet = 1, NUM_TOTEM_SETS do
-        button:SetAttributeNoHandler('action-totemset' .. totemSet, self:GetAction(totemIndex, totemSet))
-    end
-
-    button:SetAttribute('action', self:GetAction(totemIndex, self:GetTotemSet()))
-
-    -- blizzard's bindings are for set 1. without them the button keeps its
-    -- CLICK binding
-    if not Addon:IsGameType("forever") then
-        button:SetAttributeNoHandler('commandName', 'MULTICASTACTIONBUTTON' .. totemIndex)
-    end
-
-    button:UpdateOverrideBindings()
-    button:UpdateHotkeys()
+    self.sets.totemSet = totemSet
+    self:ForSpellButtons('UpdateSpell')
 end
 
 --------------------------------------------------------------------------------
 -- Button list
--- buttonOrder: summon, the totems, recall. summon and recall only if known,
--- recall also if shown. items are SpellButton.SUMMON/RECALL or a totem index
+-- buttonOrder is a list of buttonInfo:
+-- { kind = SUMMON | RECALL | TOTEM, totemSet = n, totemIndex = n }
+-- the set names the button. the paged bar uses set 1's
 --------------------------------------------------------------------------------
+
+function TotemBar:ShowingTotems()
+    return not self.sets.hideTotems
+end
+
+function TotemBar:SetShowTotems(show)
+    self.sets.hideTotems = not show or nil
+    self:Update()
+end
 
 function TotemBar:ShowingRecall()
     return not self.sets.hideRecall
@@ -232,40 +204,41 @@ end
 
 -- returns true if the order changed
 function TotemBar:UpdateButtonOrder()
-    local hasSummon = SpellButton:IsSpellKnown(TOTEM_MULTI_CAST_SUMMON_SPELLS[self:GetTotemSet()])
-    local hasRecall = self:ShowingRecall() and SpellButton:IsSpellKnown(TOTEM_MULTI_CAST_RECALL_SPELLS[1])
+    local showTotems = self:ShowingTotems()
+    local showRecall = self:ShowingRecall()
 
-    if self.buttonOrder and hasSummon == self.hasSummon and hasRecall == self.hasRecall then
+    if self.buttonOrder
+        and showTotems == self.showTotems
+        and showRecall == self.showRecall
+    then
         return false
     end
 
+    local totemSet = self.fixedTotemSet or 1
     local buttonOrder = {}
 
-    if hasSummon then
-        buttonOrder[#buttonOrder + 1] = SpellButton.SUMMON
+    buttonOrder[#buttonOrder + 1] = { kind = SpellButton.SUMMON, totemSet = totemSet }
+
+    if showTotems then
+        for totemIndex = 1, NUM_TOTEMS do
+            buttonOrder[#buttonOrder + 1] = { kind = TOTEM, totemSet = totemSet, totemIndex = totemIndex }
+        end
     end
 
-    for totemIndex = 1, NUM_TOTEMS do
-        buttonOrder[#buttonOrder + 1] = totemIndex
+    if showRecall then
+        buttonOrder[#buttonOrder + 1] = { kind = SpellButton.RECALL, totemSet = totemSet }
     end
 
-    if hasRecall then
-        buttonOrder[#buttonOrder + 1] = SpellButton.RECALL
-    end
+    self.buttonOrder = buttonOrder
+    self.showTotems = showTotems
+    self.showRecall = showRecall
 
-    self.buttonOrder, self.hasSummon, self.hasRecall = buttonOrder, hasSummon, hasRecall
     return true
 end
 
--- pooled frames keep their fields, and a stale order would skip the reload
 TotemBar:Extend('OnRelease', function(self)
     self.buttonOrder = nil
 end)
-
--- the order is empty on acquire, so Update reloads
-function TotemBar:ReloadButtons()
-    self:Update()
-end
 
 -- protected buttons, so not in combat. PLAYER_REGEN_ENABLED runs it again
 function TotemBar:Update()
@@ -274,30 +247,23 @@ function TotemBar:Update()
     end
 
     if self:UpdateButtonOrder() then
-        TotemBar.proto.ReloadButtons(self)
+        self:ReloadButtons()
     end
 
-    self:PushTotemSetState()
+    -- the paged bar reapplies its set, which also syncs newly attached buttons
+    if self:IsPaged() then
+        self:Execute(('self:RunAttribute("SetTotemSet", %d)'):format(self:GetTotemSet()))
+    else
+        self:ForSpellButtons('UpdateSpell')
+    end
 end
 
---------------------------------------------------------------------------------
--- Spell buttons
---------------------------------------------------------------------------------
-
-function TotemBar:ForSpellButtons(method, ...)
+function TotemBar:ForSpellButtons(method)
     for _, button in pairs(self.buttons) do
-        if SpellButton:IsButton(button) then
-            button[method](button, ...)
+        if button.isSpell then
+            button[method](button)
         end
     end
-end
-
-function TotemBar:UpdateSpellButtons()
-    self:ForSpellButtons('UpdateSpell')
-end
-
-function TotemBar:UpdateSpellCooldowns()
-    self:ForSpellButtons('UpdateCooldown')
 end
 
 --------------------------------------------------------------------------------
@@ -305,84 +271,141 @@ end
 --------------------------------------------------------------------------------
 
 function TotemBar:AcquireButton(index)
-    local item = self.buttonOrder[index]
+    local buttonInfo = self.buttonOrder[index]
 
-    if item == SpellButton.SUMMON or item == SpellButton.RECALL then
-        return SpellButton:Acquire(item)
+    if buttonInfo.kind ~= TOTEM then
+        return SpellButton:Acquire(buttonInfo.kind, buttonInfo.totemSet)
     end
 
-    local totemIndex = item
-    local button = Addon.ActionButtons:GetOrCreateActionButton(0, self, ('%sTotemButton%d'):format(AddonName, totemIndex))
+    local totemIndex = buttonInfo.totemIndex
+    local button = Addon.ActionButtons:GetOrCreateActionButton(0, self, ('%sTotemButton%d'):format(AddonName, getTotemButtonNumber(buttonInfo)))
 
     button:SetAttributeNoHandler('index', index)
 
-    button:SetAttributeNoHandler(
-        'displayName',
-        _G['BINDING_NAME_MULTICASTACTIONBUTTON' .. totemIndex] or ('%s %d'):format(self:GetDisplayName(), totemIndex)
-    )
+    local displayName = _G['BINDING_NAME_MULTICASTACTIONBUTTON' .. totemIndex] or ('%s %d'):format(L.TotemBarDisplayName, totemIndex)
 
-    shrinkTotemButton(button)
-    addSlotArt(button, totemIndex)
+    if not self:IsPaged() then
+        local summonSpellName = C_Spell.GetSpellName(TOTEM_MULTI_CAST_SUMMON_SPELLS[buttonInfo.totemSet])
+
+        if summonSpellName then
+            displayName = ('%s: %s'):format(summonSpellName, displayName)
+        end
+    end
+
+    button:SetAttributeNoHandler('displayName', displayName)
+
+    TotemArt:ShrinkButton(button)
+    addTotemSlotArt(button, totemIndex)
 
     return button
 end
 
--- like action bars, only happens out of combat
 function TotemBar:ReleaseButton(button)
-    if not SpellButton:IsButton(button) then
+    if not button.isSpell then
         button:SetAttribute('statehidden', true)
+        ClearOverrideBindings(button.bind)
     end
 
     button:Hide()
 end
 
 function TotemBar:OnAttachButton(button, index)
-    if SpellButton:IsButton(button) then
-        self:AttachSpellButton(button)
+    local buttonInfo = self.buttonOrder[index]
+
+    if button.isSpell then
+        self:AttachSpellButton(button, buttonInfo)
     else
-        self:AttachTotemButton(button, self.buttonOrder[index])
+        self:AttachTotemButton(button, buttonInfo)
     end
 end
 
 function TotemBar:OnDetachButton(button)
-    if SpellButton:IsButton(button) then
+    if button.isSpell then
         self:DetachSpellButton(button)
     else
         self:DetachTotemButton(button)
     end
 end
 
-function TotemBar:AttachSpellButton(button)
+function TotemBar:AttachSpellButton(button, buttonInfo)
     button:SetShowBindingText(self:ShowingBindingText())
     button:Show()
 
     Addon:GetModule('ButtonThemer'):Register(button, self:GetDisplayName())
     Addon:GetModule('Tooltips'):Register(button)
 
-    if button.kind == SpellButton.SUMMON then
-        self:WrapScript(button, 'OnClick', summonButton_OnClick)
+    if buttonInfo.kind == SpellButton.SUMMON then
+        button:SetPaged(self:IsPaged())
+
+        if button:IsPaged() then
+            -- wrapping turns mouse on, put it back for click through
+            local mouseEnabled = button:IsMouseEnabled()
+
+            self:WrapScript(button, 'OnAttributeChanged', summonButton_OnAttributeChanged)
+            self:WrapScript(button, 'OnClick', summonButton_OnClick)
+
+            button:EnableMouse(mouseEnabled)
+        end
     end
+
+    button:UpdateOverrideBindings()
 end
 
 function TotemBar:DetachSpellButton(button)
     Addon:GetModule('ButtonThemer'):Unregister(button, self:GetDisplayName())
     Addon:GetModule('Tooltips'):Unregister(button)
 
-    if button.kind == SpellButton.SUMMON then
+    if button:IsPaged() then
+        local mouseEnabled = button:IsMouseEnabled()
+
         self:UnwrapScript(button, 'OnClick')
+        self:UnwrapScript(button, 'OnAttributeChanged')
+
+        button:EnableMouse(mouseEnabled)
     end
+
+    ClearOverrideBindings(button)
 end
 
-function TotemBar:AttachTotemButton(button, totemIndex)
-    self:SetupTotemButton(button, totemIndex)
+function TotemBar:SetTotemButtonAction(button, totemIndex)
+    local action = self:GetTotemAction(totemIndex, self:GetTotemSet())
+
+    for totemSet = 1, NUM_TOTEM_SETS do
+        local stateAction
+
+        if self:IsPaged() then
+            stateAction = self:GetTotemAction(totemIndex, totemSet)
+        end
+
+        button:SetAttributeNoHandler('action-' .. SpellButton.GetTotemSetState(totemSet), stateAction)
+    end
+
+    -- fixed buttons fall back to this if anything pushes a state at them
+    if self:IsPaged() then
+        button:SetAttributeNoHandler('action-base', nil)
+    else
+        button:SetAttributeNoHandler('action-base', action)
+    end
+
+    button:SetAttribute('action', action)
+end
+
+function TotemBar:AttachTotemButton(button, buttonInfo)
+    self:SetTotemButtonAction(button, buttonInfo.totemIndex)
+    button:SetAttributeNoHandler('totemSlot', SHAMAN_TOTEM_PRIORITIES[buttonInfo.totemIndex])
     button:SetAttributeNoHandler('statehidden', nil)
+
+    if SpellButton.HAS_MULTICAST_BINDINGS then
+        button:SetAttributeNoHandler('commandName', 'MULTICASTACTIONBUTTON' .. getTotemButtonNumber(buttonInfo))
+    end
+
+    button:UpdateOverrideBindings()
+    button:UpdateHotkeys()
 
     button:SetShowGridInsecure(true, Addon.ActionButtons.ShowGridReasons.SHOW_EMPTY_BUTTONS_PER_BAR)
     button:SetShowCooldowns(true)
     button:SetShowBindingText(self:ShowingBindingText())
     button:UpdateShown()
-
-    button:SetAttributeNoHandler('totemSlot', SHAMAN_TOTEM_PRIORITIES[totemIndex])
 
     Addon:GetModule('ButtonThemer'):Register(button, self:GetDisplayName())
     self.flyout:HookButton(button)
@@ -396,10 +419,6 @@ end
 --------------------------------------------------------------------------------
 -- Flyout
 --------------------------------------------------------------------------------
-
-TotemBar:Extend('OnCreate', function(self)
-    self.flyout = TotemFlyout:Create(self)
-end)
 
 function TotemBar:UpdateFlyoutDirection()
     self.flyout:SetDirection(self:GetCalculatedFlyoutDirection())
@@ -424,6 +443,12 @@ TotemBar.contextMenu = Addon.ButtonBar.contextMenu:Extend {
                 name = 'ShowBindingText',
                 get = 'ShowingBindingText',
                 set = 'SetShowBindingText'
+            },
+            {
+                type = 'check',
+                name = 'ShowTotems',
+                get = 'ShowingTotems',
+                set = 'SetShowTotems'
             },
             {
                 type = 'check',

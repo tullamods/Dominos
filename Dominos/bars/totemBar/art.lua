@@ -2,7 +2,7 @@ if not (MultiCastActionBarFrame and UnitClassBase('player') == 'SHAMAN') then re
 
 --------------------------------------------------------------------------------
 -- Totem art
--- Helper class for managing MultiCastActionBarFrame art
+-- pieces of blizzard's UI-TotemBar texture
 --------------------------------------------------------------------------------
 
 local _, Addon = ...
@@ -17,17 +17,25 @@ local TotemArt = {
     -- as drawn pointing up. the close button is the same size
     ARROW_WIDTH = 28,
     ARROW_HEIGHT = 18,
+
+    BUTTON_SIZE = 30,
 }
 
 local ARROW_HIGHLIGHT_WIDTH = 20
 local ARROW_HIGHLIGHT_HEIGHT = 11
-local RING_SIZE = 34
 local FILE_WIDTH = 128
 local FILE_HEIGHT = 256
 
 -- texcoords from the pixel box in the file
 local function fromPixels(left, right, top, bottom)
-    return { left / 128, right / 128, top / 256, bottom / 256 }
+    return { left / FILE_WIDTH, right / FILE_WIDTH, top / FILE_HEIGHT, bottom / FILE_HEIGHT }
+end
+
+local function getPixelSize(texCoords)
+    local width = (texCoords[2] - texCoords[1]) * FILE_WIDTH
+    local height = (texCoords[4] - texCoords[3]) * FILE_HEIGHT
+
+    return width, height
 end
 
 --- @class TotemTexCoords
@@ -87,12 +95,10 @@ local TEXCOORDS = {
 
 --------------------------------------------------------------------------------
 -- Turning
--- art points up, other directions move which corner of the texcoords lands in which
--- texture corner
+-- the art points up. for each direction, which of left, right, top, bottom
+-- goes in each SetTexCoord argument (ul, ll, ur, lr x and y)
 --------------------------------------------------------------------------------
 
--- texcoord index (left, right, top, bottom) for each SetTexCoord argument, the x
--- and y of ul, ll, ur, lr
 local TEXCOORD_ORDER = {
     UP = { 1, 3, 1, 4, 2, 3, 2, 4 },
     DOWN = { 2, 4, 2, 3, 1, 4, 1, 3 },
@@ -135,20 +141,33 @@ end
 -- Buttons
 --------------------------------------------------------------------------------
 
-function TotemArt:SetEmptySlot(texture, slot)
+function TotemArt:SetEmptySlotArt(texture, slot)
     setArt(texture, 'UP', TEXCOORDS[slot].empty)
 end
 
--- no slot for summon and recall
-function TotemArt:AddRing(button, slot)
-    local ring = button:CreateTexture(nil, 'OVERLAY')
+function TotemArt:ShrinkButton(button)
+    button:SetSize(self.BUTTON_SIZE, self.BUTTON_SIZE)
 
-    ring:SetSize(RING_SIZE, RING_SIZE)
-    ring:SetPoint('CENTER')
-    setArt(ring, 'UP', TEXCOORDS[slot or 'spell'].ring)
+    button.PushedTexture:SetSize(35, 35)
+    button.HighlightTexture:SetSize(31.6, 30.9)
+    button.CheckedTexture:SetSize(31.6, 30.9)
+
+    if MultiCastButton_ApplyOverrides then
+        MultiCastButton_ApplyOverrides(button)
+    end
 end
 
--- close button too
+function TotemArt:AddSlotRing(button, slot)
+    local ring = button:CreateTexture(nil, 'OVERLAY')
+    local texCoords = TEXCOORDS[slot or 'spell'].ring
+
+    -- not all 34x34, water's is a pixel shorter
+    ring:SetSize(getPixelSize(texCoords))
+    ring:SetPoint('CENTER')
+
+    setArt(ring, 'UP', texCoords)
+end
+
 function TotemArt:GetArrowSize(direction)
     if self:IsSideways(direction) then
         return self.ARROW_HEIGHT, self.ARROW_WIDTH
@@ -156,18 +175,18 @@ function TotemArt:GetArrowSize(direction)
 
     return self.ARROW_WIDTH, self.ARROW_HEIGHT
 end
--- slot is nil before the first hover
-function TotemArt:SetArrow(arrow, slot, direction)
+
+function TotemArt:SetArrowArt(arrow, slot, direction)
     local texCoords = TEXCOORDS[slot or 'spell']
 
     setButtonArt(arrow, direction, texCoords.arrow, TEXCOORDS.highlight.arrow)
 end
 
-function TotemArt:SetClose(close, slot, direction)
+function TotemArt:SetCloseArt(close, slot, direction)
     setButtonArt(close, direction, TEXCOORDS[slot].close, TEXCOORDS.highlight.close)
 end
 
-function TotemArt:SetFlyout(cap, body, slot, direction)
+function TotemArt:SetFlyoutArt(cap, body, slot, direction)
     setArt(cap, direction, TEXCOORDS[slot].cap)
     setArt(body, direction, TEXCOORDS[slot].body)
 end

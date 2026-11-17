@@ -289,6 +289,7 @@ function Addon:GetDatabaseDefaults()
             showTooltipsCombat = true,
             showSpellGlows = true,
             showSpellAnimations = true,
+            splitTotemBars = false,
             useOverrideUI = not self:IsGameType('vanilla'),
 
             ab = {
@@ -795,6 +796,19 @@ end
 
 function Addon:ThemingButtons()
     return self.db.profile.applyButtonTheme
+end
+
+function Addon:SetSplitTotemBars(enable)
+    enable = enable and true or false
+
+    if enable ~= self.db.profile.splitTotemBars then
+        self.db.profile.splitTotemBars = enable
+        self.callbacks:Fire('SPLIT_TOTEM_BARS_CHANGED', enable)
+    end
+end
+
+function Addon:SplittingTotemBars()
+    return self.db.profile.splitTotemBars
 end
 
 --------------------------------------------------------------------------------

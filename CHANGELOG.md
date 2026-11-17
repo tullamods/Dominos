@@ -6,6 +6,11 @@
 > settings before upgrading just in case. You also need to restart WoW, 
 > otherwise you'll see a Bindings_Mainline.xml not found error.
 
+## 12.0.4
+
+* Added an option to split the totem bar into multiple bars and hide totem slots
+* Enabled totem bar paging irrespective of if you know the corresponding call spell yet
+
 ## 12.0.3
 
 * Fixed some minor consistency issues with empty button displays on action bars

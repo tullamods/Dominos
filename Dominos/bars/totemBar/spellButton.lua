@@ -2,7 +2,7 @@ if not (MultiCastActionBarFrame and UnitClassBase('player') == 'SHAMAN') then re
 
 --------------------------------------------------------------------------------
 -- Totem spell buttons
--- summon (Call of ...) and recall. right click on summon cycles the totem set
+-- summon (Call of ...) and recall
 --------------------------------------------------------------------------------
 
 local AddonName, Addon = ...
@@ -12,8 +12,37 @@ local TotemArt = Addon.TotemArt
 local SpellButton = {
     SUMMON = 'Summon',
     RECALL = 'Recall',
-    SIZE = 30,
+
+    -- Forever has none, so its buttons use CLICK bindings
+    HAS_MULTICAST_BINDINGS = not Addon:IsGameType('forever'),
 }
+
+-- secure buttons read a trailing digit on an attribute as a mouse button, so
+-- these avoid numbers
+local TOTEM_SET_STATES = {
+    'totems-elements',
+    'totems-ancestors',
+    'totems-spirits',
+}
+
+---@param totemSet number
+---@return string
+function SpellButton.GetTotemSetState(totemSet)
+    return TOTEM_SET_STATES[totemSet]
+end
+
+---@return string[]
+function SpellButton.GetTotemSetStates()
+    return TOTEM_SET_STATES
+end
+
+local function setOverrideBindings(button, ...)
+    local name = button:GetName()
+
+    for i = 1, select('#', ...) do
+        SetOverrideBindingClick(button, false, select(i, ...), name, 'LeftButton')
+    end
+end
 
 --------------------------------------------------------------------------------
 -- Button
@@ -21,22 +50,84 @@ local SpellButton = {
 
 local SpellButtonMixin = {}
 
--- the spell attribute is owned by secure code, this just reflects it
+-- summon only, out of combat. a paged summon follows the bar's totem set and
+-- cycles it on the wheel, a fixed one casts its own set's spell
+function SpellButtonMixin:SetPaged(paged)
+    self.paged = paged
+
+    if paged then
+        for totemSet, spellId in ipairs(TOTEM_MULTI_CAST_SUMMON_SPELLS) do
+            self:SetAttributeNoHandler('spell-' .. SpellButton.GetTotemSetState(totemSet), spellId)
+        end
+
+        self:SetAttributeNoHandler('spell', TOTEM_MULTI_CAST_SUMMON_SPELLS[1])
+
+        -- down for the next set, up for the previous
+        self:SetAttributeNoHandler('_onmousewheel', [[
+            if delta > 0 then
+                self:SetAttribute('cycletotemset', -1)
+            else
+                self:SetAttribute('cycletotemset', 1)
+            end
+        ]])
+
+        self:SetAttributeNoHandler('_childupdate-state', [[
+            local spell = self:GetAttribute('spell-' .. message)
+            if spell then
+                self:SetAttribute('spell', spell)
+            end
+        ]])
+    else
+        self:SetAttributeNoHandler('spell', TOTEM_MULTI_CAST_SUMMON_SPELLS[self.totemSet])
+        self:SetAttributeNoHandler('_onmousewheel', nil)
+        self:SetAttributeNoHandler('_childupdate-state', nil)
+    end
+
+    self:EnableMouseWheel(paged)
+end
+
+function SpellButtonMixin:IsPaged()
+    return self.paged and true or false
+end
+
 function SpellButtonMixin:UpdateSpell()
     local spellId = self:GetAttribute('spell')
 
     self.spellId = spellId
-    self.icon:SetTexture(C_Spell.GetSpellTexture(spellId))
+
+    -- just the icon. the other returns would land in SetTexture's wrap modes
+    local icon
+    if spellId then
+        icon = C_Spell.GetSpellTexture(spellId)
+    end
+    self.icon:SetTexture(icon)
+
+    self:UpdateUsable()
     self:UpdateCooldown()
 
-    -- the name quick binding shows. out of combat, like any insecure attribute write
-    if not InCombatLockdown() then
+    -- for quick binding
+    if spellId and not InCombatLockdown() then
         self:SetAttributeNoHandler('displayName', C_Spell.GetSpellName(spellId))
     end
 end
 
 function SpellButtonMixin:SetShowBindingText(show)
     self.HotKey:SetShown(show)
+end
+
+-- GameTooltip calls this as it updates, so cycling while hovering shows the new spell
+function SpellButtonMixin:UpdateTooltip()
+    if not self.spellId then
+        GameTooltip:Hide()
+        return
+    end
+
+    GameTooltip:SetSpellByID(self.spellId)
+
+    if self:IsPaged() then
+        GameTooltip:AddLine(L.TotemSetHint, 0.5, 0.5, 0.5)
+        GameTooltip:Show()
+    end
 end
 
 function SpellButtonMixin:UpdateCooldown()
@@ -49,84 +140,120 @@ function SpellButtonMixin:UpdateCooldown()
     end
 end
 
+function SpellButtonMixin:UpdateUsable()
+    if not self.spellId then
+        return
+    end
+
+    if not SpellButton:IsSpellKnown(self.spellId) then
+        self.icon:SetVertexColor(0.4, 0.4, 0.4)
+        return
+    end
+
+    local isUsable, notEnoughMana = C_Spell.IsSpellUsable(self.spellId)
+
+    if isUsable then
+        self.icon:SetVertexColor(1, 1, 1)
+    elseif notEnoughMana then
+        self.icon:SetVertexColor(0.5, 0.5, 1)
+    else
+        self.icon:SetVertexColor(0.4, 0.4, 0.4)
+    end
+end
+
+-- CLICK bindings reach the button on their own, blizzard's need pointing at it
+function SpellButtonMixin:UpdateOverrideBindings()
+    if InCombatLockdown() then
+        return
+    end
+
+    ClearOverrideBindings(self)
+
+    local command = self:GetAttribute('commandName')
+
+    if not command:find('^CLICK ') then
+        setOverrideBindings(self, GetBindingKey(command))
+    end
+end
+
 --------------------------------------------------------------------------------
 -- Scripts
 --------------------------------------------------------------------------------
 
 local function button_OnEnter(self)
-    if self.spellId then
-        GameTooltip:SetOwner(self, 'ANCHOR_RIGHT')
-        GameTooltip:SetSpellByID(self.spellId)
-
-        if self.kind == SpellButton.SUMMON then
-            GameTooltip:AddLine(L.TotemSetHint, 0.5, 0.5, 0.5)
-            GameTooltip:Show()
-        end
-    end
+    GameTooltip:SetOwner(self, 'ANCHOR_RIGHT')
+    self:UpdateTooltip()
 end
 
 local function button_OnLeave()
     GameTooltip:Hide()
 end
 
-local function button_Create(kind, name)
-    local button = CreateFrame('Button', name, nil, 'SecureActionButtonTemplate')
-    Mixin(button, SpellButtonMixin)
+-- CheckButtons stay checked after a click otherwise
+local function button_PostClick(self)
+    self:SetChecked(false)
+end
 
-    button.kind = kind
-    button.cropIcon = true
-
-    button:SetSize(SpellButton.SIZE, SpellButton.SIZE)
-
-    button:RegisterForClicks('AnyUp', 'AnyDown')
-    button:SetAttribute('type', 'spell')
-
-    button.icon = button:CreateTexture(nil, 'ARTWORK')
-    button.icon:SetAllPoints()
-
-    TotemArt:AddRing(button)
+local function getCommandName(kind, name, totemSet)
+    if not SpellButton.HAS_MULTICAST_BINDINGS then
+        return ('CLICK %s:LeftButton'):format(name)
+    end
 
     if kind == SpellButton.SUMMON then
-        for totemSet, spellId in ipairs(TOTEM_MULTI_CAST_SUMMON_SPELLS) do
-            button:SetAttributeNoHandler('spell-totemset' .. totemSet, spellId)
-        end
+        return 'MULTICASTSUMMONBUTTON' .. totemSet
+    end
 
-        -- pages with the bar's totem set
-        button:SetAttributeNoHandler('_childupdate-state', [[
-            local spell = self:GetAttribute('spell-' .. message)
-            if spell then
-                self:SetAttribute('spell', spell)
-            end
-        ]])
-    else
+    -- blizzard only has the one recall binding
+    if totemSet == 1 then
+        return 'MULTICASTRECALLBUTTON1'
+    end
+
+    return ('CLICK %s:LeftButton'):format(name)
+end
+
+-- built like blizzard's summon and recall buttons. the ring replaces the
+-- template's normal texture
+local function button_Create(kind, name, totemSet)
+    -- ActionButtonTemplate last, so its OnLoad is the one kept
+    local button = CreateFrame('CheckButton', name, nil,
+    'SecureHandlerMouseWheelTemplate, SecureActionButtonTemplate, ActionButtonTemplate')
+    Mixin(button, SpellButtonMixin)
+
+    button.isSpell = true
+    button.totemSet = totemSet
+
+    TotemArt:ShrinkButton(button)
+
+    button.NormalTexture:SetAlpha(0)
+    button.SlotBackground:Hide()
+
+    -- only Forever's template has it
+    if button.SlotArt then
+        button.SlotArt:Hide()
+    end
+
+    TotemArt:AddSlotRing(button)
+    button.HotKey:SetDrawLayer('OVERLAY', 7)
+
+    button:RegisterForClicks('AnyUp', 'AnyDown')
+
+    -- so the camera still zooms over it, SetPaged turns it on
+    button:EnableMouseWheel(false)
+    button:SetAttribute('type', 'spell')
+
+    -- summon gets its spell from SetPaged
+    if kind == SpellButton.RECALL then
         button:SetAttributeNoHandler('spell', TOTEM_MULTI_CAST_RECALL_SPELLS[1])
     end
 
-    button.cooldown = CreateFrame('Cooldown', nil, button, 'CooldownFrameTemplate')
-    button.cooldown:SetAllPoints()
-
-    button.HotKey = button:CreateFontString(nil, 'OVERLAY', 'NumberFontNormalSmallGray')
-    button.HotKey:SetPoint('TOPRIGHT', -2, -2)
-
-    if C_Texture.GetAtlasInfo('UI-HUD-ActionBar-IconFrame-Down') then
-        button:SetPushedAtlas('UI-HUD-ActionBar-IconFrame-Down')
-
-        -- blizzard's small button size
-        local pushed = button:GetPushedTexture()
-        pushed:ClearAllPoints()
-        pushed:SetPoint('CENTER')
-        pushed:SetSize(35, 35)
-    else
-        button:SetPushedTexture('Interface\\Buttons\\UI-Quickslot-Depress')
-    end
-
-    button:SetHighlightTexture('Interface\\Buttons\\ButtonHilight-Square', 'ADD')
-
     button:SetScript('OnEnter', button_OnEnter)
     button:SetScript('OnLeave', button_OnLeave)
+    button:SetScript('PostClick', button_PostClick)
 
-    button:SetAttributeNoHandler('commandName', ('CLICK %s:LeftButton'):format(name))
+    button:SetAttributeNoHandler('commandName', getCommandName(kind, name, totemSet))
     Addon.BindableButton:AddQuickBindingSupport(button)
+
+    button:UpdateSpell()
 
     return button
 end
@@ -135,19 +262,15 @@ end
 -- API
 --------------------------------------------------------------------------------
 
-function SpellButton:Acquire(kind)
-    local name = ('%sTotem%sButton'):format(AddonName, kind)
+-- a summon and a recall per totem set, the paged bar uses set 1's
+function SpellButton:Acquire(kind, totemSet)
+    local name = ('%sTotem%sButton%d'):format(AddonName, kind, totemSet)
 
-    return _G[name] or button_Create(kind, name)
-end
-
-function SpellButton:IsButton(frame)
-    return frame.kind ~= nil
+    return _G[name] or button_Create(kind, name, totemSet)
 end
 
 function SpellButton:IsSpellKnown(spellId)
-    return spellId ~= nil
-        and C_SpellBook.IsSpellInSpellBook(spellId, Enum.SpellBookSpellBank.Player, false)
+    return spellId and C_SpellBook.IsSpellInSpellBook(spellId, Enum.SpellBookSpellBank.Player, false)
 end
 
 -- export
