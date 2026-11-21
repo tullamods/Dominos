@@ -122,7 +122,8 @@ function SpellButtonMixin:UpdateTooltip()
     GameTooltip:SetSpellByID(self.spellId)
 
     if self:IsPaged() then
-        GameTooltip:AddLine(L.TotemSetHint, 0.5, 0.5, 0.5)
+        GameTooltip_AddBlankLineToTooltip(GameTooltip)
+        GameTooltip_AddInstructionLine(GameTooltip, L.TotemSetHint)
         GameTooltip:Show()
     end
 end

@@ -33,21 +33,21 @@ L.TotemSetHint = 'Right click or scroll to change totem set'
 -- config and binding modes
 L.AlignmentGridSize = "Grid Density"
 L.AlignmentGridSizeTooltip = "How many grid lines are drawn across the screen. Higher values make a finer grid for bars to snap to."
-L.BindingEnterTip = 'Shift-Left Click to enter binding mode'
-L.BindingExitTip = 'Shift-Left Click to exit binding mode'
-L.ConfigEnterTip = 'Left Click to enter configuration mode'
-L.ConfigExitTip = 'Left Click to exit configuration mode'
+L.BindingEnterTip = 'Shift click to enter Binding Mode'
+L.BindingExitTip = 'Shift click to exit Binding Mode'
+L.ConfigEnterTip = 'Click to enter Configuration Mode'
+L.ConfigExitTip = 'Click to exit Configuration Mode'
 L.ConfigMode = 'Configuration Mode'
-L.ConfigModeHelp = 'Drag any bar to move it. Right Click to configure. Middle Click or Shift-Right Click to toggle visibility.'
+L.ConfigModeHelp = 'Drag any bar to move it. Right click or Shift click to configure. Middle click or Shift right click to toggle visibility.'
 L.Hidden = _G.HUD_EDIT_MODE_SETTING_ACTION_BAR_VISIBLE_SETTING_HIDDEN
-L.HideBar = 'Middle Click or Shift-Right Click to hide'
-L.KeyboardMovementTip = "Use movement keys to adjust position."
-L.SetAlpha = 'Mousewheel to set opacity (|cffffffff%d|r)'
+L.HideBar = 'Middle click or Shift right click to hide'
+L.KeyboardMovementTip = 'Use movement keys to adjust position'
+L.SetAlpha = 'Mouse wheel to set opacity (|cffffffff%d|r)'
 L.ShowAlignmentGrid = HUD_EDIT_MODE_SHOW_GRID
-L.ShowBar = 'Middle Click or Shift-Right Click to show'
-L.ShowConfig = 'Right Click to configure'
+L.ShowBar = 'Middle click or Shift right click to show'
+L.ShowConfig = 'Right click or Shift click to configure'
 L.Shown = "Shown"
-L.ShowOptionsTip = 'Right Click to show the options menu'
+L.ShowOptionsTip = 'Right click to show the options menu'
 
 -- slash commands
 L.ActionBarsDesc = 'Sets the number of action bars and buttons per bar, like 8x12 (up to 168 buttons in all)'

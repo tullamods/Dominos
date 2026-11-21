@@ -230,6 +230,10 @@ function DragFrame:OnClick(button)
         else
             self:ShowOwnerContextMenu()
         end
+    elseif button == 'LeftButton' then
+        if IsModifierKeyDown() then
+            self:ShowOwnerContextMenu()
+        end
     elseif button == 'MiddleButton' then
         self:SetOwnerShown(not self:IsOwnerShown())
     end
@@ -284,7 +288,7 @@ function DragFrame:OnKeyDown(key)
 end
 
 function DragFrame:OnMouseDown(button)
-    if button == 'LeftButton' then
+    if button == 'LeftButton' and not IsModifierKeyDown() then
         self:SetMoving(true)
     end
 end
