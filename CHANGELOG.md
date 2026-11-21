@@ -8,7 +8,7 @@
 
 ## 12.1.0
 
-## Cast Bars 
+### Cast Bars 
 
 * Revamped the cast and mirror timers, adding font, border, and color options
 * Mirror timers 1,2,3 are now in a single bar has been relabeled Duration Bars 
@@ -17,7 +17,7 @@
 * Internally, the bars now take advantage of the modern duration and text 
   formatting APIs where possible
 
-## Other
+### Other
 
 * (Retail, Forever) The experience bar's tooltip now shows a breakdown that 
   includes your quests ready for turn in
