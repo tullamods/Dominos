@@ -282,14 +282,6 @@ local function addStandingLines(tooltip, name, reaction, factionID, value, max)
 	end
 end
 
--- the stock bar polls while paragon rewards load. retry, one at a time, until they're in
-local pendingRefresh
-local function retryRefresh()
-	local refresh = pendingRefresh
-	pendingRefresh = nil
-	refresh()
-end
-
 -- same order as ReputationEntryMixin:ShowTooltipForReputationType
 function Reputation:SetupTooltip(tooltip, refreshTooltip)
 	local name, reaction, _, _, _, factionID = GetWatchedFactionInfo()
@@ -301,14 +293,9 @@ function Reputation:SetupTooltip(tooltip, refreshTooltip)
 	if IsFactionParagon(factionID) and ReputationUtil then
 		ReputationUtil.AddParagonRewardsToTooltip(tooltip, factionID)
 
-		if tooltip.waitingForData and not pendingRefresh then
-			pendingRefresh = refreshTooltip
-			C_Timer.After(TOOLTIP_UPDATE_TIME or 0.2, retryRefresh)
-		end
-
 		-- adds nothing when only the old paragon check passed
 		if tooltip:NumLines() > 0 then
-			return
+			return tooltip.waitingForData
 		end
 	end
 

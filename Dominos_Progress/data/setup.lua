@@ -218,22 +218,26 @@ end
 
 -- override it to mirror a stock tooltip
 ---@param tooltip GameTooltip already owned, anchored and cleared
----@param refreshTooltip fun() redoes it if the bar still owns it, for data that loads late
-function DataProvider:SetupTooltip(tooltip, refreshTooltip)
+---@param refreshTooltip fun() redoes it if the bar still owns it, for load callbacks
+---@param formatNumber NumberFormatter
+---@return boolean? waitingForData the bar polls it till it's false
+function DataProvider:SetupTooltip(tooltip, refreshTooltip, formatNumber)
 	local value, max = self:GetValues()
 
 	if self.GetLabel then
 		GameTooltip_SetTitle(tooltip, self:GetLabel())
 	end
-	self:AddTooltipProgress(tooltip, tonumber(value) or 0, tonumber(max) or 0)
+	self:AddTooltipProgress(tooltip, tonumber(value) or 0, tonumber(max) or 0, formatNumber)
 end
 
--- tooltips use full numbers, like the stock ones
 ---@param tooltip GameTooltip
 ---@param value number
 ---@param max number
-function DataProvider:AddTooltipProgress(tooltip, value, max)
-	local progress = TextTemplates.progress:format(BreakUpLargeNumbers(value), BreakUpLargeNumbers(max))
+---@param formatNumber NumberFormatter?
+function DataProvider:AddTooltipProgress(tooltip, value, max, formatNumber)
+	formatNumber = formatNumber or BreakUpLargeNumbers
+
+	local progress = TextTemplates.progress:format(formatNumber(value), formatNumber(max))
 	local percent = self:FormatPercent(value, max)
 	GameTooltip_AddHighlightLine(tooltip, percent and TextTemplates.detail:format(progress, percent) or progress)
 end

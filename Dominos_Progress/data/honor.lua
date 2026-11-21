@@ -17,14 +17,15 @@ function Honor:GetLabel()
 end
 
 -- the stock bar has no tooltip, only HONOR_BAR text, so add the level the pvp ui shows
-function Honor:SetupTooltip(tooltip)
+function Honor:SetupTooltip(tooltip, refreshTooltip, formatNumber)
 	GameTooltip_SetTitle(tooltip, HONOR)
 
 	if HONOR_LEVEL_LABEL and UnitHonorLevel then
 		GameTooltip_AddNormalLine(tooltip, HONOR_LEVEL_LABEL:format(UnitHonorLevel('player')))
 	end
 
-	self:AddTooltipProgress(tooltip, self:GetValues())
+	local value, max = self:GetValues()
+	self:AddTooltipProgress(tooltip, value, max, formatNumber)
 end
 
 function Honor:GetColor()

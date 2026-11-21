@@ -57,3 +57,11 @@ L.AutoSwitchModes = 'Auto Switch Modes'
 
 -- modes
 L.Azerite = 'Azerite Power'
+
+-- xp tooltip
+L.XPAfterTurnIns = 'After turn-ins'
+L.XPCompletedQuests = 'Completed quests (%d)'
+L.XPLevelUp = 'Level up (+%s)'
+L.XPRemaining = 'Remaining'
+L.XPRested = 'Rested'
+L.XPResting = 'Resting'

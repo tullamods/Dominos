@@ -24,6 +24,8 @@ local TEXT_OFFSET_Y = 1
 
 local TRANSPARENT_COLOR = CreateColor(0, 0, 0, 0)
 
+local ABBREVIATE_NUMBERS_MIN = 100000
+
 -- desaturated stock art is a mid grey, so its tint is brightened to make up for it
 local DESATURATED_TINT_BOOST = 1.6
 
@@ -35,6 +37,14 @@ end
 local function brightenTint(r, g, b, a)
 	local boost = math.min(DESATURATED_TINT_BOOST, 1 / math.max(r, g, b, 0.001))
 	return r * boost, g * boost, b * boost, a
+end
+
+---@type NumberFormatter
+local function abbreviateLargeNumber(number)
+	if math.abs(number) < ABBREVIATE_NUMBERS_MIN then
+		return BreakUpLargeNumbers(number)
+	end
+	return AbbreviateNumbers(number)
 end
 
 local function snapToPixel(value, pixel)
@@ -161,6 +171,12 @@ function ProgressBar:OnCreate()
 	overlay:SetScript('OnLeave', function()
 		self:UpdateTextShown(false)
 		self:HideTooltip()
+	end)
+
+	overlay:SetScript('OnEvent', function(_, _, key)
+		if key == 'LSHIFT' or key == 'RSHIFT' then
+			self:RefreshTooltip()
+		end
 	end)
 
 	overlay:SetFrameLevel(7)
@@ -441,10 +457,23 @@ function ProgressBar:GetTooltipAnchor()
 	return 'ANCHOR_TOP'
 end
 
+---@return NumberFormatter
+function ProgressBar:GetTooltipNumberFormatter()
+	if IsShiftKeyDown() then
+		return BreakUpLargeNumbers
+	end
+	return self:GetNumberFormatter()
+end
+
 function ProgressBar:ShowTooltip()
 	GameTooltip:SetOwner(self.overlay, self:GetTooltipAnchor())
-	self.provider:SetupTooltip(GameTooltip, self.refreshTooltip)
+	local waitingForData = self.provider:SetupTooltip(GameTooltip, self.refreshTooltip, self:GetTooltipNumberFormatter())
 	GameTooltip:Show()
+
+	-- GameTooltip polls its owner's UpdateTooltip
+	self.overlay.UpdateTooltip = waitingForData and self.refreshTooltip or nil
+
+	self.overlay:RegisterEvent('MODIFIER_STATE_CHANGED')
 end
 
 -- like the stock UpdatePointsTooltip, only redo a tooltip we already own.
@@ -457,6 +486,9 @@ function ProgressBar:RefreshTooltip()
 end
 
 function ProgressBar:HideTooltip()
+	self.overlay:UnregisterEvent('MODIFIER_STATE_CHANGED')
+	self.overlay.UpdateTooltip = nil
+
 	if GameTooltip:IsOwned(self.overlay) then
 		GameTooltip:Hide()
 	end
@@ -788,7 +820,7 @@ function ProgressBar:UpdateText(value, max, bonus)
 
 	if self:ShowingText() then
 		local options = self.textOptions
-		options.formatNumber = self:AbbreviatesNumbers() and AbbreviateNumbers or BreakUpLargeNumbers
+		options.formatNumber = self:GetNumberFormatter()
 		options.showLabel = self:ShowingLabel()
 		options.showBonus = self:ShowingBonus()
 		text = self.provider:GetText(self:GetTextFormat(), options, value, max, bonus)
@@ -893,6 +925,11 @@ end
 
 function ProgressBar:AbbreviatesNumbers()
 	return self.sets.abbreviateNumbers
+end
+
+---@return NumberFormatter
+function ProgressBar:GetNumberFormatter()
+	return self:AbbreviatesNumbers() and abbreviateLargeNumber or BreakUpLargeNumbers
 end
 
 --------------------------------------------------------------------------------

@@ -1,4 +1,10 @@
 local _, Addon = ...
+local L = LibStub("AceLocale-3.0"):GetLocale("Dominos-Progress")
+
+-- needs the 9.0 quest log api, classic still uses GetQuestLogTitle
+local CAN_ESTIMATE_QUEST_XP = C_QuestLog.GetInfo
+	and C_QuestLog.IsComplete
+	and true
 
 local getMaxPlayerLevel = GetMaxLevelForPlayerExpansion or GetMaxPlayerLevel
 
@@ -39,26 +45,89 @@ local function addBankedXP(tooltip)
 	end
 end
 
--- the stock exhaustion tick tooltip, for the whole bar
-function Experience:SetupTooltip(tooltip)
-	local value, max = UnitXP('player'), UnitXPMax('player')
+local function getCompletedQuestXP()
+	local xp = 0
+	local count = 0
+	local waitingForData = false
 
-	if XP_TEXT and max > 0 then
-		GameTooltip_SetTitle(tooltip, XP_TEXT:format(BreakUpLargeNumbers(value), BreakUpLargeNumbers(max), math.ceil(value / max * 100)))
+	for i = 1, C_QuestLog.GetNumQuestLogEntries() do
+		local info = C_QuestLog.GetInfo(i)
+
+		-- IsComplete, not ReadyForTurnIn, matches the quest log
+		if info and not (info.isHeader or info.isHidden or info.isTask) and C_QuestLog.IsComplete(info.questID) then
+			local questID = info.questID
+			local questXP = GetQuestLogRewardXP(questID) or 0
+
+			if questXP > 0 then
+				xp = xp + questXP
+				count = count + 1
+			end
+
+			-- counted as 0 until it's in
+			if not HaveQuestRewardData(questID) then
+				C_TaskQuest.RequestPreloadRewardData(questID)
+				waitingForData = true
+			end
+		end
+	end
+
+	return xp, count, waitingForData
+end
+
+---@return boolean waitingForData
+function Experience:AddCompletedQuestLines(tooltip, formatNumber, remaining)
+	local questXP, count, waitingForData = getCompletedQuestXP()
+
+	if count > 0 then
+		local afterQuests = remaining - questXP
+
+		GameTooltip_AddColoredDoubleLine(tooltip, L.XPCompletedQuests:format(count), Addon.TextTemplates.remaining:format(formatNumber(questXP)), NORMAL_FONT_COLOR, HIGHLIGHT_FONT_COLOR)
+
+		if afterQuests > 0 then
+			GameTooltip_AddColoredDoubleLine(tooltip, L.XPAfterTurnIns, formatNumber(afterQuests), NORMAL_FONT_COLOR, HIGHLIGHT_FONT_COLOR)
+		else
+			GameTooltip_AddColoredDoubleLine(tooltip, L.XPAfterTurnIns, L.XPLevelUp:format(formatNumber(-afterQuests)), NORMAL_FONT_COLOR, GREEN_FONT_COLOR)
+		end
+	end
+
+	return waitingForData
+end
+
+function Experience:AddRestLines(tooltip, formatNumber, rested)
+	local resting = IsResting()
+	if not (rested > 0 or resting) then
+		return
+	end
+
+	GameTooltip_AddBlankLineToTooltip(tooltip)
+	GameTooltip_AddColoredDoubleLine(tooltip, resting and L.XPResting or L.XPRested, formatNumber(rested), NORMAL_FONT_COLOR, HIGHLIGHT_FONT_COLOR)
+end
+
+function Experience:SetupTooltip(tooltip, refreshTooltip, formatNumber)
+	local value, max, rested = self:GetValues()
+
+	if max <= 0 then
+		GameTooltip_SetTitle(tooltip, XP)
+		return
+	end
+
+	local remaining = max - value
+
+	if XP_TEXT then
+		GameTooltip_SetTitle(tooltip, XP_TEXT:format(formatNumber(value), formatNumber(max), math.ceil(value / max * 100)))
 	else
-		self:AddTooltipProgress(tooltip, value, max)
+		GameTooltip_SetTitle(tooltip, Addon.TextTemplates.label:format(XP, Addon.TextTemplates.progress:format(formatNumber(value), formatNumber(max))))
 	end
 
-	local restStateID, restStateName, restMultiplier = GetRestState()
-	if restStateID and EXHAUST_TOOLTIP1 then
-		GameTooltip_AddHighlightLine(tooltip, EXHAUST_TOOLTIP1:format(restStateName, restMultiplier * 100))
-	end
+	GameTooltip_AddColoredDoubleLine(tooltip, L.XPRemaining, formatNumber(remaining), NORMAL_FONT_COLOR, HIGHLIGHT_FONT_COLOR)
 
-	if EXHAUST_TOOLTIP2 and not IsResting() and (restStateID == 4 or restStateID == 5) then
-		GameTooltip_AddHighlightLine(tooltip, EXHAUST_TOOLTIP2)
-	end
+	local waitingForData = CAN_ESTIMATE_QUEST_XP and self:AddCompletedQuestLines(tooltip, formatNumber, remaining)
+
+	self:AddRestLines(tooltip, formatNumber, rested)
 
 	addBankedXP(tooltip)
+
+	return waitingForData
 end
 
 function Experience:GetColor()
