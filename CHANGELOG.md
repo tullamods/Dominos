@@ -14,7 +14,8 @@
 * Mirror timers 1,2,3 are now in a single bar has been relabeled Duration Bars 
   to be consistent with edit mode. You can choose to display them either 
   horizontally or vertically
-* Internally the bars now take advantage of the new duration and text formatting APIs where possible
+* Internally, the bars now take advantage of the modern duration and text 
+  formatting APIs where possible
 
 ## Other
 
