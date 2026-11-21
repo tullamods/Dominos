@@ -45,9 +45,9 @@ do
     )
 
     local buttonInfos = MicroMenu:GenerateButtonInfos()
-    
+
     local hasStoreButton = ContainsIf(buttonInfos, function(buttonInfo)
-        return buttonInfo.button == StoreMicroButtonMixin            
+        return buttonInfo.button == StoreMicroButton
     end)
 
     local function isStoreButtonShown()
