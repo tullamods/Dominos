@@ -8,8 +8,16 @@
 ## IconTexture: Interface/AddOns/Dominos/Dominos
 localization\default.lua
 localization\[TextLocale].lua
-DominosTimerBarTemplate.xml
-castBar.lua
-castBarModule.lua
-mirrorTimer.lua
-mirrorTimerModule.lua
+migrations.lua
+shared\border.lua
+shared\timer.lua
+shared\settings.lua
+shared\menu.lua
+castBar\timer.lua
+castBar\bar.lua
+castBar\menu.lua
+castBar\module.lua
+mirrorTimer\timer.lua
+mirrorTimer\bar.lua
+mirrorTimer\menu.lua
+mirrorTimer\module.lua

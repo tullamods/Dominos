@@ -19,6 +19,7 @@ contextMenu\panelSelector.lua
 contextMenu\controls\check.lua
 contextMenu\controls\slider.lua
 contextMenu\controls\dropdown.lua
+contextMenu\controls\color.lua
 contextMenu\controls\text.lua
 contextMenu\controls\header.lua
 contextMenu\controls\pagePicker.lua

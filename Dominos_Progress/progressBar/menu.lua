@@ -101,36 +101,9 @@ ProgressBar.contextMenu = Dominos.Frame.contextMenu:Extend {
 				get = 'GetTextureID',
 				set = 'SetTextureID'
 			},
-			{
-				type = 'font',
-				name = 'Font',
-				default = DEFAULT,
-				get = 'GetFontID',
-				set = 'SetFontID'
-			},
-			{
-				type = 'dropdown',
-				name = 'FontOutline',
-				items = {
-					{ value = '',        text = 'FontOutline_NONE' },
-					{ value = 'OUTLINE', text = 'FontOutline_OUTLINE' },
-					{
-						value = 'THICKOUTLINE',
-						text = 'FontOutline_THICKOUTLINE'
-					}
-				},
-				get = 'GetFontOutline',
-				set = 'SetFontOutline'
-			},
-			{
-				type = 'slider',
-				name = 'FontSize',
-				min = 6,
-				max = 32,
-				softLimits = true,
-				get = 'GetFontSize',
-				set = 'SetFontSize'
-			},
+			'FontDropdown',
+			'FontOutlineDropdown',
+			'FontSizeSlider',
 			{ type = 'header', name = 'Content' },
 			{
 				type = 'check',

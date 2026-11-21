@@ -1,7 +1,7 @@
 -- the options shared by bars' context menus, by name. definitions are tables
--- of widget settings; get, set, available, min, max and items are a method name
--- on the bar or a function of the bar, and min, max and items can also be plain
--- values. softLimits is explained in controls/slider.lua
+-- of widget settings; get, set, available, enabled, min, max and items are a
+-- method name on the bar or a function of the bar, and min, max and items can
+-- also be plain values. softLimits is explained in controls/slider.lua
 
 local _, Addon = ...
 local L = Addon:GetLocale()
@@ -326,6 +326,38 @@ Controls.FrameLevelSlider = {
     max = 200,
     get = 'GetDisplayLevel',
     set = 'SetDisplayLevel'
+}
+
+-- fonts, for bars with Get/SetFontID, Get/SetFontSize and Get/SetFontOutline.
+-- the default entry is the stock font
+Controls.FontDropdown = {
+    type = 'font',
+    name = L.Font,
+    default = DEFAULT,
+    get = 'GetFontID',
+    set = 'SetFontID'
+}
+
+Controls.FontOutlineDropdown = {
+    type = 'dropdown',
+    name = L.FontOutline,
+    items = {
+        { value = '', text = L.FontOutline_NONE },
+        { value = 'OUTLINE', text = L.FontOutline_OUTLINE },
+        { value = 'THICKOUTLINE', text = L.FontOutline_THICKOUTLINE }
+    },
+    get = 'GetFontOutline',
+    set = 'SetFontOutline'
+}
+
+Controls.FontSizeSlider = {
+    type = 'slider',
+    name = L.FontSize,
+    min = 6,
+    max = 32,
+    softLimits = true,
+    get = 'GetFontSize',
+    set = 'SetFontSize'
 }
 
 Addon.Controls = Controls

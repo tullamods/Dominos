@@ -18,4 +18,3 @@
 local L = LibStub('AceLocale-3.0'):NewLocale('Dominos-CastBar', 'frFR')
 if not L then return end
 
-L.Display_time = 'Montrer le temps'

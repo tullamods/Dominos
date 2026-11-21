@@ -257,14 +257,25 @@ registerDropdown('dropdown', {
 -- uppercase ones, so sort again ignoring case
 local function mediaItems(mediaType)
     return function(control)
-        local names = CopyTable(LSM:List(mediaType))
+        local default = control.def.default
+        local names = {}
+
+        for _, name in ipairs(LSM:List(mediaType)) do
+            -- lsm's None would double up on the default entry. some versions
+            -- give it a path instead of leaving it empty
+            local isNone = name == 'None' or LSM:Fetch(mediaType, name) == ''
+
+            if not (default and isNone) then
+                table.insert(names, name)
+            end
+        end
 
         table.sort(names, function(a, b)
             return a:lower() < b:lower()
         end)
 
-        if control.def.default then
-            table.insert(names, 1, { value = false, text = control.def.default })
+        if default then
+            table.insert(names, 1, { value = false, text = default })
         end
 
         return names

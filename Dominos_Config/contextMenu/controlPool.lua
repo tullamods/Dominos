@@ -15,6 +15,10 @@
 --   GetEditBox(widget) optional. the edit box of a control that has one, so that
 --                   the menu can tab between them
 --
+-- A definition can also have enabled, resolved like available. while it's false
+-- the control stays where it is, dimmed and unclickable, so turning one setting
+-- off doesn't make others jump around. the pool does this, not the type
+--
 -- widget.menu is whatever the control should call to read and write the bar it
 -- is showing: menu:GetValue(def), menu:SetValue(def, value),
 -- menu:Resolve(value) for limits and item lists, and menu:Localize(text, locale)
@@ -23,6 +27,32 @@ local _, Addon = ...
 
 local controlTypes = {}
 local freeWidgets = {}
+
+local DISABLED_ALPHA = 0.5
+
+-- a cover over the widget takes its clicks, wheel, and hover while it's off
+local function updateEnabled(widget)
+    local enabled = widget.def.enabled
+    enabled = enabled == nil or not not widget.menu:Resolve(enabled)
+
+    local cover = widget.DisabledCover
+
+    if not (enabled or cover) then
+        cover = CreateFrame('Frame', nil, widget)
+        cover:SetAllPoints()
+        cover:EnableMouse(true)
+        cover:EnableMouseWheel(true)
+        widget.DisabledCover = cover
+    end
+
+    if cover then
+        -- over the widget's own children, whatever level they're at
+        cover:SetFrameLevel(widget:GetFrameLevel() + 20)
+        cover:SetShown(not enabled)
+    end
+
+    widget:SetAlpha(enabled and 1 or DISABLED_ALPHA)
+end
 
 function Addon:RegisterControlType(name, controlType)
     assert(not controlTypes[name], ('Control type %q is already registered'):format(name))
@@ -70,6 +100,8 @@ function Addon:AcquireControl(def, parent, menu)
         error(err, 0)
     end
 
+    updateEnabled(widget)
+
     widget:Show()
 
     return widget
@@ -89,6 +121,12 @@ function Addon:ReleaseControl(widget)
     widget.layoutIndex = nil
     widget.inPool = true
 
+    if widget.DisabledCover then
+        widget.DisabledCover:Hide()
+    end
+
+    widget:SetAlpha(1)
+
     widget:Hide()
     widget:ClearAllPoints()
     widget:SetParent(nil)
@@ -106,18 +144,28 @@ end
 -- re-read the value shown by a widget that is in use
 function Addon:RefreshControl(widget)
     controlTypes[widget.controlType].Refresh(widget)
+    updateEnabled(widget)
 end
 
 -- the tooltip of a control: its name, then the tooltip text, if it has any
-function Addon:ShowControlTooltip(control)
+-- instruction is an optional how to use line, like right click to reset
+function Addon:ShowControlTooltip(control, instruction)
     local def = control.def
 
-    if def and def.tooltip then
+    if def and (def.tooltip or instruction) then
         local menu = control.menu
 
         GameTooltip:SetOwner(control, 'ANCHOR_RIGHT')
         GameTooltip_SetTitle(GameTooltip, menu:Localize(def.name, def.locale))
-        GameTooltip_AddNormalLine(GameTooltip, menu:Localize(def.tooltip, def.locale))
+
+        if def.tooltip then
+            GameTooltip_AddNormalLine(GameTooltip, menu:Localize(def.tooltip, def.locale))
+        end
+
+        if instruction then
+            GameTooltip_AddInstructionLine(GameTooltip, instruction)
+        end
+
         GameTooltip:Show()
     end
 end
