@@ -50,8 +50,8 @@ end
 
 local SpellButtonMixin = {}
 
--- summon only, out of combat. a paged summon follows the bar's totem set and
--- cycles it on the wheel, a fixed one casts its own set's spell
+-- summon only, out of combat. a paged summon follows the bar's totem set, the
+-- bar wraps its wheel to cycle it. a fixed one casts its own set's spell
 function SpellButtonMixin:SetPaged(paged)
     self.paged = paged
 
@@ -60,30 +60,27 @@ function SpellButtonMixin:SetPaged(paged)
             self:SetAttributeNoHandler('spell-' .. SpellButton.GetTotemSetState(totemSet), spellId)
         end
 
-        self:SetAttributeNoHandler('spell', TOTEM_MULTI_CAST_SUMMON_SPELLS[1])
-
-        -- down for the next set, up for the previous
-        self:SetAttributeNoHandler('_onmousewheel', [[
-            if delta > 0 then
-                self:SetAttribute('cycletotemset', -1)
-            else
-                self:SetAttribute('cycletotemset', 1)
-            end
-        ]])
+        self:SetSpell(TOTEM_MULTI_CAST_SUMMON_SPELLS[1])
 
         self:SetAttributeNoHandler('_childupdate-state', [[
             local spell = self:GetAttribute('spell-' .. message)
             if spell then
+                self:SetAttribute('type', 'spell')
                 self:SetAttribute('spell', spell)
             end
         ]])
     else
-        self:SetAttributeNoHandler('spell', TOTEM_MULTI_CAST_SUMMON_SPELLS[self.totemSet])
-        self:SetAttributeNoHandler('_onmousewheel', nil)
+        self:SetSpell(TOTEM_MULTI_CAST_SUMMON_SPELLS[self.totemSet])
         self:SetAttributeNoHandler('_childupdate-state', nil)
     end
 
     self:EnableMouseWheel(paged)
+end
+
+-- out of combat
+function SpellButtonMixin:SetSpell(spellId)
+    self:SetAttributeNoHandler('type', 'spell')
+    self:SetAttributeNoHandler('spell', spellId)
 end
 
 function SpellButtonMixin:IsPaged()
@@ -214,9 +211,7 @@ end
 -- built like blizzard's summon and recall buttons. the ring replaces the
 -- template's normal texture
 local function button_Create(kind, name, totemSet)
-    -- ActionButtonTemplate last, so its OnLoad is the one kept
-    local button = CreateFrame('CheckButton', name, nil,
-    'SecureHandlerMouseWheelTemplate, SecureActionButtonTemplate, ActionButtonTemplate')
+    local button = CreateFrame('CheckButton', name, nil, 'ActionButtonTemplate, SecureActionButtonTemplate')
     Mixin(button, SpellButtonMixin)
 
     button.isSpell = true
@@ -239,11 +234,10 @@ local function button_Create(kind, name, totemSet)
 
     -- so the camera still zooms over it, SetPaged turns it on
     button:EnableMouseWheel(false)
-    button:SetAttribute('type', 'spell')
 
     -- summon gets its spell from SetPaged
     if kind == SpellButton.RECALL then
-        button:SetAttributeNoHandler('spell', TOTEM_MULTI_CAST_RECALL_SPELLS[1])
+        button:SetSpell(TOTEM_MULTI_CAST_RECALL_SPELLS[1])
     end
 
     button:SetScript('OnEnter', button_OnEnter)

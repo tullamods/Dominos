@@ -145,12 +145,8 @@ local bar_CycleTotemSet = [[
     self:RunAttribute('SetTotemSet', (current - 1 + step) % TotemSetCount + 1)
 ]]
 
--- the wheel can't reach the bar, so it sets cycletotemset for us to pick up
-local summonButton_OnAttributeChanged = [[
-    if name == 'cycletotemset' and value then
-        self:SetAttribute('cycletotemset', nil)
-        control:RunAttribute('CycleTotemSet', value)
-    end
+local summonButton_OnMouseWheel = [[
+    control:RunAttribute('CycleTotemSet', offset)
 ]]
 
 local summonButton_OnClick = [[
@@ -341,7 +337,7 @@ function TotemBar:AttachSpellButton(button, buttonInfo)
             -- wrapping turns mouse on, put it back for click through
             local mouseEnabled = button:IsMouseEnabled()
 
-            self:WrapScript(button, 'OnAttributeChanged', summonButton_OnAttributeChanged)
+            self:WrapScript(button, 'OnMouseWheel', summonButton_OnMouseWheel)
             self:WrapScript(button, 'OnClick', summonButton_OnClick)
 
             button:EnableMouse(mouseEnabled)
@@ -359,9 +355,10 @@ function TotemBar:DetachSpellButton(button)
         local mouseEnabled = button:IsMouseEnabled()
 
         self:UnwrapScript(button, 'OnClick')
-        self:UnwrapScript(button, 'OnAttributeChanged')
+        self:UnwrapScript(button, 'OnMouseWheel')
 
         button:EnableMouse(mouseEnabled)
+        button:EnableMouseWheel(false)
     end
 
     ClearOverrideBindings(button)
