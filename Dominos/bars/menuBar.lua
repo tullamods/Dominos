@@ -44,6 +44,24 @@ do
         }
     )
 
+    local buttonInfos = MicroMenu:GenerateButtonInfos()
+    
+    local hasStoreButton = ContainsIf(buttonInfos, function(buttonInfo)
+        return buttonInfo.button == StoreMicroButtonMixin            
+    end)
+
+    local function isStoreButtonShown()
+        if not hasStoreButton then
+            return false
+        end
+
+        if C_StorePublic.IsEnabled() then
+            return true
+        end
+
+        return GetCurrentRegionName() ~= "CN"
+    end
+
     local function attach(container)
         local button = container.button
 
@@ -76,19 +94,19 @@ do
 
         local buttonName = buttonInfo.button:GetName()
         if buttonName == "StoreMicroButton" then
-            return C_StorePublic.IsEnabled()
+            return isStoreButtonShown()
         elseif buttonName == "GuildMicroButton" then
             return not C_CVar.GetCVarBool("useClassicGuildUI")
         elseif buttonName == "SocialsMicroButton" then
             return C_CVar.GetCVarBool("useClassicGuildUI")
         elseif buttonName == "HelpMicroButton" then
-            return not C_StorePublic.IsEnabled()
+            return not isStoreButtonShown()
         else
             return true
         end
     end
 
-    for _, buttonInfo in ipairs(MicroMenu:GenerateButtonInfos()) do
+    for _, buttonInfo in ipairs(buttonInfos) do
         local button = buttonInfo.button
         if button then
             local container = CreateFrame('Frame', ('%s%sContainer'):format(AddonName, button:GetName()),
