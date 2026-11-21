@@ -6,6 +6,24 @@
 > settings before upgrading just in case. You also need to restart WoW, 
 > otherwise you'll see a Bindings_Mainline.xml not found error.
 
+## 12.1.0
+
+## Cast Bars 
+
+* Revamped the cast and mirror timers, adding font, border, and color options
+* Mirror timers 1,2,3 are now in a single bar has been relabeled Duration Bars 
+  to be consistent with edit mode. You can choose to display them either 
+  horizontally or vertically
+* Internally the bars now take advantage of the new duration and text formatting APIs where possible
+
+## Other
+
+* (Retail, Forever) The experience bar's tooltip now shows a breakdown that 
+  includes your quests ready for turn in
+* Got my Shaman to 20 and finally fixed Call spells on the totem bar
+* Added shift + left click as a way to show bar context menus, in addition to 
+  right click
+
 ## 12.0.4
 
 * Added an option to split the totem bar into multiple bars and hide totem slots
